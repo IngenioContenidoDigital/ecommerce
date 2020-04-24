@@ -1,0 +1,96 @@
+<div class="container">
+<% if (error != undefined || error != null) { %>
+    <div class="notification is-danger is-light" id="error">
+        <%= error %>
+    </div>
+<% } %>
+<%if(action=='create' || action=='edit'){%>
+    <div class="container">
+      <br />
+        <h4 class="title is-4">Crear Variación</h4>
+        <hr>
+        <% if(action=='create') { %>
+        <form action="/variation/create" method="POST">
+        <% } %>
+        <% if(action=='edit') { %>
+        <form action="/variation/edit/<%= variation.id %>" method="POST">
+        <% } %>
+        <div class="columns">
+          <div class="column"></div>
+          <div class="column is-two-fifths">
+            <div class="box">
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label">Nombre</label>
+                    <div class="control">
+                    <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de esta Variación" <% if(action=='edit'){ %>value="<%= variation.name %>"<% }%>/>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <br>
+                  <div class="control buttons is-right">
+                    <% if(action=='edit'){ %> 
+                        <button type="submit" class="button is-primary"><i class="bx bx-pencil"></i>&nbsp;Modificar Variación</button>
+                    <% }else if (action=='create'){ %>
+                        <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Variación</button>
+                    <% } %>
+                  </div>
+                </div>                                  
+              </div>
+            </div>
+          </div>
+          <div class="column"></div>
+        </div>
+        </form>
+        <br>
+        <hr>
+    </div>
+<%}else{%>
+      <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+        <a href="/variations/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+      </p>
+      <div class="table-container">
+          <table class="table is-hoverable" id="variations-table">
+              <thead>
+              <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Opciones</th>
+              </tr>
+              </thead>
+              <tbody>
+                  <% variations.forEach(function(variation){ %>
+                      <tr>
+                          <td scope="row" class="align-middle"><%= variation.id %></td>
+                          <td class="align-middle"><span class="is-uppercase"><%= variation.name %></span></td>
+                          <td class="align-middle">
+                            <a href="/variations/edit/<%= variation.id %>" class="button is-small">
+                              <span class="icon">
+                                <i class="bx bxs-edit"></i>
+                              </span>
+                            </a>
+                          </td>
+                      </tr>
+                  <% }); %>
+              </tbody>
+          </table>
+      </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function(){
+          let table = new simpleDatatables.DataTable('#variations-table',{
+            searchable:true,
+            sortable:true,
+            paging:true,
+            labels: {
+              placeholder: "Buscar...",
+              perPage: "{select} registros por página",
+              noRows: "No se encontraron datos",
+              info: "Mostrando {start} a {end} de {rows} registros",
+            }
+          });  
+        });
+      </script>
+<%}%>
+</div>

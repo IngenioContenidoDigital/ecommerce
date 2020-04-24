@@ -1,0 +1,132 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <% if(action=='create' || action=='edit'){ %> 
+        <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script> 
+          <br />
+            <h4 class="title is-4">Crear Color</h4>
+            <hr>
+            <% if(action=='create') { %>
+              <form action="/color/create" method="POST" enctype="multipart/form-data">
+            <% } %>
+            <% if(action=='edit') { %>
+              <form action="/color/edit/<%= color.id %>" method="POST" enctype="multipart/form-data">
+            <% } %>
+            <div class="columns">
+              <div class="column"></div>
+              <div class="column is-two-fifths">
+                <div class="box">
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label">Nombre</label>
+                        <div class="control">
+                        <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre del Color" <% if(action=='edit'){ %>value="<%= color.name %>"<% }%>/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>                
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label">Código</label>
+                        <div class="control">
+                        <input class="input" type="text" name="code" id="code" required="true" maxlength="7" placeholder="Codigo del Color" <% if(action=='edit'){ %>value="<%= color.code %>"<% }else{%>value="#FFFFFF"<%}%>/>
+                        </div>                        
+                      </div>
+                      <div class="notification is-info">
+                        Usa la rueda para obtener el código de color correspondiente
+                      </div>
+                    </div>
+                    <div class="column has-text-centered is-4">
+                      <div id="picker"></div>
+                    </div>
+                  </div>
+                  <div class="columns">
+                    <div class="column">
+                      <div class="control buttons is-right">
+                        <% if(action=='edit'){ %> 
+                            <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Color</button>
+                        <% }else if (action=='create'){ %>
+                            <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Color</button>
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>                                    
+                </div>
+              </div>
+              <div class="column"></div>
+            </div>
+            </form>
+          
+          <script>
+              var colorPicker = new iro.ColorPicker('#picker',{width:150, color:'#FFFFFF',layoutDirection:'vertical'});
+              const code = document.querySelector('#code');
+              colorPicker.on('color:change', function(color) {
+                code.value=color.hexString;
+                code.style.backgroundColor= code.value;
+              });
+
+              code.onkeyup = function(){
+                this.style.backgroundColor= this.value;
+                colorPicker.color.hexString = this.value;
+              };
+
+              document.addEventListener('DOMContentLoaded', function(){
+                code.style.backgroundColor= code.value;
+                colorPicker.color.hexString = code.value;
+              });
+
+          </script>
+    <% } else { %>
+      <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+        <a href="/colors/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+      </p>
+      <div class="table-container">
+          <table class="table is-hoverable" id="colors-table">
+              <thead>
+              <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Color</th>
+                  <th scope="col">Opciones</th>
+              </tr>
+              </thead>
+              <tbody>
+                  <% colors.forEach(function(color){ %>
+                      <tr>
+                          <th scope="row" class="align-middle"><%= color.id %></th>
+                          <td class="align-middle"><span class="is-capitalized"><%= color.name %></span></td>
+                          <td class="align-middle"><div class="color-container" style="background-color: <%= color.code %>;border:solid 1px <%= color.code %>;"></div></td>
+                          <td class="align-middle">
+                            <a href="/colors/edit/<%= color.id %>" class="button is-small">
+                              <span class="icon">
+                                <i class="bx bxs-edit"></i>
+                              </span>
+                            </a>
+                          </td>
+                      </tr>
+                  <% }); %>
+              </tbody>
+          </table>
+      </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function(){
+          let table = new simpleDatatables.DataTable('#colors-table',{
+            searchable:true,
+            sortable:true,
+            paging:true,
+            labels: {
+              placeholder: "Buscar...",
+              perPage: "{select} registros por página",
+              noRows: "No se encontraron datos",
+              info: "Mostrando {start} a {end} de {rows} registros",
+            }
+          });  
+        });
+      </script>
+    <% } %>
+</div>

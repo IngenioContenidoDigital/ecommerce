@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>WMS</title>
+
+    <!-- Viewport mobile tag for sensible mobile support -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+    <%/* If you want to discourage search engines from indexing this site, uncomment the following line: */%>
+    <%/* <meta name="robots" content="noindex"> */%>
+
+
+    <!--
+        Stylesheets and Preprocessors
+        ==============================
+
+        You can always bring in CSS files manually with `<link>` tags, or asynchronously
+        using a solution like AMD (RequireJS).  Or, if you like, you can take advantage
+        of Sails' conventional asset pipeline (boilerplate Gruntfile).
+
+        By default, stylesheets from your `assets/styles` folder are included
+        here automatically (between STYLES and STYLES END). Both CSS (.css) and LESS (.less)
+        are supported. In production, your styles will be minified and concatenated into
+        a single file.
+
+        To customize any part of the built-in behavior, just edit `tasks/pipeline.js`.
+        For example, here are a few things you could do:
+
+            + Change the order of your CSS files
+            + Import stylesheets from other directories
+            + Use a different or additional preprocessor, like SASS, SCSS or Stylus
+    -->
+    <!--SCRIPTS-->
+    <script src="/dependencies/sails.io.js"></script>
+    <script src="/dependencies/moment-with-locales.js"></script>
+    <script src="/dependencies/moment.js"></script>
+    <script src="/dependencies/data-tables/simple-datatables.min.js"></script>
+    <script src="/js/global.js"></script>
+    <!--SCRIPTS END-->
+    <script src="https://cdn.jsdelivr.net/npm/suneditor@2.28.0/dist/suneditor.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/suneditor@2.28.0/src/lang/es.js"></script>
+    <!--STYLES-->
+    <link rel="stylesheet" href="/dependencies/bulma-badge.min.css">
+    <link rel="stylesheet" href="/dependencies/bulma-switch.min.css">
+    <link rel="stylesheet" href="/dependencies/bulma.min.css">
+    <link rel="stylesheet" href="/dependencies/data-tables/simple-datatables.min.css">
+    <link rel="stylesheet" href="/styles/importer.css">
+    <!--STYLES END-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/suneditor@2.28.0/dist/css/suneditor.min.css">
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+  </head>
+  <body>
+    <nav class="navbar is-size-7" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="/"><img src="https://bulma.io/images/bulma-logo.png" width="112" height="28"></a>
+          <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <a href="/list/category/108" class="navbar-item">Moda</a>
+          </div>
+            <%# if(session.isSuperAdmin) { %>
+            <%# } %>
+          </div>
+        </div>
+        <div class="navbar-end">
+          <div class="navbar-item">
+            <div class="buttons">
+              <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
+              <div class="dropdown is-right is-hoverable">
+                <div class="dropdown-trigger">
+                  <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+                    <% if(session.user === undefined) { %>
+                    <span><i class="is-size-4 bx bxs-user"></i></span>
+                    <%}else{%>
+                      <span><i class='bx bx-exit'></i></span>
+                    <%}%>
+                  </button>
+                </div>
+                <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+                  <div class="dropdown-content">
+                    <% if(session.user === undefined) { %>
+                    <a id="login" class="dropdown-item">Iniciar Sesión</a>
+                    <% } else { %>
+                    <a href="/addresses" class="dropdown-item">Direcciones</a>
+                    <hr class="dropdown-divider">
+                    <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
+                    <% }%>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="columns">
+      <div class="column is-2">
+        <div class="container">
+        <aside class="menu is-size-7 has-background-light">
+          <p class="menu-label is-size-7">
+            <i class='bx bx-credit-card'></i>&nbsp;Pedidos
+            <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+              <i class="bx bx-caret-down"></i>
+            </span>
+          </p>
+          <ul class="menu-list">
+            <li><a class="navbar-item" href="/orders">Pedidos</a></li>
+            <li><a class="navbar-item" href="/order/state">Estados</a></li>
+          </ul>
+          <p class="menu-label is-size-7">
+            <i class="bx bx-barcode-reader"></i>&nbsp;Catálogo
+            <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+              <i class="bx bx-caret-down"></i>
+            </span>
+          </p>
+          <ul class="menu-list">
+            <li><a class="navbar-item" href="/products">Productos</a></li>
+            <li><a class="navbar-item" href="/colors">Colores</a></li>
+            <li><a class="navbar-item" href="/variations">Variaciones</a></li>
+            <li><a class="navbar-item" href="/categories/list">Categorias</a></li>
+            <li><a class="navbar-item" href="/manufacturers">Marcas</a></li>
+            <li><a class="navbar-item" href="/suppliers">Proveedores</a></li>
+          </ul>
+          <p class="menu-label is-size-7">
+            <i class='bx bx-buildings'></i>&nbsp;Sellers
+            <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+              <i class="bx bx-caret-down"></i>
+            </span>
+          </p>
+          <ul class="menu-list">
+            <li><a href="/sellers">Sellers</a></li>
+          </ul>
+          <p class="menu-label is-size-7">
+            <i class='bx bx-world' ></i>&nbsp;Localización
+            <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+              <i class="bx bx-caret-down"></i>
+            </span>
+          </p>
+          <ul class="menu-list">
+            <li><a href="/countries">Países</a></li>
+            <li><a href="/taxes">Impuestos</a></li>
+          </ul>
+          <p class="menu-label is-size-7">
+            <i class='bx bxs-user-badge'></i>&nbsp;Administración
+            <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+              <i class="bx bx-caret-down"></i>
+            </span>
+          </p>
+          <ul class="menu-list">
+            <li><a>Usuarios</a></li>
+            <li><a>Pefiles</a></li>
+            <li><a>Permisos</a></li>
+          </ul>
+        </aside>
+        </div>
+      </div>
+      <div class="column is-10">
+        <div class="container"><%- body %></div>
+      </div>
+    </div>
+    <div class="modal">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div class="box">
+          <form method="POST" action="/login">
+            <a class="link is-pulled-right" href="/register">Crear una cuenta</a>
+            <div class="field">
+              <label class="label">Email</label>
+              <div class="control has-icons-left has-icons-right">
+                <input class="input" name="emailAddress" type="email" placeholder="Ingresa Email" />
+                <span class="icon is-small is-left">
+                  <i class="bx bx-envelope"></i>
+                </span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="label">Contraseña</label>
+              <div class="control has-icons-left has-icons-right">
+                <input class="input" name="password" type="password" placeholder="Contraseña" autocomplete="off"/>
+                <span class="icon is-small is-left">
+                  <i class="bx bx-lock"></i>
+                </span>
+              </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control">
+                  <button id="enter" class="button is-primary">Entrar</button>
+                </div>
+                <div class="control">
+                  <button id="cancel" class="button is-light">Cancelar</button>
+                </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
+  <script>
+    live('#login','click',function(){
+      const modal = document.querySelector('.modal');
+      if(!hasClass(modal,'is-active'))
+        addClass(modal,'is-active');
+
+    });
+
+    live('.modal-close','click',function(){modalClose();});
+    live('#cancel','click',function(e){e.preventDefault(); modalClose();});
+    
+    const toogleMenu = (elm) => {
+      let icon = elm.target.querySelector('span');
+      if(hasClass(elm.target.nextSibling.nextSibling,'is-hidden')){
+        removeClass(elm.target.nextSibling.nextSibling,'is-hidden');
+        icon.innerHTML='<i class="bx bx-caret-down"></i>';
+      }else{
+        addClass(elm.target.nextSibling.nextSibling,'is-hidden');
+        icon.innerHTML='<i class="bx bx-caret-left"></i>';
+      }
+    };
+
+    const elements = document.querySelectorAll('.menu-label');
+    elements.forEach((element) => {
+      element.addEventListener('click', toogleMenu);
+    });
+
+    function modalClose(){
+      const modal = document.querySelector('.modal');
+      if (hasClass(modal,'is-active'))
+        removeClass(modal,'is-active'); 
+    }
+
+    const socket = io.socket.on('addtocart', function (data){
+        let cart = document.querySelector('#cart-button')
+        cart.setAttribute('data-badge',data.items);
+    });
+
+  </script>
+
+
+    <!--
+        Client-side Templates
+        ========================
+
+        HTML templates are important prerequisites of modern, rich client applications.
+        To work their magic, frameworks like React, Vue.js, Angular, Ember, and Backbone
+        require that you load these templates client-side.
+
+        By default, your Gruntfile is configured to automatically load and precompile
+        client-side JST templates in your `assets/templates` folder, then
+        include them here automatically (between TEMPLATES and TEMPLATES END).
+
+        To customize this behavior to fit your needs, just edit `tasks/pipeline.js`.
+        For example, here are a few things you could do:
+
+            + Import templates from other directories
+            + Use a different view engine (handlebars, dust, pug/jade, etc.)
+            + Internationalize your client-side templates using a server-side
+              stringfile before they're served.
+    -->
+
+    <!--TEMPLATES-->
+    <!--TEMPLATES END-->
+
+
+    <!--
+        Server-side View Locals
+        ========================
+
+        Sometimes, it's convenient to get access to your server-side view locals from
+        client-side JavaScript.  This can improve page load times, remove the need for
+        extra AJAX requests, and make your client-side code easier to understand and
+        to maintain.  Sails provides a simple mechanism for accessing dynamic view
+        locals: the "exposeLocalsToBrowser()" view partial.
+
+        For more information on using this built-in feature, see:
+        https://sailsjs.com/docs/concepts/views/locals#?escaping-untrusted-data-using-exposelocalstobrowser
+
+    -->
+
+
+    <!--
+
+      Client-side Javascript
+      ========================
+
+      You can always bring in JS files manually with `script` tags, or asynchronously
+      on the client using a solution like AMD (RequireJS).  Or, if you like, you can
+      take advantage of Sails' conventional asset pipeline (boilerplate Gruntfile).
+
+      By default, files in your `assets/js` folder are included here
+      automatically (between SCRIPTS and SCRIPTS END).  Both JavaScript (.js) and
+      CoffeeScript (.coffee) are supported. In production, your scripts will be minified
+      and concatenated into a single file.
+
+      To customize any part of the built-in behavior, just edit `tasks/pipeline.js`.
+      For example, here are a few things you could do:
+
+          + Change the order of your scripts
+          + Import scripts from other directories
+          + Use a different preprocessor, like TypeScript
+
+    -->
+
+  </body>
+</html>

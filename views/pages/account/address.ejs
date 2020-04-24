@@ -1,0 +1,101 @@
+<div class="container"></div>
+<% if (error !== undefined && error !== null) { %>
+  <div class="notification is-danger is-light" id="error">
+    <button class="delete"></button>
+      <%= error %>
+  </div>
+<% } %>
+    <h4 class="title is-4">Crear una Dirección</h4>
+    <hr>
+    <div class="columns">
+        <div class="column is-one-fifth"></div>
+        <div class="column is-three-fifths">
+            <div class="box">
+            <%if(address!==null){%>
+            <form action="/address/edit/<%=address.id%><%if(referrer!==null){%>?referrer=<%=referrer%><%}%>" method="POST" id="address-form">
+            <%}else{%>
+              <form action="/address/create" method="POST" id="address-form">
+            <%}%>
+                <div class="field">
+                    <label class="label">Nombre para la Dirección</label>
+                    <div class="control">
+                    <input class="input is-capitalized" required name="name" type="text" placeholder="Asigna un nombre a la dirección para identificarla" <%if(address!==null){%>value="<%=address.name%>"<%}%>/>
+                    </div>
+                </div>
+                <div class="field">
+                  <label class="label">Dirección</label>
+                  <div class="control">
+                    <input class="input" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..." <%if(address!==null){%>value="<%=address.addressline1%>"<%}%>/>
+                  </div>
+                  <br>
+                  <div class="control">
+                      <input class="input" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." <%if(address!==null){%>value="<%=address.addressline2%>"<%}%> />
+                  </div>
+                </div>
+                <div class="columns is-mobile">
+                    <div class="column is-one-fifth">
+                      <div class="field">
+                          <label class="label">País</label>
+                          <div class="control">
+                            <div class="select">
+                              <select required class="select is-capitalized" name="country">
+                                <option value="0">Elegir País</option>
+                                <% countries.forEach((country) =>{ %>
+                                <option class="is-capitalized" value="<%=country.id%>" <%if(address!== null && (country.id === address.country.id)){%> selected="selected" <%}%>><%=country.name%></option>
+                                <%})%>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="column is-two-fifths">
+                      <div class="field">
+                          <label class="label">Estado</label>
+                          <div class="control">
+                            <input class="input is-capitalized" required name="state" type="search" placeholder="Nombre del Estado" <%if(address!==null){%>value="<%=address.region%>"<%}%>/>
+                          </div>
+                        </div>
+                    </div>
+                    <div class="column is-two-fifths">
+                      <div class="field">
+                          <label class="label">Ciudad</label>
+                          <div class="control">
+                            <input class="input is-capitalized" required name="city" type="search" placeholder="Nombre de la Ciudad" <%if(address!==null){%>value="<%=address.city%>"<%}%>/>
+                          </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                  <label class="label">Código Postal</label>
+                  <div class="control">
+                    <input class="input" name="zipcode" type="string" placeholder="Código Postal de la Dirección" <%if(address!==null){%>value="<%=address.zipcode%>"<%}%>/>
+                  </div>
+                </div>
+                <div class="field">
+                    <h5 class="title is-size-5">Agregar Instrucciones de entrega</h5>
+                  <label class="label">Detalles adicionales para ubicar la dirección</label>
+                  <div class="control">
+                    <textarea class="textarea" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."><%if(address!==null){%><%-address.notes%><%}%></textarea>
+                  </div>
+                </div>
+                <hr>
+                <div class="field is-grouped">
+                  <div class="control">
+                  <button type="submit" class="button is-warning"><span class="has-text-weight-bold is-size-6"><%if(address!==null){%>Editar Dirección<%}else{%>Agregar Dirección<%}%></span></button>
+                  </div>
+                </div>
+              </form>
+            </div>
+        </div>
+        <div class="column is-one-fifth"></div>
+    </div>
+</div>
+<script>
+  live('button[type="submit"]','click',e =>{
+    e.preventDefault();
+    let form = document.querySelector('#address-form');
+    if(validateForm(form)){
+      form.submit();
+    }
+  });
+</script>

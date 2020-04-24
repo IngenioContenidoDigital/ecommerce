@@ -1,0 +1,155 @@
+<div class="container">
+<% if (error != undefined || error != null) { %>
+  <div class="notification is-danger is-light" id="error">
+    <button class="delete"></button>
+      <%= error %>
+  </div>
+<% } %>
+<% if(action=='create' || action=='edit'){ %>  
+    <br />
+    <h4 class="title is-4">Marcas</h4>
+    <hr>
+    <form action="/manufacturer/create" method="POST" enctype="multipart/form-data">
+      <div class="box">
+        <div class="field is-pulled-right">
+          <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" checked="checked">
+          <label for="activo">Marca: <span id="state"><b style="color:green;">activada</b></span></label>
+        </div>
+        <div class="field">
+          <label class="label">Nombre</label>
+          <div class="control">
+            <input class="input" type="text" name="nombre" required="true" placeholder="Nombre comercial de la marca">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Descripción</label>
+          <div class="control">
+            <textarea class="textarea" name="descripcion" placeholder="Descripción de la Marca (opcional)"></textarea>
+          </div>
+        </div>
+        <div class="field">
+          <div id="file-loader" class="file has-name is-fullwidth">
+            <label class="file-label">
+              <input class="file-input" accept="image/*" type="file" id="logo" name="logo">
+              <span class="file-cta">
+                <span class="file-icon">
+                  <i class="bx bx-upload"></i>
+                </span>
+                <span class="file-label">
+                  Logotipo
+                </span>
+              </span>
+              <span class="file-name">
+                No ha cargado ningún archivo.
+              </span>
+            </label>
+          </div>
+        </div>
+        <div class="control buttons is-right">
+          <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Marca</button>
+        </div>
+      </div>
+    </form>
+    <script>
+      const fileInput = document.querySelector('#file-loader input[type=file]');
+        fileInput.onchange = () => {
+          if (fileInput.files.length > 0) {
+            const fileName = document.querySelector('#file-loader .file-name');
+            fileName.textContent = fileInput.files[0].name;
+          }
+        };
+    </script>
+<% }else{ %>
+    <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+      <a href="/manufacturers/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+    </p>
+    <div class="table-container">
+      <table class="table is-hoverable" id="marcas-table">
+      <thead>
+        <tr>
+          <th scope="col">Id</th>
+          <th scope="col">Logo</th>
+          <th scope="col">Nombre</th>
+          <th scope="col">Descripción</th>
+          <th scope="col">Activa</th>
+        </tr>
+      </thead>
+      <tbody>
+          <% marcas.forEach(function(marca){ %>
+            <tr>
+              <th scope="row" class="align-middle"><%= marca.id %></th>
+              <td><img src="/images/brands/<%= marca.logo.replace(marca.logo.split('.').pop(),'webp') %>" class="manufacturer-logo"/></td>
+              <td class="align-middle is-capitalized"><%= marca.name %></td>
+              <td class="align-middle"><%= marca.description %></td>
+              <td class="align-middle">
+                <span class="action">
+                <% if(marca.active===true) { %>
+                  <i brand="<%= marca.id %>" class="bx bx-check-circle"></i>
+                <% }else{ %>
+                  <i brand="<%= marca.id %>" class="bx bx-x-circle"></i>
+                <%}%>
+              </span>
+                </td>
+            </tr>
+          <% }); %>
+      </tbody>
+      </table>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      let table = new simpleDatatables.DataTable('#marcas-table',{
+        searchable:true,
+        sortable:true,
+        paging:true,
+        labels: {
+          placeholder: "Buscar...",
+          perPage: "{select} registros por página",
+          noRows: "No se encuentraron datos",
+          info: "Mostrando {start} a {end} de {rows} registros",
+        }
+      });  
+    });  
+  </script>
+<% } %>
+</div>
+<script>
+
+setTimeout(function() {
+    var el = document.getElementById('error');
+    if(el){
+      el.style.display='none';
+    }
+}, 3500);
+
+live('#activo','click',function(){
+    let elm = this;
+    let state = elm.checked;
+    var sp = document.querySelector('#state');
+    if(state){
+      sp.innerHTML='<b style="color:green;">activada</b>';
+    }else{
+      sp.innerHTML='<b style="color:red;">inactiva</b>';
+    }
+  });
+
+live('i.bx', 'click', function(){ 
+  if(confirm('Seguro Desea Continuar')){
+    var elm = this;
+    var id = this.getAttribute('brand');
+    var status = null;
+    if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+    io.socket.put('/manufacturers/'+id,{active:status},function(resData, jwr){
+      if(resData.active===false){
+        removeClass(elm, 'bx-check-circle');
+        addClass(elm,'bx-x-circle');
+      }else{
+        removeClass(elm, 'bx-x-circle');
+        addClass(elm,'bx-check-circle');
+      }
+    });
+  }
+});
+
+</script>

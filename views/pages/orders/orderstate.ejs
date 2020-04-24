@@ -1,0 +1,154 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <% if(action=='create' || action=='edit'){ %>  
+          <div class="container">
+              <br />
+              <h4 class="title is-4">Crear Estado de Pedido</h4>
+              <hr>
+              <% if(action=='create') { %>
+                <form action="/orderstate/create" method="POST">
+              <% } %>
+              <% if(action=='edit') { %>
+                <form action="/orderstate/edit/<%= state.id %>" method="POST">
+              <% } %>
+                <div class="box">
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field is-pulled-right">
+                        <% if(action=='edit'){ %>
+                          <input id="activo" type="checkbox" <% if(state.valid){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                        <label for="activo">Estado: <span id="state"><% if(state.valid){ %> <b style="color:green;">válido</b> <% } else { %> <b style="color:red;">no válido</b> <% } %></span></label>
+                        <% }else{ %>
+                          <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                          <label for="activo">Estado: <span id="state"><b style="color:green;">válido</b></span></label>  
+                        <% } %>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label">Nombre</label>
+                        <div class="control">
+                          <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre del Estado" <% if(action=='edit'){ %>value="<%= state.name %>"<% }%>/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <div class="field">
+                        <label class="label">Color</label>
+                        <div class="control">
+                          <div class="select is-primary">
+                              <select class="is-capitalized" name="color" required>
+                                  <%colors.forEach((color) =>{%>
+                                    <option class="is-capitalized" value="<%=color.id%>"<% if(action=='edit' && color.id===state.color.id){ %> selected="selected" <%}%>   ><%=color.name%></option>
+                                  <%})%>
+                              </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="control buttons is-right">
+                    <% if(action=='edit'){ %> 
+                      <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Estado</button>
+                    <% }else if (action=='create'){ %>
+                      <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Estado</button>
+                    <% } %>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <script>
+              live('#activo','click',function(){
+                let elm = this;
+                let state = elm.checked;
+                var sp = document.querySelector('#state');
+                if(state){
+                  sp.innerHTML='<b style="color:green;">válido</b>';
+                }else{
+                  sp.innerHTML='<b style="color:red;">no válido</b>';
+                }
+              });
+            </script>
+      <% } else { %>
+          <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+              <a href="/order/state/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+          </p>
+          <div class="table-container">
+              <table class="table is-hoverable" id="orderstate-table">
+                  <thead>
+                  <tr>
+                      <th scope="col">Id</th>
+                      <th scope="col">Nombre</th>
+                      <th scope="col">Pedido válido</th>
+                      <th scope="col">Opciones</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                      <% orderstate.forEach(function(state){ %>
+                          <tr>
+                              <th scope="row" class="align-middle"><%= state.id %></th>
+                              <td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color: <%= state.color.code %>;"><span class="is-size-7 has-text-black has-background-white"><%= state.name %></span></p></td>
+                              <td class="align-middle has-text-centered">
+                              <span class="action">
+                              <% if(state.valid) { %>
+                                  <i state="<%= state.id %>" class="state bx bx-check-circle"></i>
+                              <% }else{ %>
+                                  <i state="<%= state.id %>" class="state bx bx-x-circle"></i>
+                              <%}%>
+                              </span>
+                              </td>
+                              <td class="align-middle">
+                              <a href="/order/state/edit/<%= state.id %>" class="button is-small">
+                                  <span class="icon">
+                                  <i class="bx bxs-edit"></i>
+                                  </span>
+                              </a>
+                              </td>
+                          </tr>
+                      <% }); %>
+                  </tbody>
+              </table>
+          </div>
+          <script>
+              document.addEventListener('DOMContentLoaded', function(){
+                  let table = new simpleDatatables.DataTable('#orderstate-table',{
+                  searchable:true,
+                  sortable:true,
+                  paging:true,
+                  labels: {
+                      placeholder: "Buscar...",
+                      perPage: "{select} registros por página",
+                      noRows: "No se encontraron datos",
+                      info: "Mostrando {start} a {end} de {rows} registros",
+                  }
+                  });  
+              });
+
+              live('.state', 'click', function(){ 
+                if(confirm('Seguro Desea Continuar')){
+                var elm = this;
+                var id = this.getAttribute('state');
+                var status = null;
+                if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+                io.socket.put('/orderstate/'+id,{active:status},function(resData, jwr){
+                    if(resData.valid===false){
+                    removeClass(elm, 'bx-check-circle');
+                    addClass(elm,'bx-x-circle');
+                    }else{
+                    removeClass(elm, 'bx-x-circle');
+                    addClass(elm,'bx-check-circle');
+                    }
+                });
+                }
+            });
+
+          </script>
+      <% } %>
+  </div>

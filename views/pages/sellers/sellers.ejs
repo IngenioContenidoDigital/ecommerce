@@ -1,0 +1,225 @@
+<div class="container">
+  <% if (error != undefined || error != null) { %>
+    <div class="notification is-danger is-light" id="error">
+        <%= error %>
+    </div>
+  <% } %>
+  <% if(action=='create' || action=='edit'){ %>  
+        <div class="container">
+            <br />
+            <h4 class="title is-4">Crear Seller</h4>
+            <hr>
+            <% if(action=='create') { %>
+              <form action="/seller/create" method="POST" enctype="multipart/form-data">
+            <% } %>
+            <% if(action=='edit') { %>
+              <form action="/seller/edit/<%= seller.id %>" method="POST" enctype="multipart/form-data">
+            <% } %>
+              <div class="box">
+                <div class="columns">
+                  <% if(action=='edit'){ %>
+                  <div class="column">
+                    <div class="field is-pulled-left">
+                      <figure class="image">
+                        <img src="/images/sellers/<%= seller.logo.replace(seller.logo.split('.').pop(),'webp') %>" />
+                      </figure>
+                    </div>
+                  </div>
+                  <% } %>
+                  <div class="column">
+                    <div class="field is-pulled-right">
+                      <% if(action=='edit'){ %>
+                        <input id="activo" type="checkbox" <% if(seller.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                      <label for="activo">Seller: <span id="state"><% if(seller.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
+                      <% }else{ %>
+                        <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                        <label for="activo">Seller: <span id="state"><b style="color:green;">activo</b></span></label>  
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Nombre del Comercio</label>
+                      <div class="control">
+                        <input class="input" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit'){ %>value="<%= seller.name %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Identificación</label>
+                      <div class="control">
+                        <input class="input" type="text" name="dni" required="true" placeholder="NIT del Comercio" <% if(action=='edit'){ %>value="<%= seller.dni %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Nombre del Contacto</label>
+                      <div class="control">
+                        <input class="input" type="text" name="contact" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.contact %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Email de Contacto</label>
+                      <div class="control">
+                        <input class="input" type="text" name="email" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.email %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Teléfono</label>
+                      <div class="control">
+                        <input class="input" type="text" name="phone" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.phone %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">URL</label>
+                  <div class="control">
+                    <input class="input" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
+                  </div>
+                </div>
+                <div class="field">
+                  <div id="file-loader" class="file has-name is-fullwidth">
+                    <label class="file-label">
+                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                      <span class="file-cta">
+                        <span class="file-icon">
+                          <i class="bx bx-upload"></i>
+                        </span>
+                        <span class="file-label">
+                          Logotipo
+                        </span>
+                      </span>
+                      <span class="file-name">
+                        No ha cargado ningún archivo.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div class="control buttons is-right">
+                  <% if(action=='edit'){ %> 
+                    <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Seller</button>
+                  <% }else if (action=='create'){ %>
+                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
+                  <% } %>
+                </div>
+              </div>
+            </form>
+          </div>
+          <script>
+            const fileInput = document.querySelector('#file-loader input[type=file]');
+            fileInput.onchange = () => {
+              if (fileInput.files.length > 0) {
+                const fileName = document.querySelector('#file-loader .file-name');
+                fileName.textContent = fileInput.files[0].name;
+              }
+            };
+            live('#activo','click',function(){
+              let elm = this;
+              let state = elm.checked;
+              var sp = document.querySelector('#state');
+              if(state){
+                sp.innerHTML='<b style="color:green;">activo</b>';
+              }else{
+                sp.innerHTML='<b style="color:red;">inactivo</b>';
+              }
+            });
+          </script>
+    <% } else { %>
+        <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+            <a href="/sellers/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+        </p>
+        <div class="table-container">
+            <table class="table is-hoverable" id="sellers-table">
+                <thead>
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Logo</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Activo</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <% sellers.forEach(function(seller){ %>
+                        <tr>
+                            <th scope="row" class="align-middle"><%= seller.id %></th>
+                            <td class="align-middle">
+                                <img src="/images/sellers/<%= seller.logo.replace(seller.logo.split('.').pop(),'webp') %>" name="logo" alt="<%= seller.name %>" width="150px" />
+                            </td>
+                            <td class="align-middle"><%= seller.name %></td>
+                            <td class="align-middle">
+                            <span class="action">
+                            <% if(seller.active===true) { %>
+                                <i seller="<%= seller.id %>" class="state bx bx-check-circle"></i>
+                            <% }else{ %>
+                                <i seller="<%= seller.id %>" class="state bx bx-x-circle"></i>
+                            <%}%>
+                            </span>
+                            </td>
+                            <td class="align-middle">
+                            <a href="/sellers/edit/<%= seller.id %>" class="button is-small">
+                                <span class="icon">
+                                <i class="bx bxs-edit"></i>
+                                </span>
+                            </a>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){
+                let table = new simpleDatatables.DataTable('#sellers-table',{
+                searchable:true,
+                sortable:true,
+                paging:true,
+                labels: {
+                    placeholder: "Buscar...",
+                    perPage: "{select} registros por página",
+                    noRows: "No se encontraron datos",
+                    info: "Mostrando {start} a {end} de {rows} registros",
+                }
+                });  
+            });
+        </script>
+    <% } %>
+    <script>
+      setTimeout(function() {
+        var el = document.getElementById('error');
+        if(el){
+          el.style.display='none';
+        }
+      }, 4000);
+
+      live('.state', 'click', function(){ 
+        if(confirm('Seguro Desea Continuar')){
+          var elm = this;
+          var id = this.getAttribute('seller');
+          var status = null;
+          if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+          io.socket.put('/seller/'+id,{active:status},function(resData, jwr){
+            if(resData.active===false){
+              removeClass(elm, 'bx-check-circle');
+              addClass(elm,'bx-x-circle');
+            }else{
+              removeClass(elm, 'bx-x-circle');
+              addClass(elm,'bx-check-circle');
+            }
+          });
+        }
+      });
+    </script>
+</div>

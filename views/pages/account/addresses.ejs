@@ -1,0 +1,62 @@
+<div class="container">
+    <h4 class="title is-4">Tus Direcciones</h4>
+    <hr>
+    <div class="columns">
+        <div class="column">
+            <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">
+                    Agregar una dirección nueva
+                  </p>
+                </header>
+                <a href="/address">
+                <div class="card-content is-hovered">
+                  <div class="content">
+                    <br>
+                    <p class="has-text-centered"><span class="icon is-primary is-size-2"><i class='bx bx-plus-circle' ></i></span></p>
+                    <p class="has-text-centered"><span class="is-size-5">Agregar una Dirección</span></p>
+                    <br>
+                  </div>
+                </div>
+                </a>
+            </div>
+        </div>
+        <% let count =2; %>
+        <% addresses.forEach((address) => {%> 
+          <div class="column">
+            <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title is-capitalized">
+                    <%= address.name %>
+                  </p>
+                </header>
+                <div class="card-content">
+                  <div class="content">
+                      <div><%= address.addressline1 %></div>
+                      <div><%= address.addressline2 %></div>
+                      <div class="is-capitalized"><%= address.region %> - <%= address.city %>&nbsp;<%= address.zipcode %></div>
+                      <div class="is-capitalized"><%= address.country.name %></div>
+                  </div>
+                </div>
+                <footer class="card-footer">
+                  <a href="/address/<%=address.id%>" class="card-footer-item">Editar</a>
+                  <a href="/address/delete/<%=address.id%>" class="remove card-footer-item">Eliminar</a>
+                </footer>
+            </div>
+          </div>
+          <% if(count%3==0){%> </div><div class="columns"> <%}%>
+          <% count++; %>
+        <%})%>
+    </div>
+</div>
+<script>
+  const verify = e =>{
+    if(!confirm('Seguro desea Continuar')){ e.preventDefault();}
+  };
+
+  let deletes = document.querySelectorAll('.remove');
+  deletes.forEach(del =>{
+    del.addEventListener('click',verify, false);
+  });
+
+</script>

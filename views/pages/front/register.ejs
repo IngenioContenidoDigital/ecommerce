@@ -1,0 +1,81 @@
+<% if (req.query.error !== undefined) { %>
+    <div class="notification is-danger is-light" id="error">
+      <button class="delete"></button>
+        <%= req.query.error %>
+    </div>
+  <% } %>
+<div class="container">
+<div class="box">
+    <h4 class="title is-4">Creación de Cuenta</h4>
+    <hr>
+    <form id="register-form" method="POST" action="/register">
+        <input type="hidden" name="token" />
+    <div class="field">
+        <p class="control has-icons-left">
+            <input class="input" name="fullname" type="text" required placeholder="Nombre">
+            <span class="icon is-small is-left">
+                <i class='bx bx-rename'></i>
+            </span>
+        </p>
+        </div>
+    <div class="field">
+        <p class="control has-icons-left">
+        <input class="input" name="email" type="email" required placeholder="Email">
+        <span class="icon is-small is-left">
+            <i class="bx bxs-envelope"></i>
+        </span>
+        </p>
+    </div>
+    <div class="field has-addons">
+        <p class="control has-icons-left is-expanded">
+        <input class="input pass" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
+        <span class="icon is-small is-left">
+            <i class='bx bxs-lock-alt'></i>
+        </span>
+        </p>
+        <p class="control">
+            <a class="button" id="eye">
+                <i class='bx bx-low-vision' ></i>
+            </a>
+            </p>
+    </div>
+    <div class="field">
+        <p class="control has-text-align-right">
+        <button id="submit-register" class="button is-success">
+            Crear una Cuenta
+        </button>
+        </p>
+    </div>
+    </form>
+</div>
+</div>
+<script src="https://www.google.com/recaptcha/api.js?render=6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1"></script>
+<script>
+    live('#eye','click',e =>{
+        let pass = document.querySelector('.pass');
+        if(pass.type==='password'){
+            pass.type='text';
+        }else{
+            pass.type='password';
+        }
+    })
+
+   live('#submit-register','click', e => {
+        e.preventDefault();
+        if(validateForm(document.getElementById('register-form'))){
+            grecaptcha.execute('6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1', {action: 'register'}).then(token => {
+                document.querySelector('input[name="token"]').value=token;
+                let rform = document.getElementById('register-form');
+                rform.submit();
+                /*io.socket.post('/register',data,(res)=>{
+                    if(res==='ok'){
+                        let rform = document.getElementById('register-form');
+                        let vform = document.getElementById('verify-form');
+                        addClass(rform,'is-hidden');
+                        removeClass(vform,'is-hidden');
+                    }
+                });*/
+            });
+        }
+    });
+</script>

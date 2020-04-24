@@ -1,0 +1,329 @@
+<div class="container">
+<% if (error != undefined || error != null) { %>
+  <div class="notification is-danger is-light" id="error">
+    <button class="delete"></button>
+      <%= error %>
+  </div>
+<% } %>
+<% if(action=='create' || action=='edit'){ %> 
+    <br /> 
+    <h4 class="title is-4">Crear Categorías</h4>
+    <hr>
+    <% if(action=='edit'){ %>
+      <form action="/categories/edit/<%= current.id %>" method="POST" enctype="multipart/form-data">
+    <% } else { %>
+      <form action="/categories/create" method="POST" enctype="multipart/form-data">
+    <% } %>
+      <div class="box">
+        <div class="field is-pulled-right">
+          <input type="hidden" value="<%= current.id %>" name="category" id="category" />
+          <input type="hidden" value="<%= parent %>" name="parent" id="parent" />
+          <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <% if(current.active){ %><%= checked="checked" %><% } %> >
+          <label for="activo">Categoría: <span id="state"><% if(current.active){ %> <b style="color:green;">activada</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
+        </div>
+        <div class="field">
+          <label class="label">Nombre</label>
+          <div class="control">
+            <input class="input" type="text" name="nombre" required="true" placeholder="Nombre de la categoría" <% if(action=='edit'){ %>value="<%= current.name %>"<% }%>/>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column">
+            <% if((action=='edit') && (current.logo!= "")){ %>
+              <div class="column">
+              <section class="hero">
+                <figure class="image is-3by1">
+                    <img src="/images/categories/<%= current.logo.replace(current.logo.split('.').pop(),'webp') %>">
+                </figure>
+              </section>
+            </div>
+            <% } %>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label">Descripción</label>
+              <div class="control">
+                <textarea class="textarea" name="descripcion" placeholder="Descripción de la categoría"><% if(action=='edit'){ %><%= current.description %><% }%></textarea>
+              </div>
+            </div>
+            <div class="field">
+              <div id="file-loader" class="file has-name is-fullwidth">
+                <label class="file-label">
+                  <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                  <span class="file-cta">
+                    <span class="file-icon">
+                      <i class="bx bx-upload"></i>
+                    </span>
+                    <span class="file-label">
+                      Imagen
+                    </span>
+                  </span>
+                  <span class="file-name has-text-grey">
+                    Cargar Imágen (720px x 240px)
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+            <article class="panel is-primary">
+                <p class="panel-heading">
+                  Categoría Padre
+                </p>
+                <% if(typeof categories.forEach === "undefined"){ %>
+                  <ul>
+                    <li>
+                      <% if(action === 'edit'){ %>
+                        <a class="panel-block is-active" category="<%= categories.id %>" level="<%= categories.level %>">
+                          <input type="radio" name="current" value="<%= categories.id %>" />&nbsp;
+                          <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                          <%= categories.name %>
+                        </a>
+                      <% }else{ %>
+                        <a class="panel-block" category="<%= categories.id %>" level="<%= categories.level %>">
+                          <input type="radio" name="current" value="<%= categories.id %>" />&nbsp;
+                          <span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>
+                          <%= categories.name %>
+                        </a>
+                      <% } %>
+                    </li>
+                  </ul>
+                <% } else { %>
+                  <ul>
+                  <% categories.forEach(function(category){ %>
+                    <li>
+                      <% if(action === 'edit'){ %>
+                          <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
+                            <input type="radio" name="current" value="<%= category.id %>" checked />&nbsp;
+                            <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                            <%= category.name %>
+                          </a>
+                      <% }else{ %>
+                          <a class="panel-block" category="<%= category.id %>" level="<%= category.level %>">
+                            <input type="radio" name="current" value="<%= category.id %>" checked />&nbsp;
+                            <span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>
+                            <%= category.name %>
+                          </a>
+                      <% } %>
+                    </li>
+                  <% }); %>
+                  </ul>
+                <% } %>
+              </article>
+        </div>
+        <div class="control buttons is-right">
+          <% if(action=='edit'){ %> 
+            <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Categoría</button>
+          <% }else if (action=='create'){ %>
+            <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Categoría</button>
+          <% } %>
+        </div>
+      </div>
+    </form>
+  <script>
+    const fileInput = document.querySelector('#file-loader input[type=file]');
+    fileInput.onchange = () => {
+      if (fileInput.files.length > 0) {
+        const fileName = document.querySelector('#file-loader .file-name');
+        fileName.textContent = fileInput.files[0].name;
+      }
+    };
+  </script>
+  <% if(action=='edit'){ %>
+      <script>
+          function childTree(elm){
+            return new Promise(resolve =>{
+              elm.forEach((child) =>{
+                if(!hasClass(child,'visited')){
+                  io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
+                      var d = document.createElement('ul');
+                      resData.forEach(function(son){
+                        let ca = document.createElement('li');
+                        ca.style.paddingLeft = 5*son.level+'px';
+                        if(son.id==document.querySelector('#parent').value){
+                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="radio" name="current" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                        } else {
+                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="radio" name="current" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                        }
+                        d.appendChild(ca);
+                      });
+                      insertAfter(d,child);
+                      addClass(child,'visited');
+                      childTree(d.querySelectorAll('a.panel-block'));
+                  });
+                }
+              })
+              setTimeout(() => {resolve("finish");},200);
+            });
+          };
+
+        async function init(){
+          let result = await childTree(document.querySelectorAll('a.panel-block')).then(()=>{
+            let category = document.querySelector('#category').value;
+            const radio = document.querySelectorAll('input[name="current"]')
+            radio.forEach((op) =>{
+              if(op.value==category){
+                op.disabled=true;
+                let a = op.parentElement;
+                let icon = a.querySelector('i');
+                removeClass(icon,'bx-book-open');
+                removeClass(a,'is-active');
+                addClass(icon,'bx-book');
+                var group = a.nextSibling;
+                group.remove();
+              }
+            });
+          });
+        }
+
+          document.addEventListener('DOMContentLoaded', function(){
+            init();
+          });
+      </script>
+  <% } %>
+<% }else{ %>
+    <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+      <a href="/categories/list?action=create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+    </p>
+    <div class="table-container">
+        <table class="table is-hoverable" id="categories-table">
+            <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Activa</th>
+                <th scope="col">Opciones</th>
+            </tr>
+            </thead>
+            <tbody>
+                <% categories.forEach(function(category){ %>
+                  <% if(category.name !== 'Inicio') { %>
+                    <tr>
+                        <th scope="row" class="align-middle"><%= category.id %></th>
+                        <td class="align-middle"><%= category.name %></td>
+                        <td class="align-middle"><%= category.description %></td>
+                        <td class="align-middle">
+                        <span class="action">
+                        <% if(category.active===true) { %>
+                            <i category="<%= category.id %>" class="state bx bx-check-circle"></i>
+                        <% }else{ %>
+                            <i category="<%= category.id %>" class="state bx bx-x-circle"></i>
+                        <%}%>
+                        </span>
+                        </td>
+                        <td class="align-middle">
+                          <% if(category.hasChildren) { %>
+                          <a href="/categories/list/<%= category.id %>" class="button is-small">
+                            <span class="icon">
+                              <i class="bx bx-search"></i>
+                            </span>
+                          </a>
+                          <% } %>
+                          <a href="/categories/list/<%= category.id %>?action=edit" class="button is-small">
+                            <span class="icon">
+                              <i class="bx bxs-edit"></i>
+                            </span>
+                          </a>
+                        </td>
+                    </tr>
+                <% } %>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        let table = new simpleDatatables.DataTable('#categories-table',{
+          searchable:true,
+          sortable:true,
+          paging:true,
+          labels: {
+            placeholder: "Buscar...",
+            perPage: "{select} registros por página",
+            noRows: "No se encontraron datos",
+            info: "Mostrando {start} a {end} de {rows} registros",
+          }
+        });  
+      });
+    </script>
+<% } %>
+</div>
+<script>
+  setTimeout(function() {
+    var el = document.getElementById('error');
+    if(el){
+      el.style.display='none';
+    }
+  }, 3500);
+
+  live('#activo','click',function(){
+    let elm = this;
+    let state = elm.checked;
+    var sp = document.querySelector('#state');
+    if(state){
+      sp.innerHTML='<b style="color:green;">activada</b>';
+    }else{
+      sp.innerHTML='<b style="color:red;">inactiva</b>';
+    }
+  });
+
+  live('.panel-block', 'click', function(){
+    let elm = this;
+    let category = document.querySelector('#category').value;
+    let search = this.getAttribute('category');
+    let level = this.getAttribute('level');
+    if(search==category && level > 1){
+      let input = this.querySelector('input');
+      input.disabled=true;
+      return;
+    }else{
+      let icon = elm.querySelector('i');
+      addClass(elm,'is-active');
+      if(hasClass(icon,'bx-book')){
+        io.socket.get('/categories/'+search,function(resData, jwr){
+          let d = document.createElement('ul');
+          resData.forEach(function(son){
+            let ca = document.createElement('li');
+            //addClass(ca,'panel-block');
+            //ca.setAttribute("category",son.id);
+            //ca.setAttribute("level",son.level);
+            ca.style.paddingLeft = 5*son.level+'px';
+            ca.innerHTML = '<a class="panel-block" category="'+son.id+'" level="'+son.level+'"><input type="radio" name="current" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>'+son.name+'</a>';
+            d.appendChild(ca);
+          });
+          insertAfter(d,elm);
+        });
+        removeClass(icon,'bx-book');
+        addClass(icon,'bx-book-open');
+      }else{
+        removeClass(icon,'bx-book-open');
+        removeClass(elm,'is-active');
+        addClass(icon,'bx-book');
+        var group = elm.nextSibling;
+        group.remove();
+      }
+    }
+  });
+
+  live('.state', 'click', function(){ 
+  if(confirm('Seguro Desea Continuar')){
+    var elm = this;
+    var id = this.getAttribute('category');
+    var status = null;
+    if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+    io.socket.put('/categories/'+id,{active:status},function(resData, jwr){
+      if(resData.active===false){
+        removeClass(elm, 'bx-check-circle');
+        addClass(elm,'bx-x-circle');
+      }else{
+        removeClass(elm, 'bx-x-circle');
+        addClass(elm,'bx-check-circle');
+      }
+    });
+  }
+});
+
+</script>

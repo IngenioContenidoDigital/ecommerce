@@ -1,0 +1,394 @@
+<div class="container">
+    <% if (error !== undefined && error !== null) { %>
+        <div class="notification is-danger is-light" id="error">
+          <button class="delete"></button>
+            <%= error %>
+        </div>
+    <% } %>
+    <form action="/order" method="POST" id="order-form">
+    <div class="columns">
+            <div class="column">
+                <div class="card">
+                        <div class="columns is-vcentered is-mobile">
+                            <div class="column">
+                                <p class="has-background-dark has-text-light has-text-centered is-uppercase">
+                                    <span class="is-size-7">Dirección de Envío</span>
+                                </p>
+                            </div>
+                        </div>
+                </div>
+                <%addresses.forEach((address)=>{%>
+                    <div class="card">
+                        <header class="card-header">
+                        <p class="card-header-title is-capitalized is-size-7">
+                            <input type="radio" required name="deliveryAddress" value="<%=address.id%>"/>&nbsp;
+                            <%= address.name %>
+                        </p>
+                        <div class="box is-right">
+                            <a class="is-inline has-text-dark" href="/address/<%=address.id%>?referrer=checkout" class="card-footer-item"><i class='bx bx-edit'></i></a>
+                        </div>
+                        </header>
+                        <div class="card-content is-hidden">
+                        <div class="content is-size-7">
+                            <div class="is-size-7"><%= address.addressline1 %></div>
+                            <div class="is-size-7"><%= address.addressline2 %></div>
+                            <div class="is-size-7 is-capitalized"><%= address.region %> - <%= address.city %>&nbsp;<%= address.zipcode %></div>
+                            <div class="is-size-7 is-capitalized"><%= address.country.name %></div>
+                        </div>
+                        </div>
+                    </div>
+                <%})%>
+            </div>
+            <div class="column">
+                <div class="card">
+                    <div class="columns is-vcentered is-mobile">
+                        <div class="column">
+                            <p class="has-background-dark has-text-light has-text-centered is-uppercase">
+                                <span class="is-size-7">Opciones de Pago</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <header class="card-header">
+                    <p class="card-header-title is-capitalized is-size-7">
+                        <input type="radio" name="paymentMethod" value="CC" />&nbsp;Tarjeta de Crédito
+                    </p>
+                    </header>
+                    <div class="card-content is-hidden">
+                        <div class="box">
+                            <p class="has-text-centered">
+                                <img src="/images/paymentlogos.webp">
+                            </p>
+                            <div class="content is-size-7">
+                                <div class="field">
+                                    <div class="control has-icons-right">
+                                        <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
+                                        <span class="icon is-right">
+                                            <i class='bx bxs-user-rectangle' ></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="columns is-mobile">
+                                    <div class="column is-two-fifths">
+                                        <div class="field">
+                                            <div class="control">
+                                            <div class="select is-small">
+                                                <select name="tid">
+                                                    <option value="CC">CC</option>
+                                                    <option value="CE">CE</option>
+                                                    <option value="NIT">NIT</option>
+                                                    <option value="PPN">PPN</option>
+                                                    <option value="SSN">SSN</option>
+                                                    <option value="LIC">LIC</option>
+                                                    <option value="DNI">DNI</option>
+                                                </select>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column is-three-fifths">
+                                        <div class="field">
+                                            <div class="control has-icons-right">
+                                                <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
+                                                <span class="icon is-right">
+                                                    <i class='bx bx-id-card'></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="control has-icons-right">
+                                        <input class="input is-small" type="number" name="card" placeholder="Número de la Tarjeta"/>
+                                        <span class="icon is-right">
+                                            <i class='bx bx-credit-card-front'></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="columns is-mobile">
+                                    <div class="column is-5">
+                                        <label class="label is-small" for="month">Fecha vencimiento</label>
+                                        <div class="control is-inline-block">
+                                            <div class="select is-small">
+                                            <select name="month">
+                                            <%for(let i=1; i<=12; i++){%>
+                                                <%if(i<10){%>
+                                                    <option value="0<%=i%>">0<%=i%></option>
+                                                <%}else{%>
+                                                    <option value="<%=i%>"><%=i%></option>
+                                                <%}%>
+                                            <%}%>
+                                            </select>
+                                            </div>
+                                        </div>
+                                        <div class="control is-inline-block">
+                                            <div class="select is-small">
+                                            <% let year = (new Date()).getFullYear() %>
+                                            <select name="year">
+                                                <%for(let i=year; i<=year+8; i++){%>
+                                                    <option value="<%=i%>"><%=i%></option>
+                                                <%}%>
+                                            </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column is-4">
+                                        <label class="label is-small" for="cvv">Cod. seguridad</label>
+                                        <div class="field">
+                                            <div class="control">
+                                                <input class="input is-small" type="number" name="cvv" placeholder="CVV / CVC"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column is-3">
+                                        <label class="label is-small" for="payments">Cuotas</label>
+                                        <div class="field">
+                                            <div class="control">
+                                                <div class="select is-small">
+                                                <select name="payments">
+                                                <%for(let i =1; i<=36; i++){%>
+                                                    <option value="<%=i%>"><%=i%></option>
+                                                <%}%>
+                                                </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="control">
+                                        <label class="checkbox is-size-7"><input type="checkbox" checked="checked" name="tokenize" />&nbsp;Guardar de forma segura para pagar en un click</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <header class="card-header">
+                    <p class="card-header-title is-capitalized is-size-7">
+                        <input type="radio" name="paymentMethod" value="PSE" />&nbsp;PSE
+                    </p>
+                    </header>
+                    <div class="card-content is-hidden">
+                        <div class="box">
+                            <div class="content is-size-7">
+                                <div class="columns is-mobile">
+                                    <div class="column">
+                                        <p class="has-text-centered">
+                                            <img src="/images/pse.webp">
+                                        </p>
+                                    </div>
+                                    <div class="column">
+                                        <div class="field">
+                                            <div class="control">
+                                                <div class="select is-small">
+                                                    <select name="bank">
+                                                        <option value="0">Por favor elige tu banco</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="field">
+                                            <div class="control is-small">
+                                                <label class="radio is-size-7">
+                                                <input type="radio" name="person" value="0">
+                                                Natural
+                                                </label>
+                                                <label class="radio is-size-7">
+                                                <input type="radio" name="person" value="1">
+                                                Jurídica
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <header class="card-header">
+                    <p class="card-header-title is-capitalized is-size-7">
+                        <input type="radio" name="paymentMethod" value="COD"/>&nbsp;Pago contra entrega
+                    </p>
+                    </header>
+                    <div class="card-content is-hidden">
+                        <div class="box">
+                            <div class="content is-size-7">
+                                <div class="columns is-mobile is-vcentered">
+                                    <div class="column">
+                                        <p class="has-text-centered">
+                                            <img width="80px" src="/images/cod.webp">
+                                        </p>
+                                    </div>
+                                    <div class="column">
+                                        <p class="has-text-centered"><span class="has-text-weight-bold is-size-7">Paga al recibir tu pedido.</span></p>
+                                        <div class="field">
+                                            <div class="control is-small has-text-centered">
+                                                <label class="radio is-size-7">
+                                                <input type="radio" name="codOp" value="cash">Efectivo</label>
+                                                <label class="radio is-size-7">
+                                                <input type="radio" name="codOp" value="terminal">Datáfono</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <header class="card-header">
+                    <p class="card-header-title is-capitalized is-size-7">
+                        <input type="radio" name="paymentMethod" value="CS" />&nbsp;Efectivo en oficina
+                    </p>
+                    </header>
+                    <div class="card-content is-hidden">
+                        <div class="box">
+                            <div class="content is-size-7">
+                                <p class="has-text-centered"><label class="label is-size-7">Elige el logo del aliado en donde realizarás el pago</label></p>
+                                <input type="hidden" name="cash" value="" />
+                                <img class="cash-logo grayscale" id="efecty" src="/images/efecty.webp">
+                                <img class="cash-logo grayscale" id="baloto" src="/images/baloto.webp">
+                                <img class="cash-logo grayscale" id="gana" src="/images/gana.webp">
+                                <img class="cash-logo grayscale" id="puntored" src="/images/puntored.webp">
+                                <img class="cash-logo grayscale" id="redservi" src="/images/redservi.webp">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <div class="card">
+                    <div class="columns is-vcentered is-mobile">
+                        <div class="column">
+                            <p class="has-background-dark has-text-light has-text-centered is-uppercase">
+                                <span class="is-size-7">Resumen</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-content is-paddingless">
+                        <% cart.forEach((cartproduct)=>{%> 
+                            <article class="media">
+                                <% cartproduct.product.images.forEach((image)=>{%>
+                                    <%if(image.cover==1){%>
+                                        <figure class="media-left">
+                                            <p class="image is-64x64">
+                                            <img id="main" src="/images/products/<%=cartproduct.product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" data-zoom="/images/products/<%=cartproduct.product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" alt="<%=cartproduct.product.name%>">
+                                            </p>
+                                        </figure>     
+                                    <%}%>
+                                <%})%>
+                                <div class="media-content">
+                                    <div class="columns is-mobile">
+                                        <div class="column">
+                                            <p class="is-uppercase has-text-weight-bold is-size-7"><%=cartproduct.product.name%></p>
+                                            <span class="is-size-7">Talla: <span class="is-uppercase"><%=cartproduct.productvariation.variation.name%></span></span>
+                                            <span class="is-size-7">Cantidad: <%=cartproduct.quantity%></span>
+                                        </div>
+                                        <div class="column">
+                                            <p style="text-decoration: line-through;" class="is-italic is-size-7 has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>
+                                            <p class="has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
+                                        </div>
+                                    </div>
+                                </div>
+                                <hr>
+                            </article>
+                        <%})%>
+                        <div class="columns is-mobile is-marginless is-paddingles is-size-7">
+                            <div class="column">
+                                <div class="container">
+                                    <p class="has-text-left has-text-weight-bold">&nbsp;Subtotal:</p>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <p class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.total).toLocaleString('es-CO')%></p>
+                            </div>
+                        </div>
+                        <div class="columns is-mobile is-marginless is-paddingless is-size-7">
+                            <div class="column">
+                                <div class="container">
+                                    <p class="has-text-left has-text-weight-bold">&nbsp;Envío:</p>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <p class="has-text-weight-bold has-text-right">$&nbsp;0</p>
+                            </div>
+                        </div>
+                        <div class="columns is-mobile has-background-light is-marginless is-paddingless">
+                            <div class="column">
+                                <div class="container">
+                                    <p class="has-text-left has-text-weight-bold">&nbsp;Total:</p>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <p class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.total).toLocaleString('es-CO')%></p>
+                            </div>
+                        </div>
+                        <p style="padding:8px;" class="content has-text-centered">
+                            <button id="order" class="button is-primary has-text-weight-bold is-fullwidth">Finalizar compra</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </form>
+</div>
+<script>
+    const accordion = elm => {
+        const cards = elm.parentNode.parentNode.querySelectorAll('.card-content');
+        for(let c of cards){if(!hasClass(c,'is-hidden')){addClass(c,'is-hidden');}}
+
+        if(hasClass(elm,'is-hidden')){
+            removeClass(elm,'is-hidden');
+        }else{
+            addClass(elm,'is-hidden');
+        }
+    };
+
+    live('input[type="radio"]','click', e =>{
+        let card = e.target.parentNode.parentNode.parentNode.querySelector('.card-content');
+        accordion(card);
+    });
+
+    live('#order','click',e =>{
+        let forder = document.querySelector('#order-form');
+        if(validateForm(forder)){
+            forder.submit();
+        }
+    })
+
+    live('input[name="paymentMethod"]','click',e =>{
+        if(e.target.value=='PSE'){
+            let bank = document.querySelector('select[name="bank"]');
+            if(bank.options.length<=1){
+                getCORS('https://secure.payco.co/restpagos/pse/bancos.json?public_key=654321aa2d4ced997b799450ce3f4802',request =>{
+                    let response = request.currentTarget.response || request.target.responseText;
+                    let data = JSON.parse(response);
+                    for(let b of data.data){
+                        if (b.bankCode!=='0'){
+                            let op = document.createElement('option');
+                            op.value=b.bankCode;
+                            op.innerHTML = b.bankName.toString();
+                            bank.appendChild(op);
+                        }
+                    }
+                });
+            }
+        }
+    });
+    live('.cash-logo', 'click', e =>{
+        let cash = document.querySelector('input[name="cash"]');
+        let images = document.querySelectorAll('.cash-logo');
+        images.forEach(img =>{
+            addClass(img,'grayscale');
+        });
+
+        cash.value = e.target.id;
+        if(hasClass(e.target,'grayscale')){
+            removeClass(e.target,'grayscale');
+        }
+    });
+</script>

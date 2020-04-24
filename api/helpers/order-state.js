@@ -1,0 +1,39 @@
+module.exports = {
+
+  friendlyName: 'Order state',
+  description: 'Obtener el OrderState correspondiente a partir de la respuesta de la pasarela de pago.',
+  inputs: {
+    state:{
+      type:'string'
+    }
+  },
+  exits: {
+    success: {
+      description: 'All done.',
+    },
+  },
+  fn: async function (inputs,exits) {
+    let name=null;
+    switch(inputs.state){
+      case 'Aceptada':
+        name='aceptado';
+        break;
+      case 'Rechazada':
+        name='rechazado';
+        break;
+      case 'Pendiente':
+        name='pendiente';
+        break;
+      case 'Fallida':
+        name='fallido';
+        break;
+      default:
+        name='pendiente';
+        break;
+    }
+    let orderstate = await OrderState.findOne({name:name});
+    return exits.success(orderstate.id);
+  }
+
+};
+

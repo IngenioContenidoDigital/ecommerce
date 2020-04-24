@@ -1,0 +1,57 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+        <div class="notification is-danger is-light" id="error">
+            <%= error %>
+        </div>
+      <% } %>
+      <div class="table-container">
+        <table class="table is-hoverable is-size-7" id="orders-table">
+            <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Medio de Pago</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Total</th>
+                <th scope="col">Fecha</th>
+                <th scope="col">Opciones</th>
+            </tr>
+            </thead>
+            <tbody>
+                <% orders.forEach(function(order){ %>
+                  <tr>
+                      <td scope="row" class="align-middle"><%= order.id %></td>
+                      <td class="align-middle is-uppercase"><%= order.paymentMethod %></td>
+                      <td class="align-middle"><%= order.customer.fullName %></td>
+                      <td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:<%=order.currentstatus.color.code%>;"><span class="is-size-7 has-text-black has-background-white"><%= order.currentstatus.name %></span></p></td>
+                      <td class="align-middle is-capitalized">$&nbsp;<%= (order.totalOrder).toLocaleString('es-CO') %></td>
+                      <td class="align-middle"><%= moment(order.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
+                      <td class="align-middle">
+                        <a href="#" class="button is-small">
+                          <span class="icon">
+                            <i class="bx bx-edit"></i>
+                          </span>
+                        </a>
+                      </td>
+                  </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        let table = new simpleDatatables.DataTable('#orders-table',{
+          searchable:true,
+          sortable:true,
+          paging:true,
+          labels: {
+            placeholder: "Buscar...",
+            perPage: "{select} registros por página",
+            noRows: "No se encontraron datos",
+            info: "Mostrando {start} a {end} de {rows} registros",
+          }
+        });  
+      });
+
+    </script>
+</div>

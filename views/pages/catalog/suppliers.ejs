@@ -1,0 +1,185 @@
+<div class="container">
+  <% if (error != undefined || error != null) { %>
+    <div class="notification is-danger is-light" id="error">
+        <%= error %>
+    </div>
+  <% } %>
+  <% if(action=='create' || action=='edit'){ %>  
+        <div class="container">
+            <br />
+            <h4 class="title is-4">Crear Proveedor</h4>
+            <hr>
+            <% if(action=='create') { %>
+              <form action="/supplier/create" method="POST">
+            <% } %>
+            <% if(action=='edit') { %>
+              <form action="/supplier/edit/<%= supplier.id %>" method="POST">
+            <% } %>
+              <div class="box">
+                <div class="columns">
+                  <div class="column">
+                    <div class="field is-pulled-right">
+                      <% if(action=='edit'){ %>
+                        <input id="activo" type="checkbox" <% if(supplier.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                      <label for="activo">Proveedor: <span id="state"><% if(supplier.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
+                      <% }else{ %>
+                        <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                        <label for="activo">Proveedor: <span id="state"><b style="color:green;">activo</b></span></label>  
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Nombre del Proveedor</label>
+                      <div class="control">
+                        <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre del Proveedor" <% if(action=='edit'){ %>value="<%= supplier.name %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Identificación</label>
+                      <div class="control">
+                        <input class="input" type="text" name="dni" required="true" placeholder="NIT del Proveedor" <% if(action=='edit'){ %>value="<%= supplier.dni %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Nombre del Contacto</label>
+                      <div class="control">
+                        <input class="input" type="text" name="contact" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= supplier.contact %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Email de Contacto</label>
+                      <div class="control">
+                        <input class="input" type="text" name="email" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= supplier.email %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Teléfono</label>
+                      <div class="control">
+                        <input class="input" type="text" name="phone" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= supplier.phone %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="control buttons is-right">
+                  <% if(action=='edit'){ %> 
+                    <button type="submit" class="button is-primary"><i class="bx bx-pencil"></i>&nbsp;Modificar Proveedor</button>
+                  <% }else if (action=='create'){ %>
+                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Proveedor</button>
+                  <% } %>
+                </div>
+              </div>
+            </form>
+          </div>
+          <script>
+            live('#activo','click',function(){
+              let elm = this;
+              let state = elm.checked;
+              var sp = document.querySelector('#state');
+              if(state){
+                sp.innerHTML='<b style="color:green;">activo</b>';
+              }else{
+                sp.innerHTML='<b style="color:red;">inactivo</b>';
+              }
+            });
+          </script>
+    <% } else { %>
+        <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+            <a href="/suppliers/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+        </p>
+        <div class="table-container">
+            <table class="table is-hoverable" id="suppliers-table">
+                <thead>
+                <tr>
+                    <th scope="col">Id</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Teléfono</th>
+                    <th scope="col">Activo</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <% suppliers.forEach(function(supplier){ %>
+                        <tr>
+                            <th scope="row" class="align-middle"><%= supplier.id %></th>
+                            <td class="align-middle is-capitalized"><%= supplier.name %></td>
+                            <td class="align-middle"><a href="mailto:<%= supplier.email %>"><%= supplier.email %></a></td>
+                            <td class="align-middle"><a href="tel:<%= supplier.phone %>"><%= supplier.phone %></a></td>
+                            <td class="align-middle">
+                            <span class="action">
+                            <% if(supplier.active===true) { %>
+                                <i supplier="<%= supplier.id %>" class="state bx bx-check-circle"></i>
+                            <% }else{ %>
+                                <i supplier="<%= supplier.id %>" class="state bx bx-x-circle"></i>
+                            <%}%>
+                            </span>
+                            </td>
+                            <td class="align-middle">
+                            <a href="/suppliers/edit/<%= supplier.id %>" class="button is-small">
+                                <span class="icon">
+                                <i class="bx bx-edit"></i>
+                                </span>
+                            </a>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){
+                let table = new simpleDatatables.DataTable('#suppliers-table',{
+                searchable:true,
+                sortable:true,
+                paging:true,
+                labels: {
+                    placeholder: "Buscar...",
+                    perPage: "{select} registros por página",
+                    noRows: "No se encontraron datos",
+                    info: "Mostrando {start} a {end} de {rows} registros",
+                }
+                });  
+            });
+        </script>
+    <% } %>
+    <script>
+      setTimeout(function() {
+        var el = document.getElementById('error');
+        if(el){
+          el.style.display='none';
+        }
+      }, 4000);
+
+      live('.state', 'click', function(){ 
+        if(confirm('Seguro Desea Continuar')){
+          var elm = this;
+          var id = this.getAttribute('supplier');
+          var status = null;
+          if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+          io.socket.put('/supplier/'+id,{active:status},function(resData, jwr){
+            if(resData.active===false){
+              removeClass(elm, 'bx-check-circle');
+              addClass(elm,'bx-x-circle');
+            }else{
+              removeClass(elm, 'bx-x-circle');
+              addClass(elm,'bx-check-circle');
+            }
+          });
+        }
+      });
+    </script>
+</div>
