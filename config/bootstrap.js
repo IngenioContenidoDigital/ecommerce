@@ -28,4 +28,20 @@ module.exports.bootstrap = async function() {
     await Variation.create({name:'Único'});
   }
 
+  if(await Color.count()<1){
+    await Color.createEach([
+      {name:'blanco',code:'#FFFFFF'},
+      {name:'negro',code:'#000000'},
+      {name:'café',code:'#825500'},
+      {name:'azul',code:'#040080'},
+      {name:'verde',code:'#4c9e00'},
+      {name:'amarillo',code:'#ffff00'},
+      {name:'rojo',code:'#ff0800'},
+      {name:'naranja',code:'#ff9d00'}
+    ]);
+  }
+
+
+
+
 };

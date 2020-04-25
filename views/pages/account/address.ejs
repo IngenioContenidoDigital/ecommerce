@@ -14,7 +14,7 @@
             <%if(address!==null){%>
             <form action="/address/edit/<%=address.id%><%if(referrer!==null){%>?referrer=<%=referrer%><%}%>" method="POST" id="address-form">
             <%}else{%>
-              <form action="/address/create" method="POST" id="address-form">
+              <form action="/address/create<%if(referrer!==null){%>?referrer=<%=referrer%><%}%>" method="POST" id="address-form">
             <%}%>
                 <div class="field">
                     <label class="label">Nombre para la Dirección</label>

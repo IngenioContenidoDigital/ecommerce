@@ -10,22 +10,74 @@
     <hr>
     <form id="register-form" method="POST" action="/register">
         <input type="hidden" name="token" />
-    <div class="field">
-        <p class="control has-icons-left">
-            <input class="input" name="fullname" type="text" required placeholder="Nombre">
-            <span class="icon is-small is-left">
-                <i class='bx bx-rename'></i>
-            </span>
-        </p>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <p class="control has-icons-left">
+                        <input class="input" name="fullname" type="text" required placeholder="Nombre">
+                        <span class="icon is-small is-left">
+                            <i class='bx bx-rename'></i>
+                        </span>
+                    </p>
+                    </div>
+            </div>
+            <div class="column">
+                <div class="field has-addons">
+                    <p class="control">
+                      <span class="select">
+                        <select required name="dnitype">
+                         <option value="CC">CC</option>
+                         <option value="CE">CE</option>
+                         <option value="NIT">NIT</option>
+                         <!--<option value="PPN">PPN</option>
+                         <option value="SSN">SSN</option>
+                         <option value="LIC">LIC</option>
+                         <option value="DNI">DNI</option>-->
+                        </select>
+                      </span>
+                    </p>
+                    <p class="control has-icons-left is-expanded">
+                        <input class="input" required name="dni" type="number" placeholder="Número de Identificación">
+                        <span class="icon is-small is-left">
+                            <i class='bx bx-id-card' ></i>
+                        </span>
+                    </p>
+                  </div>
+            </div>
         </div>
-    <div class="field">
-        <p class="control has-icons-left">
-        <input class="input" name="email" type="email" required placeholder="Email">
-        <span class="icon is-small is-left">
-            <i class="bx bxs-envelope"></i>
-        </span>
-        </p>
-    </div>
+        <div class="columns">
+            <div class="column">
+                <div class="field">
+                    <p class="control has-icons-left">
+                    <input class="input" name="email" type="email" required placeholder="Email">
+                    <span class="icon is-small is-left">
+                        <i class="bx bxs-envelope"></i>
+                    </span>
+                    </p>
+                </div>
+            </div>
+            <div class="column">
+                <div class="field has-addons">
+                    <p class="control">
+                      <span class="select">
+                        <select required name="country">
+                          <% countries.forEach((country) =>{ %>
+                            <% if(country.active){ %>
+                            <option class="is-uppercase" value="<%=country.id%>">+<%=country.prefix%></option>
+                            <%}%>
+                          <% });%>
+                        </select>
+                      </span>
+                    </p>
+                    <p class="control has-icons-left is-expanded">
+                        <input class="input" required name="mobile" type="number" placeholder="Número Móvil">
+                        <span class="icon is-small is-left">
+                            <i class='bx bx-mobile'></i>
+                        </span>
+                    </p>
+                  </div>                  
+            </div>
+        </div>
     <div class="field has-addons">
         <p class="control has-icons-left is-expanded">
         <input class="input pass" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
@@ -67,14 +119,6 @@
                 document.querySelector('input[name="token"]').value=token;
                 let rform = document.getElementById('register-form');
                 rform.submit();
-                /*io.socket.post('/register',data,(res)=>{
-                    if(res==='ok'){
-                        let rform = document.getElementById('register-form');
-                        let vform = document.getElementById('verify-form');
-                        addClass(rform,'is-hidden');
-                        removeClass(vform,'is-hidden');
-                    }
-                });*/
             });
         }
     });

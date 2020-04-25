@@ -46,7 +46,8 @@ module.exports = {
       type:'string'
     },
     paymentOption:{
-      type:'string'
+      type:'ref',
+      defaultsTo:''
     },
     seller:{
       model:'seller'

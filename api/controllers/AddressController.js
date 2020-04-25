@@ -24,6 +24,7 @@ module.exports = {
     return res.view('pages/account/address',{countries:countries,address:address, error:error, referrer:referrer});
   },
   newaddress: async function(req, res){
+    let referrer = req.param('referrer') ? req.param('referrer') : null;
     try{
       await Address.create({
         name:req.body.name.trim().toLowerCase(),
@@ -36,7 +37,11 @@ module.exports = {
         notes:req.body.notes,
         user:req.session.user.id,
       });
-      return res.redirect('/addresses');
+      if (referrer===null || referrer===undefined){
+        return res.redirect('/addresses');
+      }else{
+        return res.redirect('/checkout');
+      }
     }catch(err){
       return res.redirect('/address?error='+err);
     }

@@ -17,7 +17,7 @@ module.exports = {
     let user = inputs.data.user;
     let cart = inputs.data.cart;
     let payment = (inputs.data.payment) ? inputs.data.payment : null;
-    let extra = (inputs.data.extra) ? inputs.data.extra : null;
+    let extra = (inputs.data.extra) ? inputs.data.extra.toLowerCase().trim() : null;
     let cartproducts = await CartProduct.find({cart:cart.id})
                   .populate('product')
                   .populate('productvariation');
@@ -40,7 +40,7 @@ module.exports = {
         currentstatus:await sails.helpers.orderState(payment.data.estado),
         paymentMethod:inputs.data.method,
         paymentId:payment.data.ref_payco,
-        paymentOption:extra.toLowerCase().trim(),
+        paymentOption:extra,
       }).fetch();
 
       for(let cp of cartproducts){

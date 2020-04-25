@@ -13,6 +13,11 @@ module.exports = {
     password: {type:'string',required:true, protect: true},
     fullName: {type:'string'},
     verification:{type:'string', minLength:6, maxLength:6},
+    dniType:{type:'string',isIn: ['CC', 'CE', 'NIT', 'PPN', 'SSN', 'LIC', 'DNI']},
+    dni:{type:'number'},
+    mobilecountry:{model:'country'},
+    mobile:{type:'number'},
+    mobileStatus: {type:'string', isIn: ['unconfirmed',  'confirmed'], defaultsTo:'unconfirmed'},
     isSuperAdmin: {type:'boolean', defaultsTo:false},
   },
   customToJSON: function() {

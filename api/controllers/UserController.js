@@ -7,7 +7,8 @@
 
 module.exports = {
   registerform: async function(req, res){
-    return res.view('pages/front/register');
+    let countries = await Country.find();
+    return res.view('pages/front/register',{countries:countries});
   },
   createuser: async function(req, res){
 
@@ -33,7 +34,19 @@ module.exports = {
           let verification = randomize('0',6);
           //Enviar un Email de Verificación con el código para validar.
           try{
-            let user = await User.create({emailAddress:req.body.email,emailStatus:'unconfirmed',password:await sails.helpers.passwords.hashPassword(req.body.password),fullName:req.body.fullname,verification:verification}).fetch();
+            let country = await Country.findOne({id:req.body.country});
+            let user = await User.create({
+              emailAddress:req.body.email,
+              emailStatus:'unconfirmed',
+              password:await sails.helpers.passwords.hashPassword(req.body.password),
+              fullName:req.body.fullname,
+              verification:verification,
+              dniType:req.body.dnitype,
+              dni:req.body.dni,
+              mobilecountry:country.id,
+              mobile:req.body.mobile,
+              mobileStatus:'unconfirmed'
+            }).fetch();
             req.session.user=user;
             return res.view('pages/front/verify',{error:null});
           }catch(err){

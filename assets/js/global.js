@@ -79,7 +79,7 @@ function validateForm(form){
   let validate = true;
   const elements = form.elements;
   for (let i = 0; i < elements.length; i++) {
-    if(elements[i].hasAttribute('required') && (elements[i].value==='' || elements[i].value===undefined || elements[i].value===null || elements[i].value===0 || elements[i].value==='0')){
+    if(elements[i].hasAttribute('required') && (elements[i].value==='' || elements[i].value===undefined || elements[i].value===null)){
       addClass(elements[i].parentNode,'is-danger');
       addClass(elements[i],'is-danger');
       let msg = elements[i].parentNode.querySelector('p');
