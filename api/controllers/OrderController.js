@@ -92,15 +92,8 @@ module.exports = {
     let address = await Address.findOne({id:req.body.deliveryAddress}).populate('country');
     let user = await User.findOne({id:req.session.user.id});
     let cart = await Cart.findOne({id:req.session.cart.id});
-    let cartproducts = await CartProduct.find({cart:cart.id})
-                  .populate('product')
-                  .populate('productvariation');
 
-    let carttotal = 0;
-    cartproducts.forEach(async cp=>{
-      carttotal+= cp.productvariation.price;
-    });
-
+    let carttotal = req.session.cart.total;
     let paymentmethod = req.body.paymentMethod;
 
     switch(paymentmethod){
