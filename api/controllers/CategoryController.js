@@ -121,6 +121,7 @@ module.exports = {
       p.seller=await Seller.findOne({id:p.seller});
       p.tax=await Tax.findOne({id:p.tax});
       p.productvariation=await ProductVariation.find({product:p.id}).populate('variation');
+      p.discount = await sails.helpers.discount(p.id);
     }
     return res.view('pages/front/category',{category:category});
   }

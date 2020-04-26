@@ -1,0 +1,241 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <% if(action=='create' || action=='edit'){ %>  
+          <div class="container">
+              <br />
+              <h4 class="title is-4">Crear Descuento</h4>
+              <hr>
+              <% if(action=='create') { %>
+                <form action="/discount/create" method="POST">
+              <% } %>
+              <% if(action=='edit') { %>
+                <form action="/discount/edit/<%= discount.id %>" method="POST">
+              <% } %>
+              <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                        <label class="label">Nombre del Descuento</label>
+                        <div class="control">
+                            <input class="input" type="text" name="name" required="true" placeholder="Nombre del Descuento" <% if(action=='edit'){ %>value="<%= discount.name %>"<% }%>/>
+                        </div>
+                    </div>
+                      <div class="columns is-mobile">
+                          <div class="column is-one-third">
+                            <div class="field">
+                                <label class="label">Tipo</label>
+                                <div class="select control">
+                                    <select name="type">
+                                    <option value="P" <%if(action=='edit' && discount.type=='P'){ selected="selected"}%>>Porcentaje</option>
+                                        <option value="C" <%if(action=='edit' && discount.type=='C'){ selected="selected"}%>>Valor</option>
+                                    </select>
+                                </div>
+                            </div>
+                          </div>
+                          <div class="column is-two-thirds">
+                            <div class="field">
+                                <label class="label">Valor</label>
+                                <div class="control">
+                                  <input class="input" type="text" name="value" required="true" placeholder="Cantidad de Descuento" <% if(action=='edit'){ %>value="<%= discount.value %>"<% }%>/>
+                                </div>
+                            </div>
+                          </div>
+                      </div>
+                    <div class="field">
+                        <label class="label">Periodo de descuento</label>
+                        <div class="control">
+                            <input class="input" type="date" name="range" required placeholder="Fecha de Inicio" <% if(action=='edit'){ %>value="<%= discount.from %>"<% }%>/>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <article class="panel is-primary is-size-7">
+                        <p class="panel-heading">
+                          Categorías
+                        </p>
+                          <ul>
+                            <li>
+                              <a style="display:none;" class="panel-block is-active" category="<%= root.id %>" level="<%= root.level %>">
+                                <input type="radio" name="root" id="root" value="<%= root.id %>" />&nbsp;
+                                <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                                <%= root.name %>
+                              </a>
+                            </li>
+                          </ul>
+                      </article>
+                  </div>
+              </div>
+            <div class="control buttons is-right">
+                <% if(action=='edit'){ %> 
+                    <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Descuento</button>
+                <% }else if (action=='create'){ %>
+                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Descuento</button>
+                <% } %>
+            </div>
+            </form>
+        </div>
+        <script>
+            
+            // Initialize all input of date type.
+            const calendars = bulmaCalendar.attach('[type="date"]', {
+                type:'datetime',
+                isRange: true,
+                allowSameDayRange: true,
+                dateFormat:'YYYY-MM-DD',
+                timeFormat:'HH:mm:ss',
+                displayMode:'dialog',
+                cancelLabel:'Cancelar',
+                clearLabel:'Limpiar',
+                todayLabel:'Hoy',
+                nowLabel:'Ahora',
+                validateLabel:'Seleccionar',
+                minDate: new Date()
+            });
+
+            // Loop on each calendar initialized
+            calendars.forEach(calendar => {
+                // Add listener to date:selected event
+                calendar.on('date:selected', date => {
+                    console.log(date);
+                });
+            });
+
+            // To access to bulmaCalendar instance of an element
+            const element = document.querySelector('#my-element');
+            if (element) {
+                // bulmaCalendar instance is available as element.bulmaCalendar
+                element.bulmaCalendar.on('select', datepicker => {
+                    console.log(datepicker.data.value());
+                });
+            }
+
+            function childTree(elm){
+                return new Promise(resolve =>{
+                elm.forEach((child) =>{
+                    if(!hasClass(child,'visited')){
+                    io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
+                        var d = document.createElement('ul');
+                        resData.forEach(function(son){
+                            let ca = document.createElement('li');
+                            ca.style.paddingLeft = 5*son.level+'px';
+                            if(son.id==document.querySelector('#root').value){
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name">'+son.name+'</span></a>';
+                            } else {
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name">'+son.name+'</span></a>';
+                            }
+                            d.appendChild(ca);
+                        });
+                        insertAfter(d,child);
+                        addClass(child,'visited');
+                        childTree(d.querySelectorAll('a.panel-block'));
+                    });
+                    }
+                })
+                setTimeout(() => {resolve("finish");},200);
+                });
+            };
+
+            const init = async () => {
+                let result = await childTree(document.querySelectorAll('a.panel-block'))
+                <% if(action=='edit') { %>
+                .then(()=>{
+                    const checks = document.querySelectorAll('input[name="categories[]"]')
+                    checks.forEach((op) =>{
+                    <% product.categories.forEach(function(c){ %>
+                        if(op.value==<%= c.id %>){
+                        op.checked=true;
+                        }
+                    <% }); %>
+                    });
+                });
+                <% } %>
+            }
+
+            init();
+
+        </script>
+      <% } else { %>
+          <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+              <a href="/discounts/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+          </p>
+          <div class="table-container">
+              <table class="table is-hoverable" id="discounts-table">
+                  <thead>
+                  <tr>
+                      <th scope="col">Id</th>
+                      <th scope="col">Nombre</th>
+                      <th scope="col">Inicio</th>
+                      <th scope="col">Fin</th>
+                      <th scope="col">Tipo</th>
+                      <th scope="col">Valor</th>
+                      <th scope="col">Opciones</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                      <% discounts.forEach(function(discount){ %>
+                          <tr>
+                              <th scope="row" class="align-middle"><%= discount.id %></th>
+                              <td class="align-middle is-capitalized"><%= discount.name %></td>
+                              <td class="align-middle"><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
+                              <td class="align-middle"><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
+                              <td class="align-middle"><%= discount.type %></td>
+                              <td class="align-middle"><%= discount.value %></td>
+                              <td class="align-middle">
+                              <a href="/discounts/edit/<%= discount.id %>" class="button is-small">
+                                  <span class="icon">
+                                  <i class="bx bxs-edit"></i>
+                                  </span>
+                              </a>
+                              </td>
+                          </tr>
+                      <% }); %>
+                  </tbody>
+              </table>
+          </div>
+          <script>
+              document.addEventListener('DOMContentLoaded', function(){
+                  let table = new simpleDatatables.DataTable('#discounts-table',{
+                  searchable:true,
+                  sortable:true,
+                  paging:true,
+                  labels: {
+                      placeholder: "Buscar...",
+                      perPage: "{select} registros por página",
+                      noRows: "No se encontraron datos",
+                      info: "Mostrando {start} a {end} de {rows} registros",
+                  }
+                  });  
+              });
+          </script>
+      <% } %>
+      <script>
+        setTimeout(function() {
+          var el = document.getElementById('error');
+          if(el){
+            el.style.display='none';
+          }
+        }, 4000);
+  
+        live('.state', 'click', function(){ 
+          if(confirm('Seguro Desea Continuar')){
+            var elm = this;
+            var id = this.getAttribute('seller');
+            var status = null;
+            if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+  
+            io.socket.put('/seller/'+id,{active:status},function(resData, jwr){
+              if(resData.active===false){
+                removeClass(elm, 'bx-check-circle');
+                addClass(elm,'bx-x-circle');
+              }else{
+                removeClass(elm, 'bx-x-circle');
+                addClass(elm,'bx-check-circle');
+              }
+            });
+          }
+        });
+      </script>
+  </div>

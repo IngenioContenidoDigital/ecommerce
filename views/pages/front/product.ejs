@@ -30,9 +30,13 @@
                 <h4 class="is-uppercase is-size-4"><%=product.name%></h4>
                 <hr>
                 <table class="table is-size-6">
-                    <tr><td>Precio recomendado:</td><td><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr>
-                    <tr><td>Precio:</td><td>$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></td></tr>
-                    <tr><td>Ahorro:</td><td>$&nbsp;0</td></tr>
+                    <%if(discount!==null){%><tr><td>Precio recomendado:</td><td><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr><%}%>
+                    <%let disc = Math.round((product.price*((100-discount.value)/100))*(1+(product.tax.value/100))).toLocaleString("es-CO")%>
+                    <tr><td>Precio:</td><td>$&nbsp;<%= disc %></td></tr>
+                    <%if(discount!==null){%>
+                    <% let savings = parseInt(product.price*(1+(product.tax.value/100)))-parseInt((product.price*((100-discount.value)/100))*(1+(product.tax.value/100))) %>
+                    <tr><td>Ahorro:</td><td class="has-text-success">$&nbsp;<%= savings.toLocaleString('es-CO'); %></td></tr>
+                    <%}%>
                 </table>
                 <div class="columns is-mobile">
                     <div class="column">

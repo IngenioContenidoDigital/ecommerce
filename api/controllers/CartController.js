@@ -19,7 +19,7 @@ module.exports = {
         .populate('mainColor')
         .populate('manufacturer')
         .populate('tax');
-
+        cartproduct.product.discount = await sails.helpers.discount(cartproduct.product.id);
         cartproduct.productvariation.variation = await Variation.findOne({id:cartproduct.productvariation.variation});
       }
     }
@@ -49,7 +49,12 @@ module.exports = {
     let items = await CartProduct.find({cart:cart.id}).populate('productvariation');
     let cartvalue = 0;
     for(let item of items){
-      cartvalue += parseFloat(item.productvariation.price*item.quantity);
+      let discount = await sails.helpers.discount(item.productvariation.product);
+      if(discount!==null){
+        cartvalue += ((((item.productvariation.price/1.19)-(item.productvariation.price/1.19)*(discount.value/100))*1.19)*item.quantity);
+      }else{
+        cartvalue += parseFloat(item.productvariation.price*item.quantity);
+      }
     }
     req.session.cart.total = cartvalue;
 

@@ -35,6 +35,10 @@ module.exports = {
     suppliers:{
       collection:'supplier',
       via:'products'
+    },
+    discount:{
+      collection:'catalogdiscount',
+      via:'products'
     }
 
   },

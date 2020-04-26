@@ -34,6 +34,7 @@
     <script src="/dependencies/sails.io.js"></script>
     <script src="/dependencies/moment-with-locales.js"></script>
     <script src="/dependencies/moment.js"></script>
+    <script src="/dependencies/bulma-calendar/dist/js/bulma-calendar.min.js"></script>
     <script src="/dependencies/data-tables/simple-datatables.min.js"></script>
     <script src="/js/global.js"></script>
     <!--SCRIPTS END-->
@@ -41,6 +42,7 @@
     <script src="https://cdn.jsdelivr.net/npm/suneditor@2.28.0/src/lang/es.js"></script>
     <!--STYLES-->
     <link rel="stylesheet" href="/dependencies/bulma-badge.min.css">
+    <link rel="stylesheet" href="/dependencies/bulma-calendar/dist/css/bulma-calendar.min.css">
     <link rel="stylesheet" href="/dependencies/bulma-switch.min.css">
     <link rel="stylesheet" href="/dependencies/bulma.min.css">
     <link rel="stylesheet" href="/dependencies/data-tables/simple-datatables.min.css">
@@ -125,6 +127,15 @@
             <li><a class="navbar-item" href="/categories/list">Categorias</a></li>
             <li><a class="navbar-item" href="/manufacturers">Marcas</a></li>
             <li><a class="navbar-item" href="/suppliers">Proveedores</a></li>
+          </ul>
+          <p class="menu-label is-size-7">
+            <i class='bx bxs-discount'></i>&nbsp;Descuentos
+            <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+              <i class="bx bx-caret-down"></i>
+            </span>
+          </p>
+          <ul class="menu-list">
+            <li><a class="navbar-item" href="/discounts">Descuentos</a></li>
           </ul>
           <p class="menu-label is-size-7">
             <i class='bx bx-buildings'></i>&nbsp;Sellers

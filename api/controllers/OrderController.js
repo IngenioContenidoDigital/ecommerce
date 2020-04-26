@@ -105,59 +105,62 @@ module.exports = {
 
     switch(paymentmethod){
       case 'CC':
+        try{
+          let creditInfo = {
+            'card[number]': req.body.card,
+            'card[exp_year]': req.body.year,
+            'card[exp_month]': req.body.month,
+            'card[cvc]': req.body.cvv
+          };
+          let token = await sails.helpers.payment.tokenize(creditInfo);
 
-        let creditInfo = {
-          'card[number]': req.body.card,
-          'card[exp_year]': req.body.year,
-          'card[exp_month]': req.body.month,
-          'card[cvc]': req.body.cvv
-        };
-        let token = await sails.helpers.payment.tokenize(creditInfo);
+          let customerInfo = {
+            token_card: token.id,
+            name: user.fullName,
+            last_name: ' ',
+            email: user.emailAddress,
+            default: true,
+            //Optional parameters: These parameters are important when validating the credit card transaction
+            city: address.city,
+            address: address.addressline1+' '+address.addressline1,
+            /*phone: '3005234321',
+            cell_phone: '3010000001'*/
+          };
 
-        let customerInfo = {
-          token_card: token.id,
-          name: user.fullName,
-          last_name: ' ',
-          email: user.emailAddress,
-          default: true,
-          //Optional parameters: These parameters are important when validating the credit card transaction
-          city: address.city,
-          address: address.addressline1+' '+address.addressline1,
-          /*phone: '3005234321',
-          cell_phone: '3010000001'*/
-        };
+          let customer = await sails.helpers.payment.customer(customerInfo);
 
-        let customer = await sails.helpers.payment.customer(customerInfo);
+          let paymentInfo = {
+            token_card: token.id,
+            customer_id: customer.data.customerId,
+            doc_type: req.body.tid,
+            doc_number: req.body.dni,
+            name: req.body.cardname,
+            last_name: ' ',
+            email: user.emailAddress,
+            bill: 'CR-'+cart.id,
+            description: 'Test Payment',
+            value: carttotal,
+            tax: ((carttotal/1.19)*0.19).toString(),
+            tax_base: (carttotal/1.19).toString(),
+            currency: 'COP',
+            dues: req.body.payments,
+            ip:require('ip').address(), /*This is the client's IP, it is required */
+            url_response: 'http://localhost:1337/respuesta',
+            url_confirmation: 'http://localhost:1337/confirmacion',
+            method_confirmation: 'POST',
+            //Extra params: These params are optional and can be used by the commerce
+            use_default_card_customer: false,/*if the user wants to be charged with the card that the customer currently has as default = true*/
+          };
 
-        let paymentInfo = {
-          token_card: token.id,
-          customer_id: customer.data.customerId,
-          doc_type: req.body.tid,
-          doc_number: req.body.dni,
-          name: req.body.cardname,
-          last_name: ' ',
-          email: user.emailAddress,
-          bill: 'CR-'+cart.id,
-          description: 'Test Payment',
-          value: carttotal,
-          tax: ((carttotal/1.19)*0.19).toString(),
-          tax_base: (carttotal/1.19).toString(),
-          currency: 'COP',
-          dues: req.body.payments,
-          ip:require('ip').address(), /*This is the client's IP, it is required */
-          url_response: 'http://localhost:1337/respuesta',
-          url_confirmation: 'http://localhost:1337/confirmacion',
-          method_confirmation: 'POST',
-          //Extra params: These params are optional and can be used by the commerce
-          use_default_card_customer: false,/*if the user wants to be charged with the card that the customer currently has as default = true*/
-        };
-
-        payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
-        if(payment.status){
-          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
-        }else{
-          let msg='Error en el proceso. Por favor intenta nuevamente';
-          return res.redirect('/checkout?error='+msg);
+          payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
+          if(payment.status){
+            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
+          }else{
+            let msg='Error en el proceso. Por favor intenta nuevamente';
+            return res.redirect('/checkout?error='+msg);
+          }
+        }catch(err){
+          return res.redirect('/checkout?error='+err);
         }
         break;
       case 'PSE':
@@ -192,29 +195,33 @@ module.exports = {
         order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
         break;
       case 'CS':
-        let moment = require('moment');
-        let cashInfo = {
-          invoice: 'CR-'+cart.id,
-          description: 'pay test',
-          value: (carttotal).toString(),
-          tax: ((carttotal/1.19)*0.19).toString(),
-          tax_base: (carttotal/1.19).toString(),
-          currency: 'COP',
-          type_person: '0',
-          doc_type: 'CC',
-          doc_number: '10358519',
-          name: user.fullName,
-          last_name: ' ',
-          email: user.emailAddress,
-          cell_phone: '3010000001',
-          end_date: moment().add(3, 'days').format('YYYY-MM-DD').toString(),//'2020-12-05',
-          ip:require('ip').address(), /*This is the client's IP, it is required */
-          url_response: 'http://localhost:1337/respuesta',
-          url_confirmation: 'http://localhost:1337/confirmacion',
-          method_confirmation: 'POST',
-        };
-        payment = await sails.helpers.payment.payment({mode:paymentmethod, info:cashInfo, method:req.body.cash});
-        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash});
+        try{
+          let moment = require('moment');
+          let cashInfo = {
+            invoice: 'CR-'+cart.id,
+            description: 'pay test',
+            value: (carttotal).toString(),
+            tax: ((carttotal/1.19)*0.19).toString(),
+            tax_base: (carttotal/1.19).toString(),
+            currency: 'COP',
+            type_person: '0',
+            doc_type: 'CC',
+            doc_number: '10358519',
+            name: user.fullName,
+            last_name: ' ',
+            email: user.emailAddress,
+            cell_phone: '3010000001',
+            end_date: moment().add(3, 'days').format('YYYY-MM-DD').toString(),//'2020-12-05',
+            ip:require('ip').address(), /*This is the client's IP, it is required */
+            url_response: 'http://localhost:1337/respuesta',
+            url_confirmation: 'http://localhost:1337/confirmacion',
+            method_confirmation: 'POST',
+          };
+          payment = await sails.helpers.payment.payment({mode:paymentmethod, info:cashInfo, method:req.body.cash});
+          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash});
+        }catch(err){
+          return res.redirect('/checkout?error='+err);
+        }
         break;
       case 'COD':
         order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:{data:{estado:'Pendiente',ref_payco:''}},extra:req.body.codOp});

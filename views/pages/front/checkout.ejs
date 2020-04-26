@@ -17,11 +17,14 @@
                             </div>
                         </div>
                 </div>
+                <div class="card is-hidden" id="address-message">
+                    <p class="help is-danger has-text-centered">Elige una dirección de envío</p>
+                </div>
                 <%addresses.forEach((address)=>{%>
                     <div class="card">
                         <header class="card-header">
                         <p class="card-header-title is-capitalized is-size-7">
-                            <input type="radio" required name="deliveryAddress" value="<%=address.id%>"/>&nbsp;
+                            <input type="radio" name="deliveryAddress" value="<%=address.id%>"/>&nbsp;
                             <%= address.name %>
                         </p>
                         <div class="box is-right">
@@ -51,6 +54,9 @@
                             </p>
                         </div>
                     </div>
+                </div>
+                <div class="card is-hidden" id="payment-message">
+                    <p class="help is-danger has-text-centered">Elige una opción de pago</p>
                 </div>
                 <div class="card">
                     <header class="card-header">
@@ -253,11 +259,13 @@
                             <div class="content is-size-7">
                                 <p class="has-text-centered"><label class="label is-size-7">Elige el logo del aliado en donde realizarás el pago</label></p>
                                 <input type="hidden" name="cash" value="" />
-                                <img class="cash-logo grayscale" id="efecty" src="/images/efecty.webp">
-                                <img class="cash-logo grayscale" id="baloto" src="/images/baloto.webp">
-                                <img class="cash-logo grayscale" id="gana" src="/images/gana.webp">
-                                <img class="cash-logo grayscale" id="puntored" src="/images/puntored.webp">
-                                <img class="cash-logo grayscale" id="redservi" src="/images/redservi.webp">
+                                <p class="has-text-centered">
+                                    <img class="cash-logo grayscale" id="efecty" src="/images/efecty.webp">
+                                    <img class="cash-logo grayscale" id="baloto" src="/images/baloto.webp">
+                                    <img class="cash-logo grayscale" id="gana" src="/images/gana.webp">
+                                    <!--<img class="cash-logo grayscale" id="puntored" src="/images/puntored.webp">
+                                    <img class="cash-logo grayscale" id="redservi" src="/images/redservi.webp">-->
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -293,7 +301,7 @@
                                         </div>
                                         <div class="column">
                                             <p style="text-decoration: line-through;" class="is-italic is-size-7 has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>
-                                            <p class="has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
+                                            <p class="has-text-right">$&nbsp;<%= Math.round(((((cartproduct.productvariation.price/1.19))-((cartproduct.productvariation.price/1.19)*(cartproduct.product.discount.value/100)))*(1+(cartproduct.product.tax.value/100)))*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
                                         </div>
                                     </div>
                                 </div>
@@ -351,14 +359,28 @@
         }
     };
 
+    let checkSection = (elm, msg) =>{
+        let am = document.querySelector('#'+msg);
+        if(elm===null){
+            removeClass(am,'is-hidden')
+            return false;
+        }
+        addClass(am,'is-hidden')
+        return true
+    }
+
     live('input[type="radio"]','click', e =>{
         let card = e.target.parentNode.parentNode.parentNode.querySelector('.card-content');
         accordion(card);
     });
 
     live('#order','click',e =>{
+        e.preventDefault();
         let forder = document.querySelector('#order-form');
-        if(validateForm(forder)){
+        let address = document.querySelector('input[name="deliveryAddress"]:checked');
+        let payment = document.querySelector('input[name="paymentMethod"]:checked');
+        
+        if(checkSection(address,'address-message') && checkSection(payment,'payment-message') && validateForm(forder)){
             forder.submit();
         }
     })

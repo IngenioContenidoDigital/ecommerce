@@ -11,7 +11,6 @@ module.exports = {
     name:{
       type:'string',
       required:true,
-      unique:true
     },
     addressline1:{
       type:'string',

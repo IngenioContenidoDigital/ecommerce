@@ -39,7 +39,9 @@
                         </div>
                     </div>
                     <div class="column is-one-fifth">
-                        <span id="item-price" price="<%=cartproduct.productvariation.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%></span>
+                        <span id="item-old" style="text-decoration: line-through;" class="is-size-7">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%></span>
+                        <% let discounted = ((cartproduct.productvariation.price/1.19)*((100-cartproduct.product.discount.value)/100))*(1+(cartproduct.product.tax.value/100));%>
+                        <span id="item-price" price="<%=discounted%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(discounted).toLocaleString("es-CO");%></span>
                     </div>
                 </div>
             <%})%>

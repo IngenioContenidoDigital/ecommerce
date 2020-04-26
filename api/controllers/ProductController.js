@@ -42,7 +42,7 @@ module.exports = {
       variations:variations,
       action:action,
       product:product,
-      error:error
+      error:error,
     });
   },
   createproduct: async function(req, res){
@@ -190,11 +190,13 @@ module.exports = {
     .populate('variations')
     .populate('images');
 
+    let discount = await sails.helpers.discount(product.id);
+
     for(let size of product.variations){
       size.variation=await Variation.findOne({id:size.variation});
     }
 
-    return res.view('pages/front/product',{product:product});
+    return res.view('pages/front/product',{product:product, discount:discount});
   }
 
 };

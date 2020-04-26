@@ -82,6 +82,8 @@ module.exports.routes = {
   'POST /orderstate/edit/:id' : 'OrderController.stateedit',
   'PUT /orderstate/:id' : 'OrderController.validstate',
   'GET /orders' : 'OrderController.listorders',
+  'GET /discounts/:action?/:id?' : 'DiscountController.discounts',
+  'POST /discount/create' : 'DiscountController.creatediscount'
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************
