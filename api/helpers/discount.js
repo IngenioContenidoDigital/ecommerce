@@ -22,6 +22,18 @@ module.exports = {
       },
       limit:1,
       sort: 'createdAt ASC'});
+    let discPrice=0;
+    let product = await Product.findOne({id:id}).populate('tax');
+    switch(discount.discount[0].type){
+      case 'P':
+        discPrice+=((product.price)-(product.price*(discount.discount[0].value/100)))*(1+(product.tax.value/100));
+        break;
+      case 'C':
+        discPrice+=(product.price-discount.discount[0].value)*(1+(product.tax.value/100));
+        break;
+    }
+    discount.discount[0].price=discPrice;
+
     return exits.success(discount.discount[0]);
   }
 

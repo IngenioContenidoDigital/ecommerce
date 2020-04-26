@@ -51,7 +51,7 @@ module.exports = {
     for(let item of items){
       let discount = await sails.helpers.discount(item.productvariation.product);
       if(discount!==null){
-        cartvalue += ((((item.productvariation.price/1.19)-(item.productvariation.price/1.19)*(discount.value/100))*1.19)*item.quantity);
+        cartvalue += parseFloat(discount.price*item.quantity);
       }else{
         cartvalue += parseFloat(item.productvariation.price*item.quantity);
       }

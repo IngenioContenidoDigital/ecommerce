@@ -31,10 +31,9 @@
                 <hr>
                 <table class="table is-size-6">
                     <%if(discount!==null){%><tr><td>Precio recomendado:</td><td><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr><%}%>
-                    <%let disc = Math.round((product.price*((100-discount.value)/100))*(1+(product.tax.value/100))).toLocaleString("es-CO")%>
-                    <tr><td>Precio:</td><td>$&nbsp;<%= disc %></td></tr>
+                    <tr><td>Precio:</td><td>$&nbsp;<%= Math.round(discount.price).toLocaleString("es-CO"); %></td></tr>
                     <%if(discount!==null){%>
-                    <% let savings = parseInt(product.price*(1+(product.tax.value/100)))-parseInt((product.price*((100-discount.value)/100))*(1+(product.tax.value/100))) %>
+                    <% let savings = parseInt((product.price*(1+(product.tax.value/100)))-discount.price) %>
                     <tr><td>Ahorro:</td><td class="has-text-success">$&nbsp;<%= savings.toLocaleString('es-CO'); %></td></tr>
                     <%}%>
                 </table>

@@ -28,8 +28,8 @@ module.exports = {
         break;
       case 'CS':
         epayco.cash.create(inputs.data.method.toLowerCase().trim(), inputs.data.info)
-        .then(cash => {console.log(cash); return exits.success(cash);})
-        .catch(err => {console.log(err); return exits.error(err);});
+        .then(cash => {return exits.success(cash);})
+        .catch(err => {return exits.error(err);});
         break;
     }
   }

@@ -99,6 +99,7 @@ module.exports = {
     switch(paymentmethod){
       case 'CC':
         try{
+
           let creditInfo = {
             'card[number]': req.body.card,
             'card[exp_year]': req.body.year,
@@ -109,15 +110,15 @@ module.exports = {
 
           let customerInfo = {
             token_card: token.id,
-            name: user.fullName,
+            name: req.body.cardname.toUpperCase().trim(),
             last_name: ' ',
             email: user.emailAddress,
             default: true,
             //Optional parameters: These parameters are important when validating the credit card transaction
             city: address.city,
-            address: address.addressline1+' '+address.addressline1,
-            /*phone: '3005234321',
-            cell_phone: '3010000001'*/
+            address: address.addressline1+' '+address.addressline2,
+            /*phone: '3005234321',*/
+            cell_phone: user.mobile.toString()
           };
 
           let customer = await sails.helpers.payment.customer(customerInfo);
@@ -146,7 +147,7 @@ module.exports = {
           };
 
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
-          if(payment.status){
+          if(payment.success){
             order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
           }else{
             let msg='Error en el proceso. Por favor intenta nuevamente';
@@ -166,26 +167,34 @@ module.exports = {
           tax_base: (carttotal/1.19).toString(),
           currency: 'COP',
           type_person: req.body.person,
-          doc_type: 'CC',
-          doc_number: '10358519',
+          doc_type: user.dniType,
+          doc_number: user.dni.toString(),
           name: user.fullName,
           last_name: ' ',
           email: user.emailAddress,
           country: 'CO',
-          cell_phone: '3010000001',
+          cell_phone: user.mobile.toString(),
           ip:require('ip').address(), /*This is the client's IP, it is required */
           url_response: 'http://localhost:1337/respuesta',
           url_confirmation: 'http://localhost:1337/confirmacion',
           method_confirmation: 'POST',
         };
         payment = await sails.helpers.payment.payment({mode:paymentmethod, info:pseInfo});
-        if(payment.data.urlbanco!=='' && payment.data.urlbanco!==null){
-          const open = require('open');
-          (async ()=>{
-            await open(payment.data.urlbanco);
-          })();
+        if(payment.success){
+          if(payment.data.urlbanco!=='' && payment.data.urlbanco!==null){
+            const open = require('open');
+            (async ()=>{
+              await open(payment.data.urlbanco);
+            })();
+          }
+          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
+        }else{
+          let msg='Error en el proceso. Por favor intenta nuevamente';
+          if(payment.data.errores[0]!==undefined){
+            msg =payment.data.errores[0].errorMessage;
+          }
+          return res.redirect('/checkout?error='+msg);
         }
-        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
         break;
       case 'CS':
         try{
@@ -198,12 +207,12 @@ module.exports = {
             tax_base: (carttotal/1.19).toString(),
             currency: 'COP',
             type_person: '0',
-            doc_type: 'CC',
-            doc_number: '10358519',
+            doc_type: user.dniType,
+            doc_number: user.dni,
             name: user.fullName,
             last_name: ' ',
             email: user.emailAddress,
-            cell_phone: '3010000001',
+            cell_phone: user.mobile.toString(),
             end_date: moment().add(3, 'days').format('YYYY-MM-DD').toString(),//'2020-12-05',
             ip:require('ip').address(), /*This is the client's IP, it is required */
             url_response: 'http://localhost:1337/respuesta',
@@ -211,7 +220,15 @@ module.exports = {
             method_confirmation: 'POST',
           };
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:cashInfo, method:req.body.cash});
-          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash});
+          if(payment.success){
+            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash});
+          }else{
+            let msg='Error en el proceso. Por favor intenta nuevamente';
+            if(payment.data.errores[0]!==undefined && payment.data.errores[0]!==null){
+              msg =payment.data.errores[0].errorMessage;
+            }
+            return res.redirect('/checkout?error='+msg);
+          }
         }catch(err){
           return res.redirect('/checkout?error='+err);
         }

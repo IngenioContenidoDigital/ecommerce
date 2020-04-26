@@ -34,8 +34,7 @@
                             <p class="has-text-weight-bold is-uppercase"><%=product.name%></p>
                             <%if(product.discount!==null){%><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span><%}%>
                             <%if(product.discount!==null){%>
-                                <%let discounted = Math.round((product.price*((100-product.discount.value)/100))*(1+(product.tax.value/100))); %>
-                                <span class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= discounted.toLocaleString("es-CO");%></span>
+                                <span class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                             <%}else{%>
                                 <span class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
                             <%}%>

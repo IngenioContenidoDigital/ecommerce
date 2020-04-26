@@ -39,9 +39,12 @@
                         </div>
                     </div>
                     <div class="column is-one-fifth">
-                        <span id="item-old" style="text-decoration: line-through;" class="is-size-7">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%></span>
-                        <% let discounted = ((cartproduct.productvariation.price/1.19)*((100-cartproduct.product.discount.value)/100))*(1+(cartproduct.product.tax.value/100));%>
-                        <span id="item-price" price="<%=discounted%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(discounted).toLocaleString("es-CO");%></span>
+                        <%if(cartproduct.product.discount!==null){%>
+                            <span id="item-old" price="<%=cartproduct.productvariation.price%>" style="text-decoration: line-through;" class="is-size-7">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%></span>
+                            <span id="item-price" price="<%=cartproduct.product.discount.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.product.discount.price).toLocaleString("es-CO");%></span>
+                        <%}else{%>
+                            <span id="item-price" price="<%=cartproduct.productvariation.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.productvariation.price).toLocaleString("es-CO");%></span>
+                        <%}%>
                     </div>
                 </div>
             <%})%>
@@ -96,9 +99,12 @@
         let vrt = e.target.parentNode.parentNode.parentNode.querySelector('a').getAttribute('variation');
         io.socket.put('/cart',{variation:vrt,quantity:qty,action:'update'},(res) => {
             let price = e.target.parentNode.parentNode.parentNode.querySelector('#item-price');
+            let oldPrice = e.target.parentNode.parentNode.parentNode.querySelector('#item-old');
             let itemprice = price.getAttribute('price');
+            let itemOldprice = oldPrice.getAttribute('price');
             let subtotal = document.querySelector('#cart-total');
             price.innerHTML='$&nbsp;'+Math.round(itemprice*qty).toLocaleString("es-CO");
+            oldPrice.innerHTML='$&nbsp;'+Math.round(itemOldprice*qty).toLocaleString("es-CO");
             subtotal.innerHTML='$&nbsp;'+Math.round(res.value).toLocaleString("es-CO");
         });
     })

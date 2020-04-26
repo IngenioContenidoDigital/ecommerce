@@ -72,43 +72,6 @@
                             <div class="content is-size-7">
                                 <div class="field">
                                     <div class="control has-icons-right">
-                                        <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
-                                        <span class="icon is-right">
-                                            <i class='bx bxs-user-rectangle' ></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="columns is-mobile">
-                                    <div class="column is-two-fifths">
-                                        <div class="field">
-                                            <div class="control">
-                                            <div class="select is-small">
-                                                <select name="tid">
-                                                    <option value="CC">CC</option>
-                                                    <option value="CE">CE</option>
-                                                    <option value="NIT">NIT</option>
-                                                    <option value="PPN">PPN</option>
-                                                    <option value="SSN">SSN</option>
-                                                    <option value="LIC">LIC</option>
-                                                    <option value="DNI">DNI</option>
-                                                </select>
-                                            </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column is-three-fifths">
-                                        <div class="field">
-                                            <div class="control has-icons-right">
-                                                <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
-                                                <span class="icon is-right">
-                                                    <i class='bx bx-id-card'></i>
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="field">
-                                    <div class="control has-icons-right">
                                         <input class="input is-small" type="number" name="card" placeholder="Número de la Tarjeta"/>
                                         <span class="icon is-right">
                                             <i class='bx bx-credit-card-front'></i>
@@ -161,6 +124,43 @@
                                                 <%}%>
                                                 </select>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="control has-icons-right">
+                                        <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
+                                        <span class="icon is-right">
+                                            <i class='bx bxs-user-rectangle' ></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="columns is-mobile">
+                                    <div class="column is-two-fifths">
+                                        <div class="field">
+                                            <div class="control">
+                                            <div class="select is-small">
+                                                <select name="tid">
+                                                    <option value="CC">CC</option>
+                                                    <option value="CE">CE</option>
+                                                    <option value="NIT">NIT</option>
+                                                    <option value="PPN">PPN</option>
+                                                    <option value="SSN">SSN</option>
+                                                    <option value="LIC">LIC</option>
+                                                    <option value="DNI">DNI</option>
+                                                </select>
+                                            </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="column is-three-fifths">
+                                        <div class="field">
+                                            <div class="control has-icons-right">
+                                                <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
+                                                <span class="icon is-right">
+                                                    <i class='bx bx-id-card'></i>
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -300,8 +300,12 @@
                                             <span class="is-size-7">Cantidad: <%=cartproduct.quantity%></span>
                                         </div>
                                         <div class="column">
-                                            <p style="text-decoration: line-through;" class="is-italic is-size-7 has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>
-                                            <p class="has-text-right">$&nbsp;<%= Math.round(((((cartproduct.productvariation.price/1.19))-((cartproduct.productvariation.price/1.19)*(cartproduct.product.discount.value/100)))*(1+(cartproduct.product.tax.value/100)))*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
+                                            <%if(cartproduct.product.discount!==null){%>
+                                                <p style="text-decoration: line-through;" class="is-italic is-size-7 has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>
+                                                <p class="has-text-right">$&nbsp;<%= Math.round(cartproduct.product.discount.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
+                                            <%}else{%>
+                                                <p class="has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
+                                            <%}%>
                                         </div>
                                     </div>
                                 </div>
