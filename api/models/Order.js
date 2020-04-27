@@ -10,15 +10,19 @@ module.exports = {
   attributes: {
     totalOrder:{
       type:'number',
+      defaultsTo:0,
     },
     totalShipping:{
-      type:'number'
+      type:'number',
+      defaultsTo:0,
     },
     totalProducts:{
       type:'number',
+      defaultsTo:0
     },
     totalDiscount:{
       type:'number',
+      defaultsTo:0
     },
     conversionRate:{
       type:'number',

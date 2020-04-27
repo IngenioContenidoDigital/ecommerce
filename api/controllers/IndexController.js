@@ -27,7 +27,6 @@ module.exports = {
         .populate('manufacturer')
         .populate('tax');
         cartproduct.product.discount = await sails.helpers.discount(cartproduct.product.id);
-
         cartproduct.productvariation.variation = await Variation.findOne({id:cartproduct.productvariation.variation});
       }
     }

@@ -12,7 +12,8 @@ module.exports = {
     cart:{model:'cart'},
     product:{model:'product'},
     productvariation:{model:'productvariation'},
-    quantity:{type:'number', defaultsTo:0}
+    totalDiscount:{type:'number',defaultsTo:0},
+    totalPrice:{type:'number',defaultsTo:0},
 
   },
 

@@ -242,7 +242,35 @@ module.exports = {
   },
   listorders: async function(req, res){
     let error = req.param('error') ? req.param('error') : null;
+    let action = req.param('action') ? req.param('action') : null;
+    let id = req.param('id') ? req.param('id') : null;
     let moment = require('moment');
+    let items = null;
+    let order = null;
+    let ostates = null;
+
+    if(id){
+      order = await Order.findOne({id:id})
+      .populate('addressDelivery')
+      .populate('customer')
+      .populate('currentstatus');
+
+      ostates = await OrderState.find().populate('color');
+
+      items = await OrderItem.find({order:order.id})
+      .populate('product')
+      .populate('productvariation');
+
+      items.forEach(async item =>{
+        item.product = await Product.findOne({id:item.product.id})
+        .populate('images')
+        .populate('manufacturer')
+        .populate('mainColor');
+
+        item.productvariation = await ProductVariation.findOne({id:item.productvariation.id}).populate('variation');
+      });
+    }
+
     let orders = await Order.find().sort('createdAt DESC')
     .populate('customer')
     .populate('currentstatus');
@@ -251,7 +279,15 @@ module.exports = {
       st.currentstatus = await OrderState.findOne({id:st.currentstatus.id})
       .populate('color');
     }
-    return res.view('pages/orders/orders',{orders:orders,error:error, moment:moment});
+    return res.view('pages/orders/orders',{
+      orders:orders,
+      error:error,
+      moment:moment,
+      action:action,
+      order:order,
+      items:items,
+      states:ostates
+    });
   }
 
 };

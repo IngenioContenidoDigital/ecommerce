@@ -1,3 +1,4 @@
+<% let printed = []; let flag = false; %>
 <div class="container">
     <% if (error !== undefined && error !== null) { %>
         <div class="notification is-danger is-light" id="error">
@@ -282,6 +283,15 @@
                     </div>
                     <div class="card-content is-paddingless">
                         <% cart.forEach((cartproduct)=>{%> 
+                            <% printed.forEach(elm =>{%>
+                                <%if(elm.variation===cartproduct.productvariation.id){%>
+                                    <% flag = true; %>
+                                <%}%>
+                            <%})%>
+                            <%if(!flag){%>
+                                <% printed.push({variation:cartproduct.productvariation.id,quantity:1}); %>
+                            <%}%>
+                            <%if(!flag){%>
                             <article class="media">
                                 <% cartproduct.product.images.forEach((image)=>{%>
                                     <%if(image.cover==1){%>
@@ -292,25 +302,33 @@
                                         </figure>     
                                     <%}%>
                                 <%})%>
-                                <div class="media-content">
+                                <div class="media-content" variation="<%=cartproduct.productvariation.id%>">
                                     <div class="columns is-mobile">
                                         <div class="column">
                                             <p class="is-uppercase has-text-weight-bold is-size-7"><%=cartproduct.product.name%></p>
                                             <span class="is-size-7">Talla: <span class="is-uppercase"><%=cartproduct.productvariation.variation.name%></span></span>
-                                            <span class="is-size-7">Cantidad: <%=cartproduct.quantity%></span>
+                                            <span id="quantity" class="is-size-7"></span>
                                         </div>
                                         <div class="column">
                                             <%if(cartproduct.product.discount!==null){%>
-                                                <p style="text-decoration: line-through;" class="is-italic is-size-7 has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>
-                                                <p class="has-text-right">$&nbsp;<%= Math.round(cartproduct.product.discount.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
+                                                <p id="item-old" price="<%=cartproduct.productvariation.price%>" style="text-decoration: line-through;" class="is-italic is-size-7 has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>
+                                                <p id="item-price" price="<%=cartproduct.totalPrice%>" class="has-text-right">$&nbsp;<%= Math.round(cartproduct.product.discount.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
                                             <%}else{%>
-                                                <p class="has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
+                                                <p id="item-price" price="<%=cartproduct.productvariation.price%>" class="has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
                                             <%}%>
                                         </div>
                                     </div>
                                 </div>
                                 <hr>
                             </article>
+                            <%}else{%>
+                                <% printed.forEach(elm =>{%>
+                                    <%if(elm.variation===cartproduct.productvariation.id){%>
+                                        <% elm.quantity+=1;%>
+                                        <% flag = false; %>
+                                    <%}%>
+                                <%})%>
+                            <%}%>
                         <%})%>
                         <div class="columns is-mobile is-marginless is-paddingles is-size-7">
                             <div class="column">
@@ -352,6 +370,27 @@
     </form>
 </div>
 <script>
+
+    let totals = <%- JSON.stringify(printed) %>;
+
+    const quantites = () =>{
+        let list = document.querySelectorAll('.media-content');
+        for(let row of list){
+            let select = row.querySelector('#quantity')
+            totals.forEach(el =>{
+                if(el.variation.toString()===row.getAttribute('variation')){
+                    select.innerHTML='Cant: '+el.quantity;
+                    let itemPrice = row.querySelector('#item-price')
+                    let itemOld = row.querySelector('#item-old')
+                    itemPrice.innerHTML = '$ '+Math.round(itemPrice.getAttribute('price')*el.quantity).toLocaleString('es-CO')+'&nbsp;';
+                    itemOld.innerHTML = '$ '+Math.round(itemOld.getAttribute('price')*el.quantity).toLocaleString('es-CO')+'&nbsp;';
+                }
+            });
+        }
+    }
+
+    quantites();
+
     const accordion = elm => {
         const cards = elm.parentNode.parentNode.querySelectorAll('.card-content');
         for(let c of cards){if(!hasClass(c,'is-hidden')){addClass(c,'is-hidden');}}

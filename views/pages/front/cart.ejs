@@ -1,3 +1,4 @@
+<% let printed = []; let flag = false; %>
 <div class="container">
     <div class="columns">
         <div class="column is-four-fifths">
@@ -17,6 +18,15 @@
             </section>
         <%} else{ %>
             <% cart.forEach((cartproduct)=>{%> 
+                <% printed.forEach(elm =>{%>
+                    <%if(elm.variation===cartproduct.productvariation.id){%>
+                        <% flag = true; %>
+                    <%}%>
+                <%})%>
+                <%if(!flag){%>
+                    <% printed.push({variation:cartproduct.productvariation.id,quantity:1}); %>
+                <%}%>
+                <%if(!flag){%>
                 <div class="columns">
                     <a product="<%=cartproduct.product.id%>" variation="<%=cartproduct.productvariation.id%>" class="delete"></a>
                     <div class="column is-one-fifth">
@@ -33,20 +43,28 @@
                         <div class="select is-primary is-small">
                             <select name="quantity">
                             <%for(let i=1; i<=cartproduct.productvariation.quantity;i++){%>
-                                <option value="<%=i%>"<%if(i===cartproduct.quantity){%> selected="selected"<%}%>>Cant:.&nbsp;<%=i%></option>
+                                <option value="<%=i%>">Cant:.&nbsp;<%=i%></option>
                             <%}%>
                             </select>
                         </div>
                     </div>
                     <div class="column is-one-fifth">
                         <%if(cartproduct.product.discount!==null){%>
-                            <span id="item-old" price="<%=cartproduct.productvariation.price%>" style="text-decoration: line-through;" class="is-size-7">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%></span>
+                            <span id="item-old" price="<%=cartproduct.productvariation.price%>" style="text-decoration: line-through;" class="is-size-7">$&nbsp;<%= Math.round(cartproduct.productvariation.price).toLocaleString("es-CO");%></span>
                             <span id="item-price" price="<%=cartproduct.product.discount.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.product.discount.price).toLocaleString("es-CO");%></span>
                         <%}else{%>
                             <span id="item-price" price="<%=cartproduct.productvariation.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.productvariation.price).toLocaleString("es-CO");%></span>
                         <%}%>
                     </div>
                 </div>
+               <%}else{%>
+                    <% printed.forEach(elm =>{%>
+                        <%if(elm.variation===cartproduct.productvariation.id){%>
+                            <% elm.quantity+=1;%>
+                            <% flag = false; %>
+                        <%}%>
+                    <%})%>
+               <%}%>
             <%})%>
         <% } %>
         </div>
@@ -66,6 +84,26 @@
     </div>
 </div>
 <script>
+    let totals = <%- JSON.stringify(printed) %>;
+
+    const quantites = () =>{
+        let list = document.querySelectorAll('.delete');
+        for(let row of list){
+            let select = row.parentNode.querySelector('select[name="quantity"]')
+            totals.forEach(el =>{
+                if(el.variation.toString()===row.getAttribute('variation')){
+                    select.value=el.quantity;
+                    let itemPrice = row.parentNode.querySelector('#item-price')
+                    let itemOld = row.parentNode.querySelector('#item-old')
+                    itemPrice.innerHTML = '$ '+Math.round(itemPrice.getAttribute('price')*el.quantity).toLocaleString('es-CO');
+                    itemOld.innerHTML = '$ '+Math.round(itemOld.getAttribute('price')*el.quantity).toLocaleString('es-CO');
+                }
+            });
+        }
+    }
+
+    quantites();
+
     live('.delete','click', (e) =>{
         let qty = 0
         let vrt = e.target.getAttribute('variation');

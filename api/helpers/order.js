@@ -1,6 +1,6 @@
 module.exports = {
   friendlyName: 'Order',
-  description: 'Order something.',
+  description: 'Helper usado para realizar la creación de ordenes',
   inputs: {
     data:{
       type:'ref',
@@ -23,8 +23,10 @@ module.exports = {
                   .populate('productvariation');
 
     let carttotal = 0;
+    let totaldiscount = 0;
     cartproducts.forEach(async cp=>{
-      carttotal+= cp.productvariation.price;
+      carttotal+= cp.totalPrice;
+      totaldiscount+=cp.totalDiscount;
     });
 
     try{
@@ -32,7 +34,7 @@ module.exports = {
         totalOrder:carttotal,
         totalShipping:0,
         totalProducts:carttotal,
-        totalDiscount:0,
+        totalDiscount:totaldiscount,
         conversionRate:1,
         customer:user.id,
         addressDelivery:address.id,
@@ -43,16 +45,20 @@ module.exports = {
         paymentOption:extra,
       }).fetch();
 
+      await OrderHistory.create({
+        order:order.id,
+        state:order.currentstatus,
+        user: user.id
+      });
+
       for(let cp of cartproducts){
-        for(let i=0; i<cp.quantity; i++){
-          await OrderItem.create({
-            order:order.id,
-            product:cp.product.id,
-            productvariation:cp.productvariation.id,
-            price:cp.productvariation.price,
-            discount:0,
-            originalPrice:cp.productvariation.price});
-        }
+        await OrderItem.create({
+          order:order.id,
+          product:cp.product.id,
+          productvariation:cp.productvariation.id,
+          price:cp.totalPrice,
+          discount:cp.totalDiscount,
+          originalPrice:cp.productvariation.price});
       }
       return exits.success(order);
     }catch(err){
