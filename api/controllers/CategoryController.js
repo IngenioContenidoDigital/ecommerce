@@ -33,17 +33,23 @@ module.exports = {
   addcategory: async function(req,res){
     var isActive=false;
     var error = null;
+    let newcat = null;
     if(req.body.activo==='on'){isActive=true;}
+    let current = await Category.findOne({id:req.body.current});
     try{
-      let current = await Category.findOne({id:req.body.current});
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/categories');
-      let newcat = await Category.create({name:req.body.nombre,logo:filename[0],description:req.body.descripcion,active:isActive,level:current.level+1}).fetch();
-      await Category.addToCollection(newcat.id,'parent', current.id);
-      await Category.updateOne({id:current.id}).set({hasChildren:true});
+      newcat = await Category.create({name:req.body.nombre,logo:filename[0],description:req.body.descripcion,active:isActive,level:current.level+1}).fetch();
     }catch(err){
       error = err.msg;
+      if(err.code==='badRequest'){
+        newcat = await Category.create({name:req.body.nombre,description:req.body.descripcion,active:isActive,level:current.level+1}).fetch();
+      }
     }
-    if (error===undefined || error===null){
+
+    await Category.addToCollection(newcat.id,'parent', current.id);
+    await Category.updateOne({id:current.id}).set({hasChildren:true});
+
+    if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/categories/list');
     }else{
       return res.redirect('/categories/list?error='+error);
@@ -55,30 +61,32 @@ module.exports = {
     const route = 'assets/images/categories';
     let category = await Category.findOne({id:req.param('id')});
     let filename = [category.logo];
+    let parent = await Category.findOne({id:req.body.current});
     if(req.body.activo==='on'){isActive=true;}
     try{
-      if(req.file('logo')._files.length>0){
-        var fs = require('fs');
-        try{
-          if (fs.existsSync(route+'/'+filename[0])) { fs.unlinkSync(route+'/'+filename[0]);}
-          if (fs.existsSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'))) { fs.unlinkSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'));}
-        }catch(err){
-          console.log(err);
-        }
-        filename = await sails.helpers.fileUpload(req,'logo',2000000,route);
+      uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
+      var fs = require('fs');
+      if(filename[0].length>0){
+        if (fs.existsSync(route+'/'+filename[0])) { fs.unlinkSync(route+'/'+filename[0]);}
+        if (fs.existsSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'))) { fs.unlinkSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'));}
       }
-      let parent = await Category.findOne({id:req.body.current});
-      await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, logo:filename[0], active:isActive,level:parent.level+1});
-      if(req.body.parent!==parent.id){
-        await Category.removeFromCollection(req.body.parent,'children').members([category.id]);
-        await Category.addToCollection(category.id,'parent',parent.id);
-        await Category.addToCollection(parent.id,'children',category.id);
-        await Category.updateOne({id:parent.id}).set({hasChildren:true});
-      }
+
+      await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, logo:uploaded[0], active:isActive,level:parent.level+1});
     }catch(err){
+      console.log(err);
       error = err.msg;
+      if(err.code==='badRequest'){
+        await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, active:isActive,level:parent.level+1});
+      }
     }
-    if (error===undefined || error===null){
+    if(req.body.parent!==parent.id){
+      await Category.removeFromCollection(req.body.parent,'children').members([category.id]);
+      await Category.addToCollection(category.id,'parent',parent.id);
+      await Category.addToCollection(parent.id,'children',category.id);
+      await Category.updateOne({id:parent.id}).set({hasChildren:true});
+    }
+
+    if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/categories/list');
     }else{
       return res.redirect('/categories/list?error='+error);

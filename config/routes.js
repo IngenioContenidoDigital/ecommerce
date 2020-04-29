@@ -92,6 +92,11 @@ module.exports.routes = {
   'GET /find/regions/:id' : 'CountriesController.countryregions',
   'GET /find/cities/:id' : 'CountriesController.regioncities',
 
+  'GET /carriers/:action?/:id?' : 'CarrierController.showcarriers',
+  'POST /carrier/create' : 'CarrierController.createcarrier',
+  'PUT /carrier/:id' : 'CarrierController.carrierstate',
+  'POST /carrier/edit/:id' : 'CarrierController.editcarrier',
+
   'GET /order/state/:action?/:id?' : 'OrderController.liststates',
   'POST /orderstate/create' : 'OrderController.stateadd',
   'POST /orderstate/edit/:id' : 'OrderController.stateedit',
