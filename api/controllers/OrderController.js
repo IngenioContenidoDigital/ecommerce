@@ -255,6 +255,9 @@ module.exports = {
       .populate('customer')
       .populate('currentstatus');
 
+      order.addressDelivery = await Address.findOne({id:order.addressDelivery.id}).populate('country');
+      order.currentstatus = await OrderState.findOne({id:order.currentstatus.id}).populate('color');
+
       ostates = await OrderState.find().populate('color');
 
       items = await OrderItem.find({order:order.id})
@@ -279,6 +282,7 @@ module.exports = {
       st.currentstatus = await OrderState.findOne({id:st.currentstatus.id})
       .populate('color');
     }
+
     return res.view('pages/orders/orders',{
       orders:orders,
       error:error,
@@ -288,6 +292,21 @@ module.exports = {
       items:items,
       states:ostates
     });
+  },
+  updateorder: async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let id = req.body.id;
+    let user = req.session.user ? req.session.user : null;
+    let order = await Order.updateOne({id:id}).set({currentstatus:req.body.orderState});
+    let newstate = await OrderState.findOne({id:req.body.orderState}).populate('color');
+    if(user!==null && user!== undefined){
+      await OrderHistory.create({order:order.id,state:req.body.orderState,user:user.id});
+    }else{
+      await OrderHistory.create({order:order.id,state:req.body.orderState});
+    }
+    return res.send(newstate);
   }
 
 };

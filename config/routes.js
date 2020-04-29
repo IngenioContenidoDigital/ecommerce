@@ -84,6 +84,7 @@ module.exports.routes = {
   'GET /orders/:action?/:id?' : 'OrderController.listorders',
   'GET /discounts/:action?/:id?' : 'DiscountController.discounts',
   'POST /discount/create' : 'DiscountController.creatediscount',
+  'PUT /order/update' : 'OrderController.updateorder'
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

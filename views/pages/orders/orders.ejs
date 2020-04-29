@@ -9,10 +9,11 @@
         <div class="columns is-size-7">
           <div class="column">
             <div class="box">
-              <h7 class="title is-7">Información del Pedido</h7><span class="is-pulled-right is-size-5"><%=order.id %></span>
+              <h7 class="title is-7">Información del Pedido</h7><span id="order" order="<%=order.id %>" class="is-pulled-right is-size-5"><%=order.id %></span>
               <hr>
               <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Nombre:&nbsp;</span><span class="is-pulled-right"><%= order.customer.fullName %></span></p>
-              <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Pedido creado:&nbsp;</span><span class="is-pulled-right"><%= moment(order.createdAt).format('LLL')%></span></p>
+              <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Pedido creado:&nbsp;</span><span class="is-pulled-right"><%= moment(order.createdAt).locale('es').format('LLL')%></span></p>
+              <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Tiempo Transcurrido:&nbsp;</span><span class="is-pulled-right"><%= moment.duration((new Date())-order.createdAt).locale('es').humanize()%></span></p>
               <br>
               <div class="select is-fullwidth">
                 <select class="is-capitalized" name="orderState">
@@ -21,6 +22,30 @@
                     <%})%>
                 </select>
               </div>
+              <br><br>
+                <div class="columns is-mobile">
+                  <div class="column">
+                    <div id="state-color" class="color-container" style="margin-top:8px;background-color:<%= order.currentstatus.color.code %>;border:solid 1px <%=order.currentstatus.color.code%>;"></div>
+                  </div>
+                  <div class="column has-text-right">
+                    <button id="stt" class="button is-primary is-small">Actualizar Estado</button>
+                  </div>
+                </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="box">
+              <h7 class="title is-7">Información del Pago</h7><span class="is-pulled-right is-size-5"><%=order.paymentId %></span>
+              <hr>
+              <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Medio de Pago:&nbsp;</span><span class="is-pulled-right"><%= order.paymentMethod %></span></p>
+              <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Detalle de Pago:&nbsp;</span><span class="is-pulled-right"><%= order.paymentOption %></span></p>
+              <p class="container is-capitalized">
+                <table class="table is-fullwidth">
+                  <tr><td><span class="has-text-weight-bold is-size-7">Productos:</span></td><td><p class="has-text-dark has-text-right">$&nbsp;<%= Math.round(order.totalProducts).toLocaleString('es-CO')%></p></td></tr>
+                  <tr><td><span class="has-text-weight-bold is-size-7">Envío:</span></td><td><p class="has-text-success has-text-right">$&nbsp;<%= Math.round(order.totalShipping).toLocaleString('es-CO')%></p></td></tr>
+                  <tr><td><span class="has-text-weight-bold is-size-7">Pedido:</span></td><td><p class="has-text-danger has-text-right">$&nbsp;<%= Math.round(order.totalOrder).toLocaleString('es-CO')%></p></td></tr>
+                </table>
+              </p>
             </div>
           </div>
           <div class="column">
@@ -32,9 +57,11 @@
               <span class="is-capitalized"><%= order.addressDelivery.region %>, </span>
               <span class="is-capitalized"><%= order.addressDelivery.city %></span>
               <span class="is-uppercase"><%= order.addressDelivery.zipcode %></span>
+              <p class="container is-capitalized"><%= order.addressDelivery.country.name %></p>
               <br>
               <p class="container"><h7 class="subtitle is-7 has-text-weight-bold">Observaciones:</h7></p>
               <p><%= order.addressDelivery.notes %></p>
+              <hr>
             </div>
           </div>
         </div>
@@ -117,6 +144,16 @@
 
           quantites();
 
+          live('#stt','click',(e) =>{
+            e.preventDefault();
+            let order= document.getElementById('order').getAttribute('order');
+            let state= document.querySelector('select[name="orderState"]').value;
+            io.socket.put('/order/update',{id:order,orderState:state},(resData) =>{
+              let colorcode = resData.color.code;
+              document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
+            });
+          });
+
         </script>
       <%}else{%>
         <div class="table-container">
@@ -139,7 +176,7 @@
                         <td class="align-middle is-uppercase"><%= order.paymentMethod %></td>
                         <td class="align-middle"><%= order.customer.fullName %></td>
                         <td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:<%=order.currentstatus.color.code%>;"><span class="is-size-7 has-text-black has-background-white"><%= order.currentstatus.name %></span></p></td>
-                        <td class="align-middle is-capitalized">$&nbsp;<%= (order.totalOrder).toLocaleString('es-CO') %></td>
+                        <td class="align-middle is-capitalized has-text-right">$&nbsp;<%= Math.round(order.totalOrder).toLocaleString('es-CO') %></td>
                         <td class="align-middle"><%= moment(order.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
                         <td class="align-middle">
                           <a href="/orders/edit/<%=order.id%>" class="button is-small">
