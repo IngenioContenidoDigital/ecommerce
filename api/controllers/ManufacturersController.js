@@ -30,9 +30,15 @@ module.exports = {
         active:isActive});
     }catch(err){
       error=err;
+      if(err.code==='badRequest'){
+        await Manufacturer.create({
+          name:req.body.nombre.trim().toLowerCase(),
+          description:req.body.descripcion,
+          active:isActive});
+      }
     }
 
-    if (error===undefined || error===null){
+    if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/manufacturers');
     }else{
       return res.redirect('/manufacturers?error='+error);

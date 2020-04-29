@@ -33,9 +33,19 @@ module.exports = {
         active:isActive});
     }catch(err){
       error=err;
+      if(err.code==='badRequest'){
+        await Seller.create({
+          name:req.body.name.trim().toLowerCase(),
+          dni:req.body.dni,
+          contact:req.body.contact,
+          email:req.body.email,
+          phone:req.body.phone,
+          domain:req.body.url,
+          active:isActive});
+      }
     }
     setTimeout(() => { return; }, 2000);
-    if (error===undefined || error===null){
+    if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/sellers');
     }else{
       return res.redirect('/sellers?error='+error);
@@ -58,9 +68,19 @@ module.exports = {
         active:isActive});
     }catch(err){
       error=err;
+      if(err.code==='badRequest'){
+        await Seller.updateOne({id:id}).set({
+          name:req.body.name.trim().toLowerCase(),
+          dni:req.body.dni,
+          contact:req.body.contact,
+          email:req.body.email,
+          phone:req.body.phone,
+          domain:req.body.url,
+          active:isActive});
+      }
     }
-
-    if (error===undefined || error===null){
+    setTimeout(() => { return; }, 2000);
+    if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/sellers');
     }else{
       return res.redirect('/sellers?error='+error);
