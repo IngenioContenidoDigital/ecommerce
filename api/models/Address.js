@@ -24,11 +24,11 @@ module.exports = {
       required:true
     },
     region:{
-      type:'string',
+      model:'region',
       required:true
     },
     city:{
-      type:'string',
+      model:'city',
       required:true
     },
     zipcode:{

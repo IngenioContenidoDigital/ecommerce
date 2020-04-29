@@ -32,12 +32,12 @@
                       <input class="input" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." <%if(address!==null){%>value="<%=address.addressline2%>"<%}%> />
                   </div>
                 </div>
-                <div class="columns is-mobile">
-                    <div class="column is-one-fifth">
+                <div class="columns">
+                    <div class="column">
                       <div class="field">
                           <label class="label">País</label>
                           <div class="control">
-                            <div class="select">
+                            <div class="select is-fullwidth">
                               <select required class="select is-capitalized" name="country">
                                 <option value="0">Elegir País</option>
                                 <% countries.forEach((country) =>{ %>
@@ -48,19 +48,23 @@
                           </div>
                         </div>
                     </div>
-                    <div class="column is-two-fifths">
-                      <div class="field">
+                    <div class="column">
+                      <div class="field is-hidden" id="estados">
                           <label class="label">Estado</label>
-                          <div class="control">
-                            <input class="input is-capitalized" required name="state" type="search" placeholder="Nombre del Estado" <%if(address!==null){%>value="<%=address.region%>"<%}%>/>
+                          <div class="select control is-fullwidth">
+                            <select class="is-capitalized" name="region" required >
+                              <option value="">-- Elegir Región --</option>
+                            </select>
                           </div>
                         </div>
                     </div>
-                    <div class="column is-two-fifths">
-                      <div class="field">
+                    <div class="column">
+                      <div class="field is-hidden" id="ciudades">
                           <label class="label">Ciudad</label>
-                          <div class="control">
-                            <input class="input is-capitalized" required name="city" type="search" placeholder="Nombre de la Ciudad" <%if(address!==null){%>value="<%=address.city%>"<%}%>/>
+                          <div class="control select is-fullwidth">
+                            <select class="is-capitalized" name="city" required>
+                              <option value="">-- Elegir Ciudad --</option>
+                            </select>
                           </div>
                         </div>
                     </div>
@@ -98,4 +102,47 @@
       form.submit();
     }
   });
+
+  live('select[name="country"]','change',e =>{
+    let country = e.target.value;
+    
+    let regions = document.querySelector('#estados')
+    regions.querySelector('select').innerHTML='<option value="">-- Elegir Región --</option>';
+    addClass(regions,'is-hidden');
+    
+    let cities = document.querySelector('#ciudades')
+    cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+    addClass(cities,'is-hidden');
+    
+    io.socket.get('/find/regions/'+country,resdata =>{
+      if(resdata.regions.length>0){
+        for(let s of resdata.regions){
+          let option = document.createElement('option');
+          option.value = s.id;
+          option.innerHTML = s.name
+          regions.querySelector('select').appendChild(option);
+        }
+        removeClass(regions,'is-hidden');
+      }
+    });
+  });
+
+  live('select[name="region"]','change',e =>{
+    let region = e.target.value;
+    let cities = document.querySelector('#ciudades')
+    cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+    addClass(cities,'is-hidden');
+    io.socket.get('/find/cities/'+region,resdata =>{
+      if(resdata.cities.length>0){
+        for(let s of resdata.cities){
+          let option = document.createElement('option');
+          option.value = s.id;
+          option.innerHTML = s.name
+          cities.querySelector('select').appendChild(option);
+        }
+        removeClass(cities,'is-hidden');
+      }
+    });
+  });
+  
 </script>

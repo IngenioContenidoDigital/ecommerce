@@ -16,7 +16,7 @@
                 <%if(count==0){%> <div class="columns"> <%}%>
                 <div class="column">
                     <!-- class="card is-size-7 has-badge-rounded has-badge-danger has-badge-medium" data-badge="" -->
-                    <div class="card is-size-7 has-badge-rounded has-badge-danger has-badge-medium" <%if(product.discount!==null){%>data-badge="<%=product.discount.value%>%"<%}%>>
+                    <div class="card is-size-7 has-badge-rounded has-badge-danger has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
                         <div class="card-image has-text-centered">
                             <figure class="image is-128x128 image-centered">
                                 <a href="/list/product/<%=product.id%>"><img src="/images/products/<%=product.id%>/<%= product.cover.file.replace(product.cover.file.split('.').pop(),'webp') %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
@@ -32,8 +32,8 @@
                                 </div>
                             </div>
                             <p class="has-text-weight-bold is-uppercase"><%=product.name%></p>
-                            <%if(product.discount!==null){%><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span><%}%>
-                            <%if(product.discount!==null){%>
+                            <%if(product.discount!==null && product.discount!==undefined){%><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span><%}%>
+                            <%if(product.discount!==null && product.discount!==undefined){%>
                                 <span class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                             <%}else{%>
                                 <span class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>

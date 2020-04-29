@@ -1,5 +1,5 @@
 /**
- * Country.js
+ * Region.js
  *
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
@@ -8,6 +8,7 @@
 module.exports = {
 
   attributes: {
+
     name:{
       type:'string',
       required:true
@@ -16,15 +17,15 @@ module.exports = {
       type:'string',
       required:true
     },
-    prefix:{
-      type:'string'
+    country:{
+      model:'country',
+      required:true
     },
-    regions:{
-      collection:'region',
-      via:'country'
+    cities:{
+      collection:'city',
+      via: 'region'
     },
     active:{type:'boolean', required:true},
-
   },
 
 };

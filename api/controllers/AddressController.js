@@ -9,7 +9,10 @@ module.exports = {
   addresses: async function(req, res){
     let error = req.param('error') ? req.param('error') : null;
     let addresses = null;
-    addresses = await Address.find({user:req.session.user.id}).populate('country');
+    addresses = await Address.find({user:req.session.user.id})
+    .populate('country')
+    .populate('region')
+    .populate('city');
     return res.view('pages/account/addresses',{addresses:addresses,error:error});
   },
   address: async function(req, res){
@@ -19,7 +22,10 @@ module.exports = {
     let referrer = req.param('referrer') ? req.param('referrer') : null;
     let error = req.param('error') ? req.param('error') : null;
     if(id){
-      address = await Address.findOne({id:id}).populate('country');
+      address = await Address.findOne({id:id})
+      .populate('country')
+      .populate('region')
+      .populate('city');
     }
     return res.view('pages/account/address',{countries:countries,address:address, error:error, referrer:referrer});
   },
@@ -31,8 +37,8 @@ module.exports = {
         addressline1:req.body.addressline1,
         addressline2:req.body.addressline2,
         country:req.body.country,
-        region:req.body.state.trim().toLowerCase(),
-        city:req.body.city.trim().toLowerCase(),
+        region:req.body.region,
+        city:req.body.city,
         zipcode:req.body.zipcode.trim().toUpperCase(),
         notes:req.body.notes,
         user:req.session.user.id,

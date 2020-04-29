@@ -73,10 +73,25 @@ module.exports.routes = {
   'POST /supplier/create' : 'SupplierController.createsupplier',
   'PUT /supplier/:id' : 'SupplierController.supplierstate',
   'POST /supplier/edit/:id' : 'SupplierController.editsupplier',
+
   'GET /countries/:action?/:id?' : 'CountriesController.showcountries',
   'POST /country/create':'CountriesController.createcountry',
   'POST /country/edit/:id':'CountriesController.editcountry',
   'PUT /country/:id' : 'CountriesController.countrystate',
+
+  'GET /regions/:action?/:id?' : 'CountriesController.showregions',
+  'POST /region/create':'CountriesController.createregion',
+  'POST /region/edit/:id':'CountriesController.editregion',
+  'PUT /region/:id' : 'CountriesController.regionstate',
+
+  'GET /cities/:region/:action?/:id?' : 'CountriesController.showcities',
+  'POST /city/create':'CountriesController.createcity',
+  'POST /city/edit/:id':'CountriesController.editcity',
+  'PUT /city/:id' : 'CountriesController.citystate',
+
+  'GET /find/regions/:id' : 'CountriesController.countryregions',
+  'GET /find/cities/:id' : 'CountriesController.regioncities',
+
   'GET /order/state/:action?/:id?' : 'OrderController.liststates',
   'POST /orderstate/create' : 'OrderController.stateadd',
   'POST /orderstate/edit/:id' : 'OrderController.stateedit',

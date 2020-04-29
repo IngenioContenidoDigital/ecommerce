@@ -37,7 +37,26 @@ module.exports.bootstrap = async function() {
       {name:'verde',code:'#4c9e00'},
       {name:'amarillo',code:'#ffff00'},
       {name:'rojo',code:'#ff0800'},
-      {name:'naranja',code:'#ff9d00'}
+      {name:'naranja',code:'#ff9d00'},
+      {name:'fucsia',code:'#ff00f7'},
+      {name:'lila',code:'#8000ff'},
+      {name:'celeste',code:'#00ffff'},
+      {name:'rosa',code:'#ff75fa'}
+    ]);
+  }
+
+  if(await OrderState.count()<1){
+    await OrderState.createEach([
+      {name:'aceptado',color: (await Color.findOne({name:'verde'})).id, valid:true},
+      {name:'pendiente',color:(await Color.findOne({name:'amarillo'})).id, valid:true},
+      {name:'cancelado',color:(await Color.findOne({name:'rojo'})).id, valid:true},
+      {name:'rechazado',color:(await Color.findOne({name:'café'})).id, valid:true},
+      {name:'fallido',color:(await Color.findOne({name:'negro'})).id, valid:true},
+      {name:'en procesamiento',color:(await Color.findOne({name:'naranja'})).id, valid:true},
+      {name:'empacado',color:(await Color.findOne({name:'celeste'})).id, valid:true},
+      {name:'enviado',color:(await Color.findOne({name:'lila'})).id, valid:true},
+      {name:'entregado',color:(await Color.findOne({name:'azul'})).id, valid:true},
+      {name:'retornado',color:(await Color.findOne({name:'fucsia'})).id, valid:true},
     ]);
   }
 

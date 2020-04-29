@@ -1,0 +1,176 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <% if(action=='create' || action=='edit'){ %> 
+      <div class="columns">
+        <div class="column"></div>
+        <div class="column">
+          <div class="container">
+            <br />
+            <h4 class="title is-4">Crear Estado</h4>
+            <hr>
+            <% if(action=='create') { %>
+              <form action="/region/create" method="POST">
+            <% } %>
+            <% if(action=='edit') { %>
+              <form action="/region/edit/<%= region.id %>" method="POST">
+            <% } %>
+              <div class="box">
+                <div class="columns is-mobile">
+                  <div class="column">
+                    <div class="field is-pulled-right">
+                      <% if(action=='edit'){ %>
+                        <input id="activo" type="checkbox" <% if(region.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                      <label for="activo">Región: <span id="state"><% if(region.active){ %> <b style="color:green;">activa</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
+                      <% }else{ %>
+                        <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                        <label for="activo">Región: <span id="state"><b style="color:green;">activa</b></span></label>  
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Nombre del País</label>
+                  <div class="control">
+                    <div class="select">
+                      <select class="is-capitalized" name="country">
+                      <% countries.forEach(country =>{%>
+                      <option class="is-capitalized" value="<%=country.id%>" <%if(action=='edit' && country.id==region.country.id){%>selected="selected"<%}%>><%=country.name%></option>
+                      <%})%>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Nombre de la Región</label>
+                  <div class="control">
+                    <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de la Región" <% if(action=='edit'){ %>value="<%= region.name %>"<% }%>/>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label">Código ISO</label>
+                  <div class="control">
+                    <input class="input" type="text" name="iso" required="true" placeholder="Código ISO de la region" <% if(action=='edit'){ %>value="<%= region.iso %>"<% }%>/>
+                  </div>
+                </div>
+                <div class="control buttons is-right">
+                  <% if(action=='edit'){ %> 
+                    <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Región</button>
+                  <% }else if (action=='create'){ %>
+                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Región</button>
+                  <% } %>
+                </div>
+            </form>
+          </div>
+        </div>
+        </div>
+        <div class="column"></div>
+      </div> 
+      <script>
+        live('#activo','click',function(){
+          let elm = this;
+          let state = elm.checked;
+          var sp = document.querySelector('#state');
+          if(state){
+            sp.innerHTML='<b style="color:green;">activa</b>';
+          }else{
+            sp.innerHTML='<b style="color:red;">inactiva</b>';
+          }
+        });
+      </script>
+      <% } else { %>
+          <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+              <a href="/regions/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+          </p>
+          <div class="table-container">
+              <table class="table is-hoverable" id="regions-table">
+                  <thead>
+                  <tr>
+                      <th scope="col">País</th>
+                      <th scope="col">Región</th>
+                      <th scope="col">ISO</th>
+                      <th scope="col">Activo</th>
+                      <th scope="col">Ciudades</th>
+                      <th scope="col">Opciones</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                      <% regions.forEach(function(region){ %>
+                          <tr>
+                              <td class="align-middle is-capitalized"><%= region.country.name %></td>
+                              <td class="align-middle is-capitalized"><%= region.name %></td>
+                              <td class="align-middle is-uppercase"><%= region.iso %></td>
+                              <td class="align-middle">
+                              <span class="action">
+                              <% if(region.active===true) { %>
+                                  <i region="<%= region.id %>" class="state bx bx-check-circle"></i>
+                              <% }else{ %>
+                                  <i region="<%= region.id %>" class="state bx bx-x-circle"></i>
+                              <%}%>
+                              </span>
+                              </td>
+                              <td class="align-middle is-uppercase"><%= region.cities.length %></td>
+                              <td class="align-middle">
+                              <a href="/regions/edit/<%= region.id %>" class="button is-small">
+                                  <span class="icon">
+                                  <i class="bx bxs-edit"></i>
+                                  </span>
+                              </a>
+                              <a href="/cities/<%= region.id %>" class="button is-small">
+                                <span class="icon">
+                                  <i class='bx bx-location-plus' ></i>
+                                </span>
+                            </a>
+                              </td>
+                          </tr>
+                      <% }); %>
+                  </tbody>
+              </table>
+          </div>
+          <script>
+              document.addEventListener('DOMContentLoaded', function(){
+                  let table = new simpleDatatables.DataTable('#regions-table',{
+                  searchable:true,
+                  sortable:true,
+                  paging:true,
+                  labels: {
+                      placeholder: "Buscar...",
+                      perPage: "{select} registros por página",
+                      noRows: "No se encontraron datos",
+                      info: "Mostrando {start} a {end} de {rows} registros",
+                  }
+                  });  
+              });
+          </script>
+      <% } %>
+      <script>
+        setTimeout(function() {
+          var el = document.getElementById('error');
+          if(el){
+            el.style.display='none';
+          }
+        }, 4000);
+  
+        live('.state', 'click', function(){ 
+          if(confirm('Seguro Desea Continuar')){
+            var elm = this;
+            var id = this.getAttribute('region');
+            var status = null;
+            if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+  
+            io.socket.put('/region/'+id,{active:status},function(resData, jwr){
+              if(resData.active===false){
+                removeClass(elm, 'bx-check-circle');
+                addClass(elm,'bx-x-circle');
+              }else{
+                removeClass(elm, 'bx-x-circle');
+                addClass(elm,'bx-check-circle');
+              }
+            });
+          }
+        });
+      </script>
+  </div>
