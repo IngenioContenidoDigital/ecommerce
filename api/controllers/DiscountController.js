@@ -14,7 +14,7 @@ module.exports = {
     let root = await Category.findOne({name:'Inicio'});
     let discount = null;
     if(id){
-      discount = await CatalogDiscount.findOne({id:id});
+      discount = await CatalogDiscount.findOne({id:id}).populate('products');
     }
     let discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]);
     return res.view('pages/discounts/discounts', {error:error, discounts:discounts, action:action, discount:discount, moment:moment, root:root});

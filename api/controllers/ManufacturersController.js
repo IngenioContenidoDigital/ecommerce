@@ -20,6 +20,7 @@ module.exports = {
   },
   addbrand: async function(req, res){
     let error=null;
+
     let isActive = (req.body.activo==='on') ? true : false;
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/brands');

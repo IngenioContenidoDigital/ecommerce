@@ -11,7 +11,10 @@ module.exports = {
   },
   checkout: async function(req, res){
     let addresses = null;
-    addresses = await Address.find({user:req.session.user.id}).populate('country');
+    addresses = await Address.find({user:req.session.user.id})
+    .populate('country')
+    .populate('region')
+    .populate('city');
     let error = req.param('error') ? req.param('error') : null;
 
     let cart = null;

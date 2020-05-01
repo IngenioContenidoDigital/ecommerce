@@ -84,9 +84,9 @@
               <td class="align-middle">
                 <span class="action">
                 <% if(marca.active===true) { %>
-                  <i brand="<%= marca.id %>" class="bx bx-check-circle"></i>
+                  <i brand="<%= marca.id %>" class="state bx bx-check-circle"></i>
                 <% }else{ %>
-                  <i brand="<%= marca.id %>" class="bx bx-x-circle"></i>
+                  <i brand="<%= marca.id %>" class="state bx bx-x-circle"></i>
                 <%}%>
               </span>
                 </td>
@@ -133,7 +133,7 @@ live('#activo','click',function(){
     }
   });
 
-live('i.bx', 'click', function(){ 
+live('.state', 'click', function(){ 
   if(confirm('Seguro Desea Continuar')){
     var elm = this;
     var id = this.getAttribute('brand');

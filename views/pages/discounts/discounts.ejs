@@ -144,7 +144,7 @@
                 .then(()=>{
                     const checks = document.querySelectorAll('input[name="categories[]"]')
                     checks.forEach((op) =>{
-                    <% product.categories.forEach(function(c){ %>
+                    <% discount.products.forEach(function(c){ %>
                         if(op.value==<%= c.id %>){
                         op.checked=true;
                         }

@@ -55,6 +55,21 @@ module.exports = {
     },
     seller:{
       model:'seller'
+    },
+    carrier:{
+      model:'carrier'
+    },
+    tracking:{
+      type:'string'
+    },
+    fleteTotal:{
+      type:'number'
+    },
+    fleteFijo:{
+      type:'number'
+    },
+    fleteVariable:{
+      type:'number',
     }
 
   },

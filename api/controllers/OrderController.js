@@ -89,7 +89,9 @@ module.exports = {
     */
     let order = null;
     let payment = null;
-    let address = await Address.findOne({id:req.body.deliveryAddress}).populate('country');
+    let address = await Address.findOne({id:req.body.deliveryAddress})
+    .populate('country')
+    .populate('city');
     let user = await User.findOne({id:req.session.user.id});
     let cart = await Cart.findOne({id:req.session.cart.id});
 
@@ -115,7 +117,7 @@ module.exports = {
             email: user.emailAddress,
             default: true,
             //Optional parameters: These parameters are important when validating the credit card transaction
-            city: address.city,
+            city: address.city.name,
             address: address.addressline1+' '+address.addressline2,
             /*phone: '3005234321',*/
             cell_phone: user.mobile.toString()
@@ -301,6 +303,10 @@ module.exports = {
     let user = req.session.user ? req.session.user : null;
     let order = await Order.updateOne({id:id}).set({currentstatus:req.body.orderState});
     let newstate = await OrderState.findOne({id:req.body.orderState}).populate('color');
+    if(newstate.name==='empacado' && order.tracking===''){
+      await sails.helpers.carrier.shipment(id);
+    }
+
     if(user!==null && user!== undefined){
       await OrderHistory.create({order:order.id,state:req.body.orderState,user:user.id});
     }else{
