@@ -1,5 +1,12 @@
 <div class="container">
-    <h3 class="title is-size-3">Hemos creado la orden: <%=order.id%></h3>
+    <%if(order.length>1){%>
+        <h3 class="title">Tu pedido contiene productos de varios distribuidores, por esta razón hemos creado los siguientes pedidos:</h3>
+        <% order.forEach(o=>{ %>
+          <p class="container">Order: <%=o%></p>
+        <% }); %>
+    <%}else{%>
+        <h3 class="title">Hemos creado la orden: <%=order[0]%></h3>
+    <%}%>
 </div>
 
 <!--

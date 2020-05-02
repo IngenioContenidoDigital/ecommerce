@@ -87,7 +87,7 @@ module.exports = {
         Estado: Pendiente
         Respuesta: Transacción pendiente por validación
     */
-    let order = null;
+    let order = [];
     let payment = null;
     let address = await Address.findOne({id:req.body.deliveryAddress})
     .populate('country')

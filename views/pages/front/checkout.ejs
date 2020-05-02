@@ -310,7 +310,7 @@
                                             <span id="quantity" class="is-size-7"></span>
                                         </div>
                                         <div class="column">
-                                            <%if(cartproduct.product.discount!==null){%>
+                                            <%if(cartproduct.product.discount!==null && cartproduct.product.discount!==undefined){%>
                                                 <p id="item-old" price="<%=cartproduct.productvariation.price%>" style="text-decoration: line-through;" class="is-italic is-size-7 has-text-right">$&nbsp;<%= Math.round(cartproduct.productvariation.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>
                                                 <p id="item-price" price="<%=cartproduct.totalPrice%>" class="has-text-right">$&nbsp;<%= Math.round(cartproduct.product.discount.price*cartproduct.quantity).toLocaleString("es-CO");%>&nbsp;</p>  
                                             <%}else{%>
@@ -381,9 +381,11 @@
                 if(el.variation.toString()===row.getAttribute('variation')){
                     select.innerHTML='Cant: '+el.quantity;
                     let itemPrice = row.querySelector('#item-price')
-                    let itemOld = row.querySelector('#item-old')
                     itemPrice.innerHTML = '$ '+Math.round(itemPrice.getAttribute('price')*el.quantity).toLocaleString('es-CO')+'&nbsp;';
-                    itemOld.innerHTML = '$ '+Math.round(itemOld.getAttribute('price')*el.quantity).toLocaleString('es-CO')+'&nbsp;';
+                    if(row.querySelector('#item-old')!==null){
+                      let itemOld = row.querySelector('#item-old')
+                      itemOld.innerHTML = '$ '+Math.round(itemOld.getAttribute('price')*el.quantity).toLocaleString('es-CO')+'&nbsp;';
+                    }
                 }
             });
         }
