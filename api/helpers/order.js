@@ -21,6 +21,7 @@ module.exports = {
     let cartproducts = await CartProduct.find({cart:cart.id})
                   .populate('product')
                   .populate('productvariation');
+    let carrier = await Carrier.findOne({name:'coordinadora'});
     let sellers = [];
     let orders = [];
     cartproducts.forEach(cp=>{
@@ -53,6 +54,8 @@ module.exports = {
             paymentMethod:inputs.data.method,
             paymentId:payment.data.ref_payco,
             paymentOption:extra,
+            seller:seller,
+            carrier:carrier.id
           }).fetch();
 
           orders.push(order.id);

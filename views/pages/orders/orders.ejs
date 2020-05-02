@@ -198,6 +198,9 @@
                               <i class='bx bx-dots-horizontal'></i>
                             </span>
                           </a>
+                          <%if(order.tracking!==''){%>
+                            <a href="/guia/<%=order.tracking%>" class="button is-small"><span class="icon"><i class='bx bxs-truck'></i></span></a>
+                          <%}%>
                         </td>
                     </tr>
                   <% }); %>

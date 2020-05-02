@@ -13,13 +13,30 @@ module.exports = {
     let id = req.param('id') ? req.param('id') : null;
     let sellers = await Seller.find();
     if(id){
-      seller = await Seller.findOne({id:id});
+      seller = await Seller.findOne({id:id}).populate('mainAddress');
+      if(seller.mainAddress!==undefined && seller.mainAddress!==null){
+        seller.mainAddress = await Address.findOne({id:seller.mainAddress.id})
+        .populate('country')
+        .populate('region')
+        .populate('city');
+      }
     }
-    res.view('pages/sellers/sellers',{sellers:sellers,action:action,seller:seller,error:error});
+    let countries = await Country.find();
+    res.view('pages/sellers/sellers',{sellers:sellers,action:action,seller:seller,error:error,countries:countries});
   },
   createseller: async function(req, res){
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
+    let address = await Address.create({
+      name:'Principal '+req.body.name.trim().toLowerCase(),
+      addressline1:req.body.addressline1,
+      addressline2:req.body.addressline2,
+      country:req.body.country,
+      region:req.body.region,
+      city:req.body.city,
+      zipcode:req.body.zipcode,
+      notes:req.body.notes
+    }).fetch();
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/sellers');
       await Seller.create({
@@ -30,6 +47,7 @@ module.exports = {
         phone:req.body.phone,
         domain:req.body.url,
         logo: filename[0],
+        mainAddress:address.id,
         active:isActive});
     }catch(err){
       error=err;
@@ -41,6 +59,7 @@ module.exports = {
           email:req.body.email,
           phone:req.body.phone,
           domain:req.body.url,
+          mainAddress:address.id,
           active:isActive});
       }
     }
@@ -55,6 +74,30 @@ module.exports = {
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
+    let seller = await Seller.findOne({id:id});
+    let address = null;
+    if(seller.mainAddress!==null){
+      address = await Address.updateOne({id:seller.mainAddress}).set({
+        addressline1:req.body.addressline1,
+        addressline2:req.body.addressline2,
+        country:req.body.country,
+        region:req.body.region,
+        city:req.body.city,
+        zipcode:req.body.zipcode,
+        notes:req.body.notes
+      });
+    }else{
+      address = await Address.create({
+        name:'Principal '+req.body.name.trim().toLowerCase(),
+        addressline1:req.body.addressline1,
+        addressline2:req.body.addressline2,
+        country:req.body.country,
+        region:req.body.region,
+        city:req.body.city,
+        zipcode:req.body.zipcode,
+        notes:req.body.notes
+      }).fetch();
+    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/sellers');
       await Seller.updateOne({id:id}).set({
@@ -65,6 +108,7 @@ module.exports = {
         phone:req.body.phone,
         domain:req.body.url,
         logo: filename[0],
+        mainAddress:address.id,
         active:isActive});
     }catch(err){
       error=err;
@@ -76,6 +120,7 @@ module.exports = {
           email:req.body.email,
           phone:req.body.phone,
           domain:req.body.url,
+          mainAddress:address.id,
           active:isActive});
       }
     }

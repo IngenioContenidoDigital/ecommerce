@@ -6,9 +6,6 @@
   <% } %>
   <% if(action=='create' || action=='edit'){ %>  
         <div class="container">
-            <br />
-            <h4 class="title is-4">Crear Seller</h4>
-            <hr>
             <% if(action=='create') { %>
               <form action="/seller/create" method="POST" enctype="multipart/form-data">
             <% } %>
@@ -16,18 +13,14 @@
               <form action="/seller/edit/<%= seller.id %>" method="POST" enctype="multipart/form-data">
             <% } %>
               <div class="box">
-                <div class="columns">
+                <div class="columns is-mobile is-vcentered">
                   <% if(action=='edit'){ %>
                   <div class="column">
-                    <div class="field is-pulled-left">
-                      <figure class="image">
-                        <img src="/images/sellers/<%= seller.logo.replace(seller.logo.split('.').pop(),'webp') %>" />
-                      </figure>
-                    </div>
+                    <p class="has-text-left"><img height="100" src="/images/sellers/<%= seller.logo.replace(seller.logo.split('.').pop(),'webp') %>" /></p>
                   </div>
                   <% } %>
                   <div class="column">
-                    <div class="field is-pulled-right">
+                    <p class="has-text-right">
                       <% if(action=='edit'){ %>
                         <input id="activo" type="checkbox" <% if(seller.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
                       <label for="activo">Seller: <span id="state"><% if(seller.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
@@ -35,75 +28,148 @@
                         <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
                         <label for="activo">Seller: <span id="state"><b style="color:green;">activo</b></span></label>  
                       <% } %>
-                    </div>
+                      </p>
                   </div>
                 </div>
                 <div class="columns">
                   <div class="column">
                     <div class="field">
-                      <label class="label">Nombre del Comercio</label>
+                      <label class="label is-size-7">Nombre del Comercio</label>
                       <div class="control">
-                        <input class="input" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit'){ %>value="<%= seller.name %>"<% }%>/>
+                        <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit'){ %>value="<%= seller.name %>"<% }%>/>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label is-size-7">Identificación</label>
+                      <div class="control">
+                        <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" <% if(action=='edit'){ %>value="<%= seller.dni %>"<% }%>/>
+                      </div>
+                    </div>
+                    <div class="columns">
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Nombre del Contacto</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="contact" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.contact %>"<% }%>/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Email de Contacto</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="email" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.email %>"<% }%>/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Teléfono</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="phone" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.phone %>"<% }%>/>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">URL</label>
+                      <div class="control">
+                        <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
+                        <label class="file-label">
+                          <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                          <span class="file-cta">
+                            <span class="file-icon">
+                              <i class="bx bx-upload"></i>
+                            </span>
+                            <span class="file-label">
+                              Logotipo
+                            </span>
+                          </span>
+                          <span class="file-name">
+                            No ha cargado ningún archivo.
+                          </span>
+                        </label>
                       </div>
                     </div>
                   </div>
                   <div class="column">
-                    <div class="field">
-                      <label class="label">Identificación</label>
-                      <div class="control">
-                        <input class="input" type="text" name="dni" required="true" placeholder="NIT del Comercio" <% if(action=='edit'){ %>value="<%= seller.dni %>"<% }%>/>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="label">Nombre del Contacto</label>
-                      <div class="control">
-                        <input class="input" type="text" name="contact" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.contact %>"<% }%>/>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="column">
-                    <div class="field">
-                      <label class="label">Email de Contacto</label>
-                      <div class="control">
-                        <input class="input" type="text" name="email" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.email %>"<% }%>/>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="column">
-                    <div class="field">
-                      <label class="label">Teléfono</label>
-                      <div class="control">
-                        <input class="input" type="text" name="phone" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.phone %>"<% }%>/>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="label">URL</label>
-                  <div class="control">
-                    <input class="input" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
-                  </div>
-                </div>
-                <div class="field">
-                  <div id="file-loader" class="file has-name is-fullwidth">
-                    <label class="file-label">
-                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
-                      <span class="file-cta">
-                        <span class="file-icon">
-                          <i class="bx bx-upload"></i>
-                        </span>
-                        <span class="file-label">
-                          Logotipo
-                        </span>
-                      </span>
-                      <span class="file-name">
-                        No ha cargado ningún archivo.
-                      </span>
-                    </label>
+                          <div class="field">
+                            <label class="label is-size-7">Dirección</label>
+                            <div class="control">
+                              <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..." <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.addressline1%>"<%}%>/>
+                            </div>
+                            <br>
+                            <div class="control">
+                                <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.addressline2%>"<%}%>/>
+                            </div>
+                          </div>
+                          <div class="columns">
+                              <div class="column">
+                                <div class="field">
+                                    <label class="label is-size-7">País</label>
+                                    <div class="control">
+                                      <div class="select is-fullwidth is-size-7">
+                                        <select required class="select is-capitalized" name="country">
+                                          <option value="0">Elegir País</option>
+                                          <% countries.forEach((country) =>{ %>
+                                          <option class="is-capitalized" value="<%=country.id%>" <%if(action=='edit' && seller.mainAddress!==null && country.id==seller.mainAddress.country.id){%>selected="selected"<%}%>><%=country.name%></option>
+                                          <%})%>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </div>
+                              <div class="column">
+                                <%if(action=='edit' && seller.mainAddress!==null){%>
+                                  <div class="field" id="estados">
+                                <%}else{%>
+                                  <div class="field is-hidden" id="estados">
+                                <%}%>
+                                    <label class="label is-size-7">Estado</label>
+                                    <div class="select control is-size-7 is-fullwidth">
+                                      <select class="is-capitalized" name="region" required >
+                                        <option value="">-- Elegir Región --</option>
+                                        <%if(action=='edit' && seller.mainAddress!==null){%>
+                                          <option value="<%=seller.mainAddress.region.id%>" selected="selected"><%=seller.mainAddress.region.name%></option>
+                                        <%}%>
+                                      </select>
+                                    </div>
+                                  </div>
+                              </div>
+                              <div class="column">
+                                <%if(action=='edit' && seller.mainAddress!==null){%>
+                                  <div class="field" id="ciudades">
+                                <%}else{%>
+                                  <div class="field is-hidden" id="ciudades">
+                                <%}%>
+                                    <label class="label is-size-7">Ciudad</label>
+                                    <div class="control select is-size-7 is-fullwidth">
+                                      <select class="is-capitalized" name="city" required>
+                                        <option value="">-- Elegir Ciudad --</option>
+                                        <%if(action=='edit' && seller.mainAddress!==null){%>
+                                          <option value="<%=seller.mainAddress.city.id%>" selected="selected"><%=seller.mainAddress.city.name%></option>
+                                        <%}%>
+                                      </select>
+                                    </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="field">
+                            <label class="label is-size-7">Código Postal</label>
+                            <div class="control">
+                              <input class="input is-size-7" name="zipcode" type="string" placeholder="Código Postal de la Dirección" <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.zipcode%>"<%}%>/>
+                            </div>
+                          </div>
+                          <div class="field">
+                            <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
+                            <div class="control">
+                              <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."><%if(action=='edit' && seller.mainAddress!==null){%><%-seller.mainAddress.notes%><%}%></textarea>
+                            </div>
+                          </div>
                   </div>
                 </div>
                 <div class="control buttons is-right">
@@ -133,6 +199,48 @@
               }else{
                 sp.innerHTML='<b style="color:red;">inactivo</b>';
               }
+            });
+
+            live('select[name="country"]','change',e =>{
+              let country = e.target.value;
+              
+              let regions = document.querySelector('#estados')
+              regions.querySelector('select').innerHTML='<option value="">-- Elegir Región --</option>';
+              addClass(regions,'is-hidden');
+              
+              let cities = document.querySelector('#ciudades')
+              cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+              addClass(cities,'is-hidden');
+              
+              io.socket.get('/find/regions/'+country,resdata =>{
+                if(resdata.regions.length>0){
+                  for(let s of resdata.regions){
+                    let option = document.createElement('option');
+                    option.value = s.id;
+                    option.innerHTML = s.name
+                    regions.querySelector('select').appendChild(option);
+                  }
+                  removeClass(regions,'is-hidden');
+                }
+              });
+            });
+
+            live('select[name="region"]','change',e =>{
+              let region = e.target.value;
+              let cities = document.querySelector('#ciudades')
+              cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+              addClass(cities,'is-hidden');
+              io.socket.get('/find/cities/'+region,resdata =>{
+                if(resdata.cities.length>0){
+                  for(let s of resdata.cities){
+                    let option = document.createElement('option');
+                    option.value = s.id;
+                    option.innerHTML = s.name
+                    cities.querySelector('select').appendChild(option);
+                  }
+                  removeClass(cities,'is-hidden');
+                }
+              });
             });
           </script>
     <% } else { %>

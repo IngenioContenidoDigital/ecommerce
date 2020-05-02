@@ -19,10 +19,13 @@ module.exports = {
     let soap = require('strong-soap').soap;
     let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
 
-    let seller = await Seller.findOne({id:2});
     let order = await Order.findOne({id:inputs.order})
     .populate('customer')
     .populate('addressDelivery');
+
+    let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
+    seller.mainAddress = await Address.find({id:seller.mainAddress.id}).populate('city');
+
     let city = await City.findOne({id:order.addressDelivery.id});
     let oitems = await OrderItem.find({order:order.id});
     let items = oitems.length;
@@ -56,9 +59,9 @@ module.exports = {
         'id_remitente' : 0,
         'nit_remitente' : null,
         'nombre_remitente' : seller.name,
-        'direccion_remitente' : 'CRA 15 91 30 P4',
+        'direccion_remitente' : seller.mainAddress.addressline1+' '+seller.mainAddress.addressline2,
         'telefono_remitente' : seller.phone,
-        'ciudad_remitente' : '11001000',
+        'ciudad_remitente' : seller.mainAddress.city.code+'000',
         'nit_destinatario' : seller.dni,
         'div_destinatario' : 1,
         'nombre_destinatario' : order.customer.fullName,
@@ -129,13 +132,9 @@ module.exports = {
     let options = {};
     soap.createClient(url, options, (err, client) =>{
       let method = client['Guias_generarGuia'];
-      if(err){
-        console.log(err);
-      }
+      if(err){return exits.error(err);}
       method(requestArgs, async (err, result)=>{
-        if(err){
-          console.log(err);
-        }
+        if(err){return exits.error(err);}
         await Order.updateOne({id:inputs.order}).set({tracking:result.return.codigo_remision.$value});
         await sails.helpers.carrier.costs(result.return.codigo_remision.$value);
       });

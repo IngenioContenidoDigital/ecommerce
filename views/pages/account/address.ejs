@@ -49,21 +49,35 @@
                         </div>
                     </div>
                     <div class="column">
-                      <div class="field is-hidden" id="estados">
+                      <%if(address!==null){%>
+                        <div class="field" id="estados">
+                      <%}else{%>
+                        <div class="field is-hidden" id="estados">
+                      <%}%>
                           <label class="label">Estado</label>
                           <div class="select control is-fullwidth">
                             <select class="is-capitalized" name="region" required >
                               <option value="">-- Elegir Región --</option>
+                              <%if(address!==null){%>
+                                <option value="<%=address.region.id%>" selected="selected"><%=address.region.name%></option>
+                              <%}%>
                             </select>
                           </div>
                         </div>
                     </div>
                     <div class="column">
-                      <div class="field is-hidden" id="ciudades">
+                      <%if(address!==null){%>
+                        <div class="field" id="ciudades">
+                      <%}else{%>
+                        <div class="field is-hidden" id="ciudades">
+                      <%}%>
                           <label class="label">Ciudad</label>
                           <div class="control select is-fullwidth">
                             <select class="is-capitalized" name="city" required>
                               <option value="">-- Elegir Ciudad --</option>
+                              <%if(address!==null){%>
+                                <option value="<%=address.city.id%>" selected="selected"><%=address.city.name%></option>
+                              <%}%>
                             </select>
                           </div>
                         </div>

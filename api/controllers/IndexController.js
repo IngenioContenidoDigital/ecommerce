@@ -10,6 +10,9 @@ module.exports = {
     return res.view('pages/homepage');
   },
   checkout: async function(req, res){
+    if(req.session.cart===undefined || req.session.cart===null){
+      return res.redirect('/cart');
+    }
     let addresses = null;
     addresses = await Address.find({user:req.session.user.id})
     .populate('country')

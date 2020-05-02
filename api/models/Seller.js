@@ -17,6 +17,9 @@ module.exports = {
     email:{type:'string', required:true, isEmail:true, unique:true},
     phone:{type:'number'},
     domain:{type:'string',required:true, unique:true},
+    mainAddress:{
+      model:'address'
+    },
     suppliers:{
       collection:'supplier',
       via:'sellers'
