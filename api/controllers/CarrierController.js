@@ -83,6 +83,14 @@ module.exports = {
     var updatedCarrier = await Carrier.updateOne({id:id}).set({active:state});
     return res.send(updatedCarrier);
   },
+  shipment:async (req, res) =>{
+    let tracking = req.param('tracking');
+
+    let guia = await sails.helpers.carrier.guia(tracking);
+    let label = await sails.helpers.carrier.label(tracking);
+
+    return res.view('pages/pdf',{guia:guia,label:label});
+  }
 
 };
 

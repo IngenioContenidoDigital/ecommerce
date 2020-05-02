@@ -257,7 +257,10 @@ module.exports = {
       .populate('customer')
       .populate('currentstatus');
 
-      order.addressDelivery = await Address.findOne({id:order.addressDelivery.id}).populate('country');
+      order.addressDelivery = await Address.findOne({id:order.addressDelivery.id})
+      .populate('country')
+      .populate('region')
+      .populate('city');
       order.currentstatus = await OrderState.findOne({id:order.currentstatus.id}).populate('color');
 
       ostates = await OrderState.find().populate('color');

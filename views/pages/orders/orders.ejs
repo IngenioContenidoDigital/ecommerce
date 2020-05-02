@@ -54,14 +54,28 @@
               <hr>
               <p class="container"><%= order.addressDelivery.addressline1 %></p>
               <%= order.addressDelivery.addressline2 %>
-              <span class="is-capitalized"><%= order.addressDelivery.region %>, </span>
-              <span class="is-capitalized"><%= order.addressDelivery.city %></span>
+              <span class="is-capitalized"><%= order.addressDelivery.region.name %>, </span>
+              <span class="is-capitalized"><%= order.addressDelivery.city.name %></span>
               <span class="is-uppercase"><%= order.addressDelivery.zipcode %></span>
               <p class="container is-capitalized"><%= order.addressDelivery.country.name %></p>
               <br>
               <p class="container"><h7 class="subtitle is-7 has-text-weight-bold">Observaciones:</h7></p>
               <p><%= order.addressDelivery.notes %></p>
+              <br>
+              <%if(order.tracking!=='' && order.tracking!==null){%>
+              <div class="columns is-mobile">
+                <div class="column">
+                  <span id="tracking" tracking="<%=order.tracking %>" class="is-size-7">Guía: <%=order.tracking%></span>
+                </div>
+                <div class="column">
+                  <p class="container has-text-right">
+                    <a href="/guia/<%=order.tracking%>" id="tracking" class="button is-small"><span class="icon"><i class='bx bxs-truck'></i></span></a>
+                  </p>
+                </div>
+              </div>
+            <%}else{%>
               <hr>
+            <%}%>
             </div>
           </div>
         </div>

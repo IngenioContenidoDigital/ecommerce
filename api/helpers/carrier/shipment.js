@@ -121,7 +121,7 @@ module.exports = {
      *   Guias_generarGuiaInter - Generar Guía de Despacho Internacional
      *   Guias_generarGuia - Generar Guía de Despacho Nacional
      *   Guias_imprimirRotulos - Imprimir Rotulos para Paquetes
-     *   Cotizador_cotizar - Coticar Costo de la guía
+     *   Cotizador_cotizar - Cotizar Costo de la guía
      *   Seguimiento_simple - Verificación de Estado de Entrega
      *   Guias_liquidacionGuia - Consultar el Valor de la Guía
      */
