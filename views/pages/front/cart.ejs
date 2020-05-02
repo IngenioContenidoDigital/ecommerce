@@ -49,7 +49,7 @@
                         </div>
                     </div>
                     <div class="column is-one-fifth">
-                        <%if(cartproduct.product.discount!==null){%>
+                        <%if(cartproduct.product.discount!==null && cartproduct.product.discount!==undefined ){%>
                             <span id="item-old" price="<%=cartproduct.productvariation.price%>" style="text-decoration: line-through;" class="is-size-7">$&nbsp;<%= Math.round(cartproduct.productvariation.price).toLocaleString("es-CO");%></span>
                             <span id="item-price" price="<%=cartproduct.product.discount.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.product.discount.price).toLocaleString("es-CO");%></span>
                         <%}else{%>
@@ -94,9 +94,11 @@
                 if(el.variation.toString()===row.getAttribute('variation')){
                     select.value=el.quantity;
                     let itemPrice = row.parentNode.querySelector('#item-price')
-                    let itemOld = row.parentNode.querySelector('#item-old')
                     itemPrice.innerHTML = '$ '+Math.round(itemPrice.getAttribute('price')*el.quantity).toLocaleString('es-CO');
-                    itemOld.innerHTML = '$ '+Math.round(itemOld.getAttribute('price')*el.quantity).toLocaleString('es-CO');
+                    if(row.parentNode.querySelector('#item-old')!==null){
+                      let itemOld = row.parentNode.querySelector('#item-old')
+                      itemOld.innerHTML = '$ '+Math.round(itemOld.getAttribute('price')*el.quantity).toLocaleString('es-CO');
+                    }
                 }
             });
         }
@@ -137,12 +139,16 @@
         let vrt = e.target.parentNode.parentNode.parentNode.querySelector('a').getAttribute('variation');
         io.socket.put('/cart',{variation:vrt,quantity:qty,action:'update'},(res) => {
             let price = e.target.parentNode.parentNode.parentNode.querySelector('#item-price');
-            let oldPrice = e.target.parentNode.parentNode.parentNode.querySelector('#item-old');
             let itemprice = price.getAttribute('price');
-            let itemOldprice = oldPrice.getAttribute('price');
-            let subtotal = document.querySelector('#cart-total');
             price.innerHTML='$&nbsp;'+Math.round(itemprice*qty).toLocaleString("es-CO");
-            oldPrice.innerHTML='$&nbsp;'+Math.round(itemOldprice*qty).toLocaleString("es-CO");
+
+            if(e.target.parentNode.parentNode.parentNode.querySelector('#item-old')!==null){
+                let oldPrice = e.target.parentNode.parentNode.parentNode.querySelector('#item-old');
+                let itemOldprice = oldPrice.getAttribute('price');
+                oldPrice.innerHTML='$&nbsp;'+Math.round(itemOldprice*qty).toLocaleString("es-CO");
+            };
+
+            let subtotal = document.querySelector('#cart-total');
             subtotal.innerHTML='$&nbsp;'+Math.round(res.value).toLocaleString("es-CO");
         });
     })

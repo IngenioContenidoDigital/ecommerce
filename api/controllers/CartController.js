@@ -45,7 +45,7 @@ module.exports = {
       await CartProduct.destroy({cart:cart.id,product:productvariation.product,productvariation:productvariation.id});
       let discount = await sails.helpers.discount(productvariation.product);
       for(let i=0; i<req.body.quantity; i++){
-        if(discount!==null){
+        if(discount!==null && discount!==undefined){
           await CartProduct.create({cart:cart.id,product:productvariation.product,productvariation:productvariation.id,totalDiscount:discount.amount,totalPrice:discount.price});
         }else{
           await CartProduct.create({cart:cart.id,product:productvariation.product,productvariation:productvariation.id,totalDiscount:0,totalPrice:productvariation.price});
