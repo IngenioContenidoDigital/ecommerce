@@ -106,6 +106,10 @@ module.exports.routes = {
   'GET /discounts/:action?/:id?' : 'DiscountController.discounts',
   'POST /discount/create' : 'DiscountController.creatediscount',
   'PUT /order/update' : 'OrderController.updateorder',
+  'GET /users/:action?/:id?' : 'UserController.users',
+  'POST /user/create' : 'UserController.admincreate',
+  'POST /user/edit/:id' : 'UserController.adminedit',
+  'PUT /user/:id' : 'UserController.userstate',
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

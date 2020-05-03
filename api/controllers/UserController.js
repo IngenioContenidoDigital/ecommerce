@@ -90,6 +90,93 @@ module.exports = {
     }else{
       return res.view('pages/front/verify',{error:'Error en el proceso. Por favor Verifica e intenta nuevamente.'});
     }
+  },
+  users: async (req, res)=>{
+    let error= req.param('error') ? req.param('error') : null;
+    let user = null;
+    let action = req.param('action') ? req.param('action') : null;
+    let id = req.param('id') ? req.param('id') : null;
+    let users = await User.find();
+    if(id){
+      user = await User.findOne({id:id});
+    }
+    let countries = await Country.find();
+    let sellers = await Seller.find();
+    return res.view('pages/configuration/users',{users:users, user:user,countries:countries,sellers:sellers,action:action,error:error});
+  },
+  admincreate: async (req, res) =>{
+    let error = null;
+    let isActive = (req.body.activo==='on') ? true : false;
+    try{
+      let country = await Country.findOne({id:req.body.country});
+      await User.create({
+        emailAddress:req.body.email,
+        emailStatus:'confirmed',
+        password:await sails.helpers.passwords.hashPassword(req.body.password),
+        fullName:req.body.fullname,
+        dniType:req.body.dnitype,
+        dni:req.body.dni,
+        mobilecountry:country.id,
+        mobile:req.body.mobile,
+        mobileStatus:'confirmed',
+        seller:req.body.seller,
+        active:isActive
+      });
+    }catch(err){
+      error=err;
+    }
+    if(error!==null && error!==undefined){
+      return res.redirect('/users?error='+error);
+    }else{
+      return res.redirect('/users');
+    }
+  },
+  adminedit: async (req, res) =>{
+    let error = null;
+    let isActive = (req.body.activo==='on') ? true : false;
+    try{
+      if(req.body.password!=='' && req.body.password!==null && req.body.password!==undefined){
+        await User.updateOne({id:req.param('id')}).set({
+          emailAddress:req.body.email,
+          fullName:req.body.fullname,
+          dniType:req.body.dnitype,
+          dni:req.body.dni,
+          password:await sails.helpers.passwords.hashPassword(req.body.password),
+          mobilecountry:req.body.country,
+          mobile:req.body.mobile,
+          seller:req.body.seller,
+          active:isActive
+        });
+      }else{
+        await User.updateOne({id:req.param('id')}).set({
+          emailAddress:req.body.email,
+          fullName:req.body.fullname,
+          dniType:req.body.dnitype,
+          dni:req.body.dni,
+          mobilecountry:req.body.country,
+          mobile:req.body.mobile,
+          seller:req.body.seller,
+          active:isActive
+        });
+      }
+    }catch(err){
+      error = err;
+    }
+
+    if(error!==null && error!==undefined){
+      return res.redirect('/users?error='+error);
+    }else{
+      return res.redirect('/users');
+    }
+  },
+  userstate: async (req,res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    var id = req.param('id');
+    var state = req.body.active;
+    var updatedUser = await User.updateOne({id:id}).set({active:state});
+    return res.send(updatedUser);
   }
 };
 

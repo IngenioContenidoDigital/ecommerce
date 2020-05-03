@@ -18,6 +18,8 @@ module.exports = {
     mobilecountry:{model:'country'},
     mobile:{type:'number'},
     mobileStatus: {type:'string', isIn: ['unconfirmed',  'confirmed'], defaultsTo:'unconfirmed'},
+    active:{type:'boolean',defaultsTo:true,},
+    seller:{model:'seller'},
     isSuperAdmin: {type:'boolean', defaultsTo:false},
   },
   customToJSON: function() {
