@@ -1,7 +1,7 @@
 <% let printed = []; let flag = false; %>
 <div class="container">
     <div class="columns is-centered">
-        <div class="column is-8">
+        <div class="column is-9">
             <div class="box">
             <%if(cart===null){%>
                 <section class="hero is-warning">
@@ -70,14 +70,14 @@
             </div>
         </div>
         <%if(cart!==null){%>
-        <div class="column is-4">
-            <div id="order" class="column is-one-fifth has-text-centered">
+        <div class="column is-3">
+            <div id="order" class="has-text-centered">
                 <div class="box">
                     <span class="is-centered has-text-weight-bold">Subtotal&nbsp;</span>
                     <span id="cart-total" class="has-text-danger is-size-4">$&nbsp;<%= Math.round(session.cart.total).toLocaleString('es-CO')%></span>
                     <hr>
                     <div class="buttons is-centered">
-                        <button id="cart-proceed" class="button is-warning is-size-6 is-size-7-tablet has-text-weight-bold"><i class='bx bx-cart-alt is-size-5 is-dark'></i> &nbsp;Proceder al pago</button>
+                        <a href="/checkout" id="cart-proceed" class="button is-warning is-size-6 is-size-7-tablet has-text-weight-bold"><i class='bx bx-cart-alt is-size-5 is-dark'></i> &nbsp;Proceder al pago</a>
                     </div>
                 </div>
             </div>
@@ -154,8 +154,4 @@
             subtotal.innerHTML='$&nbsp;'+Math.round(res.value).toLocaleString("es-CO");
         });
     })
-
-    live('#cart-proceed','click',e =>{
-        window.location.href = '/checkout';
-    });
 </script>

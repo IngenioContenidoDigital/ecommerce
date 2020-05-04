@@ -1,34 +1,52 @@
 <div class="container">
-    <div class="columns">
-        <div class="column">
-            <div class="columns is-centered">
-                <div class="column has-text-centered">
-                    <section class="hero">
-                        <figure class="image is-3by1">
-                            <img src="/images/categories/<%= category.logo.replace(category.logo.split('.').pop(),'webp') %>" alt="<%=category.description%>">
-                        </figure>
-                    </section>
+    <div class="columns is-centered">
+        <div class="column is-2">
+            <div class="box" id="filter">
+                <p class="has-text-centered has-text-weight-bold is-size-7">Opciones de Filtrado</p>
+                <hr>
+                <p class="is-size-7 has-text-weight-bold">Marca</p>
+                <div class="select is-small is-info">
+                    <select name="brand" class="is-capitalized">
+                        <option value="">Filtrar Marca</option>
+                        <%brands.forEach(brand =>{%>
+                            <option class="is-capitalized" value="<%=brand.name%>"><%=brand.name%></option>
+                        <%}) %>
+                    </select>
                 </div>
+                <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="brand-delete"></a>
+                <hr>
+                <p class="is-size-7 has-text-weight-bold">Colores</p>
+                <% colors.forEach(color=>{%>
+                    <a href="#" class="filter"><span class="color-container" color="<%=color.name%>" style="background-color: <%=color.code%>;border:solid 1px <%=color.code%>;"></span></a>
+                <%});%>
+                <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="color-delete"></a>
+                <hr>
             </div>
+        </div>
+        <div class="column is-8">
+            <section class="hero">
+                <figure class="image is-3by1 is-inline">
+                    <img src="/images/categories/<%= category.logo.replace(category.logo.split('.').pop(),'webp') %>" alt="<%=category.description%>">
+                </figure>
+            </section>
             <% let count = 0 %>
             <% category.products.forEach((product)=>{ %>
                 <%if(product.active){ %>
-                <%if(count==0){%> <div class="columns"> <%}%>
-                <div class="column">
-                    <!-- class="card is-size-7 has-badge-rounded has-badge-danger has-badge-medium" data-badge="" -->
-                    <div class="card is-size-7 has-badge-rounded has-badge-danger has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
+                    <div class="card card-catalog is-inline-block is-size-7 has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
                         <div class="card-image has-text-centered">
-                            <figure class="image is-128x128 image-centered">
-                                <a href="/list/product/<%=product.id%>"><img src="/images/products/<%=product.id%>/<%= product.cover.file.replace(product.cover.file.split('.').pop(),'webp') %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
+                            <figure class="image is-256x256 is-inline-block">
+                                <a href="/list/product/<%=product.id%>"><img style="justify-content: center;" src="/images/products/<%=product.id%>/<%= product.cover.file.replace(product.cover.file.split('.').pop(),'webp') %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
                             </figure>
                         </div>
                         <div class="card-content">
                             <div class="media-content">
                                 <div class="columns is-mobile">
-                                    <div class="column is-10">
-                                        <span class="subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>
+                                    <div class="column">
+                                        <span brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>
                                     </div>
-                                    <div class="column is-1"><span class="color-container is-right" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></div>
+                                    <div class="column">
+                                       <p class="has-text-right"><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></p>
+                                    </div>
                                 </div>
                             </div>
                             <p class="has-text-weight-bold is-uppercase"><%=product.name%></p>
@@ -40,9 +58,9 @@
                             <%}%>
                             <div class="media-content">
                                 <hr>
-                                <div class="columns is-mobile">
+                                <div class="columns">
                                     <div class="column">
-                                        <div class="select is-primary is-size-7">
+                                        <div class="select is-primary is-size-7 is-fullwidth">
                                             <select class="is-uppercase s-variation">
                                                 <option value="0">Seleccione</option>
                                                 <% product.productvariation.forEach((v)=>{%>
@@ -52,18 +70,14 @@
                                         </div>
                                     </div>
                                     <div class="column">
-                                        <div class="buttons is-right">
-                                            <button product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right">COMPRAR</button>
+                                        <div class="buttons">
+                                            <button product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <%if(count==2){%> </div><%}%>
-                <% count++;%>
-                <%if(count==3){%><% count=0;%><%}%>
                 <%} %>
             <%})%>
         </div>
@@ -82,6 +96,40 @@
             removeClass(button,'is-primary');
             addClass(button,'is-disabled');
             button.disabled=true;
+        }
+    });
+    live('.filter','click', e =>{
+        let color = e.target.getAttribute('color');
+        let cards = document.querySelectorAll('.card');
+        for(let c of cards){
+            if(c.querySelector('.color-container').getAttribute('color')!==color){
+                addClass(c,'is-hidden');
+            }else{
+                removeClass(c,'is-hidden');
+            }
+        }
+        let selectb = document.querySelector('select[name="brand"]');
+        selectb.value='';
+    });
+
+    live('.delete','click',e=>{
+        let cards = document.querySelectorAll('.card');
+        for(let c of cards){
+            removeClass(c,'is-hidden');
+        }
+        let selectb = document.querySelector('select[name="brand"]');
+        selectb.value='';
+    });
+
+    live('select[name="brand"]','change',e=>{
+        let brand = e.target.value;
+        let cards = document.querySelectorAll('.card');
+        for(let c of cards){
+            if(c.querySelector('.brand').getAttribute('brand')!==brand){
+                addClass(c,'is-hidden');
+            }else{
+                removeClass(c,'is-hidden');
+            }
         }
     });
 </script>

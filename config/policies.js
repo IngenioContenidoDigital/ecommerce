@@ -32,7 +32,10 @@ module.exports.policies = {
   DiscountController:{'*': 'isLoggedIn'},
   ManufacturersController:{'*': 'isLoggedIn'},
   OrderController:{'*': 'isLoggedIn'},
-  ProductController:{'*': 'isLoggedIn'},
+  ProductController:{
+    'listproduct':true,
+    '*': 'isLoggedIn'
+  },
   SellerController:{'*': 'isLoggedIn'},
   SupplierController:{'*': 'isLoggedIn'},
   TaxController:{'*': 'isLoggedIn'},

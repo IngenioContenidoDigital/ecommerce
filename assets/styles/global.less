@@ -41,7 +41,7 @@
 .color-container{
     width: 15px;
     height: 15px;
-    display: block;
+    display: inline-block;
     border-radius: 15px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 15px 0 rgba(0, 0, 0, 0.19);
 }
@@ -103,4 +103,37 @@
     filter: gray; /* IE6-9 */
     -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
     filter: grayscale(1); /* Microsoft Edge and Firefox 35+ */
+}
+
+@media only screen and (max-width: 320px){
+    .card-catalog{
+        width:350px;
+    }
+}
+
+@media only screen and (min-width: 425px){
+    .card-catalog{
+        width:205px;
+        margin:2px;
+    }
+}
+
+@media only screen and (min-width:768px){
+    .card-catalog{
+        width:249px;
+        margin: 2px;
+    }
+}
+
+@media only screen and (min-width: 1024px){
+    .card-catalog{
+        width:300px;
+        margin: 5px;
+    }
+}
+@media only screen and (min-width: 1025px){
+    .card-catalog{
+        width:283px;
+        margin: 5px;
+    }
 }

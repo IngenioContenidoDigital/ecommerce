@@ -43,6 +43,7 @@ module.exports.routes = {
   'GET /manufacturers/:action?/:id?' : 'ManufacturersController.listbrands',
   'POST /manufacturer/create': 'ManufacturersController.addbrand',
   'PUT /manufacturers/:id' : 'ManufacturersController.brandstate',
+  'POST /manufacturer/edit/:id' : 'ManufacturersController.editbrand',
   'GET /categories/list/:id?': 'CategoryController.showcategories',
   'GET /categories/:id' : 'CategoryController.getchildren',
   'GET /parent/:id' : 'CategoryController.getparent',

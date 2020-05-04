@@ -66,5 +66,37 @@ module.exports = {
     var updatedBrand = await Manufacturer.updateOne({id:id}).set({active:state});
     return res.send(updatedBrand);
   },
+  editbrand: async (req,res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editbrand')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let isActive = (req.body.activo==='on') ? true : false;
+    let id = req.param('id');
+
+    try{
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/brands');
+      await Manufacturer.updateOne({id:id}).set({
+        name:req.body.nombre.trim().toLowerCase(),
+        description:req.body.description,
+        logo: filename[0],
+        active:isActive});
+    }catch(err){
+      error=err;
+      if(err.code==='badRequest'){
+        await Manufacturer.updateOne({id:id}).set({
+          name:req.body.nombre.trim().toLowerCase(),
+          description:req.body.description,
+          active:isActive});
+      }
+    }
+    setTimeout(() => { return; }, 2000);
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/manufacturers');
+    }else{
+      return res.redirect('/manufacturers?error='+error);
+    }
+  }
 };
 

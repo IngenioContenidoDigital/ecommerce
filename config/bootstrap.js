@@ -99,10 +99,10 @@ module.exports.bootstrap = async function() {
       {name:'productvariations', group:'catalogo', description:'Ver las variaciones de un producto'},
       {name:'deletevariations', group:'catalogo', description:'Eliminar variaciones de un producto'},
       {name:'productstate', group:'catalogo', description:'Activar o Desactivar un Producto'},
-      {name:'listproduct', group:'catalogo', description:'Activar o Desactivar un producto'},
 
       {name:'listbrands', group:'catalogo', description:'Ver Listade de marcas'},
       {name:'addbrand', group:'catalogo', description:'Agregar una nueva marca'},
+      {name:'editbrand', group:'catalogo', description:'Editar una marca existente'},
       {name:'brandstate', group:'catalogo', description:'Activar o Desactivar una marca'},
       {name:'showcolors', group:'catalogo', description:'Ver la lista de Colores'},
       {name:'createcolor', group:'catalogo', description:'Crear un Nuevo Color'},
