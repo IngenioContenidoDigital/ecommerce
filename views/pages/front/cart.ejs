@@ -154,12 +154,6 @@
     })
 
     live('#cart-proceed','click',e =>{
-        <%if(session.user === undefined){%>
-            const modal = document.querySelector('.modal');
-            if(!hasClass(modal,'is-active'))
-                addClass(modal,'is-active');
-        <%}else{%>
-            window.location.href = '/checkout';
-        <%}%>
-    })
+        window.location.href = '/checkout';
+    });
 </script>
