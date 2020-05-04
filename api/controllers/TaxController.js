@@ -7,6 +7,10 @@
 
 module.exports = {
   showtaxes: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showtaxes')){
+      throw 'forbidden';
+    }
     let tax = null;
     let error = null;
     let taxes = await Tax.find();
@@ -31,6 +35,10 @@ module.exports = {
     }
   },
   edittax: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'edittax')){
+      throw 'forbidden';
+    }
     let error = null;
     try{
       await Tax.updateOne({id:req.param('id')}).set({name:req.body.name.trim().toLowerCase(),value:req.body.value});

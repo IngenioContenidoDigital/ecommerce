@@ -20,7 +20,7 @@ module.exports = {
     mobileStatus: {type:'string', isIn: ['unconfirmed',  'confirmed'], defaultsTo:'unconfirmed'},
     active:{type:'boolean',defaultsTo:true,},
     seller:{model:'seller'},
-    isSuperAdmin: {type:'boolean', defaultsTo:false},
+    profile:{model:'profile'}
   },
   customToJSON: function() {
     return _.omit(this, ['password']);

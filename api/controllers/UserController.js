@@ -92,19 +92,28 @@ module.exports = {
     }
   },
   users: async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'users')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let user = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
-    let users = await User.find();
+    let users = await User.find().populate('profile');
     if(id){
       user = await User.findOne({id:id});
     }
     let countries = await Country.find();
     let sellers = await Seller.find();
-    return res.view('pages/configuration/users',{users:users, user:user,countries:countries,sellers:sellers,action:action,error:error});
+    let profiles = await Profile.find({where:{name:{'!=':['superadmin','customer']}}});
+    return res.view('pages/configuration/users',{users:users, user:user,profiles:profiles,countries:countries,sellers:sellers,action:action,error:error});
   },
   admincreate: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'admincreate')){
+      throw 'forbidden';
+    }
     let error = null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -120,6 +129,7 @@ module.exports = {
         mobile:req.body.mobile,
         mobileStatus:'confirmed',
         seller:req.body.seller,
+        profile:req.body.profile,
         active:isActive
       });
     }catch(err){
@@ -132,6 +142,10 @@ module.exports = {
     }
   },
   adminedit: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'adminedit')){
+      throw 'forbidden';
+    }
     let error = null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -145,6 +159,7 @@ module.exports = {
           mobilecountry:req.body.country,
           mobile:req.body.mobile,
           seller:req.body.seller,
+          profile:req.body.profile,
           active:isActive
         });
       }else{
@@ -156,6 +171,7 @@ module.exports = {
           mobilecountry:req.body.country,
           mobile:req.body.mobile,
           seller:req.body.seller,
+          profile:req.body.profile,
           active:isActive
         });
       }
@@ -177,6 +193,84 @@ module.exports = {
     var state = req.body.active;
     var updatedUser = await User.updateOne({id:id}).set({active:state});
     return res.send(updatedUser);
+  },
+  profiles: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'profiles')){
+      throw 'forbidden';
+    }
+    let error= req.param('error') ? req.param('error') : null;
+    let profile = null;
+    let action = req.param('action') ? req.param('action') : null;
+    let id = req.param('id') ? req.param('id') : null;
+    let profiles = await Profile.find({
+      where:{
+        name:{'!=': ['superadmin','customer']},
+      }
+    });
+    if(id){
+      profile = await Profile.findOne({id:id});
+    }
+    return res.view('pages/configuration/profiles',{profiles:profiles, profile:profile,action:action,error:error});
+  },
+  createprofile: async (req, res) =>{
+    let error = null;
+    try{
+      await Profile.create({
+        name:req.body.name.trim().toLowerCase()
+      });
+    }catch(err){
+      error = err;
+    }
+    if(error!==null && error!==undefined){
+      return res.redirect('/profiles?error='+error);
+    }else{
+      return res.redirect('/profiles');
+    }
+  },
+  editprofile:async (req, res)=>{
+    let error = null;
+    try{
+      await Profile.updateOne({id:req.param('id')}).set({
+        name:req.body.name.trim().toLowerCase()
+      });
+    }catch(err){
+      error = err;
+    }
+    if(error!==null && error!==undefined){
+      return res.redirect('/profiles?error='+error);
+    }else{
+      return res.redirect('/profiles');
+    }
+  },
+  permissions:async (req,res)=>{
+    let error = req.param('error') ? req.param('error') : null;
+    let profile = await Profile.findOne({id:req.param('id')}).populate('permissions');
+    let permissions = await Permission.find();
+    return res.view('pages/configuration/permissions',{profile:profile,permissions:permissions,error:error});
+  },
+  setpermissions: async(req, res) => {
+    let profile = await Profile.findOne({id:req.param('id')}).populate('permissions');
+    let permissions = [];
+    try{
+      if(profile.permissions.length<1 && req.body){
+        await Profile.addToCollection(req.param('id'),'permissions').members(req.body.permissions)
+        .tolerate('E_INVALID_ASSOCIATED_IDS');
+      }else{
+        for(let p of profile.permissions){
+          permissions.push(p.id);
+        }
+        await Profile.removeFromCollection(req.param('id'),'permissions').members(permissions)
+        .tolerate('E_INVALID_ASSOCIATED_IDS');
+        if(req.body){
+          await Profile.addToCollection(req.param('id'),'permissions').members(req.body.permissions)
+          .tolerate('E_INVALID_ASSOCIATED_IDS');
+        }
+      }
+    }catch(err){
+      console.log(err);
+    }
+    return res.redirect('/profiles');
   }
 };
 

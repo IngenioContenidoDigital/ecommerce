@@ -1,0 +1,60 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+        <div class="box">
+            <form action="/permissions/set/<%=profile.id%>" method="POST">
+                <p class="has-text-right">
+                    <button class="button is-primary is-small" type="submit">Actualizar Permisos</button>
+                </p>
+                <br>
+                <article class="panel is-link is-size-7">
+                    <p class="panel-heading is-capitalized"><%=profile.name%></p>
+                    <p class="panel-tabs">
+                        <a class="tab is-active">Todos</a>
+                        <a class="tab" group="pedidos">Pedidos</a>
+                        <a class="tab" group="catalogo">Catálogo</a>
+                        <a class="tab" group="descuentos">Descuentos</a>
+                        <a class="tab" group="sellers">Sellers</a>
+                        <a class="tab" group="transporte">Transporte</a>
+                        <a class="tab" group="localizacion">Localización</a>
+                        <a class="tab" group="usuarios">Usuarios</a>
+                    </p>
+                    <%permissions.forEach(permission =>{%>
+                        <% let contains = profile.permissions.filter(pp => pp.id === permission.id) %>
+                        <a class="panel-block is-active permission" group="<%=permission.group%>">
+                            <span class="panel-icon">
+                            <input type="checkbox" name="permissions[]" <%if(contains.length>0 && permission.id== contains[0].id){%>checked<%}%> value="<%=permission.id%>" />
+                            </span>
+                            <b><%= permission.name%>:</b>&nbsp;<%=permission.description%>
+                        </a>
+                    <%})%>
+                </article>
+            </form>
+        </div>
+</div>
+<script>
+    live('.tab','click',e =>{
+        let group = e.target.getAttribute('group');
+        let tabs = document.querySelectorAll('.tab');
+        let permission = document.querySelectorAll('.permission');
+        for(let tab of tabs){
+            removeClass(tab,'is-active')
+        };
+        addClass(e.target,'is-active')
+
+        for(let p of permission){
+            if(group===null || group===undefined){
+                removeClass(p,'is-hidden');
+            }else{
+                if(p.getAttribute('group')==group){
+                    removeClass(p,'is-hidden');
+                }else{
+                    addClass(p,'is-hidden');
+                }
+            }
+        }
+    });
+</script>

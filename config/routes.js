@@ -110,6 +110,11 @@ module.exports.routes = {
   'POST /user/create' : 'UserController.admincreate',
   'POST /user/edit/:id' : 'UserController.adminedit',
   'PUT /user/:id' : 'UserController.userstate',
+  'GET /profiles/:action?/:id?' : 'UserController.profiles',
+  'POST /profile/create' : 'UserController.createprofile',
+  'POST /profile/edit/:id' : 'UserController.editprofile',
+  'GET /permissions/:id' : 'UserController.permissions',
+  'POST /permissions/set/:id' : 'UserController.setpermissions',
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

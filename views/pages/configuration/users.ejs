@@ -121,6 +121,18 @@
                             </div>
                         </div>
                     </div>
+                    <div class="column">
+                        <div class="field">
+                            <div class="select is-fullwidth">
+                                <select class="is-capitalized" name="profile" required>
+                                    <option value="">-- Elegir Perfil --</option>
+                                    <%profiles.forEach(profile =>{%>
+                                        <option value="<%=profile.id%>" class="is-capitalized" <%if(action=='edit' && user.profile==profile.id){%>selected="selected"<%}%> ><%= profile.name %></option>
+                                    <%})%>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="control buttons is-right">
                 <% if(action=='edit'){ %> 
@@ -180,6 +192,7 @@
                   </thead>
                   <tbody>
                       <% users.forEach(function(user){ %>
+                        <%if(user.profile.name!=='superadmin'){%>
                           <tr>
                               <td scope="row" class="align-middle"><%= user.id %></td>
                               <td class="align-middle is-capitalized"><%= user.fullName %></td>
@@ -201,6 +214,7 @@
                               </a>
                               </td>
                           </tr>
+                        <%}%>
                       <% }); %>
                   </tbody>
               </table>

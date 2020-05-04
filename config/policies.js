@@ -18,5 +18,19 @@ module.exports.policies = {
   ***************************************************************************/
 
   // '*': true,
+  AddressController:{'*': 'isLoggedIn'},
+  CarrierController:{'*': 'isLoggedIn'},
+  CategoryController:{'*': 'isLoggedIn'},
+  ColorController:{'*': 'isLoggedIn'},
+  CountriesController:{'*': 'isLoggedIn'},
+  DiscountController:{'*': 'isLoggedIn'},
+  ManufacturersController:{'*': 'isLoggedIn'},
+  OrderController:{'*': 'isLoggedIn'},
+  ProductController:{'*': 'isLoggedIn'},
+  SellerController:{'*': 'isLoggedIn'},
+  SupplierController:{'*': 'isLoggedIn'},
+  TaxController:{'*': 'isLoggedIn'},
+  UserController:{'*': 'isLoggedIn'},
+  VariationController:{'*': 'isLoggedIn'}
 
 };
