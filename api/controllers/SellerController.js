@@ -7,6 +7,10 @@
 
 module.exports = {
   showsellers: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showsellers')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let seller = null;
     let action = req.param('action') ? req.param('action') : null;
@@ -22,9 +26,13 @@ module.exports = {
       }
     }
     let countries = await Country.find();
-    res.view('pages/sellers/sellers',{sellers:sellers,action:action,seller:seller,error:error,countries:countries});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,countries:countries});
   },
   createseller: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createseller')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let address = await Address.create({
@@ -71,6 +79,10 @@ module.exports = {
     }
   },
   editseller: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
@@ -132,6 +144,10 @@ module.exports = {
     }
   },
   sellerstate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'sellerstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }

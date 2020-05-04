@@ -19,7 +19,7 @@ module.exports = {
     if(id){
       tax = await Tax.findOne({id:id});
     }
-    return res.view('pages/configuration/taxes',{taxes:taxes,action:action,error:error,tax:tax});
+    return res.view('pages/configuration/taxes',{layout:'layouts/admin',taxes:taxes,action:action,error:error,tax:tax});
   },
   createtax: async function(req, res){
     let error = null;

@@ -21,6 +21,7 @@ module.exports.routes = {
 
   /* ----- FRONT ROUTES  -----*/
   '/': 'IndexController.index',
+  'GET /login' : {view:'pages/configuration/login'},
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},
   'GET /list/category/:id' : 'CategoryController.listcategory',
@@ -66,9 +67,11 @@ module.exports.routes = {
   'GET /taxes/:action?/:id?' : 'TaxController.showtaxes',
   'POST /tax/create' : 'TaxController.createtax',
   'POST /tax/edit/:id' : 'TaxController.edittax',
+
   'GET /variations/:action?/:id?':'VariationController.showvariations',
   'POST /variation/create':'VariationController.createvariation',
   'POST /variation/edit/:id':'VariationController.editvariation',
+
   'GET /suppliers/:action?/:id?' : 'SupplierController.showsuppliers',
   'POST /supplier/create' : 'SupplierController.createsupplier',
   'PUT /supplier/:id' : 'SupplierController.supplierstate',

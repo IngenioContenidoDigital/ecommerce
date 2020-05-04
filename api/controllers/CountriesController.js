@@ -7,6 +7,10 @@
 
 module.exports = {
   showcountries: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showcountries')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let country = null;
     let action = req.param('action') ? req.param('action') : null;
@@ -15,9 +19,13 @@ module.exports = {
     if(id){
       country = await Country.findOne({id:id});
     }
-    res.view('pages/localization/countries',{countries:countries,action:action,country:country,error:error});
+    res.view('pages/localization/countries',{layout:'layouts/admin',countries:countries,action:action,country:country,error:error});
   },
   createcountry: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createcountry')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -37,6 +45,10 @@ module.exports = {
     }
   },
   editcountry: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editcountry')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
@@ -57,6 +69,10 @@ module.exports = {
     }
   },
   countrystate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'countrystate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -66,6 +82,10 @@ module.exports = {
     return res.send(updatedCountry);
   },
   showregions: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showregions')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let action = req.param('action') ? req.param('action') : null;
     let region = null;
@@ -77,9 +97,13 @@ module.exports = {
     if(id){
       region = await Region.findOne({id:id});
     }
-    res.view('pages/localization/regions',{regions:regions,action:action,region:region,countries:countries,error:error});
+    res.view('pages/localization/regions',{layout:'layouts/admin',regions:regions,action:action,region:region,countries:countries,error:error});
   },
   createregion: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createregion')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -99,6 +123,10 @@ module.exports = {
     }
   },
   editregion: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editregion')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
@@ -119,6 +147,10 @@ module.exports = {
     }
   },
   regionstate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'regionstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -128,6 +160,10 @@ module.exports = {
     return res.send(updatedRegion);
   },
   showcities: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showcities')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let action = req.param('action') ? req.param('action') : null;
     let city = null;
@@ -139,15 +175,19 @@ module.exports = {
     .populate('country')
     .populate('cities');
     if (region.cities.length<1){
-      return res.view('pages/localization/cities',{region:region,city:city,action:'create',error:error});
+      return res.view('pages/localization/cities',{layout:'layouts/admin',region:region,city:city,action:'create',error:error});
     }else{
-      return res.view('pages/localization/cities',{region:region,city:city,action:action,error:error});
+      return res.view('pages/localization/cities',{layout:'layouts/admin',region:region,city:city,action:action,error:error});
     }
     /*for(let c of cities){
       c.region = await Region.findOne({id:c.region.id}).populate('country');
     }*/
   },
   createcity: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createcity')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -166,6 +206,10 @@ module.exports = {
     }
   },
   editcity: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editcity')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
@@ -186,6 +230,10 @@ module.exports = {
     }
   },
   citystate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'citystate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }

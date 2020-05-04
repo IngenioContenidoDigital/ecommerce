@@ -1,0 +1,34 @@
+<div class="container">
+    <br><br>
+    <div class="box">
+        <form method="POST" action="/login">
+          <a class="link is-pulled-right" href="/register">Crear una cuenta</a>
+          <div class="field">
+            <label class="label">Email</label>
+            <div class="control has-icons-left has-icons-right">
+              <input class="input" name="emailAddress" type="email" placeholder="Ingresa Email" />
+              <span class="icon is-small is-left">
+                <i class="bx bx-envelope"></i>
+              </span>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Contraseña</label>
+            <div class="control has-icons-left has-icons-right">
+              <input class="input" name="password" type="password" placeholder="Contraseña" autocomplete="off"/>
+              <span class="icon is-small is-left">
+                <i class="bx bx-lock"></i>
+              </span>
+            </div>
+          </div>
+          <div class="field is-grouped">
+              <div class="control">
+                <button id="enter" class="button is-primary">Entrar</button>
+              </div>
+              <div class="control">
+                <button id="cancel" class="button is-light">Cancelar</button>
+              </div>
+          </div>
+        </form>
+      </div>
+</div>

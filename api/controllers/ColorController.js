@@ -7,6 +7,10 @@
 
 module.exports = {
   showcolors: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showcolors')){
+      throw 'forbidden';
+    }
     let error = null;
     let color=null;
     let colors = await Color.find();
@@ -15,9 +19,13 @@ module.exports = {
     if(id){
       color = await Color.findOne({id:id});
     }
-    return res.view('pages/catalog/color',{colors:colors,action:action,error:error,color:color});
+    return res.view('pages/catalog/color',{layout:'layouts/admin',colors:colors,action:action,error:error,color:color});
   },
   createcolor: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createcolor')){
+      throw 'forbidden';
+    }
     let error = null;
     try{
       await Color.create({name:req.body.name.trim().toLowerCase(),code:req.body.code.trim()});
@@ -31,6 +39,10 @@ module.exports = {
     }
   },
   editcolor: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editcolor')){
+      throw 'forbidden';
+    }
     let error = null;
     try{
       await Color.updateOne({id:req.param('id')}).set({name:req.body.name.trim().toLowerCase(),code:req.body.code.trim()});

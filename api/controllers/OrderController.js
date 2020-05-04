@@ -8,6 +8,10 @@
 
 module.exports = {
   liststates: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'liststates')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let state = null;
     let action = req.param('action') ? req.param('action') : null;
@@ -19,9 +23,13 @@ module.exports = {
     }
 
     orderstate = await OrderState.find().populate('color');
-    return res.view('pages/orders/orderstate',{action:action, error:error, orderstate:orderstate, state:state, colors:colors});
+    return res.view('pages/orders/orderstate',{layout:'layouts/admin',action:action, error:error, orderstate:orderstate, state:state, colors:colors});
   },
   stateadd: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'stateadd')){
+      throw 'forbidden';
+    }
     let error = null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -33,6 +41,10 @@ module.exports = {
     }
   },
   stateedit: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'stateedit')){
+      throw 'forbidden';
+    }
     let error = null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -44,6 +56,10 @@ module.exports = {
     }
   },
   validstate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'validstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -243,6 +259,10 @@ module.exports = {
     return res.view('pages/front/order',{order:order, payment:payment});
   },
   listorders: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'listorders')){
+      throw 'forbidden';
+    }
     let error = req.param('error') ? req.param('error') : null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
@@ -288,7 +308,7 @@ module.exports = {
       .populate('color');
     }
 
-    return res.view('pages/orders/orders',{
+    return res.view('pages/orders/orders',{layout:'layouts/admin',
       orders:orders,
       error:error,
       moment:moment,
@@ -299,6 +319,10 @@ module.exports = {
     });
   },
   updateorder: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'updateorder')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }

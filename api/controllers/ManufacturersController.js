@@ -8,6 +8,10 @@
 module.exports = {
 
   listbrands: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'listbrands')){
+      throw 'forbidden';
+    }
     let error=null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
@@ -16,9 +20,13 @@ module.exports = {
     if(id){
       marca = await Manufacturer.findOne({id:id});
     }
-    res.view('pages/catalog/manufacturers',{marcas:marcas,action:action,error:error,marca:marca});
+    res.view('pages/catalog/manufacturers',{layout:'layouts/admin',marcas:marcas,action:action,error:error,marca:marca});
   },
   addbrand: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'addbrand')){
+      throw 'forbidden';
+    }
     let error=null;
 
     let isActive = (req.body.activo==='on') ? true : false;
@@ -46,6 +54,10 @@ module.exports = {
     }
   },
   brandstate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'brandstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }

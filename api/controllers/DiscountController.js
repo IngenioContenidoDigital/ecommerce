@@ -7,6 +7,10 @@
 
 module.exports = {
   discounts: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'discounts')){
+      throw 'forbidden';
+    }
     let moment = require('moment');
     let error = req.param('error') ? req.param('error') : null;
     let action = req.param('action') ? req.param('action') : null;
@@ -17,9 +21,13 @@ module.exports = {
       discount = await CatalogDiscount.findOne({id:id}).populate('products');
     }
     let discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]);
-    return res.view('pages/discounts/discounts', {error:error, discounts:discounts, action:action, discount:discount, moment:moment, root:root});
+    return res.view('pages/discounts/discounts', {layout:'layouts/admin',error:error, discounts:discounts, action:action, discount:discount, moment:moment, root:root});
   },
   creatediscount: async (req, res) => {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'creatediscount')){
+      throw 'forbidden';
+    }
     let moment = require('moment');
     let range = req.body.range.split(' - ');
 

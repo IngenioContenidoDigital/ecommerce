@@ -7,6 +7,10 @@
 
 module.exports = {
   showproducts: async function(req,res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showproducts')){
+      throw 'forbidden';
+    }
     const root = await Category.findOne({name:'Inicio'});
     const brands = await Manufacturer.find();
     const colors = await Color.find();
@@ -32,7 +36,7 @@ module.exports = {
       .populate('tax')
       .populate('mainColor');
     }
-    return res.view('pages/catalog/product',{
+    return res.view('pages/catalog/product',{layout:'layouts/admin',
       products:products,
       root:root,
       brands:brands,
@@ -46,6 +50,10 @@ module.exports = {
     });
   },
   createproduct: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -95,6 +103,10 @@ module.exports = {
     }
   },
   productimages: async function(req,res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'productimages')){
+      throw 'forbidden';
+    }
     let id = req.body.id;
     let route ='assets/images/products/'+id;
     let cover=0;
@@ -110,6 +122,10 @@ module.exports = {
     res.send(result);
   },
   setcover: async function(req,res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'setcover')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -119,6 +135,10 @@ module.exports = {
     return res.send(image.id);
   },
   removeimage: async function(req,res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'removeimage')){
+      throw 'forbidden';
+    }
     let image = await ProductImage.findOne({id:req.param('id')});
     let route ='assets/images/products/'+image.product;
     let ext = image.file.split('.').pop();
@@ -152,6 +172,10 @@ module.exports = {
     }
   },
   productvariations: async function(req,res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'productvariations')){
+      throw 'forbidden';
+    }
     let rows = [];
     for(let row in req.body){
       rows.push(JSON.parse(req.body[row]));
@@ -166,6 +190,10 @@ module.exports = {
     return res.send('ok');
   },
   deletevariations: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'deletevariations')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -174,6 +202,10 @@ module.exports = {
     return res.send(deletedVariation);
   },
   productstate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'productstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }

@@ -7,6 +7,10 @@
 
 module.exports = {
   showsuppliers: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showsuppliers')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let supplier = null;
     let action = req.param('action') ? req.param('action') : null;
@@ -15,9 +19,13 @@ module.exports = {
     if(id){
       supplier = await Supplier.findOne({id:id});
     }
-    res.view('pages/catalog/suppliers',{suppliers:suppliers,action:action,supplier:supplier,error:error});
+    res.view('pages/catalog/suppliers',{layout:'layouts/admin',suppliers:suppliers,action:action,supplier:supplier,error:error});
   },
   createsupplier: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createsupplier')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -39,6 +47,10 @@ module.exports = {
     }
   },
   editsupplier: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editsupplier')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
@@ -61,6 +73,10 @@ module.exports = {
     }
   },
   supplierstate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'supplierstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }

@@ -7,6 +7,10 @@
 
 module.exports = {
   showcategories: async function (req,res) {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showcategories')){
+      throw 'forbidden';
+    }
     var error = null;
     let action = null;
     let childs = null;
@@ -28,9 +32,13 @@ module.exports = {
       action = req.param('action');
       childs['children'] = [await Category.findOne({name:'Inicio'})];
     }
-    return res.view('pages/catalog/categories',{categories:childs.children,action:action,error:error,current:category,parent:parentId});
+    return res.view('pages/catalog/categories',{layout:'layouts/admin',categories:childs.children,action:action,error:error,current:category,parent:parentId});
   },
   addcategory: async function(req,res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'addcategory')){
+      throw 'forbidden';
+    }
     var isActive=false;
     var error = null;
     let newcat = null;
@@ -56,6 +64,10 @@ module.exports = {
     }
   },
   editcategory: async function(req,res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editcategory')){
+      throw 'forbidden';
+    }
     var isActive=false;
     var error = null;
     const route = 'assets/images/categories';
@@ -111,6 +123,10 @@ module.exports = {
     return res.send(parent.parent);
   },
   categorystate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'categorystate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }

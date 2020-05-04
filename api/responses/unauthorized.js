@@ -27,17 +27,18 @@ module.exports = function unauthorized() {
 
   sails.log.verbose('Ran custom response: res.unauthorized()');
 
-  if (req.wantsJSON) {
+  /*if (req.wantsJSON) {
     return res.sendStatus(401);
-  }
+  }*/
   // Or log them out (if necessary) and then redirect to the login page.
-  else {
+  /*else {
 
     if (req.session.userId) {
       delete req.session.userId;
     }
 
     return res.redirect('/login');
-  }
+  }*/
+  return res.view('pages/configuration/login');
 
 };

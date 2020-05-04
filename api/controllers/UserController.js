@@ -35,6 +35,7 @@ module.exports = {
           //Enviar un Email de Verificación con el código para validar.
           try{
             let country = await Country.findOne({id:req.body.country});
+            let profile = await Profile.findOne({name:'customer'});
             let user = await User.create({
               emailAddress:req.body.email,
               emailStatus:'unconfirmed',
@@ -45,7 +46,8 @@ module.exports = {
               dni:req.body.dni,
               mobilecountry:country.id,
               mobile:req.body.mobile,
-              mobileStatus:'unconfirmed'
+              mobileStatus:'unconfirmed',
+              profile:profile.id
             }).fetch();
             req.session.user=user;
             return res.view('pages/front/verify',{error:null});
@@ -75,9 +77,6 @@ module.exports = {
     rq.end();
   },
   validatemail: async function(req, res){
-    /*if (!req.isSocket) {
-      return res.badRequest();
-    }*/
     let code = req.body.code1+req.body.code2+req.body.code3+req.body.code4+req.body.code5+req.body.code6;
 
 
@@ -107,7 +106,7 @@ module.exports = {
     let countries = await Country.find();
     let sellers = await Seller.find();
     let profiles = await Profile.find({where:{name:{'!=':['superadmin','customer']}}});
-    return res.view('pages/configuration/users',{users:users, user:user,profiles:profiles,countries:countries,sellers:sellers,action:action,error:error});
+    return res.view('pages/configuration/users',{layout:'layouts/admin',users:users, user:user,profiles:profiles,countries:countries,sellers:sellers,action:action,error:error});
   },
   admincreate: async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -186,6 +185,10 @@ module.exports = {
     }
   },
   userstate: async (req,res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'userstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -211,9 +214,13 @@ module.exports = {
     if(id){
       profile = await Profile.findOne({id:id});
     }
-    return res.view('pages/configuration/profiles',{profiles:profiles, profile:profile,action:action,error:error});
+    return res.view('pages/configuration/profiles',{layout:'layouts/admin',profiles:profiles, profile:profile,action:action,error:error});
   },
   createprofile: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createprofile')){
+      throw 'forbidden';
+    }
     let error = null;
     try{
       await Profile.create({
@@ -229,6 +236,10 @@ module.exports = {
     }
   },
   editprofile:async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editprofile')){
+      throw 'forbidden';
+    }
     let error = null;
     try{
       await Profile.updateOne({id:req.param('id')}).set({
@@ -244,13 +255,21 @@ module.exports = {
     }
   },
   permissions:async (req,res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'permissions')){
+      throw 'forbidden';
+    }
     let error = req.param('error') ? req.param('error') : null;
     let profile = await Profile.findOne({id:req.param('id')}).populate('permissions');
     let permissions = await Permission.find();
-    return res.view('pages/configuration/permissions',{profile:profile,permissions:permissions,error:error});
+    return res.view('pages/configuration/permissions',{layout:'layouts/admin',profile:profile,permissions:permissions,error:error});
   },
   setpermissions: async(req, res) => {
-    let profile = await Profile.findOne({id:req.param('id')}).populate('permissions');
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'setpermissions')){
+      throw 'forbidden';
+    }
+    let profile = await Profile.findOne({id:req.param('id')}).populate('setpermissions');
     let permissions = [];
     try{
       if(profile.permissions.length<1 && req.body){

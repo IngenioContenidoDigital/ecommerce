@@ -83,8 +83,6 @@ module.exports.bootstrap = async function() {
       {name:'createcity', group:'localizacion', description:'Crear una nueva ciudad'},
       {name:'editcity', group:'localizacion', description:'Editar una ciudad existente'},
       {name:'citystate', group:'localizacion', description:'Activar o desactivar una ciudad'},
-      {name:'countryregions', group:'localizacion', description:'Ver las Regiones del país'},
-      {name:'regioncities', group:'localizacion', description:'Ver las ciudades de una región'},
 
       {name:'showvariations', group:'catalogo', description:'Ver la lista de variaciones'},
       {name:'createvariation', group:'catalogo', description:'crear variaciones de producto'},
@@ -112,8 +110,6 @@ module.exports.bootstrap = async function() {
       {name:'showcategories', group:'catalogo', description:'Ver la lista de categorías'},
       {name:'addcategory', group:'catalogo', description:'Crear una Nueva Categoría'},
       {name:'editcategory', group:'catalogo', description:'Editar una categoría existente'},
-      {name:'getchildren', group:'catalogo', description:'Obtener los descentiendes de una categoría'},
-      {name:'getparent', group:'catalogo', description:'Obtener los Ascendentes de una categoría'},
       {name:'categorystate', group:'catalogo', description:'Activar o Desactivar una Categoría'},
 
       {name:'users', group:'usuarios', description:'Ver la Lista de usuarios'},
@@ -123,18 +119,15 @@ module.exports.bootstrap = async function() {
       {name:'profiles', group:'usuarios', description:'Ver la Lista de Perfiles de Usuario'},
       {name:'createprofile', group:'usuarios', description:'Crear un Nuevo Perfil de usuario'},
       {name:'editprofile', group:'usuarios', description:'Editar un Perfil Existente'},
-      {name:'addresses', group:'usuarios', description:'Ver la lista de direcciones'},
-      {name:'address', group:'usuarios', description:'Crear una nueva dirección'},
-      {name:'newaddress', group:'usuarios', description:'Agregar una nueva dirección'},
-      {name:'editaddress', group:'usuarios', description:'Editar una Dirección'},
-      {name:'deleteaddress', group:'usuarios', description:'Eliminar una dirección'},
+
+      {name:'permissions', group:'usuarios', description:'Visualizar Permisos de un usuario'},
+      {name:'setpermissions', group:'usuarios', description:'Modificar los Permisos de un usuario'},
 
       {name:'showsellers', group:'sellers', description:'Ver los Sellers Activos'},
       {name:'createseller', group:'sellers', description:'Crear un nuevo Seller'},
       {name:'editseller', group:'sellers', description:'Editar un Seller existente'},
       {name:'sellerstate', group:'sellers', description:'Activar o Desactivar un Seller'},
 
-      {name:'createorder', group:'pedidos', description:'Crear un nuevo pedido'},
       {name:'listorders', group:'pedidos', description:'Ver la Lista de Pedidos'},
       {name:'updateorder', group:'pedidos', description:'Actualizar un Pedido'},
       {name:'liststates', group:'pedidos', description:'Ver los estados de los pedidos'},

@@ -86,10 +86,15 @@ and exposed as \`req.me\`.)`
         }
       }
       this.req.session.user = userRecord;
+      let profile = await Profile.findOne({id:userRecord.profile});
       if(userRecord.emailStatus==='unconfirmed'){
         return exits.unconfirmed({user:userRecord, error:null});
       }else{
-        return exits.success();
+        if(profile.name!=='customer'){
+          return exits.success({layout:'layouts/admin'});
+        }else{
+          return exits.success();
+        }
       }
     }
   }

@@ -7,6 +7,10 @@
 
 module.exports = {
   showcarriers: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showcarriers')){
+      throw 'forbidden';
+    }
     let error= req.param('error') ? req.param('error') : null;
     let carrier = null;
     let action = req.param('action') ? req.param('action') : null;
@@ -15,9 +19,13 @@ module.exports = {
     if(id){
       carrier = await Carrier.findOne({id:id});
     }
-    res.view('pages/carriers/carriers',{carriers:carriers,action:action,carrier:carrier,error:error});
+    res.view('pages/carriers/carriers',{layout:'layouts/admin',carriers:carriers,action:action,carrier:carrier,error:error});
   },
   createcarrier: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createcarrier')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
@@ -37,6 +45,10 @@ module.exports = {
     }
   },
   editcarrier: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editcarrier')){
+      throw 'forbidden';
+    }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
@@ -75,6 +87,10 @@ module.exports = {
     }
   },
   carrierstate: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'carrierstate')){
+      throw 'forbidden';
+    }
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -84,12 +100,16 @@ module.exports = {
     return res.send(updatedCarrier);
   },
   shipment:async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'shipment')){
+      throw 'forbidden';
+    }
     let tracking = req.param('tracking');
 
     let guia = await sails.helpers.carrier.guia(tracking);
     let label = await sails.helpers.carrier.label(tracking);
 
-    return res.view('pages/pdf',{guia:guia,label:label});
+    return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});
   }
 
 };
