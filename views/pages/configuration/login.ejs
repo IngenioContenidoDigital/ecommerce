@@ -1,14 +1,19 @@
 <div class="columns is-centered">
   <div class="column is-6">
     <div class="container">
+        <% if (error != undefined || error != null) { %>
+          <div class="notification is-danger is-light" id="error">
+              <%= error %>
+          </div>
+        <% } %>
         <br><br>
         <div class="box">
-            <form method="POST" action="/login">
+            <form method="POST" action="/login" id="login-form">
               <a class="link is-pulled-right" href="/register">Crear una cuenta</a>
               <div class="field">
                 <label class="label">Email</label>
                 <div class="control has-icons-left has-icons-right">
-                  <input class="input" name="emailAddress" type="email" placeholder="Ingresa Email" />
+                  <input class="input" name="emailAddress" type="email" required placeholder="Ingresa Email" />
                   <span class="icon is-small is-left">
                     <i class="bx bx-envelope"></i>
                   </span>
@@ -17,7 +22,7 @@
               <div class="field">
                 <label class="label">Contraseña</label>
                 <div class="control has-icons-left has-icons-right">
-                  <input class="input" name="password" type="password" placeholder="Contraseña" autocomplete="off"/>
+                  <input class="input" name="password" type="password" required placeholder="Contraseña" autocomplete="off"/>
                   <span class="icon is-small is-left">
                     <i class="bx bx-lock"></i>
                   </span>
@@ -28,7 +33,7 @@
                     <button id="enter" class="button is-primary">Entrar</button>
                   </div>
                   <div class="control">
-                    <button id="cancel" class="button is-light">Cancelar</button>
+                    <a href="/" id="cancel" class="button is-light">Cancelar</a>
                   </div>
               </div>
             </form>

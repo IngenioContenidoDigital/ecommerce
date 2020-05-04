@@ -21,7 +21,7 @@ module.exports.routes = {
 
   /* ----- FRONT ROUTES  -----*/
   '/': 'IndexController.index',
-  'GET /login' : {view:'pages/configuration/login'},
+  'GET /login' : {view:'pages/configuration/login', locals:{error:null}},
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},
   'GET /list/category/:id' : 'CategoryController.listcategory',

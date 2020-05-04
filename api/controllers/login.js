@@ -44,9 +44,10 @@ and exposed as \`req.me\`.)`
       description: 'Se direcciona al usuario para realizar la verificación de su cuenta',
     },
     badCombo: {
+      responseType:'view',
+      viewTemplatePath: 'pages/configuration/login',
       description: `The provided email and password combination does not
-      match any user in the database.`,
-      responseType: 'unauthorized'
+      match any user in the database.`
       // ^This uses the custom `unauthorized` response located in `api/responses/unauthorized.js`.
       // To customize the generic "unauthorized" response across this entire app, change that file
       // (see api/responses/unauthorized).
@@ -71,15 +72,21 @@ and exposed as \`req.me\`.)`
       }
     }else{
       userRecord = await User.findOne({emailAddress: inputs.emailAddress.toLowerCase().trim(),});
-      if(!userRecord) { throw 'badCombo';}
-      await sails.helpers.passwords.checkPassword(inputs.password, userRecord.password)
-      .intercept('incorrect', 'badCombo');
+      if(!userRecord) { 
+        return exits.badCombo({error:'El Email ingresado es Incorrecto'});
+      }
+      try{
+        await sails.helpers.passwords.checkPassword(inputs.password, userRecord.password);
+      }catch(err){
+        return exits.badCombo({error:err.code+' La Contraseña es incorrecta'});
+      }
+
       if (inputs.rememberMe) {
         if (this.req.isSocket) {
           sails.log.warn(
-            'Received `rememberMe: true` from a virtual request, but it was ignored\n'+
-            'because a browser\'s session cookie cannot be reset over sockets.\n'+
-            'Please use a traditional HTTP request instead.'
+              'Received `rememberMe: true` from a virtual request, but it was ignored\n'+
+              'because a browser\'s session cookie cannot be reset over sockets.\n'+
+              'Please use a traditional HTTP request instead.'
           );
         } else {
           this.req.session.cookie.maxAge = sails.config.custom.rememberMeCookieMaxAge;
