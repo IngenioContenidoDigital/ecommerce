@@ -19,7 +19,7 @@ module.exports.policies = {
 
   // '*': true,
   IndexController:{
-    'checkout': 'isLoggedIn',
+    'checkout': ['isLoggedIn','isEmailVerified'],
     '*': true
   },
   AddressController:{'*': 'isLoggedIn'},
