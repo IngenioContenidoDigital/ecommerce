@@ -14,7 +14,13 @@ module.exports = {
     const root = await Category.findOne({name:'Inicio'});
     const brands = await Manufacturer.find();
     const colors = await Color.find();
-    const sellers = await Seller.find();
+    let sellers = null;
+    if(rights.name!=='superadmin'){
+      sellers = await Seller.find({id:req.session.user.seller});
+    }else{
+      sellers = await Seller.find();
+    }
+
     const taxes = await Tax.find();
     const variations = await Variation.find();
     let error=null;
@@ -31,10 +37,17 @@ module.exports = {
       .populate('variations');
     }
     if(action===null){
-      products = await Product.find()
-      .populate('images')
-      .populate('tax')
-      .populate('mainColor');
+      if(rights.name!=='superadmin'){
+        products = await Product.find({seller:req.session.user.seller})
+        .populate('images')
+        .populate('tax')
+        .populate('mainColor');
+      }else{
+        products = await Product.find()
+        .populate('images')
+        .populate('tax')
+        .populate('mainColor');
+      }
     }
     return res.view('pages/catalog/product',{layout:'layouts/admin',
       products:products,
