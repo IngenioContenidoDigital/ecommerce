@@ -22,6 +22,7 @@ module.exports.policies = {
     'checkout': ['isLoggedIn','isEmailVerified'],
     '*': true
   },
+  FrontController:{'*':'isLoggedIn'},
   AddressController:{'*': 'isLoggedIn'},
   CarrierController:{'*': 'isLoggedIn'},
   CategoryController:{'*': 'isLoggedIn'},

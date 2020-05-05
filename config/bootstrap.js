@@ -137,6 +137,7 @@ module.exports.bootstrap = async function() {
 
       {name:'discounts', group:'descuentos', description:'Visualizar descuentos'},
       {name:'creatediscount', group:'descuentos', description:'Crear un nuevo descuento'},
+      {name:'sliders', group:'descuentos', description:'Ver la Lista de imagenes del Carrusel'},
 
       {name:'showcarriers', group:'transporte', description:'Mostrar lista de Transportadores'},
       {name:'createcarrier', group:'transporte', description:'Crear un nuevo transportador'},

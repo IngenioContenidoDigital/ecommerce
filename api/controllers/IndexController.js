@@ -7,7 +7,8 @@
 
 module.exports = {
   index: async function(req, res){
-    return res.view('pages/homepage');
+    let slider = await Slider.find({active:true});
+    return res.view('pages/homepage',{slider:slider});
   },
   checkout: async function(req, res){
     if(req.session.cart===undefined || req.session.cart===null){

@@ -1,1 +1,51 @@
-<h1>Hola</h1>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/css/bulma-carousel.min.css">
+<div class="columns is-centered is-marginless is-paddingless">
+    <div class="column is-2"></div>
+    <div class="column is-8">
+        <%if(typeof slider == 'object'){%>
+        <%if(slider.length>1){%>
+            <section style="overflow: hidden;" class="section is-paddingless is-marginless" id="carousel">
+                <div id="carousel-demo" class="carousel">
+                    <%for(let slide of slider){%>
+                        <div class="container"><img src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" /></div>
+                    <%}%>
+                </div>
+            </section>
+        <%}else{%>
+            <section style="overflow: hidden;" class="section is-paddingless is-marginless">
+                <div class="container"><img src="/images/slides/<%= slider[0].image.replace(slider[0].image.split('.').pop(),'webp') %>" /></div>
+            </section>
+        <%}%>
+        <%}%>
+    </div>
+    <div class="column is-2"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/js/bulma-carousel.min.js"></script>
+<script>
+    // Initialize all div with carousel class
+    var carousels = bulmaCarousel.attach('.carousel', {
+        autoplay:true, 
+        slidesToShow:1, 
+        infinite:true, 
+        slidesToScroll:1,
+        pagination:'HH:mm',
+        autoplaySpeed:4000,
+        pauseOnHover:true});
+
+    // Loop on each carousel initialized
+    for(var i = 0; i < carousels.length; i++) {
+        // Add listener to  event
+        carousels[i].on('before:show', state => {
+            console.log(state);
+        });
+    }
+
+    // Access to bulmaCarousel instance of an element
+    var element = document.querySelector('#my-element');
+    if (element && element.bulmaCarousel) {
+        // bulmaCarousel instance is available as element.bulmaCarousel
+        element.bulmaCarousel.on('before-show', function(state) {
+            console.log(state);
+        });
+    }
+</script>

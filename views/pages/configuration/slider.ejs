@@ -1,0 +1,193 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <% if(action=='create' || action=='edit'){ %> 
+          <h4 class="title is-4">Crear Imagen de Carrusel</h4>
+          <hr>
+          <% if(action=='create') { %>
+          <form action="/slide/create" method="POST" enctype="multipart/form-data">
+          <% } %>
+          <% if(action=='edit') { %>
+          <form action="/slide/edit/<%= slide.id %>" method="POST" enctype="multipart/form-data">
+          <% } %>
+          <div class="columns">
+          <div class="column"></div>
+          <div class="column">
+              <div class="box">
+                  <div class="columns is-mobile">
+                      <div class="column">
+                        <div class="field">
+                            <div class="control select is-small">
+                                <select class="is-capitalized" name="seller" required >
+                                    <option value="">-- Elegir Seller --</option>
+                                    <% sellers.forEach(seller =>{%>
+                                      <option class="is-capitalized" <%if(action=='edit' && slide.seller==seller.id){%>selected="selected"<%}%>value="<%=seller.id%>"><%=seller.name%></option>
+                                    <%})%>
+                                </select>
+                            </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <p class="has-text-right">
+                            <% if(action=='edit'){ %>
+                              <input id="activo" type="checkbox" <% if(slide.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                            <label for="activo">Estado: <span id="state"><% if(slide.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
+                            <% }else{ %>
+                              <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                              <label for="activo">Estado: <span id="state"><b style="color:green;">activo</b></span></label>  
+                            <% } %>
+                          </p>
+                      </div>
+                  </div>
+                  <div class="field">
+                      <label class="label is-small">Nombre</label>
+                      <div class="control is-small">
+                      <input class="input is-small is-capitalized" type="text" name="name" required="true" placeholder="Nombre de la Imagen" <% if(action=='edit'){ %>value="<%= slide.name %>"<% }%>/>
+                      </div>
+                  </div>
+                  <% if(action=='edit'){ %>
+                    <div class="container">
+                      <p class="has-text-centered"><img width="100%" src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" /></p>
+                    </div>
+                  <% } %>
+                  <div class="field">
+                    <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
+                      <label class="file-label">
+                        <input class="file-input" accept="image/*" type="file" id="image" name="image" />
+                        <span class="file-cta">
+                          <span class="file-icon">
+                            <i class="bx bx-upload"></i>
+                          </span>
+                          <span class="file-label">
+                            Logotipo
+                          </span>
+                        </span>
+                        <span class="file-name">
+                          No ha cargado ningún archivo.
+                        </span>
+                      </label>
+                    </div>
+                  </div>    
+                  <div class="control buttons is-right">
+                    <% if(action=='edit'){ %> 
+                        <button type="submit" class="button is-primary is-small"><i class="bx bxs-pencil"></i>&nbsp;Modificar Slide</button>
+                    <% }else if (action=='create'){ %>
+                        <button type="submit" class="button is-primary is-small"><i class="bx bx-plus-circle"></i>&nbsp;Crear Slide</button>
+                    <% } %>
+                </div>           
+              </div>
+          </div>
+          <div class="column"></div>
+          </form>
+          <script>
+              const fileInput = document.querySelector('#file-loader input[type=file]');
+            fileInput.onchange = () => {
+                if (fileInput.files.length > 0) {
+                    const fileName = document.querySelector('#file-loader .file-name');
+                    fileName.textContent = fileInput.files[0].name;
+                }
+            };
+            live('#activo','click',function(){
+                let elm = this;
+                let state = elm.checked;
+                var sp = document.querySelector('#state');
+                if(state){
+                    sp.innerHTML='<b style="color:green;">activo</b>';
+                }else{
+                    sp.innerHTML='<b style="color:red;">inactivo</b>';
+                }
+            });
+          </script>
+      
+    <% } else { %>
+      <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+          <a href="/sliders/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+      </p>
+      <div class="table-container">
+          <table class="table is-hoverable" id="slides-table">
+              <thead>
+              <tr>
+                  <th scope="col">Id</th>
+                  <th scope="col">Imagen</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Activo</th>
+                  <th scope="col">Opciones</th>
+              </tr>
+              </thead>
+              <tbody>
+                  <% sliders.forEach(slide => { %>                
+                      <tr>
+                          <td scope="row" class="align-middle"><%= slide.id %></td>
+                          <td><img width="150" src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" class="slide-admin"/></td>
+                          <td class="align-middle is-capitalized"><%= slide.name %></td>
+                          <td class="align-middle">
+                            <span class="action">
+                            <% if(slide.active===true) { %>
+                              <i slide="<%= slide.id %>" class="state bx bx-check-circle"></i>
+                            <% }else{ %>
+                              <i slide="<%= slide.id %>" class="state bx bx-x-circle"></i>
+                            <%}%>
+                          </span>
+                          </td>
+                          <td class="align-middle">                        
+                              <a href="/sliders/edit/<%= slide.id %>" class="button is-small">
+                              <span class="icon">
+                                  <i class="bx bxs-edit"></i>
+                              </span>
+                              </a>
+                              <a href="/slide/delete/<%= slide.id %>" class="remove button is-small">
+                                <span class="icon">
+                                    <i class="bx bx-trash"></i>
+                                </span>
+                                </a>
+                          </td>
+                      </tr>
+                  <% }); %>
+              </tbody>
+          </table>
+      </div>
+      <script>
+          document.addEventListener('DOMContentLoaded', function(){
+          let table = new simpleDatatables.DataTable('#slides-table',{
+              searchable:true,
+              sortable:true,
+              paging:true,
+              labels: {
+              placeholder: "Buscar...",
+              perPage: "{select} registros por página",
+              noRows: "No se encontraron datos",
+              info: "Mostrando {start} a {end} de {rows} registros",
+              }
+          });  
+          });
+          live('.state', 'click', function(){ 
+            if(confirm('Seguro Desea Continuar')){
+            var elm = this;
+            var id = this.getAttribute('slide');
+            var status = null;
+            if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+            io.socket.put('/slide/'+id,{active:status},function(resData, jwr){
+                if(resData.active===false){
+                removeClass(elm, 'bx-check-circle');
+                addClass(elm,'bx-x-circle');
+                }else{
+                removeClass(elm, 'bx-x-circle');
+                addClass(elm,'bx-check-circle');
+                }
+            });
+            }
+        });
+
+        live('.remove','click',e=>{
+            if(!confirm('Seguro Desea Continuar')){
+                e.preventDefault();
+            }
+        });
+
+      </script>
+    <% } %>
+  </div>

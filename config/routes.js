@@ -38,6 +38,11 @@ module.exports.routes = {
   'GET /address/delete/:id' : 'AddressController.deleteaddress',
   'GET /checkout' : 'IndexController.checkout',
   'POST /order' : 'OrderController.createorder',
+  'GET /sliders/:action?/:id?' : 'FrontController.listslider',
+  'POST /slide/create' : 'FrontController.createslider',
+  'POST /slide/edit/:id' : 'FrontController.editslider',
+  'PUT /slide/:id' : 'FrontController.sliderstate',
+  'GET /slide/delete/:id' : 'FrontController.sliderdelete',
   /* ----- FIN FRONT ROUTES  -----*/
   /* ----- ADMIN ROUTES  -----*/
   'GET /manufacturers/:action?/:id?' : 'ManufacturersController.listbrands',
