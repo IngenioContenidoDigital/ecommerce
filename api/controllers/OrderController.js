@@ -299,9 +299,16 @@ module.exports = {
       });
     }
 
-    let orders = await Order.find().sort('createdAt DESC')
-    .populate('customer')
-    .populate('currentstatus');
+    let orders = null;
+    if(rights.name!=='superadmin'){
+      orders = await Order.find({where:{seller:req.session.user.seller}}).sort('createdAt DESC')
+      .populate('customer')
+      .populate('currentstatus');
+    }else{
+      orders = await Order.find().sort('createdAt DESC')
+      .populate('customer')
+      .populate('currentstatus');
+    }
 
     for(let st of orders){
       st.currentstatus = await OrderState.findOne({id:st.currentstatus.id})

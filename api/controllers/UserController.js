@@ -269,7 +269,7 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'setpermissions')){
       throw 'forbidden';
     }
-    let profile = await Profile.findOne({id:req.param('id')}).populate('setpermissions');
+    let profile = await Profile.findOne({id:req.param('id')}).populate('permissions');
     let permissions = [];
     try{
       if(profile.permissions.length<1 && req.body){
