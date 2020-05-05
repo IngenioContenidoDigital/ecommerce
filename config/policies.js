@@ -19,14 +19,12 @@ module.exports.policies = {
 
   // '*': true,
   IndexController:{
-    'checkout': 'isLoggedIn'
+    'checkout': 'isLoggedIn',
+    '*': true
   },
   AddressController:{'*': 'isLoggedIn'},
   CarrierController:{'*': 'isLoggedIn'},
-  CategoryController:{
-    'listcategory':true,
-    '*': 'isLoggedIn'
-  },
+  CategoryController:{'*': 'isLoggedIn'},
   ColorController:{'*': 'isLoggedIn'},
   CountriesController:{'*': 'isLoggedIn'},
   DiscountController:{'*': 'isLoggedIn'},

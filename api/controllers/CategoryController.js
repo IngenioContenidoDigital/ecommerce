@@ -46,11 +46,24 @@ module.exports = {
     let current = await Category.findOne({id:req.body.current});
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/categories');
-      newcat = await Category.create({name:req.body.nombre,logo:filename[0],description:req.body.descripcion,active:isActive,level:current.level+1}).fetch();
+      newcat = await Category.create({
+        name:req.body.nombre.trim().toLowerCase(),
+        logo:filename[0],
+        description:req.body.descripcion,
+        active:isActive,
+        url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
+        level:current.level+1
+      }).fetch();
     }catch(err){
       error = err.msg;
       if(err.code==='badRequest'){
-        newcat = await Category.create({name:req.body.nombre,description:req.body.descripcion,active:isActive,level:current.level+1}).fetch();
+        newcat = await Category.create({
+          name:req.body.nombre.trim().toLowerCase(),
+          description:req.body.descripcion,
+          active:isActive,
+          url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
+          level:current.level+1
+        }).fetch();
       }
     }
 
@@ -134,29 +147,5 @@ module.exports = {
     var state = req.param('active');
     var updatedCategory = await Category.updateOne({id:id}).set({active:state});
     return res.send(updatedCategory);
-  },
-  listcategory: async function(req, res){
-    let id = req.param('id') ? req.param('id') : null;
-    let category = await Category.findOne({id:id}).populate('products');
-    let colorlist = [];
-    let brandlist = [];
-    for(let p of category.products){
-      p.cover= await ProductImage.findOne({product:p.id,cover:1});
-      if(!colorlist.includes(p.mainColor)){
-        colorlist.push(p.mainColor);
-      }
-      p.mainColor=await Color.findOne({id:p.mainColor});
-      if(!brandlist.includes(p.manufacturer)){
-        brandlist.push(p.manufacturer);
-      }
-      p.manufacturer=await Manufacturer.findOne({id:p.manufacturer});
-      p.seller=await Seller.findOne({id:p.seller});
-      p.tax=await Tax.findOne({id:p.tax});
-      p.productvariation=await ProductVariation.find({product:p.id}).populate('variation');
-      p.discount = await sails.helpers.discount(p.id);
-    }
-    let colors = await Color.find({where:{id:{'in':colorlist}}});
-    let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
-    return res.view('pages/front/category',{category:category,colors:colors,brands:brands});
   }
 };

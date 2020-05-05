@@ -24,13 +24,15 @@
             </div>
         </div>
         <div class="column is-8">
+            <%if(object.logo!== undefined && object.logo!== null){%>
             <section class="hero">
                 <figure class="image is-3by1 is-inline">
-                    <img src="/images/categories/<%= category.logo.replace(category.logo.split('.').pop(),'webp') %>" alt="<%=category.description%>">
+                    <img src="<%=object.route%><%= object.logo.replace(object.logo.split('.').pop(),'webp') %>" alt="<%=object.description%>">
                 </figure>
             </section>
+            <%}%>
             <% let count = 0 %>
-            <% category.products.forEach((product)=>{ %>
+            <% object.products.forEach((product)=>{ %>
                 <%if(product.active){ %>
                     <div class="card card-catalog is-inline-block is-size-7 has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
                         <div class="card-image has-text-centered">

@@ -9,10 +9,11 @@ module.exports = {
 
   attributes: {
 
-    name:{type:'string'},
+    name:{type:'string', required:true, unique:true},
     logo:{type:'string'},
     description:{type:'string'},
     active:{type:'boolean', required:true},
+    url:{type:'string'},
     level:{type:'number'},
     hasChildren:{type:'boolean'},
     parent:{

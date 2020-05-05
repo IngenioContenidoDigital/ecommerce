@@ -43,7 +43,8 @@ module.exports = {
         await Manufacturer.create({
           name:req.body.nombre.trim().toLowerCase(),
           description:req.body.descripcion,
-          active:isActive});
+          active:isActive,
+          url:(req.body.nombre.trim().toLowerCase()).replace(' ','-')});
       }
     }
 
@@ -81,7 +82,8 @@ module.exports = {
         name:req.body.nombre.trim().toLowerCase(),
         description:req.body.description,
         logo: filename[0],
-        active:isActive});
+        active:isActive,
+        url:(req.body.nombre.trim().toLowerCase()).replace(' ','-')});
     }catch(err){
       error=err;
       if(err.code==='badRequest'){
