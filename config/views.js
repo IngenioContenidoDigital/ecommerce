@@ -35,7 +35,6 @@ module.exports.views = {
   * Note that layouts only work with the built-in EJS view engine!           *
   *                                                                          *
   ***************************************************************************/
-
   layout: 'layouts/layout'
 
 };

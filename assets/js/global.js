@@ -96,7 +96,7 @@ function validateForm(form){
       removeClass(elements[i],'is-danger');
       addClass(elements[i].parentNode,'is-success');
       addClass(elements[i],'is-success');
-      let m = elements[i].parentNode.querySelector('p');
+      let m = elements[i].parentNode.querySelector('.help');
       if(m){m.remove();}
     }
   }

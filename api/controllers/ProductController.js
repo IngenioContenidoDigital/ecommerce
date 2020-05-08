@@ -226,22 +226,6 @@ module.exports = {
     var state = req.param('active');
     var updatedProduct = await Product.updateOne({id:id}).set({active:state});
     return res.send(updatedProduct);
-  },
-  listproduct: async function(req, res){
-    let product = await Product.findOne({id:req.param('id')})
-    .populate('manufacturer')
-    .populate('mainColor')
-    .populate('tax')
-    .populate('variations')
-    .populate('images');
-
-    let discount = await sails.helpers.discount(product.id);
-
-    for(let size of product.variations){
-      size.variation=await Variation.findOne({id:size.variation});
-    }
-
-    return res.view('pages/front/product',{product:product, discount:discount});
   }
 
 };

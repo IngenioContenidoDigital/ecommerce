@@ -48,6 +48,12 @@
                       <input class="input is-small is-capitalized" type="text" name="name" required="true" placeholder="Nombre de la Imagen" <% if(action=='edit'){ %>value="<%= slide.name %>"<% }%>/>
                       </div>
                   </div>
+                  <div class="field">
+                    <label class="label is-small">URL</label>
+                    <div class="control is-small">
+                    <input class="input is-small is-lowercase" type="text" name="url" required="true" placeholder="Destino del Slider" <% if(action=='edit'){ %>value="<%= slide.url %>"<% }%>/>
+                    </div>
+                </div>
                   <% if(action=='edit'){ %>
                     <div class="container">
                       <p class="has-text-centered"><img width="100%" src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" /></p>

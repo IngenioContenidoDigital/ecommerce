@@ -1,0 +1,71 @@
+<nav class="navbar is-size-7" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/"><img src="/images/iridio.png"></a>
+      <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+    <div id="navbarBasicExample" class="navbar-menu">
+      <%if(typeof menu=='object'){%>
+        <% menu.children.forEach(child =>{%>
+            <div class="navbar-item has-dropdown is-hoverable is-mega">
+                <div class="navbar-link"><a class="has-text-dark" href="/ver/categoria/<%=child.url%>"><%=child.name%></a></div>
+                <div class="navbar-dropdown">
+                  <div class="container is-fluid">
+                    <div class="columns">
+                      <div class="column">
+                        <a href="/ver/categoria/<%=child.url%>"><h1 class="title is-6 is-mega-menu-title"><%=child.name%></h1></a>
+                        <br>
+                        <div class="columns">
+                        <%child.children.children.forEach(c =>{%>
+                          <div class="column">
+                            <a class="navbar-item" href="/ver/categoria/<%=c.url%>">
+                                <div class="navbar-content">
+                                    <p>
+                                        <small><%=c.name%></small>
+                                    </p>
+                                </div>
+                            </a>
+                          </div>
+                        <%})%>
+                      </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+        <%})%>
+      <%}%>
+    </div>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <div class="buttons">
+          <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
+          <div class="dropdown is-right is-hoverable">
+            <div class="dropdown-trigger">
+              <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+                <% if(session.user === undefined) { %>
+                  <span><i class="is-size-4 bx bxs-user"></i></span>
+                <%}else{%>
+                  <span><i class='bx bx-exit'></i></span>
+                <%}%>
+              </button>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+              <div class="dropdown-content">
+                <% if(session.user === undefined) { %>
+                <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
+                <% } else { %>
+                <a href="/addresses" class="dropdown-item">Direcciones</a>
+                <hr class="dropdown-divider">
+                <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
+                <% }%>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</nav>

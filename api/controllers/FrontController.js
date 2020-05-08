@@ -42,6 +42,7 @@ module.exports = {
         name:req.body.name.trim().toLowerCase(),
         image: filename[0],
         seller:req.body.seller,
+        url:req.body.url,
         active:isActive});
     }catch(err){
       error=err;
@@ -67,6 +68,7 @@ module.exports = {
         name:req.body.name.trim().toLowerCase(),
         image: filename[0],
         seller:req.body.seller,
+        url:req.body.url,
         active:isActive});
     }catch(err){
       error=err;
@@ -74,6 +76,7 @@ module.exports = {
         await Slider.updateOne({id:id}).set({
           name:req.body.name.trim().toLowerCase(),
           seller:req.body.seller,
+          url:req.body.url,
           active:isActive});
       }
     }

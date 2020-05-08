@@ -1,12 +1,123 @@
-<div class="container">
-    <%if(order.length>1){%>
-        <h3 class="title">Tu pedido contiene productos de varios distribuidores, por esta razón hemos creado los siguientes pedidos:</h3>
-        <% order.forEach(o=>{ %>
-          <p class="container">Order: <%=o%></p>
-        <% }); %>
-    <%}else{%>
-        <h3 class="title">Hemos creado la orden: <%=order[0]%></h3>
-    <%}%>
+<div class="columns is-centered is-marginless is-paddingless">
+    <div class="column is-2"></div>
+    <div class="column is-8">
+        <div class="container">
+            <nav class="level">
+            <%if(order[0].paymentMethod=='CC'){%>
+                <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Medio de Pago</p>
+                      <p class="title">Tarjeta de Crédito</p>
+                    </div>
+                  </div>
+                  <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Referencia de Pago</p>
+                      <p class="title"><%=payment.data['ref_epayco']%></p>
+                    </div>
+                  </div>
+                  <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Total</p>
+                      <p class="title">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></p>
+                    </div>
+                  </div>
+            <%}%>
+            <%if(order[0].paymentMethod=='PSE'){%>
+
+            <%}%>
+            <%if(order[0].paymentMethod=='CS'){%>
+                <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Medio de Pago</p>
+                      <p class="title"><%=payment.data.banco%></p>
+                    </div>
+                  </div>
+                  <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Referencia de Pago</p>
+                      <p class="title"><%=payment.data.codigoproyecto%></p>
+                    </div>
+                  </div>
+                  <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">PIN</p>
+                      <p class="title"><%=payment.data.pin%></p>
+                    </div>
+                  </div>
+                  <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Total</p>
+                      <p class="title">$&nbsp;<%=Math.round(payment.data['valor_pesos']).toLocaleString('es-CO')%></p>
+                    </div>
+                  </div>
+            <%}%>
+            <%if(order[0].paymentMethod=='COD'){%>
+                <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Medio de Pago</p>
+                      <p class="title">Contra Entrega</p>
+                    </div>
+                  </div>
+                  <div class="level-item has-text-centered">
+                    <div>
+                      <p class="heading">Tipo de Pago</p>
+                      <%if(order[0].paymentOption=='terminal'){%>
+                        <p class="title">Datáfono</p>
+                      <%}else{%>
+                        <p class="title">Efectivo</p>
+                      <%}%>
+                    </div>
+                  </div>
+                  <div class="level-item has-text-centered">
+                    <div>
+                        <%let total = 0;%>
+                      <p class="heading">Total</p>
+                      <%order.forEach(o =>{%>
+                        <% total += o.totalOrder %>
+                      <%})%>
+                      <p class="title">$&nbsp;<%=Math.round(total).toLocaleString('es-CO')%></p>
+                    </div>
+                  </div>
+            <%}%>
+            </nav>
+            <hr>
+            <section class="hero is-success">
+                <div class="hero-body">
+                  <div class="container">
+                    <h1 class="title">
+                      Gracias por tu compra
+                    </h1>
+                    <h2 class="subtitle">
+                      Encuentra a continuación los detalles de tu orden
+                    </h2>
+                  </div>
+                </div>
+              </section>
+            <div class="box">
+            <% order.forEach(o=>{ %>
+                <article class="media">
+                    <figure class="media-left">
+                        Pedido:&nbsp;#&nbsp;<strong><%=o.id%></strong>
+                    </figure>
+                    <div class="media-content">
+                        <div class="content">
+                        <p class="is-capitalized"><strong>Vendedor:&nbsp;</strong><%=o.seller.name%></p>
+                        <p class="is-capitalized"><strong>Estado:&nbsp;</strong><%=o.currentstatus.name%></p>
+                        </div>
+                    </div>
+                    <div class="media-rigth">
+                        <p>$ &nbsp;<%=o.totalOrder.toFixed().toLocaleString('es-CO')%></p>
+                    </div>
+                </article>
+            <% }); %>
+            </div>
+            <br>
+            <hr>
+            <br>
+        </div>
+    </div>
+    <div class="column is-2"></div>
 </div>
 
 <!--

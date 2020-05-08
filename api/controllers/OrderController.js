@@ -70,39 +70,6 @@ module.exports = {
   },
   createorder:async function(req, res){
 
-    /*
-     Aceptada
-        Franquicia: Visa
-        Numero: 4575623182290326
-        Fecha Expiración: 12/25
-        Cvv: 123
-        Estado: Aceptada
-        Respuesta: Aceptada
-
-      Fondos insuficientes
-        Franquicia: Visa
-        Numero: 4151611527583283
-        Fecha Expiración: 12/25
-        Cvv: 123
-        Estado: Rechazada
-        Respuesta: Fondos Insuficientes
-
-      Fallida
-        Franquicia: Mastercard
-        Numero: 5170394490379427
-        Fecha Expiración: 12/25
-        Cvv: 123
-        Estado: Fallida
-        Respuesta: Error de comunicación con el centro de autorizaciones
-
-      Pendiente
-        Franquicia: American Express
-        Numero: 373118856457642
-        Fecha Expiración: 12/25
-        Cvv: 123
-        Estado: Pendiente
-        Respuesta: Transacción pendiente por validación
-    */
     let order = [];
     let payment = null;
     let address = await Address.findOne({id:req.body.deliveryAddress})
@@ -165,6 +132,7 @@ module.exports = {
           };
 
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
+          console.log(payment);
           if(payment.success){
             order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
           }else{
@@ -198,6 +166,7 @@ module.exports = {
           method_confirmation: 'POST',
         };
         payment = await sails.helpers.payment.payment({mode:paymentmethod, info:pseInfo});
+        console.log(payment);
         if(payment.success){
           if(payment.data.urlbanco!=='' && payment.data.urlbanco!==null){
             const open = require('open');
@@ -256,7 +225,7 @@ module.exports = {
         break;
     }
     delete req.session.cart;
-    return res.view('pages/front/order',{order:order, payment:payment});
+    return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu()});
   },
   listorders: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

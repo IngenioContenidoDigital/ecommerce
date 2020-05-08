@@ -93,7 +93,7 @@
     </div>
     <div class="field">
         <p class="control has-text-align-right">
-        <button id="submit-register" class="button is-success">
+        <button type="submit" id="submit-register" class="button is-info">
             Crear una Cuenta
         </button>
         </p>
@@ -114,10 +114,10 @@
 
    live('#submit-register','click', e => {
         e.preventDefault();
-        if(validateForm(document.getElementById('register-form'))){
+        if(validateForm(document.querySelector('#register-form'))){
             grecaptcha.execute('6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1', {action: 'register'}).then(token => {
                 document.querySelector('input[name="token"]').value=token;
-                let rform = document.getElementById('register-form');
+                let rform = document.querySelector('#register-form');
                 rform.submit();
             });
         }

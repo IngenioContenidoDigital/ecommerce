@@ -26,8 +26,7 @@ password attempt.`,
 
   exits: {
     success: {
-      responseType: 'view',
-      viewTemplatePath: 'pages/homepage',
+      responseType: 'redirect',
       description: 'The requesting user agent has been successfully logged in.',
       extendedDescription:
 `Under the covers, this stores the id of the logged-in user in the session
@@ -38,10 +37,9 @@ that, thanks to the included "custom" hook, when a relevant request is received
 from a logged-in user, that user's entire record from the database will be fetched
 and exposed as \`req.me\`.)`
     },
-    unconfirmed:{
+    admin:{
       responseType:'view',
-      viewTemplatePath: 'pages/front/verify',
-      description: 'Se direcciona al usuario para realizar la verificación de su cuenta',
+      viewTemplatePath: 'pages/homepage',
     },
     badCombo: {
       responseType:'view',
@@ -64,45 +62,36 @@ and exposed as \`req.me\`.)`
     // (note that we lowercase it to ensure the lookup is always case-insensitive,
     // regardless of which database we're using)
     let userRecord = null;
-    if(this.req.session.user!==undefined){
-      if(this.req.session.user.emailStatus==='unconfirmed'){
-        return exits.unconfirmed({user:this.req.session.user, error:null});
-      }else{
-        return exits.success();
-      }
-    }else{
-      userRecord = await User.findOne({emailAddress: inputs.emailAddress.toLowerCase().trim(),});
-      if(!userRecord) { 
-        return exits.badCombo({error:'El Email ingresado es Incorrecto'});
-      }
-      try{
-        await sails.helpers.passwords.checkPassword(inputs.password, userRecord.password);
-      }catch(err){
-        return exits.badCombo({error:err.code+' La Contraseña es incorrecta'});
-      }
 
-      if (inputs.rememberMe) {
-        if (this.req.isSocket) {
-          sails.log.warn(
+    userRecord = await User.findOne({emailAddress: inputs.emailAddress.toLowerCase().trim(),});
+    if(!userRecord){
+      return exits.badCombo({error:'El Email ingresado es Incorrecto'});
+    }
+    try{
+      await sails.helpers.passwords.checkPassword(inputs.password, userRecord.password);
+    }catch(err){
+      return exits.badCombo({error:err.code+' La Contraseña es incorrecta'});
+    }
+
+    if (inputs.rememberMe) {
+      if (this.req.isSocket) {
+        sails.log.warn(
               'Received `rememberMe: true` from a virtual request, but it was ignored\n'+
               'because a browser\'s session cookie cannot be reset over sockets.\n'+
               'Please use a traditional HTTP request instead.'
-          );
-        } else {
-          this.req.session.cookie.maxAge = sails.config.custom.rememberMeCookieMaxAge;
-        }
-      }
-      this.req.session.user = userRecord;
-      let profile = await Profile.findOne({id:userRecord.profile});
-      if(userRecord.emailStatus==='unconfirmed'){
-        return exits.unconfirmed({user:userRecord, error:null});
-      }else{
-        if(profile.name!=='customer'){
-          return exits.success({layout:'layouts/admin'});
-        }else{
-          return exits.success();
-        }
+        );
+      } else {
+        this.req.session.cookie.maxAge = sails.config.custom.rememberMeCookieMaxAge;
       }
     }
+    this.req.session.user = userRecord;
+    let profile = await Profile.findOne({id:userRecord.profile});
+
+    if(profile.name!=='customer'){
+      return exits.admin({layout:'layouts/admin'});
+    }else{
+      return exits.success('/');
+    }
+    
   }
 };

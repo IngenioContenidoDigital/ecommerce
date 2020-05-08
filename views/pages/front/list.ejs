@@ -31,6 +31,15 @@
                 </figure>
             </section>
             <%}%>
+            <%if(typeof object.children == 'object' && object.children.length>0){%>
+                <div class="container">
+                    <p class="has-text-centered" style="margin-top:7px;">
+                    <% object.children.forEach(children=>{ %>
+                        <a href="/ver/categoria/<%=children.url%>"><span style="width:150px;" class="tag is-dark is-medium"><%=children.name%></span></a>
+                    <%});%>
+                    </p>
+                </div>
+            <%}%>
             <% let count = 0 %>
             <% object.products.forEach((product)=>{ %>
                 <%if(product.active){ %>

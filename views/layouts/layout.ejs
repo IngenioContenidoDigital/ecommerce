@@ -54,88 +54,7 @@
   <body>
     <div class="columns is-centered">
       <div class="column is-8">
-        <nav class="navbar is-size-7" role="navigation" aria-label="main navigation">
-            <div class="navbar-brand">
-              <a class="navbar-item" href="/"><img src="https://bulma.io/images/bulma-logo.png" width="112" height="28"></a>
-              <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-              </a>
-            </div>
-            <div id="navbarBasicExample" class="navbar-menu">
-              <div class="navbar-start">
-                <a href="/list/category/115" class="navbar-item">Moda</a>
-              </div>
-              <div class="navbar-item has-dropdown is-hoverable is-mega">
-                <div class="navbar-link">
-                  Blog
-                </div>
-                <div id="blogDropdown" class="navbar-dropdown">
-                  <div class="container is-fluid">
-                    <div class="columns">
-                      <div class="column">
-                        <h1 class="title is-6 is-mega-menu-title">Sub Menu Title</h1>
-                        <a class="navbar-item" href="/2017/08/03/list-of-tags/">
-                          <div class="navbar-content">
-                            <p>
-                              <small class="has-text-info">03 Aug 2017</small>
-                            </p>
-                            <p>New feature: list of tags</p>
-                          </div>
-                        </a>
-                        <a class="navbar-item" href="/2017/08/03/list-of-tags/">
-                          <div class="navbar-content">
-                            <p>
-                              <small class="has-text-info">03 Aug 2017</small>
-                            </p>
-                            <p>New feature: list of tags</p>
-                          </div>
-                        </a>
-                        <a class="navbar-item" href="/2017/08/03/list-of-tags/">
-                          <div class="navbar-content">
-                            <p>
-                              <small class="has-text-info">03 Aug 2017</small>
-                            </p>
-                            <p>New feature: list of tags</p>
-                          </div>
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="navbar-end">
-              <div class="navbar-item">
-                <div class="buttons">
-                  <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
-                  <div class="dropdown is-right is-hoverable">
-                    <div class="dropdown-trigger">
-                      <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
-                        <% if(session.user === undefined) { %>
-                          <span><i class="is-size-4 bx bxs-user"></i></span>
-                        <%}else{%>
-                          <span><i class='bx bx-exit'></i></span>
-                        <%}%>
-                      </button>
-                    </div>
-                    <div class="dropdown-menu" id="dropdown-menu4" role="menu">
-                      <div class="dropdown-content">
-                        <% if(session.user === undefined) { %>
-                        <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
-                        <% } else { %>
-                        <a href="/addresses" class="dropdown-item">Direcciones</a>
-                        <hr class="dropdown-divider">
-                        <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
-                        <% }%>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-        </nav>
+        <%- partial('../partials/navbar.ejs') %>
       </div>
     </div>
     <div class="container"><%- body %></div>
@@ -228,6 +147,28 @@
           + Use a different preprocessor, like TypeScript
 
     -->
-
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <footer class="footer">
+            <p class="has-text-centered"><span class="is-x-small has-text-weight-bold">Nuestros medios de pago</span></p>
+            <p class="has-text-centered">
+              <img class="front-payment" src="/images/cod.webp" />
+              <img class="front-payment" src="/images/visa.webp" />
+              <img class="front-payment" src="/images/master.webp" />
+              <img class="front-payment" src="/images/amex.webp" />
+              <img class="front-payment" src="/images/diners.webp" />
+              <img class="front-payment" src="/images/pse.webp" />
+              <img class="front-payment" src="/images/baloto.webp" />
+              <img class="front-payment" src="/images/efecty.webp" />
+              <img class="front-payment" src="/images/gana.webp" />
+            </p>
+            <hr>
+            <p class="has-text-centered">
+              <span style="display:inline-block; vertical-align: middle; line-height: 58px;" class="is-x-small has-text-weight-bold has-text-centered">Compra segura</span>
+              <img  style="display:inline-block; vertical-align: middle; line-height: 58px;" class="front-payment" src="/images/ssl.png" />
+              <span style="display:inline-block; vertical-align: middle; line-height: 58px;" class="is-x-small has-text-centered">Sitio protegido con criptografia SSL</span>
+            </p>
+      </div>
+    </div>
   </body>
 </html>

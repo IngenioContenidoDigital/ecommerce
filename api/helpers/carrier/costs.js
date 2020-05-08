@@ -20,7 +20,7 @@ module.exports = {
     let order = await Order.findOne({tracking:inputs.tracking}).populate('addressDelivery');
     let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
     seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city');
-    let city = await City.findOne({id:order.addressDelivery.id});
+    let city = await City.findOne({id:order.addressDelivery.city});
     let oitems = await OrderItem.find({order:order.id});
     let items = oitems.length;
 

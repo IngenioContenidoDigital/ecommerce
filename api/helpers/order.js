@@ -58,13 +58,16 @@ module.exports = {
             carrier:carrier.id
           }).fetch();
 
-          orders.push(order.id);
-
           await OrderHistory.create({
             order:order.id,
             state:order.currentstatus,
             user: user.id
           });
+
+          order.currentstatus = await OrderState.findOne({id:order.currentstatus});
+          order.seller = await Seller.findOne({id:order.seller});
+
+          orders.push(order);
 
           for(let cp of sellerproducts){
             await OrderItem.create({

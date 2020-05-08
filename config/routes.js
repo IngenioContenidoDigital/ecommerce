@@ -25,7 +25,7 @@ module.exports.routes = {
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},
   'GET /ver/:entity/:name' : 'IndexController.list',
-  'GET /list/product/:id' : 'ProductController.listproduct',
+  'GET /list/product/:id' : 'IndexController.listproduct',
   'GET /cart' : 'CartController.viewcart',
   'PUT /cart' : 'CartController.addtocart',
   'GET /register' : 'UserController.registerform',

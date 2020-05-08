@@ -8,7 +8,7 @@
 module.exports = {
   index: async function(req, res){
     let slider = await Slider.find({active:true});
-    return res.view('pages/homepage',{slider:slider});
+    return res.view('pages/homepage',{slider:slider,menu:await sails.helpers.callMenu()});
   },
   checkout: async function(req, res){
     if(req.session.cart===undefined || req.session.cart===null){
@@ -48,7 +48,7 @@ module.exports = {
     switch(entity){
       case 'categoria':
         try{
-          object = await Category.findOne({url:ename}).populate('products')
+          object = await Category.findOne({url:ename}).populate('products').populate('children');
           object.route = '/images/categories/';
         }catch(err){
           return res.notFound(err);
@@ -85,7 +85,23 @@ module.exports = {
     }
     let colors = await Color.find({where:{id:{'in':colorlist}}});
     let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
-    return res.view('pages/front/list',{object:object,colors:colors,brands:brands});
+    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,menu:await sails.helpers.callMenu()});
+  },
+  listproduct: async function(req, res){
+    let product = await Product.findOne({id:req.param('id')})
+    .populate('manufacturer')
+    .populate('mainColor')
+    .populate('tax')
+    .populate('variations')
+    .populate('images');
+
+    let discount = await sails.helpers.discount(product.id);
+
+    for(let size of product.variations){
+      size.variation=await Variation.findOne({id:size.variation});
+    }
+
+    return res.view('pages/front/product',{product:product, discount:discount, menu:await sails.helpers.callMenu()});
   }
 };
 

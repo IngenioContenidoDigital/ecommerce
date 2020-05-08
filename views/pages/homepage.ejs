@@ -7,7 +7,7 @@
             <section style="overflow: hidden;" class="section is-paddingless is-marginless" id="carousel">
                 <div id="carousel-demo" class="carousel">
                     <%for(let slide of slider){%>
-                        <div class="container"><img src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" /></div>
+                        <div class="container"><a href="<%=slide.url%>"><img src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" /></a></div>
                     <%}%>
                 </div>
             </section>
