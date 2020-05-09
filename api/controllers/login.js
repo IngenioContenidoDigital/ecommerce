@@ -38,8 +38,7 @@ from a logged-in user, that user's entire record from the database will be fetch
 and exposed as \`req.me\`.)`
     },
     admin:{
-      responseType:'view',
-      viewTemplatePath: 'pages/homepage',
+      responseType:'redirect',
     },
     badCombo: {
       responseType:'view',
@@ -88,7 +87,7 @@ and exposed as \`req.me\`.)`
     let profile = await Profile.findOne({id:userRecord.profile});
 
     if(profile.name!=='customer'){
-      return exits.admin({layout:'layouts/admin'});
+      return exits.admin('/iridio');
     }else{
       return exits.success('/');
     }

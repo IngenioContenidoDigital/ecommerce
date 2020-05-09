@@ -20,6 +20,7 @@ module.exports.policies = {
   // '*': true,
   IndexController:{
     'checkout': ['isLoggedIn','isEmailVerified'],
+    'admin':'isLoggedIn',
     '*': true
   },
   FrontController:{'*':'isLoggedIn'},

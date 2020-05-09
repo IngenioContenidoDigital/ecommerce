@@ -27,7 +27,9 @@ module.exports = {
       sellers = await Seller.find();
       sliders = await Slider.find();
     }
-    return res.view('pages/configuration/slider',{layout:'layouts/admin',sliders:sliders,action:action,slide:slide,error:error,sellers:sellers});
+    let colors = await Color.find();
+    let positions = [{id:'main',name:'Principal'}, {id:'featured',name:'Destacado'},{id:'vertical',name:'Vertical'},{id:'bottom',name:'Abajo'},{id:'wide',name:'Ancho'},{id:'middle',name:'Medio'},{id:'tall',name:'Alto'}];
+    return res.view('pages/configuration/slider',{layout:'layouts/admin',sliders:sliders,action:action,slide:slide,colors:colors,positions:positions,error:error,sellers:sellers});
   },
   createslider:async(req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -41,6 +43,9 @@ module.exports = {
       await Slider.create({
         name:req.body.name.trim().toLowerCase(),
         image: filename[0],
+        text:req.body.text,
+        textColor:(req.body.color) ? req.body.color : (await Color.findOne({name:'negro'})).id,
+        position:req.body.position,
         seller:req.body.seller,
         url:req.body.url,
         active:isActive});
@@ -67,6 +72,9 @@ module.exports = {
       await Slider.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         image: filename[0],
+        position:req.body.position,
+        text:req.body.text,
+        textColor:(req.body.color) ? req.body.color : (await Color.findOne({name:'negro'})).id,
         seller:req.body.seller,
         url:req.body.url,
         active:isActive});
@@ -75,6 +83,9 @@ module.exports = {
       if(err.code==='badRequest'){
         await Slider.updateOne({id:id}).set({
           name:req.body.name.trim().toLowerCase(),
+          position:req.body.position,
+          text:req.body.text,
+          textColor:(req.body.color) ? req.body.color : (await Color.findOne({name:'negro'})).id,
           seller:req.body.seller,
           url:req.body.url,
           active:isActive});

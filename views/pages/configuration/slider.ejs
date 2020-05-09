@@ -5,7 +5,7 @@
       </div>
     <% } %>
     <% if(action=='create' || action=='edit'){ %> 
-          <h4 class="title is-4">Crear Imagen de Carrusel</h4>
+          <h4 class="title is-4">Administrar Página Principal</h4>
           <hr>
           <% if(action=='create') { %>
           <form action="/slide/create" method="POST" enctype="multipart/form-data">
@@ -14,34 +14,17 @@
           <form action="/slide/edit/<%= slide.id %>" method="POST" enctype="multipart/form-data">
           <% } %>
           <div class="columns">
-          <div class="column"></div>
           <div class="column">
               <div class="box">
-                  <div class="columns is-mobile">
-                      <div class="column">
-                        <div class="field">
-                            <div class="control select is-small">
-                                <select class="is-capitalized" name="seller" required >
-                                    <option value="">-- Elegir Seller --</option>
-                                    <% sellers.forEach(seller =>{%>
-                                      <option class="is-capitalized" <%if(action=='edit' && slide.seller==seller.id){%>selected="selected"<%}%>value="<%=seller.id%>"><%=seller.name%></option>
-                                    <%})%>
-                                </select>
-                            </div>
-                        </div>
-                      </div>
-                      <div class="column">
-                        <p class="has-text-right">
-                            <% if(action=='edit'){ %>
-                              <input id="activo" type="checkbox" <% if(slide.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
-                            <label for="activo">Estado: <span id="state"><% if(slide.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
-                            <% }else{ %>
-                              <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
-                              <label for="activo">Estado: <span id="state"><b style="color:green;">activo</b></span></label>  
-                            <% } %>
-                          </p>
-                      </div>
-                  </div>
+                <p class="has-text-right">
+                    <% if(action=='edit'){ %>
+                      <input id="activo" type="checkbox" <% if(slide.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                    <label for="activo">Estado: <span id="state"><% if(slide.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
+                    <% }else{ %>
+                      <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                      <label for="activo">Estado: <span id="state"><b style="color:green;">activo</b></span></label>  
+                    <% } %>
+                  </p>
                   <div class="field">
                       <label class="label is-small">Nombre</label>
                       <div class="control is-small">
@@ -51,8 +34,59 @@
                   <div class="field">
                     <label class="label is-small">URL</label>
                     <div class="control is-small">
-                    <input class="input is-small is-lowercase" type="text" name="url" required="true" placeholder="Destino del Slider" <% if(action=='edit'){ %>value="<%= slide.url %>"<% }%>/>
+                    <input class="input is-small is-lowercase" type="text" name="url" placeholder="Destino del Slider" <% if(action=='edit'){ %>value="<%= slide.url %>"<% }%>/>
                     </div>
+                </div>
+                <div class="columns is-mobile">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-small">Texto a Mostrar</label>
+                      <div class="control is-small">
+                        <input class="input is-small is-lowercase" type="text" name="text" placeholder="Texto de la Imagen" <% if(action=='edit'){ %>value="<%= slide.text %>"<% }%>/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <label class="label is-small">Color del Texto</label>
+                    <div class="field is-fullwidth">
+                      <div class="select is-small is-fullwidth  ">
+                        <select class="is-capitalized" name="color" >
+                          <option value="">-- Color del Texto --</option>
+                          <% colors.forEach(color =>{%>
+                            <option class="is-capitalized" <%if(action=='edit' && slide.textColor==color.id){%>selected="selected"<%}%>value="<%=color.id%>"><%=color.name%></option>
+                          <%})%>
+                      </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns is-mobile">
+                  <div class="column">
+                    <label class="label is-small">Seller</label>
+                      <div class="field">
+                        <div class="select is-small is-fullwidth">
+                            <select class="is-capitalized" name="seller" required >
+                                <option value="">-- Elegir Seller --</option>
+                                <% sellers.forEach(seller =>{%>
+                                  <option class="is-capitalized" <%if(action=='edit' && slide.seller==seller.id){%>selected="selected"<%}%>value="<%=seller.id%>"><%=seller.name%></option>
+                                <%})%>
+                            </select>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <label class="label is-small">Ubicación de la Imagen</label>
+                    <div class="field">
+                      <div class="select is-small is-fullwidth">
+                          <select class="is-capitalized" name="position" required >
+                              <option value="">-- Elegir Posición --</option>
+                              <% positions.forEach(position =>{%>
+                                <option class="is-capitalized" <%if(action=='edit' && slide.position==position.id){%>selected="selected"<%}%>value="<%=position.id%>"><%=position.name%></option>
+                              <%})%>
+                          </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                   <% if(action=='edit'){ %>
                     <div class="container">
@@ -86,7 +120,11 @@
                 </div>           
               </div>
           </div>
-          <div class="column"></div>
+          <div class="column">
+            <div class="box">
+              <p class="has-text-centered"><img src="/images/homepage.png" /></p>
+            </div>
+          </div>
           </form>
           <script>
               const fileInput = document.querySelector('#file-loader input[type=file]');

@@ -7,8 +7,11 @@
 
 module.exports = {
   index: async function(req, res){
-    let slider = await Slider.find({active:true});
+    let slider = await Slider.find({active:true}).populate('textColor');
     return res.view('pages/homepage',{slider:slider,menu:await sails.helpers.callMenu()});
+  },
+  admin: async function(req, res){
+    return res.view('pages/homeadmin',{layout:'layouts/admin'});
   },
   checkout: async function(req, res){
     if(req.session.cart===undefined || req.session.cart===null){
