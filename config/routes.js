@@ -21,10 +21,13 @@ module.exports.routes = {
 
   /* ----- FRONT ROUTES  -----*/
   '/': 'IndexController.index',
-  '/iridio': 'IndexController.admin',
+  'GET /iridio': 'IndexController.admin',
   'GET /login' : {view:'pages/configuration/login', locals:{error:null}},
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},
+  'GET /account' : 'FrontController.account',
+  'GET /account/user' : 'FrontController.user',
+  'GET /account/orders' : 'FrontController.orders',
   'GET /ver/:entity/:name' : 'IndexController.list',
   'GET /list/product/:id' : 'IndexController.listproduct',
   'GET /cart' : 'CartController.viewcart',

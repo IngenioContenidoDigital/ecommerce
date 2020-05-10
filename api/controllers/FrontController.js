@@ -118,7 +118,7 @@ module.exports = {
     }
     let error = null;
     let id = req.param('id');
-    try{    
+    try{
       await Slider.destroyOne({id:id});
     }catch(err){
       error=err;
@@ -128,6 +128,25 @@ module.exports = {
     }else{
       return res.redirect('/sliders?error='+error);
     }
+  },
+  account: async (req, res)=>{
+    return res.view('pages/account/account',{menu:await sails.helpers.callMenu()});
+  },
+  user: async (req, res)=>{
+    return res.view('pages/account/user',{menu:await sails.helpers.callMenu()});
+  },
+  orders: async (req, res)=>{
+    let moment = require('moment');
+    let orders = await Order.find({customer:req.session.user.id})
+    .populate('currentstatus')
+    .populate('seller')
+    .populate('addressDelivery')
+    .sort('createdAt DESC');
+
+    for(let o of orders){
+      o.currentstatus = await OrderState.findOne({id:o.currentstatus.id}).populate('color');
+    }
+    return res.view('pages/account/orders',{orders:orders,moment:moment,menu:await sails.helpers.callMenu()});
   }
 };
 

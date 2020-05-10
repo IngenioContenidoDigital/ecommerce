@@ -1,0 +1,53 @@
+<div class="container">
+    <h4 class="title is-4">Tus Pedidos</h4>
+    <hr>
+    <%orders.forEach(order=>{%>
+        <article class="media">
+            <div class="media-left">
+                <p>Pedido #&nbsp;<strong><%=order.id%></strong></p>
+                <p>Fecha: <%=moment(order.createdAt).locale('es').format('LL');%></p>
+                <p class="is-capitalized">Desde: <%=moment.duration((new Date())-order.createdAt).locale('es').humanize()%></p>
+            </div>
+            <div class="media-content">
+              <div class="content">
+                  <div class="columns is-mobile">
+                      <div class="column">
+                        <strong>Vendedor:</strong> <small class="is-capitalized"><%=order.seller.name%></small>
+                      </div>
+                      <div class="column">
+                        <%if(order.tracking!==''){%>
+                            <p class="has-text-left">Seguimiento:&nbsp;<a href="#">#&nbsp;<%=order.tracking%></a></p>
+                          <%}%>
+                      </div>
+                      <div class="column is-right">
+                            <div class="color-container is-inline-block is-pulled-right" style="background-color: <%=order.currentstatus.color.code%>;border:solid 1px <%=order.currentstatus.color.code%>;"></div><span class="is-capitalized is-pulled-right"><%=order.currentstatus.name%>&nbsp;&nbsp;</span>
+                      </div>
+                  </div>
+                  <div class="columns is-mobile">
+                      <div class="column">
+                          <%let method = null%>
+                        <%if(order.paymentMethod==='COD'){%><%method='Pago contra entrega'%><%}%>
+                        <%if(order.paymentMethod==='CS'){%><%method='Corresponsal '+order.paymentOption%><%}%>
+                        <%if(order.paymentMethod==='PSE'){%><%method='Pago PSE'%><%}%>
+                        <%if(order.paymentMethod==='CC'){%><%method='Tarjeta de Crédito '%><%}%>
+                        <p class="has-text-left is-capitalized"><strong><%=method%></strong></p>
+                      </div>
+                      <div class="column">
+                          <%if(order.paymentId!==''){%>
+                            <p class="has-text-left">Numero de pago:&nbsp;<%=order.paymentId%></p>
+                         <%}%>
+                      </div>
+                      <div class="column">
+                        <p class="has-text-right">Total:<strong>&nbsp;$&nbsp;<%=order.totalOrder.toFixed().toLocaleString('es-CO')%></strong></p>
+                      </div>
+                  </div>
+              </div>
+            </div>
+            <div class="media-right">
+                <i class='bx bx-zoom-in'></i>
+            </div>
+          </article>
+    <%})%>
+    <hr>
+    <br>
+</div>

@@ -68,6 +68,7 @@
                 <% if(session.user === undefined) { %>
                 <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
                 <% } else { %>
+                <a href="/account" class="dropdown-item">Mi Cuenta</a>
                 <a href="/addresses" class="dropdown-item">Direcciones</a>
                 <hr class="dropdown-divider">
                 <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
