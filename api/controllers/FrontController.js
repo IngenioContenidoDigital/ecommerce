@@ -145,6 +145,11 @@ module.exports = {
 
     for(let o of orders){
       o.currentstatus = await OrderState.findOne({id:o.currentstatus.id}).populate('color');
+      o.items = await OrderItem.find({order:o.id}).populate('product').populate('productvariation');
+      for(let i of o.items){
+        i.product.images = await ProductImage.findOne({product:i.product.id,cover:1});
+        i.productvariation.variation = await Variation.findOne({id:i.productvariation.variation});
+      } 
     }
     return res.view('pages/account/orders',{orders:orders,moment:moment,menu:await sails.helpers.callMenu()});
   }
