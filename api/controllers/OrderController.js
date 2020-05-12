@@ -83,41 +83,18 @@ module.exports = {
 
     switch(paymentmethod){
       case 'CC':
+
         try{
-
-          let creditInfo = {
-            'card[number]': req.body.card,
-            'card[exp_year]': req.body.year,
-            'card[exp_month]': req.body.month,
-            'card[cvc]': req.body.cvv
-          };
-          let token = await sails.helpers.payment.tokenize(creditInfo);
-
-          let customerInfo = {
-            token_card: token.id,
-            name: req.body.cardname.toUpperCase().trim(),
-            last_name: ' ',
-            email: user.emailAddress,
-            default: true,
-            //Optional parameters: These parameters are important when validating the credit card transaction
-            city: address.city.name,
-            address: address.addressline1+' '+address.addressline2,
-            /*phone: '3005234321',*/
-            cell_phone: user.mobile.toString()
-          };
-
-          let customer = await sails.helpers.payment.customer(customerInfo);
-
-          let paymentInfo = {
-            token_card: token.id,
-            customer_id: customer.data.customerId,
-            doc_type: req.body.tid,
-            doc_number: req.body.dni,
-            name: req.body.cardname,
+          paymentInfo = {
+            token_card:null,
+            customer_id:null,
+            doc_type: null,
+            doc_number: null,
+            name: null,
             last_name: ' ',
             email: user.emailAddress,
             bill: 'CR-'+cart.id,
-            description: 'Test Payment',
+            description: 'Orden de Pedido '+cart.id,
             value: carttotal,
             tax: ((carttotal/1.19)*0.19).toString(),
             tax_base: (carttotal/1.19).toString(),
@@ -130,9 +107,69 @@ module.exports = {
             //Extra params: These params are optional and can be used by the commerce
             use_default_card_customer: false,/*if the user wants to be charged with the card that the customer currently has as default = true*/
           };
+          let t = null;
+          t = await Token.findOne({id:req.body.token});
+          if(t){
+
+            paymentInfo['token_card']=t.token;
+            paymentInfo['customer_id']= t.customerId;
+            paymentInfo['doc_type']= t.docType;
+            paymentInfo['doc_number']= t.docNumber;
+            paymentInfo['name']= t.name;
+
+          }else{
+            let creditInfo = {
+              'card[number]': req.body.card,
+              'card[exp_year]': req.body.year,
+              'card[exp_month]': req.body.month,
+              'card[cvc]': req.body.cvv
+            };
+            let token = await sails.helpers.payment.tokenize(creditInfo);
+
+            let customerInfo = {
+              token_card: token.id,
+              name: req.body.cardname.toUpperCase().trim(),
+              last_name: ' ',
+              email: user.emailAddress,
+              default: true,
+              //Optional parameters: These parameters are important when validating the credit card transaction
+              city: address.city.name,
+              address: address.addressline1+' '+address.addressline2,
+              /*phone: '3005234321',*/
+              cell_phone: user.mobile.toString()
+            };
+            let customer = await sails.helpers.payment.customer(customerInfo);
+
+            if(req.body.tokenize==='on'){
+
+              t = await Token.create({
+                token:t.id,
+                customerId:customer.data.customerId,
+                docType:req.body.tid,
+                docNumber:req.body.dni,
+                mask:t.card.mask,
+                frch:t.card.name,
+                name:req.body.cardname,
+                user:user.id
+              }).fetch();
+
+              paymentInfo['token_card']=t.token;
+              paymentInfo['customer_id']= t.customerId;
+              paymentInfo['doc_type']= t.docType;
+              paymentInfo['doc_number']= t.docNumber;
+              paymentInfo['name']= t.name;
+            }else{
+
+              paymentInfo['token_card']=token.id;
+              paymentInfo['customer_id']= customer.data.customerId;
+              paymentInfo['doc_type']= req.body.tid;
+              paymentInfo['doc_number']= req.body.dni;
+              paymentInfo['name']= req.body.cardname;
+            }
+          }
 
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
-          console.log(payment);
+
           if(payment.success){
             order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
           }else{

@@ -41,7 +41,9 @@ module.exports = {
       }
     }
 
-    return res.view('pages/front/checkout', {addresses:addresses, cart:cart, error:error});
+    let tokens = await Token.find({user:req.session.user.id});
+
+    return res.view('pages/front/checkout', {addresses:addresses, cart:cart, error:error, tokens:tokens,tag:await sails.helpers.getTag(req.hostname)});
   },
   list: async function(req, res){
 

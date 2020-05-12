@@ -60,120 +60,129 @@
                     <p class="help is-danger has-text-centered">Elige una opción de pago</p>
                 </div>
                 <div class="card">
-                    <header class="card-header">
-                    <p class="card-header-title is-capitalized is-size-7">
-                        <input type="radio" name="paymentMethod" value="CC" />&nbsp;Tarjeta de Crédito
-                    </p>
-                    </header>
-                    <div class="card-content is-hidden">
-                        <div class="box">
-                            <p class="has-text-centered">
-                                <img src="/images/paymentlogos.webp">
-                            </p>
-                            <div class="content is-size-7">
-                                <div class="field">
-                                    <div class="control has-icons-right">
-                                        <input class="input is-small" type="number" name="card" placeholder="Número de la Tarjeta"/>
-                                        <span class="icon is-right">
-                                            <i class='bx bx-credit-card-front'></i>
-                                        </span>
+                        <header class="card-header">
+                        <p class="card-header-title is-capitalized is-size-7">
+                            <input type="radio" name="paymentMethod" value="CC" />&nbsp;Tarjeta de Crédito
+                        </p>
+                        </header>
+                        <div class="card-content is-hidden">
+                            <%if(tokens.length>0){%>
+                                <h7 class="title is-7">Tarjetas Guardadas</h7>
+                                <%tokens.forEach(token =>{%>
+                                    <div class="box">
+                                        <span class="is-uppercase is-size-7 has-text-weight-bold"><input class="is-small" type="radio" name="token" value="<%=token.id%>" />&nbsp;<%=token.frch%>&nbsp;<%=token.mask%></span>
                                     </div>
-                                </div>
-                                <div class="columns is-mobile">
-                                    <div class="column is-5">
-                                        <label class="label is-small" for="month">Fecha vencimiento</label>
-                                        <div class="control is-inline-block">
-                                            <div class="select is-small">
-                                            <select name="month">
-                                            <%for(let i=1; i<=12; i++){%>
-                                                <%if(i<10){%>
-                                                    <option value="0<%=i%>">0<%=i%></option>
-                                                <%}else{%>
-                                                    <option value="<%=i%>"><%=i%></option>
-                                                <%}%>
-                                            <%}%>
-                                            </select>
-                                            </div>
-                                        </div>
-                                        <div class="control is-inline-block">
-                                            <div class="select is-small">
-                                            <% let year = (new Date()).getFullYear() %>
-                                            <select name="year">
-                                                <%for(let i=year; i<=year+8; i++){%>
-                                                    <option value="<%=i%>"><%=i%></option>
-                                                <%}%>
-                                            </select>
-                                            </div>
+                                <%})%>
+                            <%}%>
+                            <h7 class="title is-7">Tarjeta Nueva</h7>
+                            <div class="box">
+                                <p class="has-text-centered">
+                                    <img src="/images/paymentlogos.webp">
+                                </p>
+                                <div class="content is-size-7">
+                                    <div class="field">
+                                        <div class="control has-icons-right">
+                                            <input class="input is-small" type="number" name="card" placeholder="Número de la Tarjeta"/>
+                                            <span class="icon is-right">
+                                                <i class='bx bx-credit-card-front'></i>
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="column is-4">
-                                        <label class="label is-small" for="cvv">Cod. seguridad</label>
-                                        <div class="field">
-                                            <div class="control">
-                                                <input class="input is-small" type="number" name="cvv" placeholder="CVV / CVC"/>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="column is-3">
-                                        <label class="label is-small" for="payments">Cuotas</label>
-                                        <div class="field">
-                                            <div class="control">
+                                    <div class="columns is-mobile">
+                                        <div class="column is-5">
+                                            <label class="label is-small" for="month">Fecha vencimiento</label>
+                                            <div class="control is-inline-block">
                                                 <div class="select is-small">
-                                                <select name="payments">
-                                                <%for(let i =1; i<=36; i++){%>
-                                                    <option value="<%=i%>"><%=i%></option>
+                                                <select name="month">
+                                                <%for(let i=1; i<=12; i++){%>
+                                                    <%if(i<10){%>
+                                                        <option value="0<%=i%>">0<%=i%></option>
+                                                    <%}else{%>
+                                                        <option value="<%=i%>"><%=i%></option>
+                                                    <%}%>
                                                 <%}%>
                                                 </select>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="field">
-                                    <div class="control has-icons-right">
-                                        <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
-                                        <span class="icon is-right">
-                                            <i class='bx bxs-user-rectangle' ></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="columns is-mobile">
-                                    <div class="column is-two-fifths">
-                                        <div class="field">
-                                            <div class="control">
-                                            <div class="select is-small">
-                                                <select name="tid">
-                                                    <option value="CC">CC</option>
-                                                    <option value="CE">CE</option>
-                                                    <option value="NIT">NIT</option>
-                                                    <option value="PPN">PPN</option>
-                                                    <option value="SSN">SSN</option>
-                                                    <option value="LIC">LIC</option>
-                                                    <option value="DNI">DNI</option>
+                                            <div class="control is-inline-block">
+                                                <div class="select is-small">
+                                                <% let year = (new Date()).getFullYear() %>
+                                                <select name="year">
+                                                    <%for(let i=year; i<=year+8; i++){%>
+                                                        <option value="<%=i%>"><%=i%></option>
+                                                    <%}%>
                                                 </select>
+                                                </div>
                                             </div>
+                                        </div>
+                                        <div class="column is-4">
+                                            <label class="label is-small" for="cvv">Cod. seguridad</label>
+                                            <div class="field">
+                                                <div class="control">
+                                                    <input class="input is-small" type="number" name="cvv" placeholder="CVV / CVC"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="column is-3">
+                                            <label class="label is-small" for="payments">Cuotas</label>
+                                            <div class="field">
+                                                <div class="control">
+                                                    <div class="select is-small">
+                                                    <select name="payments">
+                                                    <%for(let i =1; i<=36; i++){%>
+                                                        <option value="<%=i%>"><%=i%></option>
+                                                    <%}%>
+                                                    </select>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="column is-three-fifths">
-                                        <div class="field">
-                                            <div class="control has-icons-right">
-                                                <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
-                                                <span class="icon is-right">
-                                                    <i class='bx bx-id-card'></i>
-                                                </span>
+                                    <div class="field">
+                                        <div class="control has-icons-right">
+                                            <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
+                                            <span class="icon is-right">
+                                                <i class='bx bxs-user-rectangle' ></i>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="columns is-mobile">
+                                        <div class="column is-two-fifths">
+                                            <div class="field">
+                                                <div class="control">
+                                                <div class="select is-small">
+                                                    <select name="tid">
+                                                        <option value="CC">CC</option>
+                                                        <option value="CE">CE</option>
+                                                        <option value="NIT">NIT</option>
+                                                        <option value="PPN">PPN</option>
+                                                        <option value="SSN">SSN</option>
+                                                        <option value="LIC">LIC</option>
+                                                        <option value="DNI">DNI</option>
+                                                    </select>
+                                                </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="column is-three-fifths">
+                                            <div class="field">
+                                                <div class="control has-icons-right">
+                                                    <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
+                                                    <span class="icon is-right">
+                                                        <i class='bx bx-id-card'></i>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="field">
-                                    <div class="control">
-                                        <label class="checkbox is-size-7"><input type="checkbox" checked="checked" name="tokenize" />&nbsp;Guardar de forma segura para pagar en un click</label>
+                                    <div class="field">
+                                        <div class="control">
+                                            <label class="checkbox is-size-7"><input type="checkbox" checked="checked" name="tokenize" />&nbsp;Guardar de forma segura para pagar en un click</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
                 <div class="card">
                     <header class="card-header">
