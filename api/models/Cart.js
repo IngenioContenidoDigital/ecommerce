@@ -8,7 +8,9 @@
 module.exports = {
 
   attributes: {
-
+    discount:{
+      model:'cartdiscount'
+    }
   },
 
 };

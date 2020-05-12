@@ -339,6 +339,27 @@
                                 <%})%>
                             <%}%>
                         <%})%>
+                        <div class="columns is-marginless is-paddingless is-size-7">
+                            <div class="column">
+                                <div id="code-section" class="container">
+                                    <%if(typeof session.cart.code === 'string'){%>
+                                        <span class="is-size-7 has-text-weight-bold">Código Aplicado:&nbsp;<%=session.cart.code%></span>
+                                    <%}else{%>
+                                        <div class="field">
+                                            <label class="label is-size-7">Código o Cupón</label>
+                                            <div class="field has-addons">
+                                                <input class="input is-size-7" type="text" name="code" required="true" placeholder="Código / Cupón de descuento" />
+                                                <div class="control">
+                                                    <a id="apply" class="button is-grey-darker is-size-7">
+                                                        <i class='bx bx-braille'></i><span class="is-size-7">&nbsp;Aplicar</span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <%}%>
+                                </div>
+                            </div>
+                        </div>
                         <div class="columns is-mobile is-marginless is-paddingles is-size-7">
                             <div class="column">
                                 <div class="container">
@@ -346,7 +367,17 @@
                                 </div>
                             </div>
                             <div class="column">
-                                <p class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.total).toLocaleString('es-CO')%></p>
+                                <p class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.totalProducts).toLocaleString('es-CO')%></p>
+                            </div>
+                        </div>
+                        <div class="columns is-mobile is-marginless is-paddingles is-size-7">
+                            <div class="column">
+                                <div class="container">
+                                    <p class="has-text-left has-text-weight-bold">&nbsp;Cupones:</p>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <p id="cupon" class="has-text-weight-bold has-text-right"><%if(typeof session.cart.code ==='string'){%>$&nbsp;<%=session.cart.discount.toLocaleString('es-CO')%><%}else{%>$&nbsp;0<%}%></p>
                             </div>
                         </div>
                         <div class="columns is-mobile is-marginless is-paddingless is-size-7">
@@ -356,7 +387,7 @@
                                 </div>
                             </div>
                             <div class="column">
-                                <p class="has-text-weight-bold has-text-right">$&nbsp;0</p>
+                                <p id="shipment" class="has-text-weight-bold has-text-right">$&nbsp;0</p>
                             </div>
                         </div>
                         <div class="columns is-mobile has-background-light is-marginless is-paddingless">
@@ -366,7 +397,7 @@
                                 </div>
                             </div>
                             <div class="column">
-                                <p class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.total).toLocaleString('es-CO')%></p>
+                                <p id="total" class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.total).toLocaleString('es-CO')%></p>
                             </div>
                         </div>
                         <p style="padding:8px;" class="content has-text-centered">
@@ -469,5 +500,30 @@
         if(hasClass(e.target,'grayscale')){
             removeClass(e.target,'grayscale');
         }
+    });
+
+    live('#apply','click',e=>{
+        let c = document.querySelector('input[name="code"]').value;
+        io.socket.put('/apply',{c:c},resData=>{
+            if(resData!=='error'){
+                document.querySelector('#code-section').innerHTML='<span class="is-size-7 has-text-weight-bold">Código Aplicado:&nbsp;'+resData+'</span>';
+            }else{
+                let p = document.createElement('p');
+                addClass(p,'has-text-danger')
+                addClass(p,'is-size-7')
+                addClass(p,'has-text-align-center')
+                p.innerHTML='Código Incorrecto o Vencido. Verifica e intenta nuevamente';
+
+                let v = document.querySelector('input[name="code"]');
+                v.value='';
+                v.parentNode.parentNode.appendChild(p);
+            }
+        });
+    })
+
+    const couponsocket = io.socket.on('couponapplied', (data)=>{
+        console.log(data);
+        document.querySelector('#cupon').innerHTML = '$&nbsp'+data.cart.discount.toLocaleString('es-CO')+'&nbsp;'
+        document.querySelector('#total').innerHTML = '$&nbsp'+data.cart.total.toLocaleString('es-CO')+'&nbsp;'
     });
 </script>

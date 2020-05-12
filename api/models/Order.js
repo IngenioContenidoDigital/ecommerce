@@ -24,6 +24,10 @@ module.exports = {
       type:'number',
       defaultsTo:0
     },
+    productsDiscount:{
+      type:'number',
+      defaultsTo:0
+    },
     conversionRate:{
       type:'number',
       defaultsTo:1,

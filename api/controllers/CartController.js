@@ -35,7 +35,7 @@ module.exports = {
       cart = await Cart.create().fetch();
       req.session.cart = cart;
     }else{
-      cart = await Cart.findOne({id:req.session.cart.id});
+      cart = await Cart.findOne({id:req.session.cart.id}).populate('discount');
     }
     let productvariation = await ProductVariation.findOne({id:req.body.variation});
 
@@ -58,7 +58,18 @@ module.exports = {
     for(let item of items){
       cartvalue += parseFloat(item.totalPrice);
     }
-    req.session.cart.total = cartvalue;
+    req.session.cart.totalProducts = cartvalue;
+    if(cart.discount!==undefined && cart.discount!==null){
+      if(cart.discount.type==='P'){
+        discount = cartvalue*(cart.discount.value/100);
+      }else{
+        discount = cartvalue-cart.discount.value;
+      }
+      req.session.cart.discount = discount;
+      req.session.cart.total = cartvalue-discount;
+    }else{
+      req.session.cart.total = cartvalue;
+    }
 
     if(items.length<1){
       await Cart.destroyOne({id:cart.id});
@@ -69,5 +80,37 @@ module.exports = {
     sails.sockets.blast('addtocart', {items: items.length, value:cartvalue});
     return res.send({items: items.length, value:cartvalue});
   },
+  applycoupon: async (req,res)=>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let moment = require('moment');
+    let now = moment().valueOf();
+
+    let discount = null;
+    let code = await CartDiscount.findOne({where:{
+      code:req.body.c,
+      from:{'<=':now},
+      to:{'>=':now},
+      active:true
+    }});
+
+    if(code){
+      await Cart.updateOne({id:req.session.cart.id}).set({discount:code.id});
+
+      if(code.type==='P'){
+        discount = req.session.cart.total*(code.value/100);
+      }else{
+        discount = req.session.cart.total-code.value;
+      }
+      req.session.cart.code = code.code;
+      req.session.cart.discount = discount;
+      req.session.cart.total -= discount;
+      sails.sockets.blast('couponapplied', {cart: req.session.cart});
+      return res.send(code.code);
+    }else{
+      return res.send('error');
+    }
+  }
 };
 

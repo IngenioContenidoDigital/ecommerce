@@ -136,7 +136,6 @@ module.exports.bootstrap = async function() {
       {name:'validstate', group:'pedidos', description:'Define si el estado es considerado un pedido válido o no'},
 
       {name:'discounts', group:'descuentos', description:'Visualizar descuentos'},
-      {name:'creatediscount', group:'descuentos', description:'Crear un nuevo descuento'},
       {name:'sliders', group:'descuentos', description:'Ver la Lista de imagenes del Carrusel'},
 
       {name:'showcarriers', group:'transporte', description:'Mostrar lista de Transportadores'},

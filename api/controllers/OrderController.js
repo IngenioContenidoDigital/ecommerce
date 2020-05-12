@@ -76,7 +76,7 @@ module.exports = {
     .populate('country')
     .populate('city');
     let user = await User.findOne({id:req.session.user.id});
-    let cart = await Cart.findOne({id:req.session.cart.id});
+    let cart = await Cart.findOne({id:req.session.cart.id}).populate('discount');
 
     let carttotal = req.session.cart.total;
     let paymentmethod = req.body.paymentMethod;

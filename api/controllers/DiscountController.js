@@ -25,7 +25,7 @@ module.exports = {
   },
   creatediscount: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'creatediscount')){
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'discounts')){
       throw 'forbidden';
     }
     let moment = require('moment');
@@ -52,6 +52,73 @@ module.exports = {
       return res.redirect('/discounts?error='+err);
     }
     return res.redirect('/discounts');
+  },
+  coupons: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'discounts')){
+      throw 'forbidden';
+    }
+    let moment = require('moment');
+    let error = req.param('error') ? req.param('error') : null;
+    let action = req.param('action') ? req.param('action') : null;
+    let id = req.param('id') ? req.param('id') : null;
+    let discount = null;
+    if(id){
+      discount = await CartDiscount.findOne({id:id});
+    }
+    let discounts = await CartDiscount.find().sort([{createdAt: 'DESC'}]);
+    return res.view('pages/discounts/coupons', {layout:'layouts/admin',error:error, discounts:discounts, action:action, discount:discount, moment:moment, root:root});
+  },
+  createcoupon:async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'discounts')){
+      throw 'forbidden';
+    }
+    let moment = require('moment');
+    let range = req.body.range.split(' - ');
+
+    try{
+      await CartDiscount.create({
+        name:req.body.name.toLowerCase().trim(),
+        code: req.body.code,
+        from:moment(range[0]),
+        to:moment(range[1]),
+        type:req.body.type,
+        value:req.body.value
+      });
+    }catch(err){
+      return res.redirect('/coupons?error='+err);
+    }
+    return res.redirect('/coupons');
+  },
+  editcoupon:async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'discounts')){
+      throw 'forbidden';
+    }
+    let moment = require('moment');
+    let range = req.body.range.split(' - ');
+
+    try{
+      await CartDiscount.updateOne({id:req.param('id')}).set({
+        name:req.body.name.toLowerCase().trim(),
+        code: req.body.code,
+        from:moment(range[0]),
+        to:moment(range[1]),
+        type:req.body.type,
+        value:req.body.value
+      });
+    }catch(err){
+      return res.redirect('/coupons?error='+err);
+    }
+    return res.redirect('/coupons');
+  },
+  random:async(req,res)=>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let random = sails.helpers.strings.random();
+    return res.send(random);
   }
 
 };

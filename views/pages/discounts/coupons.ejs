@@ -1,0 +1,206 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <% if(action=='create' || action=='edit'){ %>  
+          <div class="container">
+              <br />
+              <h4 class="title is-4">Crear Descuento de Carrito</h4>
+              <hr>
+              <% if(action=='create') { %>
+                <form action="/coupon/create" method="POST">
+              <% } %>
+              <% if(action=='edit') { %>
+                <form action="/coupon/edit/<%= discount.id %>" method="POST">
+              <% } %>
+              <div class="box">
+                <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                          <label class="label">Nombre del Descuento</label>
+                          <div class="control">
+                              <input class="input" type="text" name="name" required="true" placeholder="Nombre del Descuento" <% if(action=='edit'){ %>value="<%= discount.name %>"<% }%>/>
+                          </div>
+                      </div>
+                      <div class="columns">
+                        <div class="column">
+                          <div class="field">
+                            <label class="label">Código del Descuento</label>
+                              <div class="field has-addons">
+                                <input class="input" type="text" name="code" required="true" placeholder="Código del Descuento" <% if(action=='edit'){ %>value="<%= discount.code %>"<% }%>/>
+                                <div class="control">
+                                  <a id="generate" class="button is-dark">
+                                    <i class='bx bx-braille'></i><span class="is-size-7">&nbsp;Generar Código</span>
+                                  </a>
+                                </div>
+                              </div>
+                          </div>
+                        </div>
+                        <div class="column">
+                          <div class="field">
+                            <label class="label">Tipo</label>
+                            <div class="select control is-fullwidth">
+                                <select name="type" required>
+                                <option value="P" <%if(action=='edit' && discount.type=='P'){ selected="selected"}%>>Porcentaje</option>
+                                <option value="C" <%if(action=='edit' && discount.type=='C'){ selected="selected"}%>>Valor</option>
+                                </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="column">
+                          <div class="field">
+                            <label class="label">Valor</label>
+                            <div class="control">
+                              <input class="input" type="text" name="value" required="true" placeholder="Cantidad de Descuento" <% if(action=='edit'){ %>value="<%= discount.value %>"<% }%>/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="field">
+                          <label class="label">Periodo de descuento</label>
+                          <div class="control">
+                              <input class="input" type="date" name="range" required placeholder="Fecha de Inicio" />
+                          </div>
+                      </div>
+                    </div>
+                </div>
+                <div class="control buttons is-right">
+                  <% if(action=='edit'){ %> 
+                      <button type="submit" class="button is-info"><i class="bx bxs-pencil"></i>&nbsp;Modificar Descuento</button>
+                  <% }else if (action=='create'){ %>
+                      <button type="submit" class="button is-info"><i class="bx bx-plus-circle"></i>&nbsp;Crear Descuento</button>
+                  <% } %>
+                </div>
+              </div>
+            </form>
+        </div>
+        <script>
+
+            // Initialize all input of date type.
+            const calendars = bulmaCalendar.attach('[type="date"]', {
+                type:'datetime',
+                isRange: true,
+                allowSameDayRange: true,
+                dateFormat:'YYYY-MM-DD',
+                timeFormat:'HH:mm:ss',
+                displayMode:'dialog',
+                cancelLabel:'Cancelar',
+                clearLabel:'Limpiar',
+                todayLabel:'Hoy',
+                nowLabel:'Ahora',
+                validateLabel:'Seleccionar',
+                minDate: new Date(),
+                <%if(action=='edit'){%>
+                startDate:'<%= moment(discount.from).locale('es').format('YYYY-MM-DD') %>',
+                endDate:'<%= moment(discount.to).locale('es').format('YYYY-MM-DD') %>',
+                startTime:'<%= moment(discount.from).locale('es').format('HH:mm:ss') %>',
+                endTime:'<%= moment(discount.to).locale('es').format('HH:mm:ss') %>',
+                <%}%>
+            });
+
+            // Loop on each calendar initialized
+            calendars.forEach(calendar => {
+                // Add listener to date:selected event
+                calendar.on('date:selected', date => {
+                    console.log(date);
+                });
+            });
+
+            // To access to bulmaCalendar instance of an element
+            //const element = document.querySelector('#my-element');
+            //if (element) {
+                // bulmaCalendar instance is available as element.bulmaCalendar
+            /*    element.bulmaCalendar.on('select', datepicker => {
+                    console.log(datepicker.data.value());
+                });
+            }*/
+            live('#generate','click',e=>{
+              io.socket.put('/random',resData=>{
+                document.querySelector('input[name="code"]').value=resData.substring(resData.length-9, resData.length);
+              });
+            });
+        </script>
+      <% } else { %>
+          <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+              <a href="/coupons/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+          </p>
+          <div class="table-container">
+              <table class="table is-hoverable" id="discounts-table">
+                  <thead>
+                  <tr>
+                      <th scope="col">Id</th>
+                      <th scope="col">Nombre</th>
+                      <th scope="col">Inicio</th>
+                      <th scope="col">Fin</th>
+                      <th scope="col">Tipo</th>
+                      <th scope="col">Valor</th>
+                      <th scope="col">Opciones</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                      <% discounts.forEach(function(discount){ %>
+                          <tr>
+                              <th scope="row" class="align-middle"><%= discount.id %></th>
+                              <td class="align-middle is-capitalized"><%= discount.name %></td>
+                              <td class="align-middle"><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
+                              <td class="align-middle"><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
+                              <td class="align-middle"><%= discount.type %></td>
+                              <td class="align-middle"><%= discount.value %></td>
+                              <td class="align-middle">
+                              <a href="/coupons/edit/<%= discount.id %>" class="button is-small">
+                                  <span class="icon">
+                                  <i class="bx bxs-edit"></i>
+                                  </span>
+                              </a>
+                              </td>
+                          </tr>
+                      <% }); %>
+                  </tbody>
+              </table>
+          </div>
+          <script>
+              document.addEventListener('DOMContentLoaded', function(){
+                  let table = new simpleDatatables.DataTable('#discounts-table',{
+                  searchable:true,
+                  sortable:true,
+                  paging:true,
+                  labels: {
+                      placeholder: "Buscar...",
+                      perPage: "{select} registros por página",
+                      noRows: "No se encontraron datos",
+                      info: "Mostrando {start} a {end} de {rows} registros",
+                  }
+                  });  
+              });
+          </script>
+      <% } %>
+      <script>
+        setTimeout(function() {
+          var el = document.getElementById('error');
+          if(el){
+            el.style.display='none';
+          }
+        }, 4000);
+  
+        live('.state', 'click', function(){ 
+          if(confirm('Seguro Desea Continuar')){
+            var elm = this;
+            var id = this.getAttribute('seller');
+            var status = null;
+            if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+  
+            io.socket.put('/coupon/'+id,{active:status},function(resData, jwr){
+              if(resData.active===false){
+                removeClass(elm, 'bx-check-circle');
+                addClass(elm,'bx-x-circle');
+              }else{
+                removeClass(elm, 'bx-x-circle');
+                addClass(elm,'bx-check-circle');
+              }
+            });
+          }
+        });
+      </script>
+  </div>

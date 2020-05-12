@@ -47,7 +47,7 @@
                     <div class="field">
                         <label class="label">Periodo de descuento</label>
                         <div class="control">
-                            <input class="input" type="date" name="range" required placeholder="Fecha de Inicio" <% if(action=='edit'){ %>value="<%= discount.from %>"<% }%>/>
+                            <input class="input" type="date" name="range" required placeholder="Fecha de Inicio"/>
                         </div>
                     </div>
                   </div>
@@ -78,7 +78,6 @@
             </form>
         </div>
         <script>
-            
             // Initialize all input of date type.
             const calendars = bulmaCalendar.attach('[type="date"]', {
                 type:'datetime',
@@ -92,7 +91,13 @@
                 todayLabel:'Hoy',
                 nowLabel:'Ahora',
                 validateLabel:'Seleccionar',
-                minDate: new Date()
+                minDate: new Date(),
+                <%if(action=='edit'){%>
+                startDate:'<%= moment(discount.from).locale('es').format('YYYY-MM-DD') %>',
+                endDate:'<%= moment(discount.to).locale('es').format('YYYY-MM-DD') %>',
+                startTime:'<%= moment(discount.from).locale('es').format('HH:mm:ss') %>',
+                endTime:'<%= moment(discount.to).locale('es').format('HH:mm:ss') %>',
+                <%}%>
             });
 
             // Loop on each calendar initialized

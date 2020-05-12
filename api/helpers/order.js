@@ -34,18 +34,32 @@ module.exports = {
       let sellerproducts = cartproducts.filter(cp => cp.product.seller === seller);
       if(sellerproducts.length>0){
         let carttotal = 0;
-        let totaldiscount = 0;
+        let productsdiscount = 0;
+        let totaldiscount=0;
+        let total = 0;
         sellerproducts.forEach(cp=>{
           carttotal+= cp.totalPrice;
-          totaldiscount+=cp.totalDiscount;
+          productsdiscount+=cp.totalDiscount;
         });
+
+        if(cart.discount!==undefined && cart.discount!==null){
+          if(cart.discount.type==='P'){
+            totaldiscount = carttotal*(cart.discount.value/100);
+          }else{
+            totaldiscount = carttotal-cart.discount.value;
+          }
+          total = carttotal - totaldiscount;
+        }else{
+          total = carttotal;
+        }
 
         try{
           let order = await Order.create({
-            totalOrder:carttotal,
+            totalOrder:total,
             totalShipping:0,
             totalProducts:carttotal,
             totalDiscount:totaldiscount,
+            productsDiscount:productsdiscount,
             conversionRate:1,
             customer:user.id,
             addressDelivery:address.id,
@@ -82,6 +96,9 @@ module.exports = {
           return exits.error(err);
         }
       }
+    }
+    if(cart.discount!==undefined && cart.discount!==null){
+      await CartDiscount.updateOne({id:cart.discount.id}).set({user:user.id,active:false});
     }
     return exits.success(orders);
   }
