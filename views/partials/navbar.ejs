@@ -42,12 +42,12 @@
     <div class="navbar-end">
       <div class="navbar-item">        
         <div class="field has-addons">
-            <input class="input is-dark is-small" type="text" placeholder="Buscar Productos">
-          <div class="control">
-            <a class="button is-dark is-small">
-              <i class='bx bx-search-alt-2'></i>
-            </a>
-          </div>
+            <input class="input is-dark is-small" type="text" name="search" placeholder="Buscar Productos" />
+            <div class="control">
+              <a id="search" class="button is-dark is-small">
+                <i class='bx bx-search-alt-2'></i>
+              </a>
+            </div>
         </div>
       </div>
       <div class="navbar-item">
@@ -80,3 +80,9 @@
       </div>
     </div>
 </nav>
+<script>
+  live('#search','click',e=>{
+    data = document.querySelector('input[name="search"]').value;
+    io.socket.post('/ver/resultados',{search:data});
+  });
+</script>

@@ -41,32 +41,44 @@
                 </div>
             <%}%>
             <% let count = 0 %>
+            <div class="container" itemscope itemtype="https://schema.org/ItemList">
             <% object.products.forEach((product)=>{ %>
                 <%if(product.active){ %>
-                    <div class="card card-catalog is-inline-block is-size-7 has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
+                    <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-inline-block is-size-7 has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
+                        <span class="is-hidden" itemprop="productID"><%=product.id%></span>
                         <div class="card-image has-text-centered">
                             <figure class="image is-256x256 is-inline-block">
-                                <a href="/list/product/<%=product.id%>"><img style="justify-content: center;" src="/images/products/<%=product.id%>/<%= product.cover.file.replace(product.cover.file.split('.').pop(),'webp') %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
+                                <a itemprop="url" href="/list/product/<%=product.id%>"><img itemprop="image" style="justify-content: center;" src="/images/products/<%=product.id%>/<%= product.cover.file.replace(product.cover.file.split('.').pop(),'webp') %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
                             </figure>
+                            <div itemprop="description" class="is-hidden"><%-product.description%></div>
+                            <div itemprop="disambiguatingDescription" class="is-hidden"><%-product.descriptionShort%></div>
                         </div>
                         <div class="card-content">
                             <div class="media-content">
                                 <div class="columns is-mobile">
                                     <div class="column">
-                                        <span brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>
+                                        <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>
                                     </div>
                                     <div class="column">
-                                       <p class="has-text-right"><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></p>
+                                       <p class="has-text-right"><span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></p>
                                     </div>
                                 </div>
                             </div>
-                            <p class="has-text-weight-bold is-uppercase"><%=product.name%></p>
-                            <%if(product.discount!==null && product.discount!==undefined){%><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span><%}%>
+                            <p itemprop="name" class="has-text-weight-bold is-uppercase"><%=product.name%></p>
+                            <span class="is-hidden" itemprop="sku"><%=product.reference%></span>
+                            <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                                <meta itemprop="priceCurrency" content="COP">
                             <%if(product.discount!==null && product.discount!==undefined){%>
-                                <span class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
+                                    <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                    <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                    <span class="is-hidden" itemprop="offerCount">1</span>
+                                </div>
+                                <span itemprop="price" class="is-hidden">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                             <%}else{%>
-                                <span class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
                             <%}%>
+                            </div>
                             <div class="media-content">
                                 <hr>
                                 <div class="columns">
@@ -91,6 +103,7 @@
                     </div>
                 <%} %>
             <%})%>
+            </div>
         </div>
         <div class="column is-2"></div>
     </div>

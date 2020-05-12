@@ -8,7 +8,7 @@
 module.exports = {
   index: async function(req, res){
     let slider = await Slider.find({active:true}).populate('textColor');
-    return res.view('pages/homepage',{slider:slider,menu:await sails.helpers.callMenu()});
+    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   },
   admin: async function(req, res){
     return res.view('pages/homeadmin',{layout:'layouts/admin'});
@@ -88,7 +88,31 @@ module.exports = {
     }
     let colors = await Color.find({where:{id:{'in':colorlist}}});
     let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
-    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+  },
+  search: async(req, res) =>{
+    let terms = req.body.search.split(' ');
+    let products = await Product.find()
+    .populate('manufacturer')
+    .populate('mainColor')
+    .populate('seller')
+    .populate('categories');
+
+    let results=[];
+    for(let term of terms){
+      term = term.toLowerCase();
+      results.push(products.filter(product =>
+        product.active===true && (
+          product.name.includes(term) ||
+          product.description.toLowerCase().includes(term) ||
+          product.descriptionShort.toLowerCase().includes(term) ||
+          product.reference.includes(term.toUpperCase()) ||
+          product.manufacturer.name.includes(term)
+        )
+      ));
+    }
+    console.log(results);
+
   },
   listproduct: async function(req, res){
     let product = await Product.findOne({id:req.param('id')})
@@ -104,7 +128,7 @@ module.exports = {
       size.variation=await Variation.findOne({id:size.variation});
     }
 
-    return res.view('pages/front/product',{product:product, discount:discount, menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/product',{product:product, discount:discount, tag:await sails.helpers.getTag(req.hostname), menu:await sails.helpers.callMenu()});
   }
 };
 

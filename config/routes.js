@@ -29,6 +29,7 @@ module.exports.routes = {
   'GET /account/user' : 'FrontController.user',
   'GET /account/orders' : 'FrontController.orders',
   'GET /ver/:entity/:name' : 'IndexController.list',
+  'POST /ver/resultados':'IndexController.search',
   'GET /list/product/:id' : 'IndexController.listproduct',
   'GET /cart' : 'CartController.viewcart',
   'PUT /cart' : 'CartController.addtocart',

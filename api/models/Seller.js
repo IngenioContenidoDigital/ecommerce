@@ -17,6 +17,7 @@ module.exports = {
     email:{type:'string', required:true, isEmail:true, unique:true},
     phone:{type:'number'},
     domain:{type:'string',required:true, unique:true},
+    tagManager:{type:'string'},
     mainAddress:{
       model:'address'
     },

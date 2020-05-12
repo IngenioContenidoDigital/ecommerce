@@ -1,14 +1,16 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drift-zoom@1.4.0/dist/drift-basic.min.css">
 <script src="https://cdn.jsdelivr.net/npm/drift-zoom@1.4.0/dist/Drift.min.js"></script>
-<div class="container">
+<div class="container" itemscope itemtype="https://schema.org/Product">
     <div class="columns">
         <div class="column is-two-fifths">
             <div class="box">
+            <span class="is-hidden" itemprop="productID"><%=product.id%></span>
+            <span class="is-hidden" itemprop="sku"><%=product.reference%></span>
             <div class="media">
                 <div class="media-left">
                     <%product.images.forEach((image)=>{%>
                         <figure class="image is-64x64">
-                            <img src="/images/products/<%=product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" alt="<%=product.name%>">
+                            <img itemprop="image" src="/images/products/<%=product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" alt="<%=product.name%>">
                         </figure>
                     <%})%>
                 </div>
@@ -16,7 +18,7 @@
                     <%if(image.cover==1){%>
                         <div style="overflow-y: hidden;" class="media-content">
                             <figure class="image is-square is-relative">
-                                <img id="main" src="/images/products/<%=product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" data-zoom="/images/products/<%=product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" alt="<%=product.name%>">
+                                <img id="main" itemprop="image" src="/images/products/<%=product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" data-zoom="/images/products/<%=product.id%>/<%= image.file.replace(image.file.split('.').pop(),'webp') %>" alt="<%=product.name%>">
                             </figure>                        
                         </div>
                     <%}%>
@@ -26,19 +28,25 @@
         </div>
         <div class="column is-two-fifths">
             <div class="container">
-                <h2 class="is-capitalized"><%=product.manufacturer.name%></h2>
-                <h4 class="is-uppercase is-size-4"><%=product.name%></h4>
+                <h2 itemprop="brand" class="is-capitalized"><%=product.manufacturer.name%></h2>
+                <h4 itemprop="name" class="is-uppercase is-size-4"><%=product.name%></h4>
                 <hr>
+                <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                    <meta itemprop="priceCurrency" content="USD">
                 <table class="table is-size-6 is-fullwidth">
                     <%if(discount!==null && discount!==undefined){%>
-                      <tr><td>Precio recomendado:</td><td class="has-text-right"><span class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr>
-                      <tr><td>Precio:</td><td class="has-text-right">$&nbsp;<%= Math.round(discount.price).toLocaleString("es-CO"); %></td></tr>
-                      <% let savings = parseInt((product.price*(1+(product.tax.value/100)))-discount.price) %>
-                      <tr><td>Ahorro:</td><td class="has-text-success has-text-right">$&nbsp;<%= savings.toLocaleString('es-CO'); %></td></tr>
+                        <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
+                            <tr><td>Precio recomendado:</td><td class="has-text-right"><span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr>
+                            <tr><td>Precio:</td><td class="has-text-right" itemprop="lowPrice">$&nbsp;<%= Math.round(discount.price).toLocaleString("es-CO"); %></td></tr>
+                            <% let savings = parseInt((product.price*(1+(product.tax.value/100)))-discount.price) %>
+                            <tr><td>Ahorro:</td><td class="has-text-success has-text-right">$&nbsp;<%= savings.toLocaleString('es-CO'); %></td></tr>
+                            <span class="is-hidden" itemprop="offerCount">1</span>
+                        </div>
                     <%}else{%>
-                      <tr><td>Precio:</td><td class="has-text-right">$&nbsp;<%= Math.round(product.price).toLocaleString("es-CO"); %></td></tr>
+                      <tr><td>Precio:</td><td itemprop="price" class="has-text-right">$&nbsp;<%= Math.round(product.price).toLocaleString("es-CO"); %></td></tr>
                     <%}%>
                 </table>
+                </div>
                 <div class="columns is-mobile">
                     <div class="column">
                         <label class="label has-text-weight-bold is-size-7" for="variations">Talla:</label>
@@ -54,9 +62,10 @@
                     <div class="column">
                         <label class="label has-text-weight-bold is-size-7" for="variations">Colores:</label>
                         <span class="color-container is-right is-inline-block" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px; <%= product.mainColor.code %>;"></span>                        
+                        <span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span>
                     </div>
                 </div>
-                <div class="content description-short"><%-product.descriptionShort%></div>
+                <div itemprop="disambiguatingDescription" class="content description-short"><%-product.descriptionShort%></div>
                 <div class="img-zoom"></div>
             </div>
         </div>
@@ -78,7 +87,7 @@
     <div class="columns">
         <div class="column">
             <h4 class="is-size-4 has-text-weight-bold">Descripción del Producto</h4>
-            <div class="content description"><%-product.description%></div>
+            <div itemprop="description" class="content description"><%-product.description%></div>
         </div>
     </div>
 </div>

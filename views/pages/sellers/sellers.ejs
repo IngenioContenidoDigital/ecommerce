@@ -39,10 +39,22 @@
                         <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit'){ %>value="<%= seller.name %>"<% }%>/>
                       </div>
                     </div>
-                    <div class="field">
-                      <label class="label is-size-7">Identificación</label>
-                      <div class="control">
-                        <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" <% if(action=='edit'){ %>value="<%= seller.dni %>"<% }%>/>
+                    <div class="columns">
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Identificación</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" <% if(action=='edit'){ %>value="<%= seller.dni %>"<% }%>/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Tag Manager</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="tagManager" placeholder="ID de Google Tag manager" <% if(action=='edit'){ %>value="<%= seller.tagManager %>"<% }%>/>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     <div class="columns">
