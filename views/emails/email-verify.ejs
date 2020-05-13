@@ -1,0 +1,12 @@
+<p style="margin-bottom: 25px;">Cordial bienvenida, <%= fullName %>!</p>
+<p style="margin-bottom: 25px;">Casi estamos listos para continuar. Por Seguridad, usamos este código para verificar la autenticidad de tu cuenta:</p>
+<div style="margin-bottom: 25px; text-align: center;">
+    <p style="text-align:center"><h1 style="letter-spacing:6px"><%=verification%></h1></p>
+    <!--<a style="background-color: #00ACC4; display: inline-block; font-size: 1.1em; color: #fff; padding: 10px 35px 10px; font-weight: 500; text-decoration: none; border-radius: 7px;" href="#">Confirm email</a>-->
+</div>
+
+<%#= url.resolve(sails.config.custom.baseUrl,'/email/confirm')+'?token='+encodeURIComponent(token) %><%#= url.resolve(sails.config.custom.baseUrl,'/email/confirm')+'?token='+encodeURIComponent(token) %>
+
+<p style="margin-bottom: 25px;">Una vez ingreses este código tu cuenta quedará verificada</p>
+<p style="margin-bottom: 5px;">Cordialmente,</p>
+<p style="margin-top: 0px;">Equipo Iridio</p>

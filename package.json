@@ -8,6 +8,7 @@
     "@sailshq/connect-redis": "^3.2.1",
     "@sailshq/lodash": "^3.10.3",
     "@sailshq/socket.io-redis": "^5.2.0",
+    "aws-sdk": "^2.675.0",
     "bulma": "^0.8.0",
     "bulma-calendar": "^6.0.7",
     "crypto-js": "^4.0.0",

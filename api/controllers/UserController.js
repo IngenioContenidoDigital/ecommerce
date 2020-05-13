@@ -32,7 +32,6 @@ module.exports = {
         let msg='';
         if(captcha.success){
           let verification = randomize('0',6);
-          //Enviar un Email de Verificación con el código para validar.
           try{
             let country = await Country.findOne({id:req.body.country});
             let profile = await Profile.findOne({name:'customer'});
@@ -50,6 +49,8 @@ module.exports = {
               profile:profile.id
             }).fetch();
             req.session.user=user;
+            //Enviar un Email de Verificación con el código para validar.
+            await sails.helpers.sendEmail('email-verify',{fullName:user.fullName,verification:verification},user.emailAddress,'Verifica tu Cuenta');
             return res.view('pages/front/verify',{error:null});
           }catch(err){
             switch(err.code){
