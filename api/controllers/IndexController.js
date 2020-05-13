@@ -93,27 +93,61 @@ module.exports = {
     return res.view('pages/front/list',{object:object,colors:colors,brands:brands,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   },
   search: async(req, res) =>{
-    let terms = req.body.search.split(' ');
+    let terms = req.body.search.toLowerCase().split(' ');
     let products = await Product.find()
+    .populate('tax')
     .populate('manufacturer')
     .populate('mainColor')
-    .populate('seller')
-    .populate('categories');
+    .populate('seller');
 
-    let results=[];
-    for(let term of terms){
-      term = term.toLowerCase();
-      results.push(products.filter(product =>
+    let result={
+      search:req.body.search,
+      products:[]
+    };
+    let colorlist = [];
+    let brandlist = [];
+
+    let found = (terms, products,i)=>{
+      products = products.filter(product =>
         product.active===true && (
-          product.name.includes(term) ||
-          product.description.toLowerCase().includes(term) ||
-          product.descriptionShort.toLowerCase().includes(term) ||
-          product.reference.includes(term.toUpperCase()) ||
-          product.manufacturer.name.includes(term)
+          product.reference.includes(terms[i].toUpperCase()) ||
+          product.name.includes(terms[i]) ||
+          product.manufacturer.name.includes(terms[i]) ||
+          product.mainColor.name.includes(terms[i]) ||
+          product.description.toLowerCase().includes(terms[i]) ||
+          product.descriptionShort.toLowerCase().includes(terms[i]) ||
+          product.seller.name.includes(terms[i])
         )
-      ));
+      );
+      i++;
+      if(terms.length>i){
+        return found(terms,products,i);
+      }else{
+        return products;
+      }
+    };
+
+    let set = found(terms,products,0);
+
+    for(let p of set){
+      if(!result.products.includes(p.id)){
+        p.cover= await ProductImage.findOne({product:p.id,cover:1});
+        p.productvariation=await ProductVariation.find({product:p.id}).populate('variation');
+        p.discount = await sails.helpers.discount(p.id);
+        result.products.push(p);
+        if(!colorlist.includes(p.mainColor.id)){
+          colorlist.push(p.mainColor.id);
+        }
+        if(!brandlist.includes(p.manufacturer.id)){
+          brandlist.push(p.manufacturer.id);
+        }
+      }
     }
-    console.log(results);
+
+    let colors = await Color.find({where:{id:{'in':colorlist}}});
+    let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
+
+    return res.view('pages/front/list',{object:result,colors:colors,brands:brands,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
 
   },
   listproduct: async function(req, res){
