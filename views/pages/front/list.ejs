@@ -84,7 +84,7 @@
                                 <div class="columns">
                                     <div class="column">
                                         <div class="select is-primary is-size-7 is-fullwidth">
-                                            <select class="is-uppercase s-variation">
+                                            <select class="is-uppercase s-variation" name="variations">
                                                 <option value="0">Seleccione</option>
                                                 <% product.productvariation.forEach((v)=>{%>
                                                     <option class="is-uppercase" qty="<%=v.quantity%>" value="<%=v.id%>"><%=v.variation.name%></option>
@@ -94,7 +94,7 @@
                                     </div>
                                     <div class="column">
                                         <div class="buttons">
-                                            <button product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
+                                            <button id="push-to-cart" product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
                                         </div>
                                     </div>
                                 </div>
@@ -156,4 +156,10 @@
             }
         }
     });
+
+    live('#push-to-cart','click',(e)=>{
+        let vrt = e.target.parentNode.parentNode.parentNode.querySelector('select[name="variations"]').value
+        console.log(vrt);
+        io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'});
+    })
 </script>
