@@ -3,7 +3,7 @@ module.exports = {
   description: 'Localiza los descuentos activos de un producto',
   inputs: {
     id:{
-      type:'number',
+      type:'string',
       required:true,
     }
   },

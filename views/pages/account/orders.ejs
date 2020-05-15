@@ -5,7 +5,7 @@
       <div class="card">
         <header class="card-header has-background-light">
           <p class="card-header-title">
-            Pedido: #&nbsp;<strong><%=order.id%></strong>%>&nbsp;-&nbsp;<%=moment(order.createdAt).locale('es').format('LL')%>
+            Pedido: #&nbsp;<strong><%=order.reference%></strong>%>&nbsp;-&nbsp;<%=moment(order.createdAt).locale('es').format('LL')%>
           </p>
           <a href="#" class="card-header-icon has-text-dark" aria-label="more options">
             <span class="icon">
@@ -40,7 +40,7 @@
                         </td>
                         <td>
                           <p class="image is-128x128 is-inline-block has-text-left">
-                            <img src="/images/products/<%=item.product.id%>/<%=item.product.images.file%>" />
+                            <img src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=item.product.images.file%>" />
                           </p>
                         </td>
                       </tr>

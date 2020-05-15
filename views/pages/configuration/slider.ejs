@@ -90,7 +90,7 @@
                 </div>
                   <% if(action=='edit'){ %>
                     <div class="container">
-                      <p class="has-text-centered"><img width="100%" src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" /></p>
+                      <p class="has-text-centered"><img width="100%" src="<%=imgurl%>/images/slides/<%= slide.image %>" /></p>
                     </div>
                   <% } %>
                   <div class="field">
@@ -154,7 +154,6 @@
           <table class="table is-hoverable" id="slides-table">
               <thead>
               <tr>
-                  <th scope="col">Id</th>
                   <th scope="col">Imagen</th>
                   <th scope="col">Nombre</th>
                   <th scope="col">Activo</th>
@@ -164,8 +163,7 @@
               <tbody>
                   <% sliders.forEach(slide => { %>                
                       <tr>
-                          <td scope="row" class="align-middle"><%= slide.id %></td>
-                          <td><img width="150" src="/images/slides/<%= slide.image.replace(slide.image.split('.').pop(),'webp') %>" class="slide-admin"/></td>
+                          <td><img width="150" src="<%=imgurl%>/images/slides/<%= slide.image %>" class="slide-admin"/></td>
                           <td class="align-middle is-capitalized"><%= slide.name %></td>
                           <td class="align-middle">
                             <span class="action">

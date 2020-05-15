@@ -9,7 +9,7 @@
         <div class="columns is-size-7">
           <div class="column">
             <div class="box">
-              <h7 class="title is-7">Información del Pedido</h7><span id="order" order="<%=order.id %>" class="is-pulled-right is-size-5"><%=order.id %></span>
+              <h7 class="title is-7">Información del Pedido</h7><span id="order" order="<%=order.id %>" class="is-pulled-right is-size-5"><%=order.reference %></span>
               <hr>
               <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Nombre:&nbsp;</span><span class="is-pulled-right"><%= order.customer.fullName %></span></p>
               <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Pedido creado:&nbsp;</span><span class="is-pulled-right"><%= moment(order.createdAt).locale('es').format('LLL')%></span></p>
@@ -98,7 +98,7 @@
                         <article class="media">
                             <% item.product.images.forEach(image =>{ %>
                               <%if(image.cover==1){%>
-                                <img width="128px;" src="/images/products/<%=item.product.id%>/<%=image.file%>" />
+                                <img width="128px;" src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=image.file%>" />
                               <%}%>
                             <%})%>
                           <div class="container">
@@ -186,7 +186,7 @@
               <tbody>
                   <% orders.forEach(function(order){ %>
                     <tr>
-                        <td scope="row" class="align-middle"><%= order.id %></td>
+                        <td scope="row" class="align-middle"><%= order.reference %></td>
                         <td class="align-middle is-uppercase"><%= order.paymentMethod %></td>
                         <td class="align-middle"><%= order.customer.fullName %></td>
                         <td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:<%=order.currentstatus.color.code%>;"><span class="is-size-7 has-text-black has-background-white"><%= order.currentstatus.name %></span></p></td>

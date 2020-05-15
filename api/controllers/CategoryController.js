@@ -45,7 +45,7 @@ module.exports = {
     if(req.body.activo==='on'){isActive=true;}
     let current = await Category.findOne({id:req.body.current});
     try{
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/categories');
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       newcat = await Category.create({
         name:req.body.nombre.trim().toLowerCase(),
         logo:filename[0],
@@ -83,18 +83,12 @@ module.exports = {
     }
     var isActive=false;
     var error = null;
-    const route = 'assets/images/categories';
+    const route = 'images/categories';
     let category = await Category.findOne({id:req.param('id')});
-    let filename = [category.logo];
     let parent = await Category.findOne({id:req.body.current});
     if(req.body.activo==='on'){isActive=true;}
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
-      var fs = require('fs');
-      if(filename[0].length>0){
-        if (fs.existsSync(route+'/'+filename[0])) { fs.unlinkSync(route+'/'+filename[0]);}
-        if (fs.existsSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'))) { fs.unlinkSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'));}
-      }
 
       await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, logo:uploaded[0], active:isActive,level:parent.level+1});
     }catch(err){

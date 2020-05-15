@@ -89,7 +89,6 @@
           <table class="table is-hoverable" id="colors-table">
               <thead>
               <tr>
-                  <th scope="col">Id</th>
                   <th scope="col">Nombre</th>
                   <th scope="col">Color</th>
                   <th scope="col">Opciones</th>
@@ -98,7 +97,6 @@
               <tbody>
                   <% colors.forEach(function(color){ %>
                       <tr>
-                          <th scope="row" class="align-middle"><%= color.id %></th>
                           <td class="align-middle"><span class="is-capitalized"><%= color.name %></span></td>
                           <td class="align-middle"><div class="color-container" style="background-color: <%= color.code %>;border:solid 1px <%= color.code %>;"></div></td>
                           <td class="align-middle">

@@ -103,7 +103,6 @@
             <table class="table is-hoverable" id="suppliers-table">
                 <thead>
                 <tr>
-                    <th scope="col">Id</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Email</th>
                     <th scope="col">Teléfono</th>
@@ -114,7 +113,6 @@
                 <tbody>
                     <% suppliers.forEach(function(supplier){ %>
                         <tr>
-                            <th scope="row" class="align-middle"><%= supplier.id %></th>
                             <td class="align-middle is-capitalized"><%= supplier.name %></td>
                             <td class="align-middle"><a href="mailto:<%= supplier.email %>"><%= supplier.email %></a></td>
                             <td class="align-middle"><a href="tel:<%= supplier.phone %>"><%= supplier.phone %></a></td>

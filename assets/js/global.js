@@ -128,9 +128,8 @@ function asyncImageLoader(url){
       resolve(image);
     };
     image.onerror = () => {
-      setTimeout(() => {},2000);
+      setTimeout(() => {},3000);
       image.src = url;
-      resolve(image);
     };
   });
 }

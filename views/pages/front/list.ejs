@@ -27,7 +27,7 @@
             <%if(object.logo!== undefined && object.logo!== null){%>
             <section class="hero">
                 <figure class="image is-3by1 is-inline">
-                    <img src="<%=object.route%><%= object.logo.replace(object.logo.split('.').pop(),'webp') %>" alt="<%=object.description%>">
+                    <img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>">
                 </figure>
             </section>
             <%}%>
@@ -48,7 +48,7 @@
                         <span class="is-hidden" itemprop="productID"><%=product.id%></span>
                         <div class="card-image has-text-centered">
                             <figure class="image is-256x256 is-inline-block">
-                                <a itemprop="url" href="/list/product/<%=product.id%>"><img itemprop="image" style="justify-content: center;" src="/images/products/<%=product.id%>/<%= product.cover.file.replace(product.cover.file.split('.').pop(),'webp') %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
+                                <a itemprop="url" href="/list/product/<%=product.id%>"><img itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
                             </figure>
                             <div itemprop="description" class="is-hidden"><%-product.description%></div>
                             <div itemprop="disambiguatingDescription" class="is-hidden"><%-product.descriptionShort%></div>

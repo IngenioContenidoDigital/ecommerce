@@ -24,7 +24,7 @@
         <div class="field">
           <label class="label">Nombre</label>
           <div class="control">
-            <input class="input" type="text" name="nombre" required="true" placeholder="Nombre de la categoría" <% if(action=='edit'){ %>value="<%= current.name %>"<% }%>/>
+            <input class="input is-capitalized" type="text" name="nombre" required="true" placeholder="Nombre de la categoría" <% if(action=='edit'){ %>value="<%= current.name %>"<% }%>/>
           </div>
         </div>
         <div class="columns">
@@ -33,7 +33,7 @@
               <div class="column">
               <section class="hero">
                 <figure class="image is-3by1">
-                    <img src="/images/categories/<%= current.logo.replace(current.logo.split('.').pop(),'webp') %>">
+                    <img src="<%=imgurl%>/images/categories/<%= current.logo %>">
                 </figure>
               </section>
             </div>
@@ -190,7 +190,6 @@
         <table class="table is-hoverable" id="categories-table">
             <thead>
             <tr>
-                <th scope="col">Id</th>
                 <th scope="col">Nombre</th>
                 <th scope="col">Descripción</th>
                 <th scope="col">Activa</th>
@@ -201,8 +200,7 @@
                 <% categories.forEach(function(category){ %>
                   <% if(category.name !== 'Inicio') { %>
                     <tr>
-                        <th scope="row" class="align-middle"><%= category.id %></th>
-                        <td class="align-middle"><%= category.name %></td>
+                        <td class="align-middle is-capitalized"><%= category.name %></td>
                         <td class="align-middle"><%= category.description %></td>
                         <td class="align-middle">
                         <span class="action">

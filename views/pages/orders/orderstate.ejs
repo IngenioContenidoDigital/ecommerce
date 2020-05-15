@@ -83,7 +83,6 @@
               <table class="table is-hoverable" id="orderstate-table">
                   <thead>
                   <tr>
-                      <th scope="col">Id</th>
                       <th scope="col">Nombre</th>
                       <th scope="col">Pedido válido</th>
                       <th scope="col">Opciones</th>
@@ -92,7 +91,6 @@
                   <tbody>
                       <% orderstate.forEach(function(state){ %>
                           <tr>
-                              <th scope="row" class="align-middle"><%= state.id %></th>
                               <td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color: <%= state.color.code %>;"><span class="is-size-7 has-text-black has-background-white"><%= state.name %></span></p></td>
                               <td class="align-middle has-text-centered">
                               <span class="action">

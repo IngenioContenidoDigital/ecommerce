@@ -39,7 +39,7 @@ module.exports = {
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
-      let filename = await sails.helpers.fileUpload(req,'image',2000000,'assets/images/slides');
+      let filename = await sails.helpers.fileUpload(req,'image',2000000,'images/slides');
       await Slider.create({
         name:req.body.name.trim().toLowerCase(),
         image: filename[0],
@@ -68,7 +68,7 @@ module.exports = {
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
-      let filename = await sails.helpers.fileUpload(req,'image',2000000,'assets/images/slides');
+      let filename = await sails.helpers.fileUpload(req,'image',2000000,'images/slides');
       await Slider.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         image: filename[0],

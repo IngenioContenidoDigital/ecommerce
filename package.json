@@ -23,7 +23,9 @@
     "sails-hook-organics": "^1.1.0",
     "sails-hook-orm": "^2.1.1",
     "sails-hook-sockets": "^2.0.0",
+    "sails-mongo": "^1.1.0",
     "sharp": "^0.25.2",
+    "skipper-s3": "^0.6.0",
     "strong-soap": "^2.0.0",
     "suneditor": "^2.28.0"
   },

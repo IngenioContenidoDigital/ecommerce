@@ -183,7 +183,6 @@
               <table class="table is-hoverable" id="users-table">
                   <thead>
                   <tr>
-                      <th scope="col">Id</th>
                       <th scope="col">Nombre</th>
                       <th scope="col">Email</th>
                       <th scope="col">Activo</th>
@@ -193,8 +192,7 @@
                   <tbody>
                       <% users.forEach(function(user){ %>
                         <%if(user.profile.name!=='superadmin'){%>
-                          <tr>
-                              <td scope="row" class="align-middle"><%= user.id %></td>
+                          <tr>                              
                               <td class="align-middle is-capitalized"><%= user.fullName %></td>
                               <td class="align-middle is-lowercase"><%= user.emailAddress %></td>
                               <td class="align-middle">

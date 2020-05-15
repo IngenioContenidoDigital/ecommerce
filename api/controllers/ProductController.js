@@ -121,7 +121,7 @@ module.exports = {
       throw 'forbidden';
     }
     let id = req.body.id;
-    let route ='assets/images/products/'+id;
+    let route ='images/products/'+id;
     let cover=0;
     let result = null;
     let response = await sails.helpers.fileUpload(req,'file',12000000,route);
@@ -153,16 +153,10 @@ module.exports = {
       throw 'forbidden';
     }
     let image = await ProductImage.findOne({id:req.param('id')});
-    let route ='assets/images/products/'+image.product;
-    let ext = image.file.split('.').pop();
-    let filename = image.file.replace(ext,'');
     let error=null;
     let newcover = [];
-    var fs = require('fs');
     await ProductImage.destroyOne({id:req.param('id')});
     try{
-      fs.unlinkSync(route+'/'+image.file);
-      fs.unlinkSync(route+'/'+filename+'webp');
       let images = await ProductImage.find({product:image.product});
       if(image.cover===1 && images.length>0){
         newcover = await ProductImage.find({

@@ -8,6 +8,9 @@
 module.exports = {
 
   attributes: {
+    reference:{
+      type:'number',
+    },
     totalOrder:{
       type:'number',
       defaultsTo:0,
@@ -77,6 +80,13 @@ module.exports = {
     }
 
   },
+  beforeCreate (obj, cb) {
+    Sequence.next('order', (err, num) => {
+      if(err){ return cb(err);}
+      obj.reference = num;
+      cb();
+    });
+  }
 
 };
 

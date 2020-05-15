@@ -3,7 +3,7 @@ module.exports = {
   friendlyName: 'Category children',
   description: '',
   inputs: {
-    id:{type:'number'}
+    id:{type:'string'}
   },
   exits: {
     success: {

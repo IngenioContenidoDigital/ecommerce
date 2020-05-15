@@ -29,7 +29,7 @@ module.exports = {
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     try{
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/carriers');
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/carriers');
       await Carrier.create({
         name:req.body.name.trim().toLowerCase(),
         url:req.body.url,
@@ -52,17 +52,9 @@ module.exports = {
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let id = req.param('id');
-    let route = 'assets/images/carriers';
-    let carrier = await Carrier.findOne({id:id});
-    let filename = [carrier.logo];
+    let route = 'images/carriers';
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
-
-      var fs = require('fs');
-      if(filename[0].length>0){
-        if (fs.existsSync(route+'/'+filename[0])) { fs.unlinkSync(route+'/'+filename[0]);}
-        if (fs.existsSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'))) { fs.unlinkSync(route+'/'+filename[0].replace(filename[0].split('.').pop(),'webp'));}
-      }
 
       await Carrier.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),

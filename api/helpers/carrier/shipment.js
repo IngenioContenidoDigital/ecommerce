@@ -3,7 +3,7 @@ module.exports = {
   description: 'Shipment carrier.',
   inputs: {
     order:{
-      type:'number',
+      type:'string',
       required:true,
     }
   },

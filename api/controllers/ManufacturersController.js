@@ -31,11 +31,12 @@ module.exports = {
 
     let isActive = (req.body.activo==='on') ? true : false;
     try{
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/brands');
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/brands');
       await Manufacturer.create({
         name:req.body.nombre.trim().toLowerCase(),
         logo: filename[0],
         description:req.body.descripcion,
+        url:(req.body.nombre.trim().toLowerCase()).replace(/\s/gi,'-'),
         active:isActive});
     }catch(err){
       error=err;
@@ -44,7 +45,7 @@ module.exports = {
           name:req.body.nombre.trim().toLowerCase(),
           description:req.body.descripcion,
           active:isActive,
-          url:(req.body.nombre.trim().toLowerCase()).replace(' ','-')});
+          url:(req.body.nombre.trim().toLowerCase()).replace(/\s/gi,'-')});
       }
     }
 
@@ -77,7 +78,7 @@ module.exports = {
     let id = req.param('id');
 
     try{
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/brands');
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/brands');
       await Manufacturer.updateOne({id:id}).set({
         name:req.body.nombre.trim().toLowerCase(),
         description:req.body.description,
@@ -90,6 +91,7 @@ module.exports = {
         await Manufacturer.updateOne({id:id}).set({
           name:req.body.nombre.trim().toLowerCase(),
           description:req.body.description,
+          url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
           active:isActive});
       }
     }

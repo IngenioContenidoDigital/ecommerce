@@ -108,8 +108,10 @@ module.exports = {
             use_default_card_customer: false,/*if the user wants to be charged with the card that the customer currently has as default = true*/
           };
           let t = null;
-          t = await Token.findOne({id:req.body.token});
-          if(t){
+          if(req.body.token!==undefined && req.body.token!==null){
+            t = await Token.findOne({id:req.body.token});
+          }
+          if(t!==null){
 
             paymentInfo['token_card']=t.token;
             paymentInfo['customer_id']= t.customerId;
@@ -140,31 +142,24 @@ module.exports = {
             };
             let customer = await sails.helpers.payment.customer(customerInfo);
 
+            paymentInfo['token_card']=token.id;
+            paymentInfo['customer_id']= customer.data.customerId;
+            paymentInfo['doc_type']= req.body.tid;
+            paymentInfo['doc_number']= req.body.dni;
+            paymentInfo['name']= req.body.cardname;
+
             if(req.body.tokenize==='on'){
 
-              t = await Token.create({
-                token:t.id,
+              await Token.create({
+                token:token.id,
                 customerId:customer.data.customerId,
                 docType:req.body.tid,
                 docNumber:req.body.dni,
-                mask:t.card.mask,
-                frch:t.card.name,
+                mask:token.card.mask,
+                frch:token.card.name,
                 name:req.body.cardname,
                 user:user.id
-              }).fetch();
-
-              paymentInfo['token_card']=t.token;
-              paymentInfo['customer_id']= t.customerId;
-              paymentInfo['doc_type']= t.docType;
-              paymentInfo['doc_number']= t.docNumber;
-              paymentInfo['name']= t.name;
-            }else{
-
-              paymentInfo['token_card']=token.id;
-              paymentInfo['customer_id']= customer.data.customerId;
-              paymentInfo['doc_type']= req.body.tid;
-              paymentInfo['doc_number']= req.body.dni;
-              paymentInfo['name']= req.body.cardname;
+              });
             }
           }
 

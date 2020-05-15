@@ -83,7 +83,6 @@
               <table class="table is-hoverable" id="countries-table">
                   <thead>
                   <tr>
-                      <th scope="col">Id</th>
                       <th scope="col">Nombre</th>
                       <th scope="col">ISO</th>
                       <th scope="col">Indicativo</th>
@@ -94,7 +93,6 @@
                   <tbody>
                       <% countries.forEach(function(country){ %>
                           <tr>
-                              <th scope="row" class="align-middle"><%= country.id %></th>
                               <td class="align-middle is-capitalized"><%= country.name %></td>
                               <td class="align-middle is-uppercase"><%= country.iso %></td>
                               <td class="align-middle"><%= country.prefix %></td>

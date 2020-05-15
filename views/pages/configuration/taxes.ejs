@@ -61,7 +61,6 @@
         <table class="table is-hoverable" id="taxes-table">
             <thead>
             <tr>
-                <th scope="col">Id</th>
                 <th scope="col">Nombre</th>
                 <th scope="col">Valor</th>
                 <th scope="col">Opciones</th>
@@ -70,7 +69,6 @@
             <tbody>
                 <% taxes.forEach(function(tax){ %>                
                     <tr>
-                        <td scope="row" class="align-middle"><%= tax.id %></td>
                         <td class="align-middle is-capitalized"><%= tax.name %></td>
                         <td class="align-middle"><%= tax.value %>&nbsp%</td>                      
                         <td class="align-middle">                        

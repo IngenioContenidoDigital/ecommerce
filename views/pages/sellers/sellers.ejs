@@ -16,7 +16,7 @@
                 <div class="columns is-mobile is-vcentered">
                   <% if(action=='edit'){ %>
                   <div class="column">
-                    <p class="has-text-left"><img height="100" src="/images/sellers/<%= seller.logo.replace(seller.logo.split('.').pop(),'webp') %>" /></p>
+                    <p class="has-text-left"><img height="100" src="<%=imgurl%>/images/sellers/<%= seller.logo %>" /></p>
                   </div>
                   <% } %>
                   <div class="column">
@@ -263,7 +263,6 @@
             <table class="table is-hoverable" id="sellers-table">
                 <thead>
                 <tr>
-                    <th scope="col">Id</th>
                     <th scope="col">Logo</th>
                     <th scope="col">Nombre</th>
                     <th scope="col">Activo</th>
@@ -273,9 +272,8 @@
                 <tbody>
                     <% sellers.forEach(function(seller){ %>
                         <tr>
-                            <th scope="row" class="align-middle"><%= seller.id %></th>
                             <td class="align-middle">
-                                <img src="/images/sellers/<%= seller.logo.replace(seller.logo.split('.').pop(),'webp') %>" name="logo" alt="<%= seller.name %>" width="150px" />
+                                <img src="<%=imgurl%>/images/sellers/<%= seller.logo %>" name="logo" alt="<%= seller.name %>" width="150px" />
                             </td>
                             <td class="align-middle is-capitalized"><%= seller.name %></td>
                             <td class="align-middle">

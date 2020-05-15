@@ -20,10 +20,16 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     let files = [];
-    let images=['jpeg','png','jpg','gif'];
     inputs.req.file(inputs.field).upload({
+      adapter: require('skipper-s3'),
+      key: 'AKIATQT7MH3O4B4COYDV',
+      secret: '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',
+      bucket: 'iridio.co',
+      headers: {
+        'x-amz-acl': 'public-read'
+      },
       maxBytes: inputs.size,
-      dirname: require('path').resolve(sails.config.appPath, inputs.route)
+      dirname: inputs.route
     },function whenDone(err, uploadedFiles) {
       if (err) {return exits.serverError(err);
       }else if (uploadedFiles.length === 0){
@@ -31,15 +37,6 @@ module.exports = {
       }else{
         for(let i=0; i<uploadedFiles.length; i++){
           let filename = uploadedFiles[i].fd.split('/').pop();
-          let ext = filename.split('.').pop();
-          if(images.includes(ext)){
-            let chain = filename.replace(ext,'');
-            const sharp = require('sharp');
-            sharp(uploadedFiles[i].fd)
-            .toFile(inputs.route+'/'+chain+'webp', (err, info) => {
-              if(err){return err;}else{return info;}
-            });
-          }
           files.push(filename);
         }
         return exits.success(files);

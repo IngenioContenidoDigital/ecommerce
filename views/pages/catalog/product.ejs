@@ -202,7 +202,7 @@
                 <% product.images.forEach((i)=>{ %>
                   <div style="display:inline;">
                     <figure class="image is-128x128 image-ed <%if(i.cover==1){%>image-cover<%}%>" image-id="<%=i.id%>">
-                      <img src="/images/products/<%=product.id%>/<%= i.file.replace(i.file.split('.').pop(),'webp') %>" />
+                      <img src="<%=imgurl%>/images/products/<%=product.id%>/<%= i.file %>" />
                     </figure>
                     <a target="/images/remove/<%=i.id%>" class="delete"></a>
                   </div>
@@ -234,7 +234,7 @@
             let images = JSON.parse(request.response);
             for(let j=0; j<images.length; j++){
               //let imgname = images[j].file.substring(0,images[j].file.length-4);
-              let imgname = images[j].file.replace(images[j].file.split('.').pop(),'');
+              let imgname = images[j].file;
               let div = document.createElement('div');
               div.style.display='inline';
               let a = document.createElement('a');
@@ -246,7 +246,7 @@
               addClass(figure, 'image-ed');
               figure.setAttribute('image-id',images[j].id);
               if(images[j].cover=='1'){addClass(figure, 'image-cover');}
-              let img = asyncImageLoader(route+imgname+'webp');
+              let img = asyncImageLoader('<%=imgurl%>'+route+imgname);
               img.then( res => {figure.appendChild(res);});
               div.appendChild(figure);
               div.appendChild(a);
@@ -622,7 +622,7 @@
         const checks = document.querySelectorAll('input[name="categories[]"]')
         checks.forEach((op) =>{
           <% product.categories.forEach(function(c){ %>
-            if(op.value==<%= c.id %>){
+            if(op.value=='<%= c.id %>'){
               op.checked=true;
             }
           <% }); %>
@@ -766,7 +766,6 @@
       <table class="table is-hoverable is-size-7" id="products-table">
           <thead>
           <tr>
-              <th scope="col">Id</th>
               <th scope="col">Portada</th>
               <th scope="col">Nombre</th>
               <th scope="col">SKU</th>
@@ -779,14 +778,13 @@
           <tbody>
               <% products.forEach(function(product){ %>
                 <tr>
-                    <td scope="row" class="align-middle"><%= product.id %></td>
                     <td scope="row" class="align-middle">
                       <% 
                       if(product.images.length>0){
                       product.images.forEach(function(image){
                         if(image.cover==1){ %>
                           <figure class="image is-64x64">
-                            <img class="is-rounded" src="/images/products/<%= product.id+'/'+image.file.replace(image.file.split('.').pop(),'webp') %>" />
+                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%= product.id+'/'+image.file %>" />
                           </figure>
                       <%  }
                       })}%>

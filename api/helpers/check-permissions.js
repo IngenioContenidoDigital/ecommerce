@@ -3,7 +3,7 @@ module.exports = {
   description: 'Verificar los permisos del usuario para ejecutar cualquier acción',
   inputs: {
     profile:{
-      type:'number',
+      type:'string',
       required:true
     }
   },

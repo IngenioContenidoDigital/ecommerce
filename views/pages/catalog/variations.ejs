@@ -55,7 +55,6 @@
           <table class="table is-hoverable" id="variations-table">
               <thead>
               <tr>
-                  <th scope="col">Id</th>
                   <th scope="col">Nombre</th>
                   <th scope="col">Opciones</th>
               </tr>
@@ -63,7 +62,6 @@
               <tbody>
                   <% variations.forEach(function(variation){ %>
                       <tr>
-                          <td scope="row" class="align-middle"><%= variation.id %></td>
                           <td class="align-middle"><span class="is-uppercase"><%= variation.name %></span></td>
                           <td class="align-middle">
                             <a href="/variations/edit/<%= variation.id %>" class="button is-small">

@@ -170,7 +170,6 @@
               <table class="table is-hoverable" id="discounts-table">
                   <thead>
                   <tr>
-                      <th scope="col">Id</th>
                       <th scope="col">Nombre</th>
                       <th scope="col">Inicio</th>
                       <th scope="col">Fin</th>
@@ -182,7 +181,6 @@
                   <tbody>
                       <% discounts.forEach(function(discount){ %>
                           <tr>
-                              <th scope="row" class="align-middle"><%= discount.id %></th>
                               <td class="align-middle is-capitalized"><%= discount.name %></td>
                               <td class="align-middle"><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
                               <td class="align-middle"><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>

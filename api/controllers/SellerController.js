@@ -46,7 +46,7 @@ module.exports = {
       notes:req.body.notes
     }).fetch();
     try{
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/sellers');
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
       await Seller.create({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
@@ -113,7 +113,7 @@ module.exports = {
       }).fetch();
     }
     try{
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'assets/images/sellers');
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
       await Seller.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
