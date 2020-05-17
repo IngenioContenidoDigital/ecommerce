@@ -127,6 +127,7 @@ module.exports.bootstrap = async function() {
       {name:'createseller', group:'sellers', description:'Crear un nuevo Seller'},
       {name:'editseller', group:'sellers', description:'Editar un Seller existente'},
       {name:'sellerstate', group:'sellers', description:'Activar o Desactivar un Seller'},
+      {name:'integrations', group:'sellers', description:'Administrar Integraciones'},
 
       {name:'listorders', group:'pedidos', description:'Ver la Lista de Pedidos'},
       {name:'updateorder', group:'pedidos', description:'Actualizar un Pedido'},

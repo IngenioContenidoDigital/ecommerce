@@ -11,6 +11,7 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showcategories')){
       throw 'forbidden';
     }
+
     var error = null;
     let action = null;
     let childs = null;
@@ -50,6 +51,7 @@ module.exports = {
         name:req.body.nombre.trim().toLowerCase(),
         logo:filename[0],
         description:req.body.descripcion,
+        dafiti:req.body.dafiti,
         active:isActive,
         url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
         level:current.level+1
@@ -60,6 +62,7 @@ module.exports = {
         newcat = await Category.create({
           name:req.body.nombre.trim().toLowerCase(),
           description:req.body.descripcion,
+          dafiti:req.body.dafiti,
           active:isActive,
           url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
           level:current.level+1
@@ -89,13 +92,11 @@ module.exports = {
     if(req.body.activo==='on'){isActive=true;}
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
-
-      await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, logo:uploaded[0], active:isActive,level:parent.level+1});
+      await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, dafiti:req.body.dafiti, logo:uploaded[0], active:isActive,level:parent.level+1});
     }catch(err){
-      console.log(err);
       error = err.msg;
       if(err.code==='badRequest'){
-        await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, active:isActive,level:parent.level+1});
+        await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, dafiti:req.body.dafiti, active:isActive,level:parent.level+1});
       }
     }
     if(req.body.parent!==parent.id){
@@ -141,5 +142,13 @@ module.exports = {
     var state = req.param('active');
     var updatedCategory = await Category.updateOne({id:id}).set({active:state});
     return res.send(updatedCategory);
+  },
+  dafiticategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    let route = await sails.helpers.channel.dafiti.sign('GetCategoryTree','5ebd9e8cacda9ad8dcda3135');
+    let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+    return res.send(JSON.parse(response));
   }
 };

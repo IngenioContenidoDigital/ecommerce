@@ -15,120 +15,191 @@
       <form action="/categories/create" method="POST" enctype="multipart/form-data">
     <% } %>
       <div class="box">
-        <div class="field is-pulled-right">
-          <input type="hidden" value="<%= current.id %>" name="category" id="category" />
-          <input type="hidden" value="<%= parent %>" name="parent" id="parent" />
-          <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <% if(current.active){ %><%= checked="checked" %><% } %> >
-          <label for="activo">Categoría: <span id="state"><% if(current.active){ %> <b style="color:green;">activada</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
-        </div>
-        <div class="field">
-          <label class="label">Nombre</label>
-          <div class="control">
-            <input class="input is-capitalized" type="text" name="nombre" required="true" placeholder="Nombre de la categoría" <% if(action=='edit'){ %>value="<%= current.name %>"<% }%>/>
-          </div>
-        </div>
         <div class="columns">
-          <div class="column">
-            <% if((action=='edit') && (current.logo!= "")){ %>
-              <div class="column">
-              <section class="hero">
-                <figure class="image is-3by1">
-                    <img src="<%=imgurl%>/images/categories/<%= current.logo %>">
-                </figure>
-              </section>
+          <div class="column is-9">
+            <div class="field is-pulled-right">
+              <input type="hidden" value="<%= current.id %>" name="category" id="category" />
+              <input type="hidden" value="<%= parent %>" name="parent" id="parent" />
+              <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <% if(current.active){ %><%= checked="checked" %><% } %> >
+              <label for="activo">Categoría: <span id="state"><% if(current.active){ %> <b style="color:green;">activada</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
             </div>
-            <% } %>
-          </div>
-          <div class="column">
             <div class="field">
-              <label class="label">Descripción</label>
+              <label class="label">Nombre</label>
               <div class="control">
-                <textarea class="textarea" name="descripcion" placeholder="Descripción de la categoría"><% if(action=='edit'){ %><%= current.description %><% }%></textarea>
+                <input class="input is-capitalized" type="text" name="nombre" required="true" placeholder="Nombre de la categoría" <% if(action=='edit'){ %>value="<%= current.name %>"<% }%>/>
+              </div>
+            </div>
+            <div class="columns">
+              <div class="column">
+                <% if((action=='edit') && (current.logo!= "")){ %>
+                  <div class="column">
+                  <section class="hero">
+                    <figure class="image is-3by1">
+                        <img src="<%=imgurl%>/images/categories/<%= current.logo %>">
+                    </figure>
+                  </section>
+                </div>
+                <% } %>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label">Descripción</label>
+                  <div class="control">
+                    <textarea class="textarea" name="descripcion" placeholder="Descripción de la categoría"><% if(action=='edit'){ %><%= current.description %><% }%></textarea>
+                  </div>
+                </div>
+                <div class="field">
+                  <div id="file-loader" class="file has-name is-fullwidth">
+                    <label class="file-label">
+                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                      <span class="file-cta">
+                        <span class="file-icon">
+                          <i class="bx bx-upload"></i>
+                        </span>
+                        <span class="file-label">
+                          Imagen
+                        </span>
+                      </span>
+                      <span class="file-name has-text-grey">
+                        Cargar Imágen (720px x 240px)
+                      </span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
             <div class="field">
-              <div id="file-loader" class="file has-name is-fullwidth">
-                <label class="file-label">
-                  <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
-                  <span class="file-cta">
-                    <span class="file-icon">
-                      <i class="bx bx-upload"></i>
-                    </span>
-                    <span class="file-label">
-                      Imagen
-                    </span>
-                  </span>
-                  <span class="file-name has-text-grey">
-                    Cargar Imágen (720px x 240px)
-                  </span>
-                </label>
-              </div>
+                <article class="panel is-primary">
+                    <p class="panel-heading">
+                      Categoría Padre
+                    </p>
+                    <% if(typeof categories.forEach === "undefined"){ %>
+                      <ul>
+                        <li>
+                          <% if(action === 'edit'){ %>
+                            <a class="panel-block is-active" category="<%= categories.id %>" level="<%= categories.level %>">
+                              <input type="radio" name="current" value="<%= categories.id %>" />&nbsp;
+                              <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                              <%= categories.name %>
+                            </a>
+                          <% }else{ %>
+                            <a class="panel-block" category="<%= categories.id %>" level="<%= categories.level %>">
+                              <input type="radio" name="current" value="<%= categories.id %>" />&nbsp;
+                              <span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>
+                              <%= categories.name %>
+                            </a>
+                          <% } %>
+                        </li>
+                      </ul>
+                    <% } else { %>
+                      <ul>
+                      <% categories.forEach(function(category){ %>
+                        <li>
+                          <% if(action === 'edit'){ %>
+                              <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
+                                <input type="radio" name="current" value="<%= category.id %>" checked />&nbsp;
+                                <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                                <%= category.name %>
+                              </a>
+                          <% }else{ %>
+                              <a class="panel-block" category="<%= category.id %>" level="<%= category.level %>">
+                                <input type="radio" name="current" value="<%= category.id %>" checked />&nbsp;
+                                <span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>
+                                <%= category.name %>
+                              </a>
+                          <% } %>
+                        </li>
+                      <% }); %>
+                      </ul>
+                    <% } %>
+                  </article>
+            </div>
+            <div class="control buttons is-right">
+              <% if(action=='edit'){ %> 
+                <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Categoría</button>
+              <% }else if (action=='create'){ %>
+                <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Categoría</button>
+              <% } %>
             </div>
           </div>
-        </div>
-        <div class="field">
-            <article class="panel is-primary">
-                <p class="panel-heading">
-                  Categoría Padre
-                </p>
-                <% if(typeof categories.forEach === "undefined"){ %>
-                  <ul>
-                    <li>
-                      <% if(action === 'edit'){ %>
-                        <a class="panel-block is-active" category="<%= categories.id %>" level="<%= categories.level %>">
-                          <input type="radio" name="current" value="<%= categories.id %>" />&nbsp;
-                          <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
-                          <%= categories.name %>
-                        </a>
-                      <% }else{ %>
-                        <a class="panel-block" category="<%= categories.id %>" level="<%= categories.level %>">
-                          <input type="radio" name="current" value="<%= categories.id %>" />&nbsp;
-                          <span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>
-                          <%= categories.name %>
-                        </a>
-                      <% } %>
-                    </li>
-                  </ul>
-                <% } else { %>
-                  <ul>
-                  <% categories.forEach(function(category){ %>
-                    <li>
-                      <% if(action === 'edit'){ %>
-                          <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
-                            <input type="radio" name="current" value="<%= category.id %>" checked />&nbsp;
-                            <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
-                            <%= category.name %>
-                          </a>
-                      <% }else{ %>
-                          <a class="panel-block" category="<%= category.id %>" level="<%= category.level %>">
-                            <input type="radio" name="current" value="<%= category.id %>" checked />&nbsp;
-                            <span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>
-                            <%= category.name %>
-                          </a>
-                      <% } %>
-                    </li>
-                  <% }); %>
-                  </ul>
-                <% } %>
-              </article>
-        </div>
-        <div class="control buttons is-right">
-          <% if(action=='edit'){ %> 
-            <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Categoría</button>
-          <% }else if (action=='create'){ %>
-            <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Categoría</button>
-          <% } %>
+          <div class="column is-3">
+            <p class="has-text-centered title is-6">Equivalencia Marketplace</p>
+            <hr>
+            <progress class="progress is-small is-primary" max="100">15%</progress>
+            <h6 class="title is-6">Categoría en Dafiti</h6>
+            <ul class="cattree tree" id="dafiti">
+            </ul>
+          </div>
         </div>
       </div>
     </form>
   <script>
     const fileInput = document.querySelector('#file-loader input[type=file]');
+    <%if(current.dafiti!==''){%>
+      const dafiti = '<%=current.dafiti%>';
+    <%}%>
     fileInput.onchange = () => {
       if (fileInput.files.length > 0) {
         const fileName = document.querySelector('#file-loader .file-name');
         fileName.textContent = fileInput.files[0].name;
       }
     };
+    let options = (elm,cat,level) =>{
+      for(let c of cat){
+        let op = document.createElement('li');
+        /*if(level<=2){
+          op.innerHTML='<span><i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }else{*/
+          if(c['CategoryId']===dafiti){
+            op.innerHTML='<span><input type="radio" name="dafiti" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+          }else{
+            op.innerHTML='<span><input type="radio" name="dafiti" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+          }
+        //}
+        elm.appendChild(op);
+        if(c.Children.Category!==undefined && c.Children.Category.length>0){
+          level+=1;
+          let ul = document.createElement('ul');
+          addClass(ul,'tree');
+          addClass(ul,'is-hidden');
+          ul.style.marginLeft='10px';
+          op.parentNode.insertBefore(ul, op.nextSibling);
+          options(ul,c.Children.Category,level);
+          level-=1;
+        }
+      }
+      return;
+    }
+    
+    const dft = () =>{
+      let obj = document.querySelector('#dafiti');
+      io.socket.get('/integrations/dafiti/categories',(res)=>{
+        if(res){
+          let progress = document.querySelector('progress');
+          progress.parentNode.removeChild(progress);
+          options(obj,res.SuccessResponse.Body.Categories.Category,1);
+        }
+      });
+    }
+
+    dft();
+
+    live('.tree-toggler','click',e => {
+      let group = e.target.parentNode.parentNode.nextSibling;
+      let icon = e.target.parentNode.querySelector('i');
+      if(group.tagName==='UL'){
+        if(hasClass(group,'is-hidden')){
+          removeClass(icon,'bxs-folder');
+          addClass(icon,'bx-folder-open');
+          removeClass(group,'is-hidden');
+        }else{
+          addClass(group,'is-hidden');
+          removeClass(icon,'bx-folder-open');
+          addClass(icon,'bxs-folder');
+        }
+      }
+    });
+
   </script>
   <% if(action=='edit'){ %>
       <script>

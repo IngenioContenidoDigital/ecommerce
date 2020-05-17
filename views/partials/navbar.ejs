@@ -11,23 +11,23 @@
       <%if(typeof menu=='object'){%>
         <% menu.children.forEach(child =>{%>
             <div class="navbar-item has-dropdown is-hoverable is-mega">
-                <div class="navbar-link"><a class="has-text-dark" href="/ver/categoria/<%=child.url%>"><%=child.name%></a></div>
+                <div class="navbar-link is-capitalized"><a class="has-text-dark" href="/ver/categoria/<%=child.url%>"><%=child.name%></a></div>
                 <div class="navbar-dropdown">
                   <div class="container is-fluid">
                     <div class="columns">
                       <div class="column">
-                        <a href="/ver/categoria/<%=child.url%>"><h1 class="title is-6 is-mega-menu-title"><%=child.name%></h1></a>
                         <br>
+                        <a href="/ver/categoria/<%=child.url%>"><h1 class="title is-7 is-mega-menu-title is-uppercase"><%=child.name%></h1></a>
                         <div class="columns">
                         <%child.children.children.forEach(c =>{%>
                           <div class="column">
-                            <a class="navbar-item" href="/ver/categoria/<%=c.url%>">
-                                <div class="navbar-content">
-                                    <p>
-                                        <small><%=c.name%></small>
-                                    </p>
-                                </div>
-                            </a>
+                            <p class="has-text-centered">
+                              <a class="navbar-item is-capitalized" href="/ver/categoria/<%=c.url%>">
+                                  <div class="navbar-content">
+                                    <p class="has-text-centered"><%=c.name%></p>
+                                  </div>
+                              </a>
+                            </p>
                           </div>
                         <%})%>
                       </div>

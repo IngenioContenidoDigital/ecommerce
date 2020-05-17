@@ -134,6 +134,10 @@ module.exports.routes = {
   'POST /profile/edit/:id' : 'UserController.editprofile',
   'GET /permissions/:id' : 'UserController.permissions',
   'POST /permissions/set/:id' : 'UserController.setpermissions',
+
+  'GET /integrations/:id' : 'SellerController.integrations',
+  'POST /integration/set/:seller/:channel' : 'SellerController.setintegration',
+  'GET /integrations/dafiti/categories' : 'CategoryController.dafiticategories',
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

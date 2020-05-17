@@ -16,6 +16,9 @@ module.exports = {
     url:{type:'string'},
     level:{type:'number'},
     hasChildren:{type:'boolean'},
+    dafiti:{type:'string'},
+    mercadolibre:{type:'string'},
+    linio:{type:'string'},
     parent:{
       collection:'category',
       via: 'children'

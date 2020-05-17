@@ -1,0 +1,89 @@
+<div class="container">
+    <div class="box">
+        <p class="has-text-left"><img width="200" src="<%=imgurl%>/images/sellers/<%=seller.logo%>" /></p>
+        <hr>
+        <div class="tabs is-toggle is-fullwidth">
+            <ul>
+              <li>
+                <a>
+                  <p class="has-text-centered" id="dafiti"><img src="/images/dafiti.png" /></p>
+                </a>
+              </li>
+              <li>
+                <a>
+                   <p class="has-text-centered" id="mercadolibre"><img src="/images/mercadolibre.png" /></p>
+                </a>
+              </li>
+              <li>
+                <a>
+                  <p class="has-text-centered" id="linio"><img src="/images/linio.png" /></p>
+                </a>
+              </li>
+            </ul>
+        </div>
+        <% let dafiti = null, mercadolibre = null, linio = null; %>
+        <%if(integrations.length>0){%>
+            <% dafiti=integrations.filter(data => data.channel='dafiti');%>
+            <% linio=integrations.filter(data => data.channel='linio');%>
+            <% mercadolibre=integrations.filter(data => data.channel='mercadolibre');%>
+        <%}%>
+          <div class="setup dafiti">
+            <form method="POST" action="/integration/set/<%=seller.id%>/dafiti" id="dafiti-form">
+                <div class="container">
+                        <div class="field">
+                        <label class="label">Usuario Dafiti</label>
+                        <div class="control has-icons-left">
+                        <input class="input" type="text" name="user" placeholder="Usuario de Conexión" required <%if(dafiti!==null){%>value="<%=dafiti[0].user%>"<%}%>/>
+                            <span class="icon is-small is-left">
+                            <i class='bx bx-user-circle' ></i>
+                            </span>
+                        </div>
+                        </div>
+                        <div class="field">
+                        <label class="label">Clave de API</label>
+                        <div class="control has-icons-left">
+                            <input class="input" type="text" name="key" placeholder="Llave del API" required <%if(dafiti!==null){%>value="<%=dafiti[0].key%>"<%}%>/>
+                            <span class="icon is-small is-left">
+                            <i class='bx bx-key' ></i>
+                            </span>
+                        </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">URL Petición</label>
+                            <div class="control has-icons-left">
+                                <input class="input" type="text" name="url" placeholder="Url de Petición" required <%if(dafiti!==null){%>value="<%=dafiti[0].url%>"<%}%>/>
+                                <span class="icon is-small is-left">
+                                    <i class='bx bx-world'></i>
+                                </span>
+                            </div>
+                            </div>
+                        <br>
+                        <div class="control is-right">
+                            <button type="submit" class="button is-dark">Aplicar Cambios</button>
+                        </div>
+                </div>
+            </form>
+          </div>
+          <div class="setup is-hidden linio">
+            <h6 class="subtitle is-6">Integración Linio:</h6>
+            <br>
+        </div>
+        <div class="setup is-hidden mercadolibre">            
+            <h6 class="subtitle is-6">Integración MercadoLibre:</h6>
+            <br>
+        </div>
+    </div>
+</div>
+<script>
+    live('ul li','click',e=>{
+        let group = e.target.parentNode.id;
+        let blocks= document.querySelectorAll('.setup');
+        for(let b of blocks){
+            if(hasClass(b,group)){
+                removeClass(b,'is-hidden');
+            }else{
+                addClass(b,'is-hidden');
+            }
+        }
+    });
+</script>

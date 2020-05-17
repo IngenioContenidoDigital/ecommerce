@@ -107,6 +107,15 @@
                         </label>
                       </div>
                     </div>
+                    <br>
+                    <%if(action=='edit'){%>
+                      <a href="/integrations/<%=seller.id%>">
+                        <span class="icon">
+                          <i class='bx bx-shape-polygon'></i>
+                        </span>
+                        Configurar Integraciones
+                      </a>
+                    <%}%>
                   </div>
                   <div class="column">
                           <div class="field">

@@ -160,5 +160,26 @@ module.exports = {
     var updatedSeller = await Seller.updateOne({id:id}).set({active:state});
     return res.send(updatedSeller);
   },
+  integrations:async(req,res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'integrations')){
+      throw 'forbidden';
+    }
+    let seller = await Seller.findOne({id:req.param('id')});
+    let integrations = await Integration.find({seller:seller.id});
+    return res.view('pages/sellers/integrations',{layout:'layouts/admin',seller:seller,integrations:integrations});
+  },
+  setintegration:async (req,res)=>{
+    let seller = req.param('seller');
+    let channel = req.param('channel');
+    await Integration.create({
+      channel:channel,
+      url:req.body.url,
+      user:req.body.user,
+      key:req.body.key,
+      seller:seller
+    });
+    return res.redirect('/sellers');
+  }
 };
 
