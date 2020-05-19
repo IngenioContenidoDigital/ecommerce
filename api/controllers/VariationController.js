@@ -13,13 +13,14 @@ module.exports = {
     }
     let error = null;
     let variation=null;
-    let variations = await Variation.find();
+    let variations = await Variation.find().populate('gender');
+    let genders = await Gender.find();
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(id){
-      variation = await Variation.findOne({id:id});
+      variation = await Variation.findOne({id:id}).populate('gender');
     }
-    return res.view('pages/catalog/variations',{layout:'layouts/admin',variations:variations,action:action,error:error,variation:variation});
+    return res.view('pages/catalog/variations',{layout:'layouts/admin',variations:variations,action:action,error:error,variation:variation,genders:genders});
   },
   createvariation: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -28,7 +29,15 @@ module.exports = {
     }
     let error = null;
     try{
-      await Variation.create({name:req.body.name.trim().toLowerCase()});
+      await Variation.create({
+        name:req.body.name.trim().toLowerCase(),
+        gender:req.body.gender,
+        cm:req.body.cm,
+        col:req.body.col,
+        us:req.body.us,
+        eu:req.body.eu,
+        wide:req.body.wide
+      });
     }catch(err){
       error = err;
     }
@@ -45,7 +54,15 @@ module.exports = {
     }
     let error = null;
     try{
-      await Variation.updateOne({id:req.param('id')}).set({name:req.body.name.trim().toLowerCase()});
+      await Variation.updateOne({id:req.param('id')}).set({
+        name:req.body.name.trim().toLowerCase(),
+        gender:req.body.gender,
+        cm:req.body.cm,
+        col:req.body.col,
+        us:req.body.us,
+        eu:req.body.eu,
+        wide:req.body.wide
+      });
     }catch(err){
       error = err;
     }

@@ -33,7 +33,7 @@ module.exports = {
 
   fn: async function (inputs,exits) {
     const https = require('https');
-    const querystring = require('querystring');
+    //const querystring = require('querystring');
     let hostname= inputs.host.replace(/http(s?)*:\/\//gi,'');
     let data = inputs.data;
     let options = {
@@ -41,8 +41,8 @@ module.exports = {
       port:443,
       path:inputs.route,
       method:inputs.method.toUpperCase(),
+      headers:{'Content-Type':'application/x-www-form-urlencoded'}
     };
-
     const rq = https.request(options, rs =>{
       let data = '';
       rs.on('data', d =>{
@@ -58,7 +58,7 @@ module.exports = {
     });
 
     if(inputs.method.toUpperCase()==='POST'){
-      rq.write(querystring.stringify(data));
+      rq.write(data);
     }
     rq.end();
   }

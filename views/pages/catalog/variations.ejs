@@ -19,25 +19,74 @@
           <div class="column"></div>
           <div class="column is-two-fifths">
             <div class="box">
-              <div class="columns">
-                <div class="column">
-                  <div class="field">
-                    <label class="label">Nombre</label>
-                    <div class="control">
-                    <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de esta Variación" <% if(action=='edit'){ %>value="<%= variation.name %>"<% }%>/>
-                    </div>
+              <div class="field">
+                <label class="label is-inline is-size-7-mobile" for="gender">Género</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select class="is-capitalized" name="gender" id="gender" required>
+                      <option value="">-- Elegir Género --</option>
+                      <% genders.forEach(gender => { %>
+                        <option class="is-capitalized" <% if(action=='edit' && variation.gender!== null && gender.id==variation.gender.id ){ %> selected <% } %> value="<%= gender.id %>" ><%= gender.name %></option>
+                      <%})%>
+                    </select>
                   </div>
                 </div>
-                <div class="column">
-                  <br>
-                  <div class="control buttons is-right">
-                    <% if(action=='edit'){ %> 
-                        <button type="submit" class="button is-primary"><i class="bx bx-pencil"></i>&nbsp;Modificar Variación</button>
-                    <% }else if (action=='create'){ %>
-                        <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Variación</button>
-                    <% } %>
+              </div>                
+              <div class="field">
+                <label class="label">Nombre</label>
+                <div class="control">
+                <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de esta Variación" <% if(action=='edit'){ %>value="<%= variation.name %>"<% }%>/>
+                </div>
+              </div>
+              <div class="columns">
+              <div class="column">
+                <div class="field">
+                  <label class="label">CM</label>
+                  <div class="control">
+                  <input class="input is-capitalized" type="text" name="cm" placeholder="Largo CM" <% if(action=='edit'){ %>value="<%= variation.cm %>"<% }else{%>value="0"<%}%>/>
                   </div>
-                </div>                                  
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label">COL</label>
+                  <div class="control">
+                    <input class="input is-capitalized" type="text" name="col" placeholder="Colombia" <% if(action=='edit'){ %>value="<%= variation.col %>"<% }%>/>
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label">US</label>
+                  <div class="control">
+                    <input class="input is-capitalized" type="text" name="us" placeholder="Americana" <% if(action=='edit'){ %>value="<%= variation.us %>"<% }%>/>
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label">EU</label>
+                  <div class="control">
+                    <input class="input is-capitalized" type="text" name="eu" placeholder="Europea" <% if(action=='edit'){ %>value="<%= variation.eu %>"<% }%>/>
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label">Ancho CM</label>
+                  <div class="control">
+                    <input class="input is-capitalized" type="text" name="wide" placeholder="Ancho cms" <% if(action=='edit'){ %>value="<%= variation.wide %>"<% }else{%>value="0"<%}%>/>
+                  </div>
+                </div>
+              </div>
+              </div>
+              <br>
+              <div class="control buttons is-right">
+                <% if(action=='edit'){ %> 
+                    <button type="submit" class="button is-primary"><i class="bx bx-pencil"></i>&nbsp;Modificar Variación</button>
+                <% }else if (action=='create'){ %>
+                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Variación</button>
+                <% } %>
               </div>
             </div>
           </div>
@@ -52,9 +101,10 @@
         <a href="/variations/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
       </p>
       <div class="table-container">
-          <table class="table is-hoverable" id="variations-table">
+          <table class="table is-hoverable is-size-7" id="variations-table">
               <thead>
               <tr>
+                  <th scope="col">Género</th>
                   <th scope="col">Nombre</th>
                   <th scope="col">Opciones</th>
               </tr>
@@ -62,14 +112,15 @@
               <tbody>
                   <% variations.forEach(function(variation){ %>
                       <tr>
-                          <td class="align-middle"><span class="is-uppercase"><%= variation.name %></span></td>
-                          <td class="align-middle">
-                            <a href="/variations/edit/<%= variation.id %>" class="button is-small">
-                              <span class="icon">
-                                <i class="bx bxs-edit"></i>
-                              </span>
-                            </a>
-                          </td>
+                        <td class="align-middle"><span class="is-uppercase"><%if(variation.gender!==null){%><%= variation.gender.name %><%}%></span></td>
+                        <td class="align-middle"><span class="is-uppercase"><%= variation.name %></span></td>
+                        <td class="align-middle">
+                          <a href="/variations/edit/<%= variation.id %>" class="button is-small">
+                            <span class="icon">
+                              <i class="bx bxs-edit"></i>
+                            </span>
+                          </a>
+                        </td>
                       </tr>
                   <% }); %>
               </tbody>
@@ -81,6 +132,7 @@
             searchable:true,
             sortable:true,
             paging:true,
+            perPage:25,
             labels: {
               placeholder: "Buscar...",
               perPage: "{select} registros por página",

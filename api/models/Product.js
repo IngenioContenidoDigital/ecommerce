@@ -19,6 +19,7 @@ module.exports = {
     mainCategory: {model:'category'},
     mainColor: {model:'color'},
     manufacturer: {model:'manufacturer'},
+    gender:{model:'gender'},
     seller: {model:'seller'},
     categories:{
       collection:'category',

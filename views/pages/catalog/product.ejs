@@ -10,8 +10,8 @@
       <ul>
         <li class="is-active"><a option="basics" >Información Básica</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="images">Imágenes</a></li>
-        <!--<li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="seo">SEO</a></li>-->
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="variations">Variaciones</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
       </ul>
     </div>
     <div id ="basics">
@@ -53,6 +53,19 @@
                       <option value=""> -- Color Principal --</option>
                       <% colors.forEach(function(color){ %>
                         <option <% if(action=='edit' && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>"><%= color.name %></option>
+                      <%})%>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="control">
+                  <label class="label is-inline is-size-7-mobile" for="gender">Género</label>
+                  <div class="select is-fullwidth">
+                    <select class="is-capitalized" name="gender" id="gender" required>
+                       <option value="">-- Elegin Género --</option>
+                      <% genders.forEach(gender => { %>
+                        <option class="is-capitalized" <% if(action=='edit' && gender.id==product.gender ){ %> selected <% } %> value="<%= gender.id %>" ><%= gender.name %></option>
                       <%})%>
                     </select>
                   </div>
@@ -294,11 +307,6 @@
   
       </script>
     </div>
-    <div class="is-hidden" id="seo">
-      <div class="box">
-        <h1>Incluir las opciones de SEO Acá</h1>
-      </div>
-    </div>
     <div class="is-hidden" id="variations">
       <div class="box">
         <div class="table-container">
@@ -329,9 +337,11 @@
                             <div class="select is-primary is-small">
                               <select required class="is-uppercase" field="variation" name="variations[<%=rowcount%>][variation]">
                                 <option value="0"> -- Seleccionar --</option>
+                                <%if(variations!==null){%>
                                 <% variations.forEach((variation)=>{ %>
                                 <option class="is-uppercase" <%if(pv.variation==variation.id){%>selected<%}%> value="<%= variation.id %>"><%= variation.name %></option>
                                 <% })%>
+                                <%}%>
                               </select>
                             </div>
                           </div>
@@ -396,9 +406,11 @@
                           <div class="select is-primary is-small">
                             <select required class="is-uppercase" field="variation" name="variations[0][variation]">
                               <option value="0"> -- Seleccionar --</option>
+                              <%if(variations!==null){%>
                               <% variations.forEach((variation)=>{ %>
                               <option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option>
                               <% })%>
+                              <%}%>
                             </select>
                           </div>
                         </div>
@@ -470,7 +482,7 @@
           let referencep = document.querySelector('input[name="reference"]').value;
           
           let newrow=[
-           '<td scope="row" class="align-middle"><div class="field"><div class="select is-primary is-small"><select required class="is-uppercase" field="variation" name="variations['+rowid+'][variation]"><option value="0"> -- Seleccionar --</option><% variations.forEach((variation)=>{ %><option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option><% })%></select></div></div></td>',
+           '<td scope="row" class="align-middle"><div class="field"><div class="select is-primary is-small"><select required class="is-uppercase" field="variation" name="variations['+rowid+'][variation]"><option value="0"> -- Seleccionar --</option><%if(variations!==null){%><% variations.forEach((variation)=>{ %><option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option><% })%><%}%></select></div></div></td>',
            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="reference" name="variations['+rowid+'][reference]" value="" placeholder="Referencia"/></div></div></td>',
            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
@@ -546,8 +558,92 @@
       </script>
       </div>
     </div>
+    <div class="is-hidden" id="integrations">
+      <div class="box">
+        <table class="table">
+          <thead>
+            <tr>
+              <th><small>Marketplace</small></th>
+              <th><small>Ajuste Precio</small></th>
+              <th><small>Activo</small></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><img src="/images/dafiti.png" width="100px"/></td>
+              <td>
+                <div class="select is-small">
+                  <select name="pricedafiti">
+                    <option value="0">+ 0%</option>
+                    <option value="0.05">+ 5%</option>
+                    <option value="0.1">+ 10%</option>
+                    <option value="0.15">+ 15%</option>
+                    <option value="0.2">+ 20%</option>
+                    <option value="0.25">+ 25%</option>
+                    <option value="0.3">+ 30%</option>
+                  </select>
+                </div>
+              </td>
+              <td style="padding-top:10px;">
+                <input id="dafiti" type="checkbox" name="dafiti" class="switch is-success">
+                <label for="dafiti"></label>
+              </td>
+            </tr>
+            <tr>
+              <td><img src="/images/mercadolibre.png" width="100px"/></td>
+              <td>
+                <div class="select is-small">
+                  <select name="pricemercadolibre">
+                    <option value="0">+ 0%</option>
+                    <option value="0.05">+ 5%</option>
+                    <option value="0.1">+ 10%</option>
+                    <option value="0.15">+ 15%</option>
+                    <option value="0.2">+ 20%</option>
+                    <option value="0.25">+ 25%</option>
+                    <option value="0.3">+ 30%</option>
+                  </select>
+                </div>
+              </td>
+              <td>
+                <input id="mercadolibre" type="checkbox" name="mercadolibre" class="switch is-success">
+                <label for="mercadolibre"></label>
+              </td>
+            </tr>
+            <tr>
+              <td><img src="/images/linio.png" width="100px"/></td>
+              <td>
+                <div class="select is-small">
+                  <select name="pricelinio">
+                    <option value="0">+ 0%</option>
+                    <option value="0.05">+ 5%</option>
+                    <option value="0.1">+ 10%</option>
+                    <option value="0.15">+ 15%</option>
+                    <option value="0.2">+ 20%</option>
+                    <option value="0.25">+ 25%</option>
+                    <option value="0.3">+ 30%</option>
+                  </select>
+                </div>
+              </td>
+              <td>
+                <input id="linio" type="checkbox" name="linio" class="switch is-success">
+                <label for="linio"></label>
+              </td>
+            </tr>
+        </tbody>
+        </table>
+      </div>
+    </div>
     <script>
     
+      live('#dafiti','click',e=>{
+        if(e.target.checked){
+          let p = document.querySelector('#product-data').value;
+          io.socket.post('/dafiti/add',{product:p},res=>{
+            console.log(res);
+          });
+        }
+      });
+
     const pricent = document.querySelector('input[name="price_nt"]');
     const pricewt = document.querySelector('input[name="price_wt"]');
     const taxl = document.querySelector('#tax');
@@ -712,6 +808,7 @@
           mainColor:form.querySelector('select[name="mainColor"]').value,
           seller:form.querySelector('select[name="seller"]').value,
           mainCategory:form.querySelector('select[name="mainCategory"]').value,
+          gender:form.querySelector('select[name="gender"]').value,
           categories:lcat,
           price:form.querySelector('input[name="price_nt"]').value,
           tax:form.querySelector('select[name="tax"]').value,

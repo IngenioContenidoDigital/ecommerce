@@ -30,8 +30,40 @@ module.exports.bootstrap = async function() {
     await Tax.create({name:'Sin impuestos',value:0});
   }
 
+  if(await Gender.count()<1){
+    await Gender.createEach([
+      {name:'masculino'},
+      {name:'femenino'},
+      {name:'niños'},
+      {name:'niñas'},
+      {name:'bebés'},
+      {name:'unisex'},
+      {name:'unisex infantil'},
+      {name:'infantil'},
+      {name:'bebés niña'},
+      {name:'bebés niño'},
+      {name:'junior'},
+      {name:'recién nacido'},
+      {name:'recién nacida'}
+    ]);
+  }
+
   if(await Variation.count()<1){
-    await Variation.create({name:'Único'});
+    await Variation.createEach([
+      {gender: (await Gender.findOne({name:'masculino'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'femenino'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'niños'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'niñas'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'bebés'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'unisex'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'unisex infantil'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'infantil'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'bebés niña'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'bebés niño'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'junior'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'recién nacido'})).id ,name:'único'},
+      {gender: (await Gender.findOne({name:'recién nacida'})).id ,name:'único'},
+    ]);
   }
 
   if(await Color.count()<1){
@@ -47,7 +79,13 @@ module.exports.bootstrap = async function() {
       {name:'fucsia',code:'#ff00f7'},
       {name:'lila',code:'#8000ff'},
       {name:'celeste',code:'#00ffff'},
-      {name:'rosa',code:'#ff75fa'}
+      {name:'rosa',code:'#ffb0d1'},
+      {name:'beige',code:'#F5F5DC'},
+      {name:'chocolate',code:'#7a3d11'},
+      {name:'dorado',code:'#FFD700'},
+      {name:'gris',code:'#808080'},
+      {name:'plateado',code:'#C0C0C0'},
+      {name:'violeta',code:'#774177'},
     ]);
   }
 

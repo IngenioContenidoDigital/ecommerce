@@ -138,6 +138,7 @@ module.exports.routes = {
   'GET /integrations/:id' : 'SellerController.integrations',
   'POST /integration/set/:seller/:channel' : 'SellerController.setintegration',
   'GET /integrations/dafiti/categories' : 'CategoryController.dafiticategories',
+  'POST /dafiti/add' : 'ProductController.dafitiadd',
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

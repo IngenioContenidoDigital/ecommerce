@@ -15,6 +15,7 @@
     "epayco-node": "0.0.7",
     "epayco-sdk-node": "^1.0.1",
     "grunt": "1.0.4",
+    "jsontoxml": "^1.0.1",
     "moment": "^2.24.0",
     "open": "^7.0.3",
     "randomatic": "^3.1.1",

@@ -14,6 +14,7 @@ module.exports = {
     const root = await Category.findOne({name:'Inicio'});
     const brands = await Manufacturer.find();
     const colors = await Color.find();
+    const genders = await Gender.find();
     let sellers = null;
     if(rights.name!=='superadmin'){
       sellers = await Seller.find({id:req.session.user.seller});
@@ -22,12 +23,13 @@ module.exports = {
     }
 
     const taxes = await Tax.find();
-    const variations = await Variation.find();
+    let variations = null;
     let error=null;
     let product; let products=null;
     let action = req.param('action') ? req.param('action') : null;
     let id = (req.param('id')!==undefined) ? req.param('id') : null;
-    if(id!==undefined){
+
+    if(id!==undefined && id!==null){
       product = await Product.findOne({id:id})
       .populate('images')
       .populate('tax')
@@ -35,6 +37,11 @@ module.exports = {
       .populate('mainColor')
       .populate('categories')
       .populate('variations');
+
+      if(product.gender!==undefined && product.gender!==null){
+        variations = await Variation.find({gender:product.gender});
+      }
+
     }
     if(action===null){
       if(rights.name!=='superadmin'){
@@ -54,6 +61,7 @@ module.exports = {
       root:root,
       brands:brands,
       colors:colors,
+      genders:genders,
       sellers:sellers,
       taxes:taxes,
       variations:variations,
@@ -86,6 +94,7 @@ module.exports = {
           mainCategory: req.body.mainCategory,
           mainColor: req.body.mainColor,
           manufacturer: req.body.manufacturer,
+          gender:req.body.gender,
           seller: req.body.seller
         }).fetch();
         await Product.addToCollection(product.id,'categories').members(JSON.parse(req.body.categories));
@@ -101,6 +110,7 @@ module.exports = {
           mainCategory: req.body.mainCategory,
           mainColor: req.body.mainColor,
           manufacturer: req.body.manufacturer,
+          gender:req.body.gender,
           seller: req.body.seller
         });
         await Product.replaceCollection(product.id,'categories').members(JSON.parse(req.body.categories));
@@ -220,6 +230,14 @@ module.exports = {
     var state = req.param('active');
     var updatedProduct = await Product.updateOne({id:id}).set({active:state});
     return res.send(updatedProduct);
+  },
+  dafitiadd:async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let response = await sails.helpers.channel.dafiti.product(req.param('product'));
+    console.log(response);
+    return res.send(response);
   }
 
 };
