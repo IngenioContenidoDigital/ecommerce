@@ -23,7 +23,7 @@ module.exports = {
 
     let productvariation = await ProductVariation.find({product:inputs.product})
     .populate('variation');
-    let parent = productvariation[0].id+'-3';
+    let parent = productvariation[0].id;
     let categories = [];
     for (let c of product.categories){
       if(!categories.includes(c.dafiti)){
@@ -32,12 +32,12 @@ module.exports = {
     }
     let body={
       Request:[]
-    };  
+    };
     let i = 0;
     for(let pv of productvariation){
       let data={
         Product:{
-          SellerSku:pv.id+'-3',
+          SellerSku:pv.id,
           Status:'active',
           Name:product.name,
           PrimaryCategory:product.mainCategory.dafiti,
