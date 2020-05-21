@@ -60,6 +60,13 @@ module.exports = {
       type:'ref',
       defaultsTo:''
     },
+    channel:{
+      type:'string',
+      defaultsTo:'direct'
+    },
+    channelref:{
+      type:'string'
+    },
     seller:{
       model:'seller'
     },

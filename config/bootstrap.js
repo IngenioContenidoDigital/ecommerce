@@ -49,20 +49,100 @@ module.exports.bootstrap = async function() {
   }
 
   if(await Variation.count()<1){
+    let masculino =await Gender.findOne({name:'masculino'});
+    let femenino =await Gender.findOne({name:'femenino'});
+    let ninos=await Gender.findOne({name:'niños'});
+    let ninas=await Gender.findOne({name:'niñas'});
+    let bebes=await Gender.findOne({name:'bebés'});
+    let unisex=await Gender.findOne({name:'unisex'});
+    let unisexinfantil=await Gender.findOne({name:'unisex infantil'});
+    let infantil=await Gender.findOne({name:'infantil'});
+    let bebenina=await Gender.findOne({name:'bebés niña'});
+    let bebenino=await Gender.findOne({name:'bebés niño'});
+    let junior=await Gender.findOne({name:'junior'});
+    let reciennacido=await Gender.findOne({name:'recién nacido'});
+    let reciennacida=await Gender.findOne({name:'recién nacida'});
+
+
+
     await Variation.createEach([
-      {gender: (await Gender.findOne({name:'masculino'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'femenino'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'niños'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'niñas'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'bebés'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'unisex'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'unisex infantil'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'infantil'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'bebés niña'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'bebés niño'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'junior'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'recién nacido'})).id ,name:'único'},
-      {gender: (await Gender.findOne({name:'recién nacida'})).id ,name:'único'},
+      {gender: masculino.id ,name:'único',col:'único'},
+      {gender: masculino.id ,name:'4',cm:22.7,col:'34',us:'4'},
+      {gender: masculino.id ,name:'4.5',cm:23,col:'34.5',us:'4.5'},
+      {gender: masculino.id ,name:'5',cm:23.5,col:'35',us:'5'},
+      {gender: masculino.id ,name:'5.5',cm:24,col:'36',us:'5.5'},
+      {gender: masculino.id ,name:'6',cm:24.5,col:'36.5',us:'6'},
+      {gender: masculino.id ,name:'6.5',cm:25,col:'37',us:'6.5'},
+      {gender: masculino.id ,name:'7',cm:25.5,col:'37.5',us:'7'},
+      {gender: masculino.id ,name:'7.5',cm:25.75,col:'38',us:'7.5'},
+      {gender: masculino.id ,name:'8',cm:26,col:'39',us:'8'},
+      {gender: masculino.id ,name:'8.5',cm:26.5,col:'39.5',us:'8.5'},
+      {gender: masculino.id ,name:'9',cm:27,col:'40',us:'9'},
+      {gender: masculino.id ,name:'9.5',cm:27.5,col:'41',us:'9.5'},
+      {gender: masculino.id ,name:'10',cm:28,col:'41.5',us:'10'},
+      {gender: masculino.id ,name:'10.5',cm:28.5,col:'42',us:'10.5'},
+      {gender: masculino.id ,name:'11',cm:28.75,col:'43',us:'11'},
+      {gender: masculino.id ,name:'xs',col:'xs',us:'xs'},
+      {gender: masculino.id ,name:'s',col:'s',us:'s'},
+      {gender: masculino.id ,name:'m',col:'m',us:'m'},
+      {gender: masculino.id ,name:'l',col:'l',us:'l'},
+      {gender: masculino.id ,name:'xl',col:'xl',us:'xl'},
+
+
+      {gender: femenino.id ,name:'único',col:'único'},
+      {gender: femenino.id ,name:'5',cm:22.7,col:'34',us:'5'},
+      {gender: femenino.id ,name:'5.5',cm:23,col:'34.5',us:'5.5'},
+      {gender: femenino.id ,name:'6',cm:23.5,col:'35',us:'6'},
+      {gender: femenino.id ,name:'6.5',cm:24,col:'36',us:'6.5'},
+      {gender: femenino.id ,name:'7',cm:24.5,col:'36.5',us:'7'},
+      {gender: femenino.id ,name:'7.5',cm:25,col:'37',us:'7.5'},
+      {gender: femenino.id ,name:'8',cm:25.5,col:'37.5',us:'8'},
+      {gender: femenino.id ,name:'8.5',cm:25.75,col:'38',us:'8.5'},
+      {gender: femenino.id ,name:'9',cm:26,col:'39',us:'9'},
+      {gender: femenino.id ,name:'9.5',cm:26.5,col:'39.5',us:'9.5'},
+      {gender: femenino.id ,name:'10',cm:27,col:'40',us:'10'},
+      {gender: femenino.id ,name:'10.5',cm:27.5,col:'41',us:'10.5'},
+      {gender: femenino.id ,name:'11',cm:28,col:'41.5',us:'11'},
+      {gender: femenino.id ,name:'11.5',cm:28.5,col:'42',us:'11.5'},
+      {gender: femenino.id ,name:'12',cm:28.75,col:'43',us:'12'},
+      {gender: femenino.id ,name:'xs',col:'xs',us:'xs'},
+      {gender: femenino.id ,name:'s',col:'s',us:'s'},
+      {gender: femenino.id ,name:'m',col:'m',us:'m'},
+      {gender: femenino.id ,name:'l',col:'l',us:'l'},
+      {gender: femenino.id ,name:'xl',col:'xl',us:'xl'},
+
+      {gender: ninos.id ,name:'único',col:'único'},
+      {gender: ninas.id ,name:'único',col:'único'},
+      {gender: bebes.id ,name:'único',col:'único'},
+      {gender: unisex.id ,name:'único',col:'único'},
+      {gender: unisex.id ,name:'21.5cm',cm:21.5,col:'34',us:'3.5/5',eu:'35'},
+      {gender: unisex.id ,name:'22cm',cm:22,col:'34.5',us:'4/5.5',eu:'35.5'},
+      {gender: unisex.id ,name:'22.5cm',cm:22.5,col:'35',us:'4.5/6',eu:'36'},
+      {gender: unisex.id ,name:'23cm',cm:23,col:'35.5',us:'5/6.5',eu:'36.5'},
+      {gender: unisex.id ,name:'23.5cm',cm:23.5,col:'36',us:'5.5/7',eu:'37'},
+      {gender: unisex.id ,name:'24cm',cm:24,col:'37',us:'6/7.5',eu:'38'},
+      {gender: unisex.id ,name:'24.5cm',cm:24.5,col:'37.5',us:'6.5/8',eu:'38.5'},
+      {gender: unisex.id ,name:'25cm',cm:25,col:'38',us:'7/8.5',eu:'39'},
+      {gender: unisex.id ,name:'25.5cm',cm:25.5,col:'39',us:'7.5/9',eu:'40'},
+      {gender: unisex.id ,name:'26cm',cm:26,col:'39.5',us:'8/9.5',eu:'40.5'},
+      {gender: unisex.id ,name:'26.5cm',cm:26.5,col:'40',us:'8.5',eu:'41'},
+      {gender: unisex.id ,name:'27cm',cm:27,col:'41',us:'9',eu:'42'},
+      {gender: unisex.id ,name:'27.5cm',cm:27.5,col:'41.5',us:'9.5',eu:'42.5'},
+      {gender: unisex.id ,name:'28cm',cm:28,col:'42',us:'10',eu:'43'},
+      {gender: unisex.id ,name:'28.5cm',cm:28.5,col:'43',us:'10.5',eu:'44'},
+      {gender: unisex.id ,name:'29cm',cm:29,col:'43.5',us:'11',eu:'44.5'},
+      {gender: unisex.id ,name:'29.5cm',cm:29.5,col:'44',us:'11.5',eu:'45'},
+      {gender: unisex.id ,name:'30cm',cm:30,col:'45',us:'12',eu:'46'},
+      {gender: unisex.id ,name:'31cm',cm:31,col:'46',us:'13',eu:'47'},
+      {gender: unisex.id ,name:'32cm',cm:32,col:'47',us:'14',eu:'48'},
+
+      {gender: unisexinfantil.id ,name:'único',col:'único'},
+      {gender: infantil.id ,name:'único',col:'único'},
+      {gender: bebenina.id ,name:'único',col:'único'},
+      {gender: bebenino.id ,name:'único',col:'único'},
+      {gender: junior.id ,name:'único',col:'único'},
+      {gender: reciennacido.id ,name:'único',col:'único'},
+      {gender: reciennacida.id ,name:'único',col:'único'},
     ]);
   }
 

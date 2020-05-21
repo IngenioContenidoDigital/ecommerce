@@ -573,19 +573,19 @@
               <td><img src="/images/dafiti.png" width="100px"/></td>
               <td>
                 <div class="select is-small">
-                  <select name="pricedafiti">
-                    <option value="0">+ 0%</option>
-                    <option value="0.05">+ 5%</option>
-                    <option value="0.1">+ 10%</option>
-                    <option value="0.15">+ 15%</option>
-                    <option value="0.2">+ 20%</option>
-                    <option value="0.25">+ 25%</option>
-                    <option value="0.3">+ 30%</option>
+                  <select name="dafitiprice">
+                  <option value="0" <%if(product.dafitiprice==0){%>selected<%}%>>+ 0%</option>
+                    <option value="0.05" <%if(product.dafitiprice==0.05){%>selected<%}%>>+ 5%</option>
+                    <option value="0.1" <%if(product.dafitiprice==0.1){%>selected<%}%>>+ 10%</option>
+                    <option value="0.15" <%if(product.dafitiprice==0.15){%>selected<%}%>>+ 15%</option>
+                    <option value="0.2" <%if(product.dafitiprice==0.2){%>selected<%}%>>+ 20%</option>
+                    <option value="0.25" <%if(product.dafitiprice==0.25){%>selected<%}%>>+ 25%</option>
+                    <option value="0.3" <%if(product.dafitiprice==0.3){%>selected<%}%>>+ 30%</option>
                   </select>
                 </div>
               </td>
               <td style="padding-top:10px;">
-                <input id="dafiti" type="checkbox" name="dafiti" class="switch is-success">
+              <input id="dafiti" type="checkbox" name="dafitistatus" <%if(product.dafitistatus){%>checked<%}%> class="switch is-success">
                 <label for="dafiti"></label>
               </td>
             </tr>
@@ -636,12 +636,11 @@
     <script>
     
       live('#dafiti','click',e=>{
-        if(e.target.checked){
-          let p = document.querySelector('#product-data').value;
-          io.socket.post('/dafiti/add',{product:p},res=>{
-            console.log(res);
-          });
-        }
+        let p = document.querySelector('#product-data').value;
+        let dafitiprice = document.querySelector('select[name="dafitiprice"]').value;
+        //if(e.target.checked){
+          io.socket.post('/dafiti/add',{product:p, dafitiprice:dafitiprice, status:e.target.checked});
+        //}
       });
 
     const pricent = document.querySelector('input[name="price_nt"]');
@@ -695,9 +694,9 @@
                     let ca = document.createElement('li');
                     ca.style.paddingLeft = 5*son.level+'px';
                     if(son.id==document.querySelector('#root').value){
-                      ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name">'+son.name+'</span></a>';
+                      ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                     } else {
-                      ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name">'+son.name+'</span></a>';
+                      ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                     }
                     d.appendChild(ca);
                   });

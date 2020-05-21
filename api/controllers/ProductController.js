@@ -235,9 +235,24 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let response = await sails.helpers.channel.dafiti.product(req.param('product'));
-    console.log(response);
-    return res.send(response);
+    try{
+      let action = null;
+      let product = await Product.findOne({id:req.param('product')});
+      if(!product.dafiti){
+        action='ProductCreate';
+      }else{
+        action='ProductUpdate';
+      }
+      await Product.updateOne({id:req.param('product')}).set({
+        dafiti:true,
+        dafitistatus:req.body.status,
+        dafitiprice:req.body.dafitiprice,
+      });
+      let response = await sails.helpers.channel.dafiti.product(req.param('product'),action);
+      return res.send(response);
+    }catch(err){
+      return res.send(err);
+    }
   }
 
 };

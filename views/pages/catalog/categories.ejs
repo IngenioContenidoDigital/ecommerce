@@ -136,7 +136,7 @@
   <script>
     const fileInput = document.querySelector('#file-loader input[type=file]');
     <%if(current.dafiti!==''){%>
-      const dafiti = '<%=current.dafiti%>';
+      let dafiti = '<%=current.dafiti %>'.split(',');
     <%}%>
     fileInput.onchange = () => {
       if (fileInput.files.length > 0) {
@@ -150,10 +150,10 @@
         /*if(level<=2){
           op.innerHTML='<span><i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
         }else{*/
-          if(c['CategoryId']===dafiti){
-            op.innerHTML='<span><input type="radio" name="dafiti" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+          if(dafiti.includes(c['CategoryId'])){
+            op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
           }else{
-            op.innerHTML='<span><input type="radio" name="dafiti" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
           }
         //}
         elm.appendChild(op);

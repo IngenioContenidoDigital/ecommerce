@@ -24,7 +24,7 @@
             </div>
         </div>
         <div class="column is-8">
-            <%if(object.logo!== undefined && object.logo!== null){%>
+            <%if(object.logo!== undefined && object.logo!== null && object.logo!==''){%>
             <section class="hero">
                 <figure class="image is-3by1 is-inline">
                     <img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>">
@@ -35,7 +35,7 @@
                 <div class="container">
                     <p class="has-text-centered" style="margin-top:7px;">
                     <% object.children.forEach(children=>{ %>
-                        <a href="/ver/categoria/<%=children.url%>"><span style="width:150px;" class="tag is-dark is-medium"><%=children.name%></span></a>
+                        <a href="/ver/categoria/<%=children.url%>"><span class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
                     <%});%>
                     </p>
                 </div>

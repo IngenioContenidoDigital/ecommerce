@@ -21,6 +21,9 @@ module.exports = {
     manufacturer: {model:'manufacturer'},
     gender:{model:'gender'},
     seller: {model:'seller'},
+    dafitiprice:{type:'number', defaultsTo:0},
+    dafitistatus:{type:'boolean', defaultsTo:false},
+    dafiti:{type:'boolean', defaultsTo:false},
     categories:{
       collection:'category',
       via:'products'
