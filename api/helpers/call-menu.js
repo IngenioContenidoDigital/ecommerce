@@ -11,7 +11,7 @@ module.exports = {
   fn: async function (inputs,exits) {
     let menu = await Category.findOne({name:'Inicio'}).populate('children');
     for(let c of menu.children){
-      c.children = await Category.findOne({id:c.id}).populate('children');
+      c.children = await Category.findOne({id:c.id,active:true}).populate('children');
     }
     return exits.success(menu);
   }

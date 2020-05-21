@@ -20,6 +20,7 @@
                         <a href="/ver/categoria/<%=child.url%>"><h1 class="title is-7 is-mega-menu-title is-uppercase"><%=child.name%></h1></a>
                         <div class="columns">
                         <%child.children.children.forEach(c =>{%>
+                          <%if(c.active){%>
                           <div class="column">
                             <p class="has-text-centered">
                               <a class="navbar-item is-capitalized" href="/ver/categoria/<%=c.url%>">
@@ -29,6 +30,7 @@
                               </a>
                             </p>
                           </div>
+                          <%}%>
                         <%})%>
                       </div>
                       </div>

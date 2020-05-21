@@ -118,6 +118,7 @@ module.exports = {
             paymentInfo['doc_type']= t.docType;
             paymentInfo['doc_number']= t.docNumber;
             paymentInfo['name']= t.name;
+            paymentInfo['dues']=t.dues;
 
           }else{
             let creditInfo = {
@@ -157,6 +158,7 @@ module.exports = {
                 docNumber:req.body.dni,
                 mask:token.card.mask,
                 frch:token.card.name,
+                dues:req.body.payments,
                 name:req.body.cardname,
                 user:user.id
               });

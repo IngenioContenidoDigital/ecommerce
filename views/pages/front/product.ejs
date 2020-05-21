@@ -32,7 +32,7 @@
                 <h4 itemprop="name" class="is-uppercase is-size-4"><%=product.name%></h4>
                 <hr>
                 <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                    <meta itemprop="priceCurrency" content="USD">
+                    <meta itemprop="priceCurrency" content="COP">
                 <table class="table is-size-6 is-fullwidth">
                     <%if(discount!==null && discount!==undefined){%>
                         <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
@@ -54,7 +54,7 @@
                         <select class="is-uppercase" name="variations">
                             <option class="is-capitalized" value="0">Seleccionar</option>
                             <% product.variations.forEach((vr)=>{%>
-                                <option class="is-uppercase" qty="<%=vr.quantity%>" value="<%=vr.id%>"><%=vr.variation.name%></option>
+                                <option class="is-uppercase" qty="<%=vr.quantity%>" cm="<%=vr.variation.cm%>" col="<%=vr.variation.col%>" us="<%=vr.variation.us%>" eu="<%=vr.variation.eu%>" wide="<%=vr.variation.wide%>" value="<%=vr.id%>"><%=vr.variation.name%></option>
                             <%})%>
                         </select>
                         </div>
@@ -65,6 +65,8 @@
                         <span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span>
                     </div>
                 </div>
+                <table id="size-table" class="table is-size-7 is-hidden">
+                </table>
                 <div itemprop="disambiguatingDescription" class="content description-short"><%-product.descriptionShort%></div>
                 <div class="img-zoom"></div>
             </div>
@@ -113,8 +115,30 @@
         let quantity = document.querySelector('select[name="quantity"]');
         let label = document.querySelector('#avail');
         let add = document.querySelector('#add-to-cart');
+        let sizet = document.querySelector('#size-table');
         quantity.innerHTML='';
         if(e.target.options[e.target.selectedIndex].value!=='0'){
+            let col =e.target.options[e.target.selectedIndex].getAttribute('col');
+            let cm=e.target.options[e.target.selectedIndex].getAttribute('cm');
+            let us=e.target.options[e.target.selectedIndex].getAttribute('us');
+            let eu=e.target.options[e.target.selectedIndex].getAttribute('eu');
+            let wide=e.target.options[e.target.selectedIndex].getAttribute('wide');
+            let tcontent = '<tr>'
+                    if(cm!==''){ tcontent+= '<td><strong>Largo CM</strong></td>'; }
+                    if(col!==''){ tcontent+= '<td><strong>Talla COL</strong></td>'; }
+                    if(us!==''){ tcontent+= '<td><strong>Talla US</strong></td>'; }
+                    if(eu!==''){ tcontent+= '<td><strong>Talla EU</strong></td>'; }
+                    if(wide!=='' && wide!=='0'){ tcontent+= '<td><strong>Ancho CM</strong></td>'; }
+            tcontent+= '</tr><tr>';
+                    if(cm!==''){ tcontent+= '<td><p class="has-text-centered">'+cm+'</p></td>'; }
+                    if(col!==''){ tcontent+= '<td><p class="has-text-centered">'+col+'</p></td>'; }
+                    if(us!==''){ tcontent+= '<td><p class="has-text-centered">'+us+'</p></td>'; }
+                    if(eu!==''){ tcontent+= '<td><p class="has-text-centered">'+eu+'</p></td>'; }
+                    if(wide!=='' && wide!=='0'){ tcontent+= '<td><p class="has-text-centered">'+wide+'</p></td>'; }
+            tcontent+='</tr>';
+            
+            sizet.innerHTML=tcontent;
+            removeClass(sizet,'is-hidden');
             if(stock>=1){
                 label.innerHTML='Disponible.'
                 removeClass(label, 'has-text-danger');
@@ -146,6 +170,8 @@
             removeClass(label, 'has-text-success');
             removeClass(label, 'has-text-danger');
             addClass(quantity.parentNode,'is-hidden');
+            addClass(sizet,'is-hidden');
+            sizet.innerHTML='';
             removeClass(add,'is-warning');
             add.disabled=true;
         }

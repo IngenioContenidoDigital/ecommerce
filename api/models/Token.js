@@ -15,6 +15,7 @@ module.exports = {
     name:{type:'string'},
     mask:{type:'string'},
     frch:{type:'string'},
+    dues:{type:'string'},
     user:{
       model:'user',
       required:true,

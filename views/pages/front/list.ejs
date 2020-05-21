@@ -35,7 +35,9 @@
                 <div class="container">
                     <p class="has-text-centered" style="margin-top:7px;">
                     <% object.children.forEach(children=>{ %>
-                        <a href="/ver/categoria/<%=children.url%>"><span class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
+                        <%if(children.active){%>
+                          <a href="/ver/categoria/<%=children.url%>"><span class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
+                        <%}%>
                     <%});%>
                     </p>
                 </div>

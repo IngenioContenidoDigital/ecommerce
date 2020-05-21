@@ -210,6 +210,7 @@
             </div>
           </div>
           <div class="column is-two-thirds">
+            <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
             <div class="preview">
               <%if(action=='edit'){%>
                 <% product.images.forEach((i)=>{ %>
@@ -265,10 +266,11 @@
               div.appendChild(a);
               container.appendChild(div);
             };
-  
+            addClass(document.querySelector('.progress'),'is-hidden');
           });
           request.open('POST', '/product/images');
           request.send(data);
+          removeClass(document.querySelector('.progress'),'is-hidden');
           fmanager.value='';
         }
   
@@ -574,18 +576,18 @@
               <td>
                 <div class="select is-small">
                   <select name="dafitiprice">
-                  <option value="0" <%if(product.dafitiprice==0){%>selected<%}%>>+ 0%</option>
-                    <option value="0.05" <%if(product.dafitiprice==0.05){%>selected<%}%>>+ 5%</option>
-                    <option value="0.1" <%if(product.dafitiprice==0.1){%>selected<%}%>>+ 10%</option>
-                    <option value="0.15" <%if(product.dafitiprice==0.15){%>selected<%}%>>+ 15%</option>
-                    <option value="0.2" <%if(product.dafitiprice==0.2){%>selected<%}%>>+ 20%</option>
-                    <option value="0.25" <%if(product.dafitiprice==0.25){%>selected<%}%>>+ 25%</option>
-                    <option value="0.3" <%if(product.dafitiprice==0.3){%>selected<%}%>>+ 30%</option>
+                  <option value="0" <%if(typeof product=='object' &&  product.dafitiprice==0){%>selected<%}%>>+ 0%</option>
+                    <option value="0.05" <%if(typeof product=='object' && product.dafitiprice==0.05){%>selected<%}%>>+ 5%</option>
+                    <option value="0.1" <%if(typeof product=='object' && product.dafitiprice==0.1){%>selected<%}%>>+ 10%</option>
+                    <option value="0.15" <%if(typeof product=='object' && product.dafitiprice==0.15){%>selected<%}%>>+ 15%</option>
+                    <option value="0.2" <%if(typeof product=='object' && product.dafitiprice==0.2){%>selected<%}%>>+ 20%</option>
+                    <option value="0.25" <%if(typeof product=='object' && product.dafitiprice==0.25){%>selected<%}%>>+ 25%</option>
+                    <option value="0.3" <%if(typeof product=='object' && product.dafitiprice==0.3){%>selected<%}%>>+ 30%</option>
                   </select>
                 </div>
               </td>
               <td style="padding-top:10px;">
-              <input id="dafiti" type="checkbox" name="dafitistatus" <%if(product.dafitistatus){%>checked<%}%> class="switch is-success">
+              <input id="dafiti" type="checkbox" name="dafitistatus" <%if(typeof product=='object' && product.dafitistatus){%>checked<%}%> class="switch is-success">
                 <label for="dafiti"></label>
               </td>
             </tr>
