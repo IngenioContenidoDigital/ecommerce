@@ -106,7 +106,8 @@ module.exports = {
     }
     let countries = await Country.find();
     let sellers = await Seller.find();
-    let profiles = await Profile.find({where:{name:{'!=':['superadmin','customer']}}});
+    let profiles = await Profile.find({name:{'nin':['superadmin','customer']}});
+    users = users.filter(user => {return user.profile.name !== 'superadmin' && user.profile.name !== 'customer';});
     return res.view('pages/configuration/users',{layout:'layouts/admin',users:users, user:user,profiles:profiles,countries:countries,sellers:sellers,action:action,error:error});
   },
   admincreate: async (req, res) =>{

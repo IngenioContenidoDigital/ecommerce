@@ -9,6 +9,7 @@
         <br><br>
         <div class="box">
             <form method="POST" action="/login" id="login-form">
+            <input type="hidden" <%if(typeof referer!=='string'){%>value="/"<%}else{%>value="<%=referer%>"<%}%> name="referer" />
               <a class="link is-pulled-right" href="/register">Crear una cuenta</a>
               <div class="field">
                 <label class="label">Email</label>

@@ -39,6 +39,6 @@ module.exports = function unauthorized() {
 
     return res.redirect('/login');
   }*/
-  return res.view('pages/configuration/login',{error:null});
+  return res.view('pages/configuration/login',{error:null,referer:req.originalUrl});
 
 };
