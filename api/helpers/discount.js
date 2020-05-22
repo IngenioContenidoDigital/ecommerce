@@ -18,8 +18,8 @@ module.exports = {
     let discount = await Product.findOne({id:id}).populate('discount',
     {
       where:{
-        to:{'>=':moment.utc().valueOf()},
-        from:{'<=':moment.utc().valueOf()}
+        to:{'>=':moment().valueOf()},
+        from:{'<=':moment().valueOf()}
       },
       limit:1,
       sort: 'createdAt ASC'});

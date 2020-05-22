@@ -73,6 +73,7 @@ module.exports = {
 
     let colorlist = [];
     let brandlist = [];
+    let genderlist = [];
     for(let p of object.products){
       p.cover= await ProductImage.findOne({product:p.id,cover:1});
       if(!colorlist.includes(p.mainColor)){
@@ -87,10 +88,15 @@ module.exports = {
       p.tax=await Tax.findOne({id:p.tax});
       p.productvariation=await ProductVariation.find({product:p.id}).populate('variation');
       p.discount = await sails.helpers.discount(p.id);
+      p.gender = await Gender.findOne({id:p.gender});
+      if(!genderlist.includes(p.gender.id)){
+        genderlist.push(p.gender.id);
+      }
     }
     let colors = await Color.find({where:{id:{'in':colorlist}}});
     let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
-    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+    let genders = await Gender.find({where:{id:{'in':genderlist}}});
+    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   },
   search: async(req, res) =>{
     let terms = req.body.search.toLowerCase().split(' ');
@@ -98,7 +104,8 @@ module.exports = {
     .populate('tax')
     .populate('manufacturer')
     .populate('mainColor')
-    .populate('seller');
+    .populate('seller')
+    .populate('gender');
 
     let result={
       search:req.body.search,
@@ -106,6 +113,7 @@ module.exports = {
     };
     let colorlist = [];
     let brandlist = [];
+    let genderlist = [];
 
     let found = (terms, products,i)=>{
       products = products.filter(product =>
@@ -141,13 +149,17 @@ module.exports = {
         if(!brandlist.includes(p.manufacturer.id)){
           brandlist.push(p.manufacturer.id);
         }
+        if(!genderlist.includes(p.gender.id)){
+          genderlist.push(p.gender.id);
+        }
       }
     }
 
     let colors = await Color.find({where:{id:{'in':colorlist}}});
     let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
+    let genders = await Gender.find({where:{id:{'in':genderlist}}});
 
-    return res.view('pages/front/list',{object:result,colors:colors,brands:brands,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/list',{object:result,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
 
   },
   listproduct: async function(req, res){

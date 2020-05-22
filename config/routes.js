@@ -119,7 +119,7 @@ module.exports.routes = {
   'PUT /orderstate/:id' : 'OrderController.validstate',
   'GET /orders/:action?/:id?' : 'OrderController.listorders',
   'GET /discounts/:action?/:id?' : 'DiscountController.discounts',
-  'POST /discount/create' : 'DiscountController.creatediscount',
+  'POST /discount/:action/:id?' : 'DiscountController.creatediscount',
   'GET /coupons/:action?/:id?' : 'DiscountController.coupons',
   'POST /coupon/create' : 'DiscountController.createcoupon',
   'POST /coupon/edit/:id' : 'DiscountController.editcoupon',

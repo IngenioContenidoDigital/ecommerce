@@ -24,7 +24,7 @@
                         </div>
                     </div>
                       <div class="columns is-mobile">
-                          <div class="column is-one-third">
+                          <div class="column">
                             <div class="field">
                                 <label class="label">Tipo</label>
                                 <div class="select control">
@@ -35,13 +35,26 @@
                                 </div>
                             </div>
                           </div>
-                          <div class="column is-two-thirds">
+                          <div class="column">
                             <div class="field">
                                 <label class="label">Valor</label>
                                 <div class="control">
                                   <input class="input" type="text" name="value" required="true" placeholder="Cantidad de Descuento" <% if(action=='edit'){ %>value="<%= discount.value %>"<% }%>/>
                                 </div>
                             </div>
+                          </div>
+                          <div class="column">
+                            <div class="field">
+                              <label class="label">Seller</label>
+                              <div class="control select">
+                                <select class="is-capitalized" name="seller" required>
+                                  <option value="">-- Elegir Seller --</option>
+                                  <%sellers.forEach(seller =>{%>
+                                    <option class="is-capitalized" value="<%=seller.id%>"<%if(action=='edit' && seller.id==discount.seller){%>selected="selected"<%}%>><%=seller.name%></option>
+                                  <%})%>
+                                </select>
+                              </div>
+                          </div>
                           </div>
                       </div>
                     <div class="field">
@@ -52,6 +65,47 @@
                     </div>
                   </div>
                   <div class="column">
+                    <div class="columns is-mobile">
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-small">Marca</label>
+                          <div class="select is-small is-fullwidth">
+                            <select class="is-capitalized" name="manufacturer" >
+                              <option value="">-- Elegir Marca --</option>
+                              <%manufacturers.forEach(brand =>{%>
+                                <option class="is-capitalized" value="<%=brand.id%>"<%if(action=='edit' && brand.id==discount.manufacturer){%>selected="selected"<%}%>><%=brand.name%></option>
+                              <%})%>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-small">Género</label>
+                          <div class="select is-small is-fullwidth">
+                            <select class="is-capitalized" name="gender" >
+                              <option value="">-- Elegir Género --</option>
+                              <%genders.forEach(gender =>{%>
+                                <option class="is-capitalized" value="<%=gender.id%>"<%if(action=='edit' && gender.id==discount.gender){%>selected="selected"<%}%>><%=gender.name%></option>
+                              <%})%>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-small">Color</label>
+                          <div class="select is-small is-fullwidth">
+                            <select class="is-capitalized" name="color" >
+                              <option value="">-- Elegir Color --</option>
+                              <%colors.forEach(color =>{%>
+                              <option class="is-capitalized" value="<%=color.id%>" <%if(action=='edit' && color.id==discount.color){%>selected="selected"<%}%>><%=color.name%></option>
+                              <%})%>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                     <article class="panel is-primary is-size-7">
                         <p class="panel-heading">
                           Categorías
@@ -126,11 +180,7 @@
                         resData.forEach(function(son){
                             let ca = document.createElement('li');
                             ca.style.paddingLeft = 5*son.level+'px';
-                            if(son.id==document.querySelector('#root').value){
-                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name">'+son.name+'</span></a>';
-                            } else {
-                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name">'+son.name+'</span></a>';
-                            }
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="radio" name="category" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                             d.appendChild(ca);
                         });
                         insertAfter(d,child);
@@ -145,18 +195,17 @@
 
             const init = async () => {
                 let result = await childTree(document.querySelectorAll('a.panel-block'))
-                <% if(action=='edit') { %>
+                <%if(action=='edit'){%>
                 .then(()=>{
-                    const checks = document.querySelectorAll('input[name="categories[]"]')
-                    checks.forEach((op) =>{
-                    <% discount.products.forEach(function(c){ %>
-                        if(op.value==<%= c.id %>){
-                        op.checked=true;
-                        }
-                    <% }); %>
-                    });
+                  let op = '<%=discount.category%>';
+                  let checked = document.querySelectorAll('input[name="category"]');
+                  for(let c of checked){
+                    if(c.value===op){
+                      c.checked=true;
+                    }
+                  }
                 });
-                <% } %>
+                <%}%>
             }
 
             init();
@@ -220,7 +269,7 @@
           if(el){
             el.style.display='none';
           }
-        }, 4000);
+        }, 6000);
   
         live('.state', 'click', function(){ 
           if(confirm('Seguro Desea Continuar')){

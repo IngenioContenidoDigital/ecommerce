@@ -28,6 +28,22 @@ module.exports = {
       type:'number',
       required:true
     },
+    seller:{
+      model:'seller',
+      required:true
+    },
+    manufacturer:{
+      model:'manufacturer'
+    },
+    color:{
+      model:'color'
+    },
+    gender:{
+      model:'gender'
+    },
+    category:{
+      model:'category'
+    },
     products:{
       collection:'product',
       via:'discount'

@@ -21,6 +21,16 @@
                 <%});%>
                 <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="color-delete"></a>
                 <hr>
+                <p class="is-size-7 has-text-weight-bold">Género</p>
+                    <div class="select is-small is-info">
+                        <select name="gender" class="is-capitalized">
+                            <option value="">Filtrar Género</option>
+                            <%genders.forEach(gender =>{%>
+                                <option class="is-capitalized" value="<%=gender.name%>"><%=gender.name%></option>
+                            <%}) %>
+                        </select>
+                    </div>
+                <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="gender-delete"></a>
             </div>
         </div>
         <div class="column is-8">
@@ -41,6 +51,7 @@
                     <%});%>
                     </p>
                 </div>
+                <br>
             <%}%>
             <% let count = 0 %>
             <div class="container" itemscope itemtype="https://schema.org/ItemList">
@@ -58,10 +69,11 @@
                         <div class="card-content">
                             <div class="media-content">
                                 <div class="columns is-mobile">
-                                    <div class="column">
+                                    <div class="column is-10">
                                         <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>
+                                        &nbsp;-&nbsp;<span gender="<%=product.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=product.gender.name%></span>
                                     </div>
-                                    <div class="column">
+                                    <div class="column is-2">
                                        <p class="has-text-right"><span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></p>
                                     </div>
                                 </div>
@@ -145,6 +157,8 @@
         }
         let selectb = document.querySelector('select[name="brand"]');
         selectb.value='';
+        let selectg = document.querySelector('select[name="gender"]');
+        selectg.value='';
     });
 
     live('select[name="brand"]','change',e=>{
@@ -152,6 +166,18 @@
         let cards = document.querySelectorAll('.card');
         for(let c of cards){
             if(c.querySelector('.brand').getAttribute('brand')!==brand){
+                addClass(c,'is-hidden');
+            }else{
+                removeClass(c,'is-hidden');
+            }
+        }
+    });
+
+    live('select[name="gender"]','change',e=>{
+        let gender = e.target.value;
+        let cards = document.querySelectorAll('.card');
+        for(let c of cards){
+            if(c.querySelector('.gender').getAttribute('gender')!==gender){
                 addClass(c,'is-hidden');
             }else{
                 removeClass(c,'is-hidden');

@@ -18,10 +18,19 @@ module.exports = {
     let root = await Category.findOne({name:'Inicio'});
     let discount = null;
     if(id){
-      discount = await CatalogDiscount.findOne({id:id}).populate('products');
+      discount = await CatalogDiscount.findOne({id:id});
     }
     let discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]);
-    return res.view('pages/discounts/discounts', {layout:'layouts/admin',error:error, discounts:discounts, action:action, discount:discount, moment:moment, root:root});
+    let sellers = null;
+    if(rights.name!=='superadmin'){
+      sellers = await Seller.find({id:req.session.user.seller});
+    }else{
+      sellers = await Seller.find();
+    }
+    let genders = await Gender.find();
+    let colors = await Color.find();
+    let manufacturers = await Manufacturer.find();
+    return res.view('pages/discounts/discounts', {layout:'layouts/admin',error:error, discounts:discounts, sellers:sellers, genders:genders, colors:colors,manufacturers:manufacturers,action:action, discount:discount, moment:moment, root:root});
   },
   creatediscount: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -30,24 +39,68 @@ module.exports = {
     }
     let moment = require('moment');
     let range = req.body.range.split(' - ');
+    let action = req.param('action');
+    let discount = null;
 
     try{
-      let discount = await CatalogDiscount.create({
-        name:req.body.name.toLowerCase().trim(),
-        from:moment(range[0]).valueOf(),
-        to:moment(range[1]).valueOf(),
-        type:req.body.type,
-        value:req.body.value
-      }).fetch();
 
-      req.body.categories.forEach(async item =>{
-        let cat = await Category.findOne({id:item}).populate('products');
-        let products = [];
-        cat.products.forEach(product =>{
-          products.push(product.id);
-        });
-        await CatalogDiscount.addToCollection(discount.id,'products').members(products);
-      });
+      let products = await Product.find({seller:req.body.seller}).populate('categories');
+      if(req.body.category){
+        for(let p of products){
+          for(let pc of p.categories){
+            if(pc.id===req.body.category){
+              p.incategory = req.body.category;
+            }
+          }
+        }
+        products = products.filter(p => p.incategory === req.body.category);
+      }
+      if(req.body.manufacturer){products = products.filter(p => p.manufacturer===req.body.manufacturer);}
+      if(req.body.color){products = products.filter(p => p.mainColor===req.body.color);}
+      if(req.body.gender){products = products.filter(p => p.gender===req.body.gender);}
+
+      if(products.length>0){
+        let affected = [];
+        for(let pr of products){
+          if(!affected.includes(pr.id)){
+            affected.push(pr.id);
+          }
+        }
+
+        if(action==='edit'){
+          discount = await CatalogDiscount.updateOne({id:req.param('id')}).set({
+            name:req.body.name.toLowerCase().trim(),
+            from:moment(range[0]).valueOf(),
+            to:moment(range[1]).valueOf(),
+            type:req.body.type,
+            value:req.body.value,
+            seller:req.body.seller,
+            category:req.body.category ? req.body.category : null,
+            manufacturer:req.body.manufacturer ? req.body.manufacturer : null,
+            color:req.body.color ? req.body.color : null,
+            gender:req.body.gender ? req.body.gender : null
+          });
+          await CatalogDiscount.replaceCollection(discount.id,'products').members(affected);
+        }else{
+          discount = await CatalogDiscount.create({
+            name:req.body.name.toLowerCase().trim(),
+            from:moment(range[0]).valueOf(),
+            to:moment(range[1]).valueOf(),
+            type:req.body.type,
+            value:req.body.value,
+            seller:req.body.seller,
+            category:req.body.category ? req.body.category : null,
+            manufacturer:req.body.manufacturer ? req.body.manufacturer : null,
+            color:req.body.color ? req.body.color : null,
+            gender:req.body.gender ? req.body.gender : null
+          }).fetch();
+
+          await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
+        }
+      }else{
+        let msg='No hay productos que coincidan con los criterios seleccionados. Por favor intenta nuevamente';
+        return res.redirect('/discounts?error='+msg);
+      }
     }catch(err){
       return res.redirect('/discounts?error='+err);
     }
