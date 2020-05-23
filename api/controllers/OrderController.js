@@ -101,8 +101,8 @@ module.exports = {
             currency: 'COP',
             dues: req.body.payments,
             ip:require('ip').address(), /*This is the client's IP, it is required */
-            url_response: 'http://localhost:1337/respuesta',
-            url_confirmation: 'http://localhost:1337/confirmacion',
+            url_response: req.protocol+'://'+req.hostname+'/respuesta',
+            url_confirmation: req.protocol+'://'+req.hostname+'/confirmacion',
             method_confirmation: 'POST',
             //Extra params: These params are optional and can be used by the commerce
             use_default_card_customer: false,/*if the user wants to be charged with the card that the customer currently has as default = true*/
@@ -194,8 +194,8 @@ module.exports = {
           country: 'CO',
           cell_phone: user.mobile.toString(),
           ip:require('ip').address(), /*This is the client's IP, it is required */
-          url_response: 'http://localhost:1337/respuesta',
-          url_confirmation: 'http://localhost:1337/confirmacion',
+          url_response: req.protocol+'://'+req.hostname+'/respuesta',
+          url_confirmation: req.protocol+'://'+req.hostname+'/confirmacion',
           method_confirmation: 'POST',
         };
         payment = await sails.helpers.payment.payment({mode:paymentmethod, info:pseInfo});
@@ -234,8 +234,8 @@ module.exports = {
             cell_phone: user.mobile.toString(),
             end_date: moment().add(3, 'days').format('YYYY-MM-DD').toString(),//'2020-12-05',
             ip:require('ip').address(), /*This is the client's IP, it is required */
-            url_response: 'http://localhost:1337/respuesta',
-            url_confirmation: 'http://localhost:1337/confirmacion',
+            url_response: req.protocol+'://'+req.hostname+'/respuesta',
+            url_confirmation: req.protocol+'://'+req.hostname+'/confirmacion',
             method_confirmation: 'POST',
           };
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:cashInfo, method:req.body.cash});
@@ -348,6 +348,42 @@ module.exports = {
       await OrderHistory.create({order:order.id,state:req.body.orderState});
     }
     return res.send(newstate);
+  },
+  response: async(req, res)=>{
+    let orders = await Order.find({paymentId:req.body.x_ref_payco});
+    let state = await sails.helpers.orderState(req.body.x_response);
+    if(orders.length>0){
+      for(let o in orders){
+        if(orders[o].currentstatus!==state){
+          await Order.updateOne({id:orders[o].id}).set({
+            currentstatus:state
+          });
+
+          await OrderHistory.create({
+            order:orders[o].id,
+            state:state
+          });
+        }
+      }
+    }
+    return res.ok();
+  },
+  confirmation: async(req, res)=>{
+    let order = await Order.find({paymentId:req.body.x_ref_payco})
+    .populate('currentstatus')
+    .populate('seller');
+    let payment={
+      sucess:true,
+      data:{
+        ref_payco:req.body.x_ref_payco,
+        valor:req.body.x_amount_ok,
+        valor_pesos:req.body.x_amount_ok,
+        banco:'',
+        codigoproyecto:'',
+        pin:'',
+      }
+    };
+    return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu()});
   }
 
 };

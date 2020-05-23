@@ -24,7 +24,24 @@
                   </div>
             <%}%>
             <%if(order[0].paymentMethod=='PSE'){%>
-
+              <div class="level-item has-text-centered">
+                <div>
+                  <p class="heading">Medio de Pago</p>
+                  <p class="title">PSE</p>
+                </div>
+              </div>
+              <div class="level-item has-text-centered">
+                <div>
+                  <p class="heading">Referencia de Pago</p>
+                  <p class="title"><%=payment.data['ref_payco']%></p>
+                </div>
+              </div>
+              <div class="level-item has-text-centered">
+                <div>
+                  <p class="heading">Total</p>
+                  <p class="title">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></p>
+                </div>
+              </div>
             <%}%>
             <%if(order[0].paymentMethod=='CS'){%>
                 <div class="level-item has-text-centered">
