@@ -7,6 +7,9 @@
 
 module.exports = {
   index: async function(req, res){
+    //let moment = require('moment');
+    //await sails.helpers.channel.dafiti.orders('5ec570dd855a321811d1735b',['CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(6,'hours').toISOString(true),'Status=pending','SortDirection=ASC']);
+
     let slider = await Slider.find({active:true}).populate('textColor');
     return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   },

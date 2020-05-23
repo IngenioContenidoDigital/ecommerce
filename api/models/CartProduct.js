@@ -14,7 +14,7 @@ module.exports = {
     productvariation:{model:'productvariation'},
     totalDiscount:{type:'number',defaultsTo:0},
     totalPrice:{type:'number',defaultsTo:0},
-
+    externalReference:{type:'string'}
   },
 
 };

@@ -34,8 +34,8 @@ module.exports = {
     try{
       await Address.create({
         name:req.body.name.trim().toLowerCase(),
-        addressline1:req.body.addressline1,
-        addressline2:req.body.addressline2,
+        addressline1:req.body.addressline1.trim().toLowerCase(),
+        addressline2:req.body.addressline2.trim().toLowerCase(),
         country:req.body.country,
         region:req.body.region,
         city:req.body.city,
@@ -57,8 +57,8 @@ module.exports = {
     try{
       await Address.updateOne({id:req.param('id')}).set({
         name:req.body.name.trim().toLowerCase(),
-        addressline1:req.body.addressline1,
-        addressline2:req.body.addressline2,
+        addressline1:req.body.addressline1.trim().toLowerCase(),
+        addressline2:req.body.addressline2.trim().toLowerCase(),
         country:req.body.country,
         region:req.body.region,
         city:req.body.city,

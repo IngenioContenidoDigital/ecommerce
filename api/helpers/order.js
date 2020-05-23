@@ -69,7 +69,9 @@ module.exports = {
             paymentId:payment.data.ref_payco,
             paymentOption:extra,
             seller:seller,
-            carrier:carrier.id
+            carrier:carrier.id,
+            channel:payment.data.channel ? payment.data.channel : 'direct',
+            channelref:payment.data.channelref ? payment.data.channelref : ''
           }).fetch();
 
           await OrderHistory.create({
@@ -90,7 +92,9 @@ module.exports = {
               productvariation:cp.productvariation.id,
               price:cp.totalPrice,
               discount:cp.totalDiscount,
-              originalPrice:cp.productvariation.price});
+              originalPrice:cp.productvariation.price,
+              externalReference:cp.externalReference
+            });
           }
         }catch(err){
           return exits.error(err);

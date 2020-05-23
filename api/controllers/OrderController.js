@@ -166,7 +166,6 @@ module.exports = {
           }
 
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
-
           if(payment.success){
             order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
           }else{
@@ -200,7 +199,6 @@ module.exports = {
           method_confirmation: 'POST',
         };
         payment = await sails.helpers.payment.payment({mode:paymentmethod, info:pseInfo});
-        console.log(payment);
         if(payment.success){
           if(payment.data.urlbanco!=='' && payment.data.urlbanco!==null){
             const open = require('open');
