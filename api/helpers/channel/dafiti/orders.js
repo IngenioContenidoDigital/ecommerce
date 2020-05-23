@@ -76,7 +76,7 @@ module.exports = {
               });
             }
           });
-          await sails.helpers.order({address:address,user:user,cart:cart,method:order.PaymentMethod,payment:payment});
+          await sails.helpers.order({address:address,user:user,cart:cart,method:order.PaymentMethod,payment:payment,carrier:'servientrega'});
         }
       }
     });

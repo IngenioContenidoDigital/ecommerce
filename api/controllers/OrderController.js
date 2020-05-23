@@ -167,7 +167,7 @@ module.exports = {
 
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
           if(payment.success){
-            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
+            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,carrier:'coordinadora'});
           }else{
             let msg='Error en el proceso. Por favor intenta nuevamente';
             return res.redirect('/checkout?error='+msg);
@@ -206,7 +206,7 @@ module.exports = {
               await open(payment.data.urlbanco);
             })();
           }
-          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment});
+          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,carrier:'coordinadora'});
         }else{
           let msg='Error en el proceso. Por favor intenta nuevamente';
           if(payment.data.errores[0]!==undefined){
@@ -240,7 +240,7 @@ module.exports = {
           };
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:cashInfo, method:req.body.cash});
           if(payment.success){
-            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash});
+            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash,carrier:'coordinadora'});
           }else{
             let msg='Error en el proceso. Por favor intenta nuevamente';
             if(payment.data.errores[0]!==undefined && payment.data.errores[0]!==null){
@@ -253,7 +253,7 @@ module.exports = {
         }
         break;
       case 'COD':
-        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:{data:{estado:'Pendiente',ref_payco:''}},extra:req.body.codOp});
+        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:{data:{estado:'Pendiente',ref_payco:''}},extra:req.body.codOp,carrier:'coordinadora'});
         break;
     }
     delete req.session.cart;

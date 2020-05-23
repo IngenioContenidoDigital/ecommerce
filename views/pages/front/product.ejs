@@ -124,17 +124,17 @@
             let eu=e.target.options[e.target.selectedIndex].getAttribute('eu');
             let wide=e.target.options[e.target.selectedIndex].getAttribute('wide');
             let tcontent = '<tr>'
-                    if(cm!==''){ tcontent+= '<td><strong>Largo CM</strong></td>'; }
+                    if(cm!=='' && cm!=='0'){ tcontent+= '<td><strong>Largo CM</strong></td>'; }
                     if(col!==''){ tcontent+= '<td><strong>Talla COL</strong></td>'; }
                     if(us!==''){ tcontent+= '<td><strong>Talla US</strong></td>'; }
                     if(eu!==''){ tcontent+= '<td><strong>Talla EU</strong></td>'; }
                     if(wide!=='' && wide!=='0'){ tcontent+= '<td><strong>Ancho CM</strong></td>'; }
             tcontent+= '</tr><tr>';
-                    if(cm!==''){ tcontent+= '<td><p class="has-text-centered">'+cm+'</p></td>'; }
-                    if(col!==''){ tcontent+= '<td><p class="has-text-centered">'+col+'</p></td>'; }
-                    if(us!==''){ tcontent+= '<td><p class="has-text-centered">'+us+'</p></td>'; }
-                    if(eu!==''){ tcontent+= '<td><p class="has-text-centered">'+eu+'</p></td>'; }
-                    if(wide!=='' && wide!=='0'){ tcontent+= '<td><p class="has-text-centered">'+wide+'</p></td>'; }
+                    if(cm!==''&& cm!=='0'){ tcontent+= '<td><p class="has-text-centered is-uppercase">'+cm+'</p></td>'; }
+                    if(col!==''){ tcontent+= '<td><p class="has-text-centered is-uppercase">'+col+'</p></td>'; }
+                    if(us!==''){ tcontent+= '<td><p class="has-text-centered is-uppercase">'+us+'</p></td>'; }
+                    if(eu!==''){ tcontent+= '<td><p class="has-text-centered is-uppercase">'+eu+'</p></td>'; }
+                    if(wide!=='' && wide!=='0'){ tcontent+= '<td><p class="has-text-centered is-uppercase">'+wide+'</p></td>'; }
             tcontent+='</tr>';
             
             sizet.innerHTML=tcontent;

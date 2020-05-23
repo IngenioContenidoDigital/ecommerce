@@ -172,14 +172,25 @@ module.exports = {
   setintegration:async (req,res)=>{
     let seller = req.param('seller');
     let channel = req.param('channel');
-    await Integration.create({
+    Integration.findOrCreate({seller:seller,channel:channel},{
       channel:channel,
       url:req.body.url,
       user:req.body.user,
       key:req.body.key,
       seller:seller
+    }).exec(async (err, record, created)=>{
+      if(err){return res.redirect('/sellers?error='+err);}
+      if(!created){
+        await Integration.updateOne({id:record.id}).set({
+          channel:channel,
+          url:req.body.url,
+          user:req.body.user,
+          key:req.body.key,
+          seller:seller
+        });
+      }
+      return res.redirect('/sellers');
     });
-    return res.redirect('/sellers');
   }
 };
 
