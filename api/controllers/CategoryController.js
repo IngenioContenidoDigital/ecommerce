@@ -20,10 +20,10 @@ module.exports = {
     let parentId = 0;
     if(req.param('id')){
       id = req.param('id');
-      category = await Category.findOne({id:id});
+      category = await Category.findOne({id:id}).populate('parent');
       childs = await sails.helpers.categoryChildren(category.id);
-      let parent = await Category.findOne({id:id}).populate('parent');
-      parentId = parent.parent[0].id;
+      let parent = await Category.findOne({id:category.parent.id});
+      parentId = parent.id;
     }else{
       category = await Category.findOne({name:'Inicio'});
       childs = await sails.helpers.categoryChildren(category.id);
@@ -42,16 +42,16 @@ module.exports = {
     }
     var isActive=false;
     var error = null;
-    let newcat = null;
     if(req.body.activo==='on'){isActive=true;}
     let current = await Category.findOne({id:req.body.current});
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
-      newcat = await Category.create({
+      await Category.create({
         name:req.body.nombre.trim().toLowerCase(),
         logo:filename[0],
         description:req.body.descripcion,
         dafiti:req.body['dafiti[]'].join(','),
+        parent:current.id,
         active:isActive,
         url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
         level:current.level+1
@@ -59,9 +59,10 @@ module.exports = {
     }catch(err){
       error = err.msg;
       if(err.code==='badRequest'){
-        newcat = await Category.create({
+        await Category.create({
           name:req.body.nombre.trim().toLowerCase(),
           description:req.body.descripcion,
+          parent:current.id,
           dafiti:req.body['dafiti[]'].join(','),
           active:isActive,
           url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
@@ -70,7 +71,6 @@ module.exports = {
       }
     }
 
-    await Category.addToCollection(newcat.id,'parent', current.id);
     await Category.updateOne({id:current.id}).set({hasChildren:true});
 
     if (error===undefined || error===null || error.code==='badRequest'){
@@ -89,19 +89,39 @@ module.exports = {
     const route = 'images/categories';
     let category = await Category.findOne({id:req.param('id')});
     let parent = await Category.findOne({id:req.body.current});
+    let dafiticat = null;
+    if(req.body['dafiti[]']!==undefined){
+      if(typeof req.body['dafiti[]']!=='string'){
+        dafiticat = req.body['dafiti[]'].join(',');
+      }else{
+        dafiticat = req.body['dafiti[]'];
+      }
+    }
     if(req.body.activo==='on'){isActive=true;}
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
-      await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, dafiti:req.body['dafiti[]'].join(','), logo:uploaded[0], active:isActive,level:parent.level+1});
+      await Category.updateOne({id:category.id}).set({
+        name:req.body.nombre,
+        description:req.body.descripcion,
+        parent:parent.id,
+        dafiti:dafiticat,
+        logo:uploaded[0],
+        active:isActive,
+        level:parent.level+1});
     }catch(err){
       error = err.msg;
       if(err.code==='badRequest'){
-        await Category.updateOne({id:category.id}).set({name:req.body.nombre, description:req.body.descripcion, dafiti:req.body['dafiti[]'].join(','), active:isActive,level:parent.level+1});
+        await Category.updateOne({id:category.id}).set({
+          name:req.body.nombre,
+          description:req.body.descripcion,
+          parent:parent.id,
+          dafiti:dafiticat,
+          active:isActive,
+          level:parent.level+1});
       }
     }
     if(req.body.parent!==parent.id){
       await Category.removeFromCollection(req.body.parent,'children').members([category.id]);
-      await Category.addToCollection(category.id,'parent',parent.id);
       await Category.addToCollection(parent.id,'children',category.id);
       await Category.updateOne({id:parent.id}).set({hasChildren:true});
     }
@@ -111,6 +131,31 @@ module.exports = {
     }else{
       return res.redirect('/categories/list?error='+error);
     }
+  },
+  deletecategory:async(req, res)=>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let category = await Category.findOne({id:req.body.category})
+    .populate('parent')
+    .populate('children')
+    .populate('products');
+    if(category.children.length>0){
+      for(let c in category.children){
+        await Category.updateOne({id:category.children[c].id}).set({
+          parent:category.parent.id
+        });
+      }
+      await Category.updateOne({id:category.parent.id}).set({hasChildren:true});
+    }
+    if(category.products.length>0){
+      for(let p in category.products){
+        await Product.removeFromCollection(category.products[p].id,'categories').members([category.id]);
+        await Product.addToCollection(category.products[p].id,'categories').members([category.parent.id]);
+      }
+    }
+    await Category.destroyOne({id:category.id});
+    return res.send('deleted');
   },
   getchildren: async function(req,res){
     if (!req.isSocket) {
@@ -128,7 +173,7 @@ module.exports = {
     var id = req.param('id');
     var parent = await Category.findOne({id:id}).populate('parent');
 
-    return res.send(parent.parent);
+    return res.send(parent);
   },
   categorystate: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

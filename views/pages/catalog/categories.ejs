@@ -295,6 +295,11 @@
                               <i class="bx bxs-edit"></i>
                             </span>
                           </a>
+                          <a href="/category/delete/" category="<%= category.id %>" class="delete-category button is-small">
+                            <span class="icon">
+                              <i class="bx bx-trash"></i>
+                            </span>
+                          </a>
                         </td>
                     </tr>
                 <% } %>
@@ -315,6 +320,18 @@
             info: "Mostrando {start} a {end} de {rows} registros",
           }
         });  
+      });
+
+      live('.delete-category','click',e=>{
+        e.preventDefault();
+        if(confirm('Seguro Desea Continuar?')){
+          let dest = e.target.parentNode.parentNode;
+          io.socket.delete(dest.href,{category:dest.getAttribute('category')},(response)=>{
+            if(response=='deleted'){
+              window.location.href='/categories/list';
+            }
+          });
+        }
       });
     </script>
 <% } %>

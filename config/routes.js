@@ -61,6 +61,7 @@ module.exports.routes = {
   'POST /categories/create/:id?': {controller:'CategoryController',action:'addcategory'},
   'PUT /categories/:id' : {controller:'CategoryController',action:'categorystate'},
   'POST /categories/edit/:id' : {controller:'CategoryController',action:'editcategory'},
+  'DELETE /category/delete' :{controller:'CategoryController', action:'deletecategory'},
   'GET /sellers/:action?/:id?' : {controller:'SellerController',action:'showsellers'},
   'POST /seller/create' : {controller:'SellerController',action:'createseller'},
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},

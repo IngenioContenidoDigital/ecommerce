@@ -20,8 +20,7 @@ module.exports = {
     mercadolibre:{type:'string'},
     linio:{type:'string'},
     parent:{
-      collection:'category',
-      via: 'children'
+      model:'category'
     },
     children:{
       collection:'category',
