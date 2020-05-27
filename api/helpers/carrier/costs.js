@@ -46,8 +46,8 @@ module.exports = {
             'unidades':(items).toString(),
           }
         },
-        'apikey':'9328bbd0-dbce-11e8-9f8b-f2801f1b9fd1',
-        'clave':'6O5vOU!4?2pBB9i',
+        'apikey':'154a892e-9909-11ea-bb37-0242ac130002',
+        'clave':'1V2JqxYZwtLVuY',
       }
     };
     let options = {};

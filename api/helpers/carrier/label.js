@@ -29,8 +29,8 @@ module.exports = {
       'p':{
         'id_rotulo': '55',
         'codigos_remisiones':{tracking},
-        'usuario':'sanpolos.ws',
-        'clave':'54586c4cc36eb9f7e5f0f5c76f3a027222da685dee0c88110646648ae222baf9',
+        'usuario':'contenidodigital.ws',
+        'clave':'e8c5ad7349c80f352b916a5213f95d692813e370300240f947bc28b781e0dd7e',
       }
     };
     let options = {};
