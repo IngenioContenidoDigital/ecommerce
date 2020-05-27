@@ -138,3 +138,5 @@ assets/images/products/*
 assets/images/sellers/*
 assets/images/carriers/*
 assets/images/slides/*
+config/ssl/*
+config/env/production.js
