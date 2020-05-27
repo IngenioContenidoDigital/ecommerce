@@ -137,6 +137,8 @@
     const fileInput = document.querySelector('#file-loader input[type=file]');
     <%if(current.dafiti!==''){%>
       let dafiti = '<%=current.dafiti %>'.split(',');
+    <%}else{%>
+      let dafiti = [];
     <%}%>
     fileInput.onchange = () => {
       if (fileInput.files.length > 0) {
