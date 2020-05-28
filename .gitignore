@@ -140,3 +140,4 @@ assets/images/carriers/*
 assets/images/slides/*
 config/ssl/*
 config/env/production.js
+config/datastores.js

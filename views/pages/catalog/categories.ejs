@@ -48,25 +48,7 @@
                     <textarea class="textarea" name="descripcion" placeholder="Descripción de la categoría"><% if(action=='edit'){ %><%= current.description %><% }%></textarea>
                   </div>
                 </div>
-                <div class="field">
-                  <div id="file-loader" class="file has-name is-fullwidth">
-                    <label class="file-label">
-                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
-                      <span class="file-cta">
-                        <span class="file-icon">
-                          <i class="bx bx-upload"></i>
-                        </span>
-                        <span class="file-label">
-                          Imagen
-                        </span>
-                      </span>
-                      <span class="file-name has-text-grey">
-                        Cargar Imágen (720px x 240px)
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
+	       </div>
             </div>
             <div class="field">
                 <article class="panel is-primary">
@@ -113,6 +95,24 @@
                       </ul>
                     <% } %>
                   </article>
+            </div>
+            <div class="field">
+                  <div id="file-loader" class="file has-name is-fullwidth">
+                    <label class="file-label">
+                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                      <span class="file-cta">
+                        <span class="file-icon">
+                          <i class="bx bx-upload"></i>
+                        </span>
+                        <span class="file-label">
+                          Imagen
+                        </span>
+                      </span>
+                      <span class="file-name has-text-grey">
+                        Cargar Imágen (720px x 240px)
+                      </span>
+                    </label>
+                  </div>
             </div>
             <div class="control buttons is-right">
               <% if(action=='edit'){ %> 
