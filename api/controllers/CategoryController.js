@@ -44,13 +44,21 @@ module.exports = {
     var error = null;
     if(req.body.activo==='on'){isActive=true;}
     let current = await Category.findOne({id:req.body.current});
+    let dafiticat = '';
+    if(req.body['dafiti[]']!==undefined){
+      if(typeof req.body['dafiti[]']!=='string'){
+        dafiticat = req.body['dafiti[]'].join(',');
+      }else{
+        dafiticat = req.body['dafiti[]'];
+      }
+    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
         name:req.body.nombre.trim().toLowerCase(),
         logo:filename[0],
         description:req.body.descripcion,
-        dafiti:req.body['dafiti[]'].join(','),
+        dafiti:dafiticat,
         parent:current.id,
         active:isActive,
         url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
@@ -63,7 +71,7 @@ module.exports = {
           name:req.body.nombre.trim().toLowerCase(),
           description:req.body.descripcion,
           parent:current.id,
-          dafiti:req.body['dafiti[]'].join(','),
+          dafiti:dafiticat,
           active:isActive,
           url:(req.body.nombre.trim().toLowerCase()).replace(' ','-'),
           level:current.level+1
@@ -89,7 +97,7 @@ module.exports = {
     const route = 'images/categories';
     let category = await Category.findOne({id:req.param('id')});
     let parent = await Category.findOne({id:req.body.current});
-    let dafiticat = null;
+    let dafiticat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
