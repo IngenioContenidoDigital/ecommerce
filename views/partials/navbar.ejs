@@ -40,10 +40,11 @@
         <%})%>
       <%}%>
     </div>
-    <div class="navbar-end">
-      <div class="navbar-item">        
-        <div class="field has-addons">
-            <form id="search-form" class="is-marginless is-paddingless is-flex" method="POST" action="/ver/resultados"><input class="input is-dark is-small" type="text" name="search" placeholder="Buscar Productos" />
+    <div class="navbar-end has-text-right">
+      <div class="navbar-item has-text-centered">        
+        <div class="field has-addons is-inline">
+            <form id="search-form" style="margin-left: auto; margin-right: auto;" class="is-marginless is-paddingless is-flex" method="POST" action="/ver/resultados">
+              <input style="min-width: 266px;" class="input is-dark is-small" type="text" name="search" placeholder="Buscar Productos" />
               <div class="control">
                 <a id="search" class="button is-dark is-small">
                   <i class='bx bx-search-alt-2'></i>
@@ -52,33 +53,33 @@
             </form>
         </div>
       </div>
-      <div class="navbar-item">
-        <div class="buttons">
-          <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
-          <div class="dropdown is-right is-hoverable">
-            <div class="dropdown-trigger">
-              <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
-                <% if(session.user === undefined) { %>
-                  <span><i class="is-size-4 bx bxs-user"></i></span>
-                <%}else{%>
-                  <span><i class='bx bx-exit'></i></span>
-                <%}%>
-              </button>
-            </div>
-            <div class="dropdown-menu" id="dropdown-menu4" role="menu">
-              <div class="dropdown-content">
-                <% if(session.user === undefined) { %>
-                <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
-                <% } else { %>
-                <a href="/account" class="dropdown-item">Mi Cuenta</a>
-                <a href="/addresses" class="dropdown-item">Direcciones</a>
-                <hr class="dropdown-divider">
-                <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
-                <% }%>
+      <div class="navbar-item is-inline-block">
+          <div class="buttons">
+            <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
+            <div class="dropdown is-right is-hoverable">
+              <div class="dropdown-trigger">
+                <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+                  <% if(session.user === undefined) { %>
+                    <span><i class="is-size-4 bx bxs-user"></i></span>
+                  <%}else{%>
+                    <span><i class='bx bx-exit'></i></span>
+                  <%}%>
+                </button>
+              </div>
+              <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+                <div class="dropdown-content">
+                  <% if(session.user === undefined) { %>
+                  <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
+                  <% } else { %>
+                  <a href="/account" class="dropdown-item">Mi Cuenta</a>
+                  <a href="/addresses" class="dropdown-item">Direcciones</a>
+                  <hr class="dropdown-divider">
+                  <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
+                  <% }%>
+                </div>
               </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
 </nav>

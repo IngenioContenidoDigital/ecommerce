@@ -4,30 +4,30 @@
     <div class="columns">
         <div class="column is-two-fifths">
             <div class="box">
-            <span class="is-hidden" itemprop="productID"><%=product.id%></span>
-            <span class="is-hidden" itemprop="sku"><%=product.reference%></span>
-            <div class="media">
-                <div class="media-left">
+                <span class="is-hidden" itemprop="productID"><%=product.id%></span>
+                <span class="is-hidden" itemprop="sku"><%=product.reference%></span>
+                <div class="media">
+                    <div class="media-left">
+                        <%product.images.forEach((image)=>{%>
+                            <figure class="image is-64x64">
+                                <img itemprop="image" src="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
+                            </figure>
+                        <%})%>
+                    </div>
                     <%product.images.forEach((image)=>{%>
-                        <figure class="image is-64x64">
-                            <img itemprop="image" src="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
-                        </figure>
+                        <%if(image.cover==1){%>
+                            <div style="overflow-y: hidden;" class="media-content">
+                                <figure class="image is-square is-relative">
+                                    <img id="main" itemprop="image" src="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" data-zoom="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
+                                </figure>                        
+                            </div>
+                        <%}%>
                     <%})%>
                 </div>
-                <%product.images.forEach((image)=>{%>
-                    <%if(image.cover==1){%>
-                        <div style="overflow-y: hidden;" class="media-content">
-                            <figure class="image is-square is-relative">
-                                <img id="main" itemprop="image" src="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" data-zoom="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
-                            </figure>                        
-                        </div>
-                    <%}%>
-                <%})%>
             </div>
         </div>
-        </div>
         <div class="column is-two-fifths">
-            <div class="container">
+            <div class="container is-fluid">
                 <h2 itemprop="brand" class="is-capitalized"><%=product.manufacturer.name%></h2>
                 <h4 itemprop="name" class="is-uppercase is-size-4"><%=product.name%></h4>
                 <hr>
@@ -65,7 +65,7 @@
                         <span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span>
                     </div>
                 </div>
-                <table id="size-table" class="table is-size-7 is-hidden">
+                <table id="size-table" class="table is-size-7 is-hidden is-fullwidth">
                 </table>
                 <div itemprop="disambiguatingDescription" class="content description-short"><%-product.descriptionShort%></div>
                 <div class="img-zoom"></div>
@@ -88,8 +88,10 @@
     <hr>
     <div class="columns">
         <div class="column">
-            <h4 class="is-size-4 has-text-weight-bold">Descripción del Producto</h4>
-            <div itemprop="description" class="content description"><%-product.description%></div>
+            <div class="container is-fluid">
+                <h4 class="is-size-4 has-text-weight-bold">Descripción del Producto</h4>
+                <div itemprop="description" class="content description"><%-product.description%></div>
+            </div>
         </div>
     </div>
 </div>
