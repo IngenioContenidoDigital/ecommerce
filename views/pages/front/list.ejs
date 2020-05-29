@@ -188,6 +188,8 @@
     live('#push-to-cart','click',(e)=>{
         let vrt = e.target.parentNode.parentNode.parentNode.querySelector('select[name="variations"]').value
         console.log(vrt);
-        io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'});
+        io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'},(resData)=>{
+            window.location.href='/cart';
+        });
     })
 </script>

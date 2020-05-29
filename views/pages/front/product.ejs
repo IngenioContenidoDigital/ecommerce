@@ -182,7 +182,9 @@
     live('#add-to-cart','click',(e)=>{
         let qty = document.querySelector('select[name="quantity"]').value
         let vrt = document.querySelector('select[name="variations"]').value
-        io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create'});
+        io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create'},(resData)=>{
+            window.location.href='/cart';
+        });
     })
 
 </script>
