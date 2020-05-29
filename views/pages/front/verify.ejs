@@ -14,18 +14,14 @@
                 <hr>
             </div>
             <div class="field">
-                <div class="control">
-                    <div class="columns is-mobile">
-                        <div class="column is-3"></div>
-                        <div class="column is-1"><input class="input is-info has-text-centered" name="code1" type="text" pattern="[0-9]{1}" maxlength="1" required placeholder="0" autocomplete="no-fill"></div>
-                        <div class="column is-1"><input class="input is-info has-text-centered" name="code2" type="text" pattern="[0-9]{1}" maxlength="1" required placeholder="0" autocomplete="no-fill"></div>
-                        <div class="column is-1"><input class="input is-info has-text-centered" name="code3" type="text" pattern="[0-9]{1}" maxlength="1" required placeholder="0" autocomplete="no-fill"></div>
-                        <div class="column is-1"><input class="input is-info has-text-centered" name="code4" type="text" pattern="[0-9]{1}" maxlength="1" required placeholder="0" autocomplete="no-fill"></div>
-                        <div class="column is-1"><input class="input is-info has-text-centered" name="code5" type="text" pattern="[0-9]{1}" maxlength="1" required placeholder="0" autocomplete="no-fill"></div>
-                        <div class="column is-1"><input class="input is-info has-text-centered" name="code6" type="text" pattern="[0-9]{1}" maxlength="1" required placeholder="0" autocomplete="no-fill"></div>
-                        <div class="column is-3"></div>
-                    </div>
-                </div>
+                <ul class="is-flex is-centered">
+                    <li style="padding:3px;"><input class="code input is-info has-text-centered" name="code1" type="number" maxlength="1" required placeholder="0" autocomplete="no-fill"></li>
+                    <li style="padding:3px;"><input class="code input is-info has-text-centered" name="code2" type="number" maxlength="1" required placeholder="0" autocomplete="no-fill"></li>
+                    <li style="padding:3px;"><input class="code input is-info has-text-centered" name="code3" type="number" maxlength="1" required placeholder="0" autocomplete="no-fill"></li>
+                    <li style="padding:3px;"><input class="code input is-info has-text-centered" name="code4" type="number" maxlength="1" required placeholder="0" autocomplete="no-fill"></li>
+                    <li style="padding:3px;"><input class="code input is-info has-text-centered" name="code5" type="number" maxlength="1" required placeholder="0" autocomplete="no-fill"></li>
+                    <li style="padding:3px;"><input class="code input is-info has-text-centered" name="code6" type="number" maxlength="1" required placeholder="0" autocomplete="no-fill"></li>
+                </ul>                        
             </div>
             <br>
             <div class="field">
@@ -48,4 +44,27 @@
         }
         //io.socket.put('/register',{email:mail,verification:code});
     });
+
+
+    let next = (e) =>{
+        let actual = e.target;
+        let num, next;
+        if(e.keyCode===8){
+            num = parseInt(actual.name.substring(4))-1;
+        }else{
+            num = parseInt(actual.name.substring(4))+1;
+        }
+        if(num>=1 && num <=6 && (/^[0-9]$/i.test(e.key) || e.keyCode===8)){
+          next = document.querySelector('input[name="code'+num+'"]');
+          next.value='';
+          next.focus();
+        }
+    }
+
+    const codes = document.querySelectorAll('.code');
+    for(let cod of codes){
+        cod.addEventListener('keyup',next);
+    }
+
+
 </script>
