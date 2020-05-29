@@ -4,8 +4,8 @@
     <%orders.forEach(order=>{%>
       <div class="card">
         <header class="card-header has-background-light">
-          <p class="card-header-title">
-            Pedido: #&nbsp;<strong><%=order.reference%></strong>%>&nbsp;-&nbsp;<%=moment(order.createdAt).locale('es').format('LL')%>
+          <p class="card-header-title is-size-7">
+            Pedido:&nbsp;<strong><%=order.reference%></strong>%>&nbsp;-&nbsp;<%=moment(order.createdAt).locale('es').format('LL')%>
           </p>
           <a href="#" class="card-header-icon has-text-dark" aria-label="more options">
             <span class="icon">
