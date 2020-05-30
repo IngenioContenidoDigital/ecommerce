@@ -406,7 +406,7 @@
                       <td scope="row" class="align-middle">
                         <div class="field">
                           <div class="select is-primary is-small">
-                            <select required class="is-uppercase" field="variation" name="variations[0][variation]">
+                            <select required class="variations is-uppercase" field="variation" name="variations[0][variation]">
                               <option value="0"> -- Seleccionar --</option>
                               <%if(variations!==null){%>
                               <% variations.forEach((variation)=>{ %>
@@ -484,7 +484,7 @@
           let referencep = document.querySelector('input[name="reference"]').value;
           
           let newrow=[
-           '<td scope="row" class="align-middle"><div class="field"><div class="select is-primary is-small"><select required class="is-uppercase" field="variation" name="variations['+rowid+'][variation]"><option value="0"> -- Seleccionar --</option><%if(variations!==null){%><% variations.forEach((variation)=>{ %><option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option><% })%><%}%></select></div></div></td>',
+           '<td scope="row" class="align-middle"><div class="field"><div class="select is-primary is-small"><select required class="variations is-uppercase" field="variation" name="variations['+rowid+'][variation]"><option value="0"> -- Seleccionar --</option><%if(variations!==null){%><% variations.forEach((variation)=>{ %><option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option><% })%><%}%></select></div></div></td>',
            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="reference" name="variations['+rowid+'][reference]" value="" placeholder="Referencia"/></div></div></td>',
            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
@@ -554,6 +554,21 @@
             });
             request.open('POST','/products/variations/'+id);
             request.send(data);
+          }
+        });
+
+        live('select.variations','click',e =>{
+          let ctl = e.target;
+          if(ctl.querySelectorAll('option').length<=1){
+            let id = document.querySelector('#product-data').value;
+            io.socket.get('/findvariations/'+id,resData =>{
+              for(let v of resData){
+                let opt = document.createElement('option');
+                opt.innerHTML=v.name;
+                opt.value=v.id
+                ctl.appendChild(opt)
+              }
+            });
           }
         });
 

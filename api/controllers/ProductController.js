@@ -118,7 +118,7 @@ module.exports = {
     }catch(err){
       error = err.msg;
     }
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    //await new Promise(resolve => setTimeout(resolve, 1000));
     if (error===undefined || error===null){
       return res.send(product.id);
     }else{
@@ -205,6 +205,14 @@ module.exports = {
       }
     }
     return res.send('ok');
+  },
+  findvariations:async(req,res)=>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let product = await Product.findOne({id:req.param('id')});
+    let variations = await Variation.find({gender:product.gender});
+    return res.send(variations);
   },
   deletevariations: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
