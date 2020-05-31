@@ -37,6 +37,8 @@ module.exports.routes = {
   'GET /register' : {controller:'UserController',action:'registerform'},
   'POST /register' : {controller:'UserController',action:'createuser'},
   'POST /verify' : {controller:'UserController',action:'validatemail'},
+  'GET /forgot' : {controller:'UserController', action:'forgot'},
+  'POST /forgot/code' : {controller:'UserController', action:'sendcode'},
   'GET /addresses' : {controller:'AddressController',action:'addresses'},
   'GET /address/:id?' : {controller:'AddressController',action:'address'},
   'POST /address/create' : {controller:'AddressController',action:'newaddress'},

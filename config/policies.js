@@ -44,6 +44,8 @@ module.exports.policies = {
     'registerform':true,
     'createuser':true,
     'validatemail':true,
+    'forgot':true,
+    'sendcode':true,
     '*': 'isLoggedIn',
   },
   VariationController:{'*': 'isLoggedIn'}

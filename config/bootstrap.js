@@ -19,7 +19,7 @@ module.exports.bootstrap = async function() {
     ]);
   }
   if (await User.count() < 1) {
-    await User.create({emailAddress: 'luis.quinones@ingeniocontenido.co', emailStatus:'confirmed', password: await sails.helpers.passwords.hashPassword('L0f3q2n21982**'), fullName: 'Luis Felipe Quiñones Nieto', profile:(await Profile.findOne({name:'superadmin'})).id});
+    await User.create({emailAddress: 'luis.quinones@ingeniocontenido.co', emailStatus:'confirmed', password: await sails.helpers.passwords.hashPassword('L0f3q2n21982**'), mobile:3212163935,fullName: 'Luis Felipe Quiñones Nieto', profile:(await Profile.findOne({name:'superadmin'})).id});
   }
 
   if(await Category.count()<1){

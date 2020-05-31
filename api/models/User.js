@@ -18,6 +18,7 @@ module.exports = {
     mobilecountry:{model:'country'},
     mobile:{type:'number'},
     mobileStatus: {type:'string', isIn: ['unconfirmed',  'confirmed'], defaultsTo:'unconfirmed'},
+    mobileverification:{type:'string', minLength:6, maxLength:6, defaultsTo:''},
     active:{type:'boolean',defaultsTo:true,},
     seller:{model:'seller'},
     profile:{model:'profile'}

@@ -1,36 +1,47 @@
 <div class="container">
     <div class="columns is-centered">
         <div class="column is-2">
-            <div class="box" id="filter">
-                <p class="has-text-centered has-text-weight-bold is-size-7">Opciones de Filtrado</p>
-                <hr>
-                <p class="is-size-7 has-text-weight-bold">Marca</p>
-                <div class="select is-small is-info">
-                    <select name="brand" class="is-capitalized">
-                        <option value="">Filtrar Marca</option>
-                        <%brands.forEach(brand =>{%>
-                            <option class="is-capitalized" value="<%=brand.name%>"><%=brand.name%></option>
-                        <%}) %>
-                    </select>
-                </div>
-                <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="brand-delete"></a>
-                <hr>
-                <p class="is-size-7 has-text-weight-bold">Colores</p>
-                <% colors.forEach(color=>{%>
-                    <a href="#" class="filter"><span class="color-container" color="<%=color.name%>" style="background-color: <%=color.code%>;border:solid 1px <%=color.code%>;"></span></a>
-                <%});%>
-                <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="color-delete"></a>
-                <hr>
-                <p class="is-size-7 has-text-weight-bold">Género</p>
-                    <div class="select is-small is-info">
-                        <select name="gender" class="is-capitalized">
-                            <option value="">Filtrar Género</option>
-                            <%genders.forEach(gender =>{%>
-                                <option class="is-capitalized" value="<%=gender.name%>"><%=gender.name%></option>
-                            <%}) %>
-                        </select>
+            <div id="filter">
+                <p id="filter-title" class="has-text-centered has-text-weight-bold is-size-7">
+                    Filtros (Ver/Ocultar)
+                    <span class="icon is-pulled-right">
+                        <i class='bx bx-filter-alt'></i>
+                    </span>
+                </p>
+                <br>
+                <div class="container box is-paddingless" id="filter-container">
+                    <div class="notification is-marginless has-background-white">
+                        <p class="is-size-7 has-text-weight-bold">Marca</p>
+                        <div class="select is-small is-info">
+                            <select name="brand" class="is-capitalized">
+                                <option value="">Filtrar Marca</option>
+                                <%brands.forEach(brand =>{%>
+                                    <option class="is-capitalized" value="<%=brand.name%>"><%=brand.name%></option>
+                                <%}) %>
+                            </select>
+                        </div>
+                        <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="brand-delete"></a>
                     </div>
-                <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="gender-delete"></a>
+                    <div class="notification is-marginless has-background-white">
+                        <p class="is-size-7 has-text-weight-bold">Colores</p>
+                        <% colors.forEach(color=>{%>
+                            <a href="#" class="filter"><span class="color-container" color="<%=color.name%>" style="background-color: <%=color.code%>;border:solid 1px <%=color.code%>;"></span></a>
+                        <%});%>
+                        <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="color-delete"></a>
+                    </div>
+                    <div class="notification has-background-white is-marginless">
+                        <p class="is-size-7 has-text-weight-bold">Género</p>
+                            <div class="select is-small is-info">
+                                <select name="gender" class="is-capitalized">
+                                    <option value="">Filtrar Género</option>
+                                    <%genders.forEach(gender =>{%>
+                                        <option class="is-capitalized" value="<%=gender.name%>"><%=gender.name%></option>
+                                    <%}) %>
+                                </select>
+                            </div>
+                        <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="gender-delete"></a>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="column is-8">
@@ -123,6 +134,15 @@
     </div>
 </div>
 <script>
+    live('#filter-title','click',e=>{
+        content = document.querySelector('#filter-container');
+        if(!hasClass(content,'is-hidden')){
+            addClass(content,'is-hidden');
+        }else{
+            removeClass(content,'is-hidden');
+        }
+    });
+
     live('.s-variation','change',(e) => {
         let button = e.target.parentNode.parentNode.parentNode.querySelector('button');
         let selected = e.target.options[e.target.selectedIndex]
@@ -139,6 +159,8 @@
     live('.filter','click', e =>{
         let color = e.target.getAttribute('color');
         let cards = document.querySelectorAll('.card');
+        clearfilters();
+        addClass(e.target.parentNode.parentNode,'has-background-warning');
         for(let c of cards){
             if(c.querySelector('.color-container').getAttribute('color')!==color){
                 addClass(c,'is-hidden');
@@ -150,6 +172,13 @@
         selectb.value='';
     });
 
+    let clearfilters = ()=>{
+        for(let n of document.querySelectorAll('.notification')){
+            removeClass(n,'has-background-warning');
+            addClass(n,'has-background-white');
+        }
+    };
+
     live('.delete','click',e=>{
         let cards = document.querySelectorAll('.card');
         for(let c of cards){
@@ -159,9 +188,11 @@
         selectb.value='';
         let selectg = document.querySelector('select[name="gender"]');
         selectg.value='';
+        clearfilters();
     });
 
     live('select[name="brand"]','change',e=>{
+        
         let brand = e.target.value;
         let cards = document.querySelectorAll('.card');
         for(let c of cards){
@@ -171,6 +202,8 @@
                 removeClass(c,'is-hidden');
             }
         }
+        clearfilters();
+        addClass(e.target.parentNode.parentNode,'has-background-warning');
     });
 
     live('select[name="gender"]','change',e=>{
@@ -183,6 +216,8 @@
                 removeClass(c,'is-hidden');
             }
         }
+        clearfilters();
+        addClass(e.target.parentNode.parentNode,'has-background-warning');
     });
 
     live('#push-to-cart','click',(e)=>{

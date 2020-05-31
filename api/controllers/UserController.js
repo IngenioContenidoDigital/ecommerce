@@ -10,6 +10,68 @@ module.exports = {
     let countries = await Country.find();
     return res.view('pages/front/register',{countries:countries});
   },
+  forgot: async (req, res)=>{
+    return res.view('pages/front/forgot');
+  },
+  sendcode:async(req,res)=>{
+
+    let https = require('https');
+    let randomize = require('randomatic');
+    const querystring = require('querystring');
+    let data = {secret:'6LfK2-kUAAAAAF6eGv3Ykl2hiz1nxw7FexjIrqOt',response:req.body.token};
+    let options = {
+      hostname: 'www.google.com',
+      port:443,
+      path:'/recaptcha/api/siteverify',
+      method:'POST',
+      headers : {
+	      'Content-Type': 'application/x-www-form-urlencoded'
+	    }
+    };
+
+    const rq = https.request(options, rs =>{
+      rs.on('data', async d =>{
+        let captcha = JSON.parse(d.toString());
+        let msg='';
+        if(captcha.success){
+          let verification = randomize('0',6);
+          let email = req.body.email;
+          try{
+            let user = await User.updateOne({emailAddress:email}).set({mobileStatus:'unconfirmed',mobileverification:verification});
+            let country = await Country.findOne({id:user.mobilecountry});
+            let msg = 'Usa este código para recuperar el acceso tu cuenta: '+verification; /* required */
+            try{
+              let data = await sails.helpers.sendSms(msg,country.prefix+user.mobile);
+              return res.view('pages/front/verify',{error:null,data:data, user:user, method:'mobile'});
+            }catch(err){
+              console.log(err);
+              return res.view('/forgot?error='+err);
+            }
+          }catch(err){
+            switch(err.code){
+              case 'E_UNIQUE':
+                msg = 'El email ya se encuentra registrado';
+                break;
+              default:
+                msg = 'Ocurrió un error en el proceso, Por favor intenta nuevamente.';
+                break;
+            }
+            return res.redirect('/forgot?error='+msg);
+          }
+        }else{
+          msg='Error de Verificación Captcha.';
+          return res.redirect('/forgot?error='+msg);
+        }
+      },req, res);
+    }, req, res);
+
+    rq.on('error', error => {
+      return res.redirect('/forgot?error='+error);
+    }, req, res);
+
+    rq.write(querystring.stringify(data));
+    rq.end();
+  },
   createuser: async function(req, res){
 
     let https = require('https');
@@ -79,11 +141,18 @@ module.exports = {
   },
   validatemail: async function(req, res){
     let code = req.body.code1+req.body.code2+req.body.code3+req.body.code4+req.body.code5+req.body.code6;
-
-
-    let user = await User.updateOne({emailAddress:req.body.email,verification:code}).set({emailStatus:'confirmed'});
-    if(user===undefined){
+    let method = req.body.method;
+    let user = null;
+    if(method==='mobile'){
+      user = await User.updateOne({emailAddress:req.body.email,mobileverification:code}).set({mobileStatus:'confirmed'});
+    }else{
+      user = await User.updateOne({emailAddress:req.body.email,verification:code}).set({emailStatus:'confirmed'});
+    }
+    if(user===null){
       return res.view('pages/front/verify',{error:'El Código Ingresado es incorrecto. verifica el código e intenta nuevamente.'});
+    }else if(method==='mobile'){
+      req.session.user=user;
+      return res.redirect('/account');
     }else if(user.emailStatus==='confirmed'){
       req.session.user=user;
       return res.redirect('/');

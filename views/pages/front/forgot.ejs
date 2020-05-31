@@ -1,0 +1,53 @@
+<% if (req.query.error !== undefined) { %>
+    <div class="notification is-danger is-light" id="error">
+      <button class="delete"></button>
+        <%= req.query.error %>
+    </div>
+  <% } %>
+<div class="columns">
+    <div class="column is-3"></div>
+    <div class="column is-6">
+        <div class="notification is-warning is-light is-small">
+            Enviaremos un código por mensaje de texto SMS al <strong>número móvil registrado</strong> en la cuenta, con el que lograrás modificar tu contraseña.     
+        </div>
+        <div class="box">
+            <form id="forgot-form" method="POST" action="/forgot/code">
+                <input type="hidden" name="token" />
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label" for="email">Digita tu email para recuperar el acceso tu cuenta.</label>
+                            <p class="control has-icons-left">
+                            <input class="input" name="email" type="email" required="required" placeholder="Email">
+                            <span class="icon is-small is-left">
+                                <i class="bx bxs-envelope"></i>
+                            </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <p class="control has-text-align-right">
+                    <button type="submit" id="submit-forgot" class="button is-info">
+                        Ingresar a mi cuenta
+                    </button>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="column is-3"></div>
+</div>
+<script src="https://www.google.com/recaptcha/api.js?render=6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1"></script>
+<script>
+   live('#submit-forgot','click', e => {
+        e.preventDefault();
+        if(validateForm(document.querySelector('#forgot-form'))){
+            grecaptcha.execute('6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1', {action: 'forgot'}).then(token => {
+                document.querySelector('input[name="token"]').value=token;
+                let rform = document.querySelector('#forgot-form');
+                rform.submit();
+            });
+        }
+    });
+</script>
