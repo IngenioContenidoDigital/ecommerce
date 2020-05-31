@@ -95,6 +95,10 @@ module.exports = {
               originalPrice:cp.productvariation.price,
               externalReference:cp.externalReference
             });
+            let pv = await ProductVariation.findOne({id:cp.productvariation.id});
+            if(pv){
+              await ProductVariation.updateOne({id:pv.id}).set({quantity:pv.quantity-=1});
+            }
           }
         }catch(err){
           return exits.error(err);
