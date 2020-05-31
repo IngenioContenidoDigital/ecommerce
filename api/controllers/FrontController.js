@@ -149,7 +149,9 @@ module.exports = {
       for(let i of o.items){
         i.product.images = await ProductImage.findOne({product:i.product.id,cover:1});
         i.productvariation.variation = await Variation.findOne({id:i.productvariation.variation});
-      } 
+      }
+      o.carrier = await Carrier.findOne({id:o.carrier});
+      o.history = await OrderHistory.find({order:o.id}).sort('createdAt ASC').populate('state');
     }
     return res.view('pages/account/orders',{orders:orders,moment:moment,menu:await sails.helpers.callMenu()});
   }

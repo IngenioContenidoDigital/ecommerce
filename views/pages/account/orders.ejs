@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-timeline@3.0.4/dist/css/bulma-timeline.min.css">
 <div class="container">
     <h4 class="title is-4">Tus Pedidos</h4>
     <hr>
@@ -21,34 +22,56 @@
                 <tr><td><strong>Estado:&nbsp;</strong></td><td><p class="container has-text-centered" style="background-color:<%=order.currentstatus.color.code%>;"><span class="is-size-7 has-text-black has-background-white"><%=order.currentstatus.name%></span></p></td></tr>
                 <tr><td><strong>Entregador por:&nbsp;</strong></td><td><%=order.seller.name%></td></tr>
                 <tr><td><strong>Total:&nbsp;</strong></td><td>$&nbsp;<%=order.totalOrder.toFixed().toLocaleString('es-CO')%></td></tr>
-                <tr><td><strong>Dirección de Entrega:&nbsp;</strong></td><td><small><%=order.addressDelivery.addressline1+' '+order.addressDelivery.addressline2%></small></td></tr>
+                <%if(order.tracking!==''){%>
+                  <tr><td><strong>Número de Seguimiento:&nbsp;</strong></td><td><a href="<%=order.carrier.url%>" target="_blank"><%=order.tracking%></a></td></tr>
+                <%}%> 
+                <tr><td><strong>Dirección de Entrega:&nbsp;</strong></td><td><small class="is-uppercase"><%=order.addressDelivery.addressline1+' '+order.addressDelivery.addressline2%></small></td></tr>
               </table>
             </div>
-          <div class="column">
-            <table class="table">
-                <%let list = [];%>
-                <%order.items.forEach(item=>{%>
-                  <%if(!list.includes(item.productvariation.id)){%>
-                    <tr>
-                    <%list.push(item.productvariation.id)%>
-                      <tr>
-                        <td>
-                          <p class="has-text-right is-capitalized is-x-small has-text-weight-bold"><%=item.product.name%></p>
-                          <p class="has-text-right is-capitalized is-x-small has-text-weight-bold"><%=item.product.reference%></p>
-                          <p class="has-text-right is-capitalized is-x-small has-text-weight-bold"><%=item.productvariation.variation.name%></p>
-                          <p class="has-text-right is-capitalized is-x-small has-text-weight-bold">$&nbsp;<%=item.price.toFixed().toLocaleString('es-CO')%>&nbsp;x Unidad</p>
-                        </td>
-                        <td>
-                          <p class="image is-128x128 is-inline-block has-text-left">
-                            <img src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=item.product.images.file%>" />
-                          </p>
-                        </td>
-                      </tr>
-                  <%}%>
-                </tr>
+            <div class="column"> 
+              <div class="timeline">
+                <header class="timeline-header">
+                  <span class="tag is-small is-success">Inicio</span>
+                </header>
+                <% order.history.forEach( h => { %>
+                  <div class="timeline-item is-success">
+                    <div class="timeline-marker is-icon"><i class='bx bxs-flag-alt'></i></div>
+                    <div class="timeline-content">
+                      <p class="heading"><%=moment(h.createdAt).locale('es').format('LLL')%></p>
+                      <p class="is-capitalized is-size-7"><%= h.state.name %></p>
+                    </div>
+                  </div>
                 <%})%>
-              </table>
-          </div>
+                <header class="timeline-header">
+                  <span class="tag is-small is-success">Fin</span>
+                </header>
+              </div>
+            </div>
+            <div class="column">
+              <table class="table">
+                  <%let list = [];%>
+                  <%order.items.forEach(item=>{%>
+                    <%if(!list.includes(item.productvariation.id)){%>
+                      <tr>
+                      <%list.push(item.productvariation.id)%>
+                        <tr>
+                          <td>
+                            <p class="has-text-right is-capitalized is-x-small has-text-weight-bold"><%=item.product.name%></p>
+                            <p class="has-text-right is-capitalized is-x-small has-text-weight-bold"><%=item.product.reference%></p>
+                            <p class="has-text-right is-capitalized is-x-small has-text-weight-bold"><%=item.productvariation.variation.name%></p>
+                            <p class="has-text-right is-capitalized is-x-small has-text-weight-bold">$&nbsp;<%=item.price.toFixed().toLocaleString('es-CO')%>&nbsp;x Unidad</p>
+                          </td>
+                          <td>
+                            <p class="image is-128x128 is-inline-block has-text-left">
+                              <img src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=item.product.images.file%>" />
+                            </p>
+                          </td>
+                        </tr>
+                    <%}%>
+                  </tr>
+                  <%})%>
+                </table>
+            </div>
         </div>
       </div>
     </div>
