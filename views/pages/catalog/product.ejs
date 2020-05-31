@@ -337,7 +337,7 @@
                         <td scope="row" class="align-middle">
                           <div class="field">
                             <div class="select is-primary is-small">
-                              <select required class="is-uppercase" field="variation" name="variations[<%=rowcount%>][variation]">
+                              <select required class="variations is-uppercase" field="variation" name="variations[<%=rowcount%>][variation]">
                                 <option value="0"> -- Seleccionar --</option>
                                 <%if(variations!==null){%>
                                 <% variations.forEach((variation)=>{ %>
@@ -477,27 +477,52 @@
 
       const variations = document.getElementById('variations-table');
 
-        live('#add-row','click',function(e){
-          e.preventDefault();
-          let rowid = variations.rows.length-1;
-          let pricep = document.querySelector('input[name="price_wt"]').value;
-          let referencep = document.querySelector('input[name="reference"]').value;
-          
-          let newrow=[
-           '<td scope="row" class="align-middle"><div class="field"><div class="select is-primary is-small"><select required class="variations is-uppercase" field="variation" name="variations['+rowid+'][variation]"><option value="0"> -- Seleccionar --</option><%if(variations!==null){%><% variations.forEach((variation)=>{ %><option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option><% })%><%}%></select></div></div></td>',
-           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="reference" name="variations['+rowid+'][reference]" value="" placeholder="Referencia"/></div></div></td>',
-           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
-           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
-           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
-           '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
-           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
-           '<td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>'
-          ];
-          let row = variations.insertRow(variations.rows.length);
-          newrow.forEach((cell, index)=>{
-            row.insertCell(index).innerHTML=cell;
+      let valuebefore = '0';
+      let fvalidate = e =>{
+        valuebefore = e.target.value
+        let ctl = e.target;
+        if(ctl.querySelectorAll('option').length<=1){
+          let id = document.querySelector('#product-data').value;
+          io.socket.get('/findvariations/'+id,resData =>{
+            for(let v of resData){
+              let opt = document.createElement('option');
+              opt.innerHTML=v.name;
+              opt.value=v.id
+              ctl.appendChild(opt)
+            }
           });
+        }
+      };
+
+      let addfocus = () => {
+        let svars = document.querySelectorAll('select.variations');
+        for(let sv of svars){
+          sv.addEventListener('focus',fvalidate);
+        }
+      };
+      addfocus();
+      live('#add-row','click',function(e){
+        e.preventDefault();
+        let rowid = variations.rows.length-1;
+        let pricep = document.querySelector('input[name="price_wt"]').value;
+        let referencep = document.querySelector('input[name="reference"]').value;
+        
+        let newrow=[
+          '<td scope="row" class="align-middle"><div class="field"><div class="select is-primary is-small"><select required class="variations is-uppercase" field="variation" name="variations['+rowid+'][variation]"><option value="0"> -- Seleccionar --</option><%if(variations!==null){%><% variations.forEach((variation)=>{ %><option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option><% })%><%}%></select></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="reference" name="variations['+rowid+'][reference]" value="" placeholder="Referencia"/></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
+          '<td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>'
+        ];
+        let row = variations.insertRow(variations.rows.length);
+        newrow.forEach((cell, index)=>{
+          row.insertCell(index).innerHTML=cell;
         });
+        addfocus();
+      });
 
         live('.delete-row','click',function(e){
           e.preventDefault();
@@ -512,7 +537,6 @@
 
         live('#save-variations','click',(e)=>{
           e.preventDefault();
-          console.log(validateForm(document.getElementById('variations-form')));
           if(validateForm(document.getElementById('variations-form'))){
             let id = document.querySelector('#product-data').value;
             let table = document.getElementById('variations-table');
@@ -557,18 +581,16 @@
           }
         });
 
-        live('select.variations','click',e =>{
-          let ctl = e.target;
-          if(ctl.querySelectorAll('option').length<=1){
-            let id = document.querySelector('#product-data').value;
-            io.socket.get('/findvariations/'+id,resData =>{
-              for(let v of resData){
-                let opt = document.createElement('option');
-                opt.innerHTML=v.name;
-                opt.value=v.id
-                ctl.appendChild(opt)
+        live('select.variations','change',e =>{
+          let newval = e.target.value;
+          let all = document.querySelectorAll('select.variations');
+          for(let s of all){
+            if(s!==e.target){
+              if(s.value==newval){
+                alert('Este Valor ya ha sido Seleccionado');
+                e.target.value=valuebefore;
               }
-            });
+            }
           }
         });
 

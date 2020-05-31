@@ -198,11 +198,13 @@ module.exports = {
       rows.push(JSON.parse(req.body[row]));
     }
     for(let list in rows){
-      if(rows[list].productvariation>0){
-        await ProductVariation.updateOne({id:parseInt(rows[list].productvariation)}).set({product:rows[list].product,variation:rows[list].variation,reference:rows[list].reference,supplierreference:rows[list].supplierreference,ean13:rows[list].ean13,upc:rows[list].upc,price:rows[list].price,quantity:rows[list].quantity});
-      }else{
-        await ProductVariation.create({product:rows[list].product,variation:rows[list].variation,reference:rows[list].reference,supplierreference:rows[list].supplierreference,ean13:rows[list].ean13,upc:rows[list].upc,price:rows[list].price,quantity:rows[list].quantity});
-      }
+      ProductVariation.findOrCreate({id:rows[list].productvariation},{product:rows[list].product,variation:rows[list].variation,reference:rows[list].reference,supplierreference:rows[list].supplierreference,ean13:rows[list].ean13,upc:rows[list].upc,price:rows[list].price,quantity:rows[list].quantity})
+      .exec(async (err, record, wasCreated)=>{
+        if(err){return res.send('error');}
+        if(!wasCreated){
+          await ProductVariation.updateOne({id:record.id}).set({product:rows[list].product,variation:rows[list].variation,reference:rows[list].reference,supplierreference:rows[list].supplierreference,ean13:rows[list].ean13,upc:rows[list].upc,price:rows[list].price,quantity:rows[list].quantity});
+        }
+      });
     }
     return res.send('ok');
   },

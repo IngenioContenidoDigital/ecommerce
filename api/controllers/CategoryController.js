@@ -200,8 +200,12 @@ module.exports = {
     if(!req.isSocket){
       return res.badrequest();
     }
-    let route = await sails.helpers.channel.dafiti.sign('GetCategoryTree',(await Seller.findOne({domain:'seventeenst.com'})).id);
-    let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
-    return res.send(JSON.parse(response));
+    try{
+      let route = await sails.helpers.channel.dafiti.sign('GetCategoryTree',(await Seller.findOne({domain:'seventeenst.com'})).id);
+      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+      return res.send(JSON.parse(response));
+    }catch(err){
+      return res.send(err);
+    }
   }
 };
