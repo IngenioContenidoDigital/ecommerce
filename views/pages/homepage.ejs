@@ -11,7 +11,7 @@
             </section>
           <%}else if(main.length==1){%>
             <section style="overflow: hidden;" class="section is-paddingless is-marginless">
-              <div class="container"><a href="<%=m.url%>"><img src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a></div>
+              <div class="container"><a href="<%=main[0].url%>"><img src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a></div>
             </section>
           <%}%>
           <%let featured = slider.filter(el => el.position =='featured');%>
