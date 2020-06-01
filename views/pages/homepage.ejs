@@ -41,15 +41,15 @@
                           <%let vertical = mosaic.filter(el => el.position =='vertical')%>
                           <%if(vertical.length>0){%>
                           <article class="tile is-child notification" style="color:<%=vertical[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= vertical[0].image %>'); background-size: cover;">
-                            <a style="text-decoration: none;" href="<%=vertical[0].url%>" ><p class="title is-capitalized"><%=vertical[0].name%></p>
-                            <p class="subtitle"><%=vertical[0].text%></p></a>
+                            <a style="text-decoration: none;" href="<%=vertical[0].url%>" ><p class="title is-capitalized is-size-5"><%=vertical[0].name%></p>
+                            <p class="subtitle is-size-6"><%=vertical[0].text%></p></a>
                           </article>
                           <%}%>
                           <%let bottom = mosaic.filter(el => el.position =='bottom')%>
                           <%if(bottom.length>0){%>
                             <article class="tile is-child notification" style="color:<%=bottom[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= bottom[0].image %>'); background-size: cover;">
-                              <a style="text-decoration: none;" href="<%=bottom[0].url%>"><p class="title is-capitalized"><%=bottom[0].name%></p>
-                            <p class="subtitle"><%=bottom[0].text%></p></a>
+                              <a style="text-decoration: none;" href="<%=bottom[0].url%>"><p class="title is-capitalized is-size-5"><%=bottom[0].name%></p>
+                            <p class="subtitle is-size-6"><%=bottom[0].text%></p></a>
                           </article>
                           <%}%>
                         </div>
@@ -58,8 +58,8 @@
                         <%if(middle.length>0){%>
                           <div class="tile is-parent">
                             <article class="tile is-child notification" style="color:<%=middle[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= middle[0].image %>'); background-size: cover;">
-                              <a style="text-decoration: none;" href="<%=middle[0].url%>" ><p class="title is-capitalized"><%=middle[0].name%></p>
-                              <p class="subtitle"><%=middle[0].text%></p></a>
+                              <a style="text-decoration: none;" href="<%=middle[0].url%>" ><p class="title is-capitalized is-size-5"><%=middle[0].name%></p>
+                              <p class="subtitle is-size-6"><%=middle[0].text%></p></a>
                               <div class="content" style="min-height:180px;">
                                 <!-- Content -->
                               </div>
@@ -71,8 +71,8 @@
                       <%if(wide.length>0){%>
                       <div class="tile is-parent">
                         <article class="tile is-child notification" style="color:<%=wide[0].textColor.code%>; background-image: url('<%=imgurl%>/images/slides/<%= wide[0].image %>'); background-size: cover;">
-                          <a style="text-decoration: none;" href="<%=wide[0].url%>"><p class="title is-capitalized"><%=wide[0].name%></p>
-                          <p class="subtitle"><%=wide[0].text%></p>
+                          <a style="text-decoration: none;" href="<%=wide[0].url%>"><p class="title is-capitalized is-size-5"><%=wide[0].name%></p>
+                          <p class="subtitle is-size-6"><%=wide[0].text%></p>
                           <div style="min-height:250px;" class="content">
                             <!-- Content -->
                           </div></a>
@@ -86,8 +86,8 @@
                     <div class="tile is-parent" style="color:<%=tall[0].textColor.code%>">
                       <article class="tile is-child notification" style="color:<%=tall[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= tall[0].image %>'); background-size: cover;">
                         <a style="text-decoration: none;" href="<%=tall[0].url%>"><div class="content">
-                          <p class="title is-capitalized"><%=tall[0].name%></p>
-                          <p class="subtitle"><%=tall[0].text%></p>
+                          <p class="title is-capitalized is-size-5"><%=tall[0].name%></p>
+                          <p class="subtitle is-size-6"><%=tall[0].text%></p>
                           <div class="content" style="min-height: 320px;">
                             <!-- Content -->
                           </div>
