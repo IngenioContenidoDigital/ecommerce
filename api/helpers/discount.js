@@ -15,38 +15,32 @@ module.exports = {
   fn: async function (inputs, exits) {
     let id = inputs.id;
     let moment = require('moment');
-    /*let discount = await Product.findOne({id:id}).populate('discount',
+    let product = await Product.findOne({id:id})
+    .populate('tax')
+    .populate('discount',
     {
       where:{
         to:{'>=':moment().valueOf()},
         from:{'<=':moment().valueOf()}
       },
-      limit:1,
-      sort: 'createdAt ASC'});*/
+      sort: 'createdAt ASC'});
 
-    let discount = await CatalogDiscount.findOne({
-      where:{
-        to:{'>=':moment().valueOf()},
-        from:{'<=':moment().valueOf()},
-      },
-    }).populate('products',{id:id});
     let discPrice=0;
     let discAmount=0;
-    let product = await Product.findOne({id:id}).populate('tax');
-    if(discount!==undefined && discount.products.length>=1){
-      switch(discount.type){
+    if(product.discount.length>0){
+      switch(product.discount[0].type){
         case 'P':
-          discPrice+=((product.price)-(product.price*(discount.value/100)))*(1+(product.tax.value/100));
-          discAmount+=(product.price*(discount.value/100));
+          discPrice+=((product.price)-(product.price*(product.discount[0].value/100)))*(1+(product.tax.value/100));
+          discAmount+=(product.price*(product.discount[0].value/100));
           break;
         case 'C':
-          discPrice+=(product.price-discount.value)*(1+(product.tax.value/100));
-          discAmount+=discount.value;
+          discPrice+=(product.price-product.discount[0].value)*(1+(product.tax.value/100));
+          discAmount+=product.discount[0].value;
           break;
       }
-      discount.price=discPrice;
-      discount.amount=discAmount;
-      return exits.success(discount);
+      product.discount[0].price=discPrice;
+      product.discount[0].amount=discAmount;
+      return exits.success(product.discount[0]);
     }else{
       return exits.success();
     }

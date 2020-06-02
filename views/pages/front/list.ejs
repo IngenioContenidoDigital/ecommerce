@@ -1,15 +1,26 @@
 <div class="container">
+    <%if(object.products.length<1){%>
+    <div class="columns">
+        <div class="column is-centered">
+            <br> <br>
+            <div class="container is-fluid">
+                <h4 class="title is-4">Tu búsqueda no arrojó ningún resultado.</h4>
+                <p class="box">Lo Sentimos, no hemos localizado ningun resultado para <span class="is-italic has-text-weight-bold"><%= object.search %></span>. Intenta con palabras similares</p>
+            </div>
+            <hr>
+        </div>
+    </div>
+    <%}else{%>
     <div class="columns is-centered">
         <div class="column is-2">
             <div id="filter">
-                <p id="filter-title" class="has-text-centered has-text-weight-bold is-size-7">
-                    Filtros (Ver/Ocultar)
+                <p id="filter-title" class="box has-text-centered has-text-weight-bold is-size-7 is-uppercase is-marginless has-text-dark">
+                    Filtrar Productos
                     <span class="icon is-pulled-right">
-                        <i class='bx bx-filter-alt'></i>
+                        <i class='bx bx-filter-alt is-size-6'></i>
                     </span>
                 </p>
-                <br>
-                <div class="container box is-paddingless" id="filter-container">
+                <div class="container box is-paddingless is-hidden-mobile" id="filter-container">
                     <div class="notification is-marginless has-background-white">
                         <p class="is-size-7 has-text-weight-bold">Marca</p>
                         <div class="select is-small is-info">
@@ -44,13 +55,9 @@
                 </div>
             </div>
         </div>
-        <div class="column is-8">
+        <div class="column is-10">
             <%if(object.logo!== undefined && object.logo!== null && object.logo!==''){%>
-            <section class="hero">
-                <figure class="image is-3by1 is-inline">
-                    <img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>">
-                </figure>
-            </section>
+                <p class="has-text-centered"><img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
             <%}%>
             <%if(typeof object.children == 'object' && object.children.length>0){%>
                 <div class="container">
@@ -68,44 +75,34 @@
             <div class="container" itemscope itemtype="https://schema.org/ItemList">
             <% object.products.forEach((product)=>{ %>
                 <%if(product.active){ %>
-                    <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-inline-block is-size-7 has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
+                    <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
                         <span class="is-hidden" itemprop="productID"><%=product.id%></span>
-                        <div class="card-image has-text-centered">
+                        <div class="card-image has-badge-danger has-badge-rounded has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
                             <figure class="image is-256x256 is-inline-block">
-                                <a itemprop="url" href="/list/product/<%=product.id%>"><img itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
+                                <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>"><img itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
                             </figure>
-                            <div itemprop="description" class="is-hidden"><%-product.description%></div>
-                            <div itemprop="disambiguatingDescription" class="is-hidden"><%-product.descriptionShort%></div>
                         </div>
                         <div class="card-content">
-                            <div class="media-content">
-                                <div class="columns is-mobile">
-                                    <div class="column is-10">
-                                        <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>
-                                        &nbsp;-&nbsp;<span gender="<%=product.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=product.gender.name%></span>
-                                    </div>
-                                    <div class="column is-2">
-                                       <p class="has-text-right"><span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></p>
-                                    </div>
+                                <div itemprop="description" class="is-hidden"><%-product.description%></div>
+                                <div itemprop="disambiguatingDescription" class="is-hidden"><%-product.descriptionShort%></div>
+                                <span class="is-pulled-right"><span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></span>
+                                <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>&nbsp;-&nbsp;<span gender="<%=product.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=product.gender.name%></span>
+                                <p itemprop="name" class="has-text-weight-bold is-uppercase"><%=product.name%></p>
+                                <span class="is-hidden" itemprop="sku"><%=product.reference%></span>
+                                <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                                    <meta itemprop="priceCurrency" content="COP">
+                                    <%if(product.discount!==null && product.discount!==undefined){%>
+                                        <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
+                                            <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                            <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                            <span class="is-hidden" itemprop="offerCount">1</span>
+                                        </div>
+                                        <span itemprop="price" class="is-hidden">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                    <%}else{%>
+                                        <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                    <%}%>
                                 </div>
-                            </div>
-                            <p itemprop="name" class="has-text-weight-bold is-uppercase"><%=product.name%></p>
-                            <span class="is-hidden" itemprop="sku"><%=product.reference%></span>
-                            <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                                <meta itemprop="priceCurrency" content="COP">
-                            <%if(product.discount!==null && product.discount!==undefined){%>
-                                <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
-                                    <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
-                                    <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
-                                    <span class="is-hidden" itemprop="offerCount">1</span>
-                                </div>
-                                <span itemprop="price" class="is-hidden">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
-                            <%}else{%>
-                                <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
-                            <%}%>
-                            </div>
-                            <div class="media-content">
-                                <hr>
+                                <br>
                                 <div class="columns">
                                     <div class="column">
                                         <div class="select is-primary is-size-7 is-fullwidth">
@@ -123,23 +120,25 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                         </div>
                     </div>
                 <%} %>
             <%})%>
             </div>
-        </div>
-        <div class="column is-2"></div>
+        </div>        
     </div>
+    <%}%>
 </div>
+<br><br>
 <script>
     live('#filter-title','click',e=>{
         content = document.querySelector('#filter-container');
         if(!hasClass(content,'is-hidden')){
             addClass(content,'is-hidden');
+            addClass(content,'is-hidden-mobile');
         }else{
             removeClass(content,'is-hidden');
+            removeClass(content,'is-hidden-mobile');
         }
     });
 

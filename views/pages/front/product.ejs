@@ -43,7 +43,7 @@
                             <span class="is-hidden" itemprop="offerCount">1</span>
                         </div>
                     <%}else{%>
-                      <tr><td>Precio:</td><td itemprop="price" class="has-text-right">$&nbsp;<%= Math.round(product.price).toLocaleString("es-CO"); %></td></tr>
+                      <tr><td>Precio:</td><td itemprop="price" class="has-text-right">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO"); %></td></tr>
                     <%}%>
                 </table>
                 </div>
@@ -188,3 +188,4 @@
     })
 
 </script>
+<br><br>

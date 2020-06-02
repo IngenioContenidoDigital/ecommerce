@@ -1,4 +1,29 @@
 <div class="container">
-    <h4 class="title is-4">Tus Datos</h4>
+    <h6 class="title is-6">Información de tu cuenta</h6>
     <hr>
+    <div class="card">
+        <div class="card-image">
+        </div>
+        <div class="card-content">
+          <div class="media">
+            <div class="media-left">
+              <figure class="image is-48x48">
+                <img src="/images/user-icon.webp" alt="Perfil de usuario">
+              </figure>
+            </div>
+            <div class="media-content">
+              <p class="title is-4"><%=user.fullName%></p>
+              <p class="subtitle is-6"><%=user.emailAddress%></p>
+            </div>
+          </div>
+      
+          <div class="content">
+            <p class="is-size-7">Identificación:&nbsp;<%=user.dniType%>&nbsp;-&nbsp;<%=user.dni%></p>
+            <p class="is-size-7">Teléfono:&nbsp;<%=user.mobile%></p>
+            <a href="/addresses">Administrar Direcciones</a>
+            <br>
+          </div>
+        </div>
+      </div>
+    <br><br>
 </div>

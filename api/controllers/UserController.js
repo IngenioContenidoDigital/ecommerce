@@ -8,7 +8,8 @@
 module.exports = {
   registerform: async function(req, res){
     let countries = await Country.find();
-    return res.view('pages/front/register',{countries:countries});
+    let referer = req.param('referer') ? req.param('referer') : '/';
+    return res.view('pages/front/register',{referer:referer,countries:countries});
   },
   forgot: async (req, res)=>{
     return res.view('pages/front/forgot');
@@ -94,6 +95,7 @@ module.exports = {
         let msg='';
         if(captcha.success){
           let verification = randomize('0',6);
+          let referer = req.param('referer');
           try{
             let country = await Country.findOne({id:req.body.country});
             let profile = await Profile.findOne({name:'customer'});
@@ -113,7 +115,7 @@ module.exports = {
             req.session.user=user;
             //Enviar un Email de Verificación con el código para validar.
             await sails.helpers.sendEmail('email-verify',{fullName:user.fullName,verification:verification},user.emailAddress,'Verifica tu Cuenta');
-            return res.view('pages/front/verify',{error:null});
+            return res.view('pages/front/verify',{error:null, referer:referer});
           }catch(err){
             switch(err.code){
               case 'E_UNIQUE':
@@ -142,22 +144,23 @@ module.exports = {
   validatemail: async function(req, res){
     let code = req.body.code1+req.body.code2+req.body.code3+req.body.code4+req.body.code5+req.body.code6;
     let method = req.body.method;
+    let redirect = req.body.referer;
     let user = null;
     if(method==='mobile'){
       user = await User.updateOne({emailAddress:req.body.email,mobileverification:code}).set({mobileStatus:'confirmed'});
     }else{
       user = await User.updateOne({emailAddress:req.body.email,verification:code}).set({emailStatus:'confirmed'});
     }
-    if(user===null){
-      return res.view('pages/front/verify',{error:'El Código Ingresado es incorrecto. verifica el código e intenta nuevamente.'});
+    if(user=== undefined || user===null){
+      return res.view('pages/front/verify',{referer:redirect,error:'El Código Ingresado es incorrecto. verifica el código e intenta nuevamente.'});
     }else if(method==='mobile'){
       req.session.user=user;
       return res.redirect('/account');
     }else if(user.emailStatus==='confirmed'){
       req.session.user=user;
-      return res.redirect('/');
+      return res.redirect(redirect);
     }else{
-      return res.view('pages/front/verify',{error:'Error en el proceso. Por favor Verifica e intenta nuevamente.'});
+      return res.view('pages/front/verify',{referer:redirect,error:'Error en el proceso. Por favor Verifica e intenta nuevamente.'});
     }
   },
   users: async (req, res)=>{

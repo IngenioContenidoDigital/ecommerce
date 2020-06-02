@@ -46,20 +46,22 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-
-    const epayco = await sails.helpers.payment.init();
+    let epayco = null;
     switch(inputs.data.mode){
       case 'CC':
+        epayco = await sails.helpers.payment.init('CC');
         epayco.charge.create(inputs.data.info)
                 .then(charge => {return exits.success(charge);})
                 .catch(err => {return exits.error(err);});
         break;
       case 'PSE':
+        epayco = await sails.helpers.payment.init('PSE');
         epayco.bank.create(inputs.data.info)
                 .then(bank => {return exits.success(bank);})
                 .catch(err => {return exits.error(err);});
         break;
       case 'CS':
+        epayco = await sails.helpers.payment.init('CS');
         epayco.cash.create(inputs.data.method.toLowerCase().trim(), inputs.data.info)
         .then(cash => {return exits.success(cash);})
         .catch(err => {return exits.error(err);});

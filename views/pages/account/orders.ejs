@@ -82,9 +82,15 @@
 </div>
 <script>
   live('.icon','click',e=>{
+    e.preventDefault();
+    let all = document.querySelectorAll('.card-content');
+    for(let a of all){
+      addClass(a,'is-hidden')
+    }
     let content = e.target.parentNode.parentNode.parentNode.parentNode.querySelector('.card-content');
     if(hasClass(content,'is-hidden')){
       removeClass(content,'is-hidden')
+      content.focus();
     }else{
       addClass(content,'is-hidden')
     }

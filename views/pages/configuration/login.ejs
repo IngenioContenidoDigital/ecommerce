@@ -10,7 +10,7 @@
         <div class="box">
             <form method="POST" action="/login" id="login-form">
             <input type="hidden" <%if(typeof referer!=='string'){%>value="/"<%}else{%>value="<%=referer%>"<%}%> name="referer" />
-              <a class="link is-pulled-right" href="/register">Crear una cuenta</a>
+              <a class="link is-pulled-right" href="/register<%if(typeof referer==='string'){%>?referer=<%=referer%><%}%>">Crear una cuenta</a>
               <div class="field">
                 <label class="label">Email</label>
                 <div class="control has-icons-left has-icons-right">
@@ -20,16 +20,20 @@
                   </span>
                 </div>
               </div>
-              <div class="field">
-                <a class="link is-pulled-right" href="/forgot">Olvidé mi contraseña </a>
-                <label class="label">Contraseña</label>
-                <div class="control has-icons-left has-icons-right">
-                  <input class="input" name="password" type="password" required placeholder="Contraseña" autocomplete="off"/>
-                  <span class="icon is-small is-left">
-                    <i class="bx bx-lock"></i>
-                  </span>
-                </div>
-              </div>
+              <label class="label">Contraseña<a class="link is-pulled-right has-text-weight-normal" href="/forgot">Olvidé mi contraseña </a></label>
+              <div class="field has-addons">
+                <p class="control has-icons-left is-expanded">
+                <input class="input pass" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
+                <span class="icon is-small is-left">
+                    <i class='bx bxs-lock-alt'></i>
+                </span>
+                </p>
+                <p class="control" id="ojo">
+                    <a class="button" id="eye">
+                        <i class='bx bx-low-vision' ></i>
+                    </a>
+                </p>
+            </div>
               <div class="field is-grouped">
                   <div class="control">
                     <button id="enter" class="button is-info">Entrar</button>
@@ -44,3 +48,15 @@
     </div>
   </div>
 </div>
+<script>
+  live('#eye','click',e =>{
+        let pass = document.querySelector('.pass');
+        if(pass.type==='password'){
+            pass.type='text';
+            addClass(document.querySelector('#ojo > .button'),'is-danger');
+        }else{
+            pass.type='password';
+            removeClass(document.querySelector('#ojo > .button'),'is-danger');
+        }
+    })
+</script>

@@ -10,6 +10,7 @@
     <hr>
     <form id="register-form" method="POST" action="/register">
         <input type="hidden" name="token" />
+        <input type="hidden" name="referer" value="<%=referer%>"/>
         <div class="columns">
             <div class="column">
                 <div class="field">
@@ -85,7 +86,7 @@
             <i class='bx bxs-lock-alt'></i>
         </span>
         </p>
-        <p class="control">
+        <p class="control" id="ojo">
             <a class="button" id="eye">
                 <i class='bx bx-low-vision' ></i>
             </a>
@@ -107,8 +108,10 @@
         let pass = document.querySelector('.pass');
         if(pass.type==='password'){
             pass.type='text';
+            addClass(document.querySelector('#ojo > .button'),'is-danger');
         }else{
             pass.type='password';
+            removeClass(document.querySelector('#ojo > .button'),'is-danger');
         }
     })
 

@@ -166,20 +166,35 @@ module.exports = {
 
   },
   listproduct: async function(req, res){
-    let product = await Product.findOne({id:req.param('id')})
-    .populate('manufacturer')
-    .populate('mainColor')
-    .populate('tax')
-    .populate('variations')
-    .populate('images');
+    let product = await Product.findOne({name:decodeURIComponent(req.param('name'))})
+      .populate('manufacturer')
+      .populate('mainColor')
+      .populate('tax')
+      .populate('variations')
+      .populate('images');
 
     let discount = await sails.helpers.discount(product.id);
+    let title = product.name;
+    let description = product.descriptionShort.replace(/<\/?[^>]+(>|$)/g, '')+' '+product.description.replace(/<\/?[^>]+(>|$)/g, '');
+    let words = product.name.split(' ');
+    let keywords = [product.manufacturer.name, product.reference, product.mainColor.name];
+    for(let word of words){
+      keywords.push(word);
+    }
+    keywords = keywords.join(',');
 
     for(let size of product.variations){
       size.variation=await Variation.findOne({id:size.variation});
     }
 
-    return res.view('pages/front/product',{product:product, discount:discount, tag:await sails.helpers.getTag(req.hostname), menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/product',{
+      product:product,
+      discount:discount,
+      title:title,
+      description:description,
+      keywords:keywords,
+      tag:await sails.helpers.getTag(req.hostname), 
+      menu:await sails.helpers.callMenu()});
   }
 };
 

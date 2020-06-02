@@ -133,7 +133,8 @@ module.exports = {
     return res.view('pages/account/account',{menu:await sails.helpers.callMenu()});
   },
   user: async (req, res)=>{
-    return res.view('pages/account/user',{menu:await sails.helpers.callMenu()});
+    let user = await User.findOne({id:req.param('id')});
+    return res.view('pages/account/user',{user:user, menu:await sails.helpers.callMenu()});
   },
   orders: async (req, res)=>{
     let moment = require('moment');

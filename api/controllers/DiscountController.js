@@ -134,8 +134,8 @@ module.exports = {
       await CartDiscount.create({
         name:req.body.name.toLowerCase().trim(),
         code: req.body.code,
-        from:moment(range[0]),
-        to:moment(range[1]),
+        from:moment(range[0]).valueOf(),
+        to:moment(range[1]).valueOf(),
         type:req.body.type,
         value:req.body.value
       });
