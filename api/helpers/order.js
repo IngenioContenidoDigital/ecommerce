@@ -46,7 +46,7 @@ module.exports = {
           if(cart.discount.type==='P'){
             totaldiscount = carttotal*(cart.discount.value/100);
           }else{
-            totaldiscount = carttotal-cart.discount.value;
+            totaldiscount = cart.discount.value;
           }
           total = carttotal - totaldiscount;
         }else{

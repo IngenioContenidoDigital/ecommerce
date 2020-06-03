@@ -63,7 +63,7 @@ module.exports = {
       if(cart.discount.type==='P'){
         discount = cartvalue*(cart.discount.value/100);
       }else{
-        discount = cartvalue-cart.discount.value;
+        discount = cart.discount.value;
       }
       req.session.cart.discount = discount;
       req.session.cart.total = cartvalue-discount;
@@ -101,7 +101,7 @@ module.exports = {
       if(code.type==='P'){
         discount = req.session.cart.total*(code.value/100);
       }else{
-        discount = req.session.cart.total-code.value;
+        discount = code.value;
       }
       req.session.cart.code = code.code;
       req.session.cart.discount = discount;
