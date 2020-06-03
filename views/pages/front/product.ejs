@@ -73,15 +73,13 @@
         </div>
         <div class="column is-one-fifth has-text-centered">
             <div class="box">
-                <p id="avail" class="has-text-centered">Para comprar elige <b>Talla</b></p>
+                <p id="avail" class="has-text-centered has-text-info">Para comprar elige <b>Talla</b></p>
                 <div class="select is-small is-hidden">                    
                 <select name="quantity">
                 </select>
                 </div>
-                <br><br>
-                <div class="buttons is-centered">
-                    <button id="add-to-cart" product="<%=product.id%>" disabled="disabled" class="button is-size-5 is-size-6-tablet has-text-weight-bold"><i class='bx bx-cart-alt is-size-5 is-dark'></i> &nbsp;Agregar al carrito</button>
-                </div>
+                <br><br>                
+                <a id="add-to-cart" product="<%=product.id%>" disabled="disabled" class="button has-text-weight-bold is-flex is-size-7-tablet is-fullwidth"><i class='bx bx-cart-alt is-dark'></i>&nbsp;Agregar al carrito</a>
             </div>
         </div>
     </div>
@@ -158,14 +156,14 @@
                     removeClass(label, 'has-text-success');
                     addClass(label, 'has-text-danger');
                 }
-                add.disabled=false;
+                add.removeAttribute("disabled");
             } else {
                 label.innerHTML='No hay unidades Disponibles'
                 removeClass(label, 'has-text-success');
                 addClass(label, 'has-text-danger');
                 addClass(quantity.parentNode,'is-hidden');
                 removeClass(add,'is-warning');
-                add.disabled=true;
+                add.setAttribute('disabled','disabled');
             }
         }else{
             label.innerHTML='Para comprar elige <b>Talla</b>';
@@ -175,16 +173,19 @@
             addClass(sizet,'is-hidden');
             sizet.innerHTML='';
             removeClass(add,'is-warning');
-            add.disabled=true;
+            add.setAttribute('disabled','disabled');
         }
     })
 
     live('#add-to-cart','click',(e)=>{
-        let qty = document.querySelector('select[name="quantity"]').value
-        let vrt = document.querySelector('select[name="variations"]').value
-        io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create'},(resData)=>{
-            window.location.href='/cart';
-        });
+        e.preventDefault();
+        if(e.target.getAttribute('disabled')!=='disabled'){
+            let qty = document.querySelector('select[name="quantity"]').value
+            let vrt = document.querySelector('select[name="variations"]').value
+            io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create'},(resData)=>{
+                window.location.href='/cart';
+            });
+        }
     })
 
 </script>

@@ -11,23 +11,28 @@
       <%if(typeof menu=='object'){%>
         <% menu.children.forEach(child =>{%>
             <div class="navbar-item has-dropdown is-hoverable is-mega">
-                <div class="navbar-link is-capitalized"><a class="has-text-dark" href="/ver/categoria/<%=child.url%>"><%=child.name%></a></div>
+                <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="/ver/categoria/<%if(child.parent.url!==null){%><%=child.parent.url%>/<%}%><%=child.url%>"><%=child.name%></a></div>
                 <div class="navbar-dropdown">
                   <div class="container is-fluid">
                     <div class="columns">
                       <div class="column">
                         <br>
-                        <a href="/ver/categoria/<%=child.url%>"><h1 class="title is-7 is-mega-menu-title is-uppercase"><%=child.name%></h1></a>
-                        <br>
                         <div class="columns">
-                        <%child.children.children.forEach(c =>{%>
+                        <%child.children.forEach(c =>{%>
                           <%if(c.active){%>
                           <div class="column">
-                              <a class="navbar-item is-capitalized" href="/ver/categoria/<%=c.url%>">
-                                  <div class="navbar-content">
-                                    <p class="has-text-centered"><%=c.name%></p>
-                                  </div>
+                              <a class="navbar-item is-uppercase" href="/ver/categoria/<%if(c.parent.url!==null){%><%=c.parent.url%>/<%}%><%=c.url%>">
+                                <p class="is-size-7 has-text-left has-text-weight-bold"><%=c.name%></p>
                               </a>
+                              <hr class="is-marginless is-paddingless">
+                              <br>
+                              <div class="navbar-content">
+                                <%if(c.hasChildren){%>
+                                    <%c.children.forEach(d => {%>
+                                      <a class="navbar-item is-uppercase is-size-7" href="/ver/categoria/<%=c.url%>/<%=d.url%>"><%=d.name%></a>
+                                    <%})%>
+                                <%}%>
+                              </div>
                           </div>
                           <%}%>
                         <%})%>
@@ -35,6 +40,7 @@
                       </div>
                     </div>
                   </div>
+                  <br>
                 </div>
               </div>
         <%})%>

@@ -5,7 +5,7 @@
             <br> <br>
             <div class="container is-fluid">
                 <h4 class="title is-4">Tu búsqueda no arrojó ningún resultado.</h4>
-                <p class="box">Lo Sentimos, no hemos localizado ningun resultado para <span class="is-italic has-text-weight-bold"><%= object.search %></span>. Intenta con palabras similares</p>
+                <p class="box">Lo sentimos, no hemos localizado ningun resultado para <span class="is-italic has-text-weight-bold"><%if(typeof object.search ==='string'){%><%= object.search %><%}else{%>esta opción<%}%></span>. Intenta nuevamente.</p>
             </div>
             <hr>
         </div>
@@ -61,13 +61,15 @@
             <%}%>
             <%if(typeof object.children == 'object' && object.children.length>0){%>
                 <div class="container">
-                    <p class="has-text-centered" style="margin-top:7px;">
+                    <div class="columns is-centered">
                     <% object.children.forEach(children=>{ %>
                         <%if(children.active){%>
-                          <a href="/ver/categoria/<%=children.url%>"><span class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
+                          <div class="column has-text-centered">
+                            <a href="/ver/categoria/<%if(children.parent.url!==null){%><%=children.parent.url%>/<%}%><%=children.url%>"><span style="min-width:100%;" class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
+                          </div>
                         <%}%>
                     <%});%>
-                    </p>
+                    </div>
                 </div>
                 <br>
             <%}%>

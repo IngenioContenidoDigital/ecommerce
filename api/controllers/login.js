@@ -23,6 +23,9 @@ password attempt.`,
     },
     referer:{
       type:'string'
+    },
+    facebookToken:{
+      type:'string'
     }
 
   },
@@ -66,12 +69,14 @@ and exposed as \`req.me\`.)`
     let userRecord = null;
     userRecord = await User.findOne({emailAddress: inputs.emailAddress.toLowerCase().trim(),});
     if(!userRecord){
-      return exits.badCombo({error:'El Email ingresado es Incorrecto'});
+      return exits.badCombo({error:'El Email ingresado es Incorrecto.'});
     }
-    try{
-      await sails.helpers.passwords.checkPassword(inputs.password, userRecord.password);
-    }catch(err){
-      return exits.badCombo({error:err.code+' La Contraseña es incorrecta'});
+    if(inputs.facebookToken==='' || inputs.facebookToken===null || inputs.facebookToken===undefined){
+      try{
+        await sails.helpers.passwords.checkPassword(inputs.password, userRecord.password);
+      }catch(err){
+        return exits.badCombo({error:err.code+' La Contraseña es incorrecta'});
+      }
     }
     if (inputs.rememberMe) {
       if (this.req.isSocket) {

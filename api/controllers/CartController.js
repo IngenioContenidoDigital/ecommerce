@@ -23,7 +23,7 @@ module.exports = {
         cartproduct.productvariation.variation = await Variation.findOne({id:cartproduct.productvariation.variation});
       }
     }
-    return res.view('pages/front/cart',{cart:cart,tag:await sails.helpers.getTag(req.hostname)});
+    return res.view('pages/front/cart',{cart:cart,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   },
   addtocart: async function(req, res){
     if (!req.isSocket) {

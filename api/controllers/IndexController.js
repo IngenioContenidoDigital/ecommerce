@@ -49,15 +49,20 @@ module.exports = {
     return res.view('pages/front/checkout', {addresses:addresses, cart:cart, error:error, tokens:tokens,tag:await sails.helpers.getTag(req.hostname)});
   },
   list: async function(req, res){
-
     let entity = req.param('entity');
     let ename = req.param('name');
     let object = null;
     switch(entity){
       case 'categoria':
         try{
-          object = await Category.findOne({url:ename}).populate('products').populate('children');
+          let parent = await Category.findOne({url:req.param('parent')});
+          object = await Category.findOne({url:ename, parent:parent.id})
+          .populate('products')
+          .populate('children');
           object.route = '/images/categories/';
+          for(let c of object.children){
+            c.parent = await Category.findOne({id:c.parent});
+          }
         }catch(err){
           return res.notFound(err);
         }
@@ -195,6 +200,18 @@ module.exports = {
       keywords:keywords,
       tag:await sails.helpers.getTag(req.hostname), 
       menu:await sails.helpers.callMenu()});
+  },
+  cms: async (req,res)=>{
+    let content = '';
+    switch(req.param('tipo')){
+      case 'terminos-y-condiciones':
+        content='Terminos y Condiciones del Sitio';
+        break;
+      case 'politica-de-privacidad':
+        content='Politica de Privacidad y Manejo de datos Personales';
+        break;
+    }
+    return res.view('pages/front/cms',{content:content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   }
 };
 

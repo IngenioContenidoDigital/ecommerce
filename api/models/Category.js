@@ -9,7 +9,7 @@ module.exports = {
 
   attributes: {
 
-    name:{type:'string', required:true, unique:true},
+    name:{type:'string', required:true},
     logo:{type:'string'},
     description:{type:'string'},
     active:{type:'boolean', required:true},

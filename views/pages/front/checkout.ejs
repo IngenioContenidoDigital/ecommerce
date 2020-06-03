@@ -467,6 +467,8 @@
         
         if(checkSection(address,'address-message') && checkSection(payment,'payment-message') && validateForm(forder)){
             forder.submit();
+        }else{
+            window.scrollTo({top: 0, behavior: 'smooth' });
         }
     })
 

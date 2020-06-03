@@ -10,6 +10,7 @@
         <div class="box">
             <form method="POST" action="/login" id="login-form">
             <input type="hidden" <%if(typeof referer!=='string'){%>value="/"<%}else{%>value="<%=referer%>"<%}%> name="referer" />
+            <input type="hidden" name="facebookToken" value="" />
               <a class="link is-pulled-right" href="/register<%if(typeof referer==='string'){%>?referer=<%=referer%><%}%>">Crear una cuenta</a>
               <div class="field">
                 <label class="label">Email</label>
@@ -34,7 +35,9 @@
                     </a>
                 </p>
             </div>
-              <div class="field is-grouped">
+            <div class="columns">
+              <div class="column">
+                <div class="field is-grouped">
                   <div class="control">
                     <button id="enter" class="button is-info">Entrar</button>
                   </div>
@@ -42,6 +45,18 @@
                     <a href="/" id="cancel" class="button is-light">Cancelar</a>
                   </div>
               </div>
+              </div>
+              <div class="column">
+                <p class="has-text-right">
+                  <a href="#" id="facebook" class="button is-link is-outlined is-fullwidth">
+                    <span class="icon is-size-4">
+                      <i class='bx bxl-facebook' ></i>
+                    </span>
+                    &nbsp;&nbsp;&nbsp;Entrar con Facebook
+                  </a>
+                </p>
+              </div>
+            </div>
             </form>
           </div>
           <br><br>
@@ -58,5 +73,39 @@
             pass.type='password';
             removeClass(document.querySelector('#ojo > .button'),'is-danger');
         }
-    })
+    });
+
+    live('#facebook','click',e=>{
+      e.preventDefault();
+      FB.getLoginStatus(function(response) {
+      if (response.status == 'connected') {
+        getCurrentUserInfo(response);
+      } else {
+        FB.login(function(response) {
+          if (response.authResponse){
+            getCurrentUserInfo(response)
+          } else {
+            let node = document.querySelector('#login-form').parentNode.parentNode;
+            let msg = document.createElement('div');
+            msg.innerHTML = 'Login con Facebook Cancelado';
+            msg.id='error';
+            addClass(msg,'notification')
+            addClass(msg,'is-danger')
+            addClass(msg,'is-light')
+            node.insertBefore(msg, node.firstChild)
+          }
+        }, { scope: 'public_profile,email' });
+      }
+    });
+
+      function getCurrentUserInfo(r) {
+        FB.api('/me',{"fields":"id,name,birthday,email,about,cover"}, function(userInfo) {
+          userInfo.accessToken = r.authResponse.accessToken;
+          document.querySelector('input[name="facebookToken"]').value=userInfo.accessToken;
+          document.querySelector('input[name="emailAddress"]').value=userInfo.email;
+          document.querySelector('input[name="password"]').value=userInfo.id;
+          document.querySelector('#login-form').submit();
+        });
+      }
+    });
 </script>
