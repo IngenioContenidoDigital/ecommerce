@@ -13,7 +13,7 @@
             <div class="field">
                 <h4 class="title is-size-4">Verifica tu cuenta</h4>
                 <%if(typeof method ==='string' && method==='mobile'){%>
-                    <h2 class="subtitle is-size-6">Ingresa el Código que enviamos vía <strong>mensaje de texto SMS</strong> a tu número *******<%=user.mobile.substring(user.mobile.length-4)%> para validar tu cuenta</h2>
+                    <h2 class="subtitle is-size-6">Ingresa el Código que enviamos vía <strong>mensaje de texto SMS</strong> a tu número *******<%=user.mobile.toString().substring((user.mobile.toString()).length-4)%> para validar tu cuenta</h2>
                 <%}else{%>
                     <h2 class="subtitle is-size-6">Ingresa el Código que enviamos a tu <strong>Email <%=session.user.emailAddress.substring(0,3)%>*****@******<%=session.user.emailAddress.substring(session.user.emailAddress.length-4)%></strong> para validar tu cuenta.</h2>
                 <%}%>
