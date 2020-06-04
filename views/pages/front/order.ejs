@@ -98,7 +98,11 @@
                   </div>
             <%}%>
             </nav>
-            <section class="hero is-success">
+          <section class="hero 
+            <%if(order[0].currentstatus.name==='aceptado'){%>is-success<%}%>
+            <%if(order[0].currentstatus.name==='pendiente'){%>is-warning<%}%>
+            <%if(order[0].currentstatus.name==='fallido' || order[0].currentstatus.name==='rechazado'){%>is-danger<%}%>
+          ">
                 <div class="hero-body">
                   <div class="container">
                     <h1 class="title">

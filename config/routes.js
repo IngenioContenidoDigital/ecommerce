@@ -123,7 +123,7 @@ module.exports.routes = {
   'POST /orderstate/edit/:id' : {controller:'OrderController',action:'stateedit'},
   'PUT /orderstate/:id' : {controller:'OrderController',action:'validstate'},
   'GET /orders/:action?/:id?' : {controller:'OrderController',action:'listorders'},
-  'POST /respuesta' : {controller: 'OrderController', action: 'response', csrf:false},
+  'GET /respuesta' : {controller: 'OrderController', action: 'response', csrf:false},
   'POST /confirmacion' : {controller:'OrderController', action:'confirmation', csrf:false},
   'GET /discounts/:action?/:id?' : {controller:'DiscountController',action:'discounts'},
   'POST /discount/:action/:id?' : {controller:'DiscountController',action:'creatediscount'},

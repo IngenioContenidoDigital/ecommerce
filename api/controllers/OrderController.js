@@ -101,7 +101,7 @@ module.exports = {
             currency: 'COP',
             dues: req.body.payments,
             ip:require('ip').address(), /*This is the client's IP, it is required */
-            url_response: req.protocol+'://'+req.hostname+'/respuesta',
+            url_response: req.protocol+'://'+req.hostname+'/respuesta?tx='+cart.id,
             url_confirmation: req.protocol+'://'+req.hostname+'/confirmacion',
             method_confirmation: 'POST',
             //Extra params: These params are optional and can be used by the commerce
@@ -180,7 +180,7 @@ module.exports = {
         let pseInfo = {
           bank: req.body.bank,
           invoice: 'CR-'+cart.id,
-          description: 'pay test',
+          description: 'Orden de Pedido '+cart.id,
           value: (carttotal).toString(),
           tax: ((carttotal/1.19)*0.19).toString(),
           tax_base: (carttotal/1.19).toString(),
@@ -194,19 +194,17 @@ module.exports = {
           country: 'CO',
           cell_phone: user.mobile.toString(),
           ip:require('ip').address(), /*This is the client's IP, it is required */
-          url_response: req.protocol+'://'+req.hostname+'/respuesta',
+          url_response: req.protocol+'://'+req.hostname+'/respuesta?tx='+cart.id,
           url_confirmation: req.protocol+'://'+req.hostname+'/confirmacion',
           method_confirmation: 'POST',
         };
         payment = await sails.helpers.payment.payment({mode:paymentmethod, info:pseInfo});
         if(payment.success){
-          if(payment.data.urlbanco!=='' && payment.data.urlbanco!==null){
-            const open = require('open');
-            (async ()=>{
-              await open(payment.data.urlbanco);
-            })();
-          }
           order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,carrier:'coordinadora'});
+          delete req.session.cart;
+          if(payment.data.urlbanco!=='' && payment.data.urlbanco!==null){
+            return res.redirect(payment.data.urlbanco);
+          }
         }else{
           let msg='Error en el proceso. Por favor intenta nuevamente';
           if(payment.data.errores[0]!==undefined){
@@ -220,7 +218,7 @@ module.exports = {
           let moment = require('moment');
           let cashInfo = {
             invoice: 'CR-'+cart.id,
-            description: 'pay test',
+            description: 'Orden de Pedido '+cart.id,
             value: (carttotal).toString(),
             tax: ((carttotal/1.19)*0.19).toString(),
             tax_base: (carttotal/1.19).toString(),
@@ -234,7 +232,7 @@ module.exports = {
             cell_phone: user.mobile.toString(),
             end_date: moment().add(3, 'days').format('YYYY-MM-DD').toString(),//'2020-12-05',
             ip:require('ip').address(), /*This is the client's IP, it is required */
-            url_response: req.protocol+'://'+req.hostname+'/respuesta',
+            url_response: req.protocol+'://'+req.hostname+'/respuesta?tx='+cart.id,
             url_confirmation: req.protocol+'://'+req.hostname+'/confirmacion',
             method_confirmation: 'POST',
           };
@@ -349,7 +347,7 @@ module.exports = {
     }
     return res.send(newstate);
   },
-  response: async(req, res)=>{
+  confirmation: async(req, res)=>{
     let orders = await Order.find({paymentId:req.body.x_ref_payco});
     let state = await sails.helpers.orderState(req.body.x_response);
     if(orders.length>0){
@@ -368,16 +366,22 @@ module.exports = {
     }
     return res.ok();
   },
-  confirmation: async(req, res)=>{
-    let order = await Order.find({paymentId:req.body.x_ref_payco})
+  response: async(req, res)=>{
+    let order = await Order.find({cart:req.param('tx')})
     .populate('currentstatus')
     .populate('seller');
+
+    let valor = 0;
+    for(let o in order){
+      valor+=order[o].totalOrder;
+    }
+
     let payment={
       sucess:true,
       data:{
-        ref_payco:req.body.x_ref_payco,
-        valor:req.body.x_amount_ok,
-        valor_pesos:req.body.x_amount_ok,
+        ref_payco:order[0].paymentId,
+        valor:valor,
+        valor_pesos:valor,
         banco:'',
         codigoproyecto:'',
         pin:'',
