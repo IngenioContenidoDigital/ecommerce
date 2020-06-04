@@ -30,7 +30,7 @@ module.exports = {
       apiKey: publicKey,
       privateKey: privateKey,
       lang: 'ES',
-      test: true
+      test: false
     });
 
     return exits.success(epayco);
