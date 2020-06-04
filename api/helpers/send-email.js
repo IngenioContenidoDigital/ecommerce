@@ -89,7 +89,7 @@ module.exports = {
       Destination: { /* required */
         ToAddresses: [inputs.to]
       },
-      Source: 'luis.quinones@ingeniocontenido.co', /* required */
+      Source: 'contacto@iridio.co', /* required */
       /*ReplyToAddresses: [
         'EMAIL_ADDRESS',
       ],*/
