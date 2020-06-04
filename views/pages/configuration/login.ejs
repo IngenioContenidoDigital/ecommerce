@@ -11,6 +11,7 @@
             <form method="POST" action="/login" id="login-form">
             <input type="hidden" <%if(typeof referer!=='string'){%>value="/"<%}else{%>value="<%=referer%>"<%}%> name="referer" />
             <input type="hidden" name="facebookToken" value="" />
+            <input type="hidden" name="facebookName" value="" />
               <a class="link is-pulled-right" href="/register<%if(typeof referer==='string'){%>?referer=<%=referer%><%}%>">Crear una cuenta</a>
               <div class="field">
                 <label class="label">Email</label>
@@ -24,7 +25,7 @@
               <label class="label">Contraseña<a class="link is-pulled-right has-text-weight-normal" href="/forgot">Olvidé mi contraseña </a></label>
               <div class="field has-addons">
                 <p class="control has-icons-left is-expanded">
-                <input class="input pass" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
+                <input class="input pass" name="password" type="password" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
                 <span class="icon is-small is-left">
                     <i class='bx bxs-lock-alt'></i>
                 </span>
@@ -102,6 +103,7 @@
         FB.api('/me',{"fields":"id,name,birthday,email,about,cover"}, function(userInfo) {
           userInfo.accessToken = r.authResponse.accessToken;
           document.querySelector('input[name="facebookToken"]').value=userInfo.accessToken;
+          document.querySelector('input[name="facebookName"]').value=userInfo.name;
           document.querySelector('input[name="emailAddress"]').value=userInfo.email;
           document.querySelector('input[name="password"]').value=userInfo.id;
           document.querySelector('#login-form').submit();

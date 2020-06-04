@@ -10,12 +10,13 @@
     <hr>
     <form id="register-form" method="POST" action="/register">
         <input type="hidden" name="token" />
+        <input type="hidden" name="facebook" value="<%=req.query.facebook%>" />
         <input type="hidden" name="referer" value="<%=referer%>"/>
         <div class="columns">
             <div class="column">
                 <div class="field">
                     <p class="control has-icons-left">
-                        <input class="input" name="fullname" type="text" required placeholder="Nombre">
+                        <input class="input" name="fullname" type="text" required placeholder="Nombre" value="<%=req.query.name%>" />
                         <span class="icon is-small is-left">
                             <i class='bx bx-rename'></i>
                         </span>
@@ -50,7 +51,7 @@
             <div class="column">
                 <div class="field">
                     <p class="control has-icons-left">
-                    <input class="input" name="email" type="email" required placeholder="Email">
+                    <input class="input" name="email" type="email" required placeholder="Email" value="<%=req.query.mail%>" />
                     <span class="icon is-small is-left">
                         <i class="bx bxs-envelope"></i>
                     </span>

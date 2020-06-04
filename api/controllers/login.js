@@ -26,6 +26,9 @@ password attempt.`,
     },
     facebookToken:{
       type:'string'
+    },
+    facebookName:{
+      type:'string'
     }
 
   },
@@ -69,7 +72,11 @@ and exposed as \`req.me\`.)`
     let userRecord = null;
     userRecord = await User.findOne({emailAddress: inputs.emailAddress.toLowerCase().trim(),});
     if(!userRecord){
-      return exits.badCombo({error:'El Email ingresado es Incorrecto.'});
+      if(inputs.facebookToken!=='' || inputs.facebookToken!==null || inputs.facebookToken!==undefined){
+        return exits.success('/register?mail='+inputs.emailAddress.toLowerCase().trim()+'&name='+inputs.facebookName+'&facebook=true');
+      }else{
+        return exits.badCombo({error:'El Email ingresado es Incorrecto.'});
+      }
     }
     if(inputs.facebookToken==='' || inputs.facebookToken===null || inputs.facebookToken===undefined){
       try{

@@ -96,12 +96,16 @@ module.exports = {
         if(captcha.success){
           let verification = randomize('0',6);
           let referer = req.param('referer');
+          let status = 'unconfirmed';
+          if(req.body.facebook || req.body.facebook==='true'){
+            status ='confirmed';
+          }
           try{
             let country = await Country.findOne({id:req.body.country});
             let profile = await Profile.findOne({name:'customer'});
             let user = await User.create({
               emailAddress:req.body.email,
-              emailStatus:'unconfirmed',
+              emailStatus:status,
               password:await sails.helpers.passwords.hashPassword(req.body.password),
               fullName:req.body.fullname,
               verification:verification,
@@ -113,9 +117,13 @@ module.exports = {
               profile:profile.id
             }).fetch();
             req.session.user=user;
-            //Enviar un Email de Verificación con el código para validar.
-            await sails.helpers.sendEmail('email-verify',{fullName:user.fullName,verification:verification},user.emailAddress,'Verifica tu Cuenta');
-            return res.view('pages/front/verify',{error:null, referer:referer});
+            if(status==='unconfirmed'){
+              //Enviar un Email de Verificación con el código para validar.
+              await sails.helpers.sendEmail('email-verify',{fullName:user.fullName,verification:verification},user.emailAddress,'Verifica tu Cuenta');
+              return res.view('pages/front/verify',{error:null, referer:referer});
+            }else{
+              return res.redirect('/account');
+            }
           }catch(err){
             switch(err.code){
               case 'E_UNIQUE':
@@ -152,7 +160,8 @@ module.exports = {
       user = await User.updateOne({emailAddress:req.body.email,verification:code}).set({emailStatus:'confirmed'});
     }
     if(user=== undefined || user===null){
-      return res.view('pages/front/verify',{referer:redirect,error:'El Código Ingresado es incorrecto. verifica el código e intenta nuevamente.'});
+      user = await User.findOne({emailAddress:req.body.email});
+      return res.view('pages/front/verify',{referer:redirect,user:user,method:method,error:'El Código Ingresado es incorrecto. verifica el código e intenta nuevamente.'});
     }else if(method==='mobile'){
       req.session.user=user;
       return res.redirect('/account');
@@ -160,7 +169,8 @@ module.exports = {
       req.session.user=user;
       return res.redirect(redirect);
     }else{
-      return res.view('pages/front/verify',{referer:redirect,error:'Error en el proceso. Por favor Verifica e intenta nuevamente.'});
+      user = await User.findOne({emailAddress:req.body.email});
+      return res.view('pages/front/verify',{referer:redirect,user:user,method:method,error:'Error en el proceso. Por favor Verifica e intenta nuevamente.'});
     }
   },
   users: async (req, res)=>{
