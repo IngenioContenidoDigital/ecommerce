@@ -5,6 +5,10 @@ module.exports = {
     customerInfo:{
       type: 'ref',
       required:true
+    },
+    method:{
+      type:'string',
+      required:true
     }
   },
   exits: {
@@ -14,7 +18,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
 
-    const epayco = await sails.helpers.payment.init();
+    const epayco = await sails.helpers.payment.init(inputs.method);
     epayco.customers.create(inputs.customerInfo)
           .then(customer => { return exits.success(customer);})
           .catch(err => { return exits.error(err);});

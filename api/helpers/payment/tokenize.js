@@ -15,7 +15,7 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
 
-    const epayco = await sails.helpers.payment.init();
+    const epayco = await sails.helpers.payment.init('CC');
 
     epayco.token.create(inputs.creditInfo)
         .then(token => { return exits.success(token);})

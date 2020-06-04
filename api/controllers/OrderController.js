@@ -141,7 +141,7 @@ module.exports = {
               /*phone: '3005234321',*/
               cell_phone: user.mobile.toString()
             };
-            let customer = await sails.helpers.payment.customer(customerInfo);
+            let customer = await sails.helpers.payment.customer(customerInfo,paymentmethod);
 
             paymentInfo['token_card']=token.id;
             paymentInfo['customer_id']= customer.data.customerId;
