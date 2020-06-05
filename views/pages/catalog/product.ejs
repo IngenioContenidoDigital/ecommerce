@@ -19,7 +19,7 @@
       <div class="box">
         <div class="columns">
           <div class="column">
-            <label class="label is-inline is-size-7-mobile" for="name">Nombre del Producto</label>&nbsp;
+            <label class="label is-inline is-size" for="name">Nombre del Producto</label>&nbsp;
             <div class="field is-pulled-right">
               <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <%if(action=='create' || product.active){%>checked="checked"<%}%> />
               <label class="is-size-7-mobile" for="activo">Estado: <span id="state"><%if(action=='create' || product.active){%><b style="color:green;">activo</b><%}else{%><b style="color:red;">inactivo</b><%}%></span></label>
@@ -31,68 +31,126 @@
         </div>
         <div class="columns">
           <div class="column">
-            <div class="columns">
-              <div class="column">
-                <div class="control">
-                  <label class="label is-inline is-size-7-mobile" for="manufacturer">Marca</label>
-                  <div class="select is-fullwidth">
-                    <select class="is-capitalized" name="manufacturer" id="manufacturer" required>
-                      <option value=""> -- Marca del Producto --</option>
-                      <% brands.forEach(function(brand){ %>
-                        <option <% if(action=='edit' && brand.id==product.manufacturer){ %> selected <% } %> value="<%= brand.id %>"><%= brand.name %></option>
-                      <%})%>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="column">
-                <div class="control">
-                  <label class="label is-inline is-size-7-mobile" for="mainColor">Color Principal</label>
-                  <div class="select is-fullwidth">
-                    <select class="is-capitalized" name="mainColor" id="mainColor" required>
-                      <option value=""> -- Color Principal --</option>
-                      <% colors.forEach(function(color){ %>
-                        <option <% if(action=='edit' && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>"><%= color.name %></option>
-                      <%})%>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="column">
-                <div class="control">
-                  <label class="label is-inline is-size-7-mobile" for="gender">Género</label>
-                  <div class="select is-fullwidth">
-                    <select class="is-capitalized" name="gender" id="gender" required>
-                       <option value="">-- Elegin Género --</option>
-                      <% genders.forEach(gender => { %>
-                        <option class="is-capitalized" <% if(action=='edit' && gender.id==product.gender ){ %> selected <% } %> value="<%= gender.id %>" ><%= gender.name %></option>
-                      <%})%>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="column">
-                <div class="control">
-                  <label class="label is-inline is-size-7-mobile" for="seller">Seller</label>
-                  <div class="select is-fullwidth">
-                    <select class="is-capitalized" name="seller" id="seller" required>
-                      <option value=""> -- Seller --</option>
-                      <% sellers.forEach(function(seller){ %>
-                        <option <% if(action=='edit' && seller.id==product.seller){ %> selected <% } %> value="<%= seller.id %>"><%= seller.name %></option>
-                      <%})%>
-                    </select>                  
-                  </div>
-                </div>
+            <div class="control">
+              <label class="label is-inline is-size-7" for="manufacturer">Marca</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="manufacturer" id="manufacturer" required>
+                  <option value=""> -- Marca del Producto --</option>
+                  <% brands.forEach(function(brand){ %>
+                    <option <% if(action=='edit' && brand.id==product.manufacturer){ %> selected <% } %> value="<%= brand.id %>"><%= brand.name %></option>
+                  <%})%>
+                </select>
               </div>
             </div>
-            <div class="columns">
-              <div class="column">
-                <div class="control">
-                  <label class="label is-inline is-size-7-mobile" for="reference">Referencia</label>
-                  <input class="input is-capitalized" <%if(action=='edit'){%>readonly<%}%> type="text" placeholder="Referencia del Producto" name="reference" <% if(action=='edit'){ %> value="<%= product.reference %>" <% } %> />
-                </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="mainColor">Color Principal</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="mainColor" id="mainColor" required>
+                  <option value=""> -- Color Principal --</option>
+                  <% colors.forEach(function(color){ %>
+                    <option <% if(action=='edit' && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>"><%= color.name %></option>
+                  <%})%>
+                </select>
               </div>
             </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="gender">Género</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="gender" id="gender" required>
+                   <option value="">-- Elegin Género --</option>
+                  <% genders.forEach(gender => { %>
+                    <option class="is-capitalized" <% if(action=='edit' && gender.id==product.gender ){ %> selected <% } %> value="<%= gender.id %>" ><%= gender.name %></option>
+                  <%})%>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <label class="label is-inline is-size-7" for="price_nt">Precio sin impuestos</label>
+            <div class="field">
+              <p class="control has-icons-left">
+                <input class="input is-size-7" name="price_nt" type="number" placeholder="Sin impuestos" <% if(action=='edit'){ %> value="<%= product.price.toFixed(2) %>" <% } else { %> value="0.00" <% } %>/>
+                <span class="icon is-small is-left is-size-7">
+                  <i class="bx bx-dollar"></i>
+                </span>
+              </p>
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="tax">Impuesto</label>
+              <div class="select is-fullwidth is-size-7">
+                <select name="tax" id="tax" required>
+                  <% taxes.forEach(function(tax){ %>
+                    <option class="is-capitalized" <% if(action=='edit' && tax.id==product.tax.id ){ %> selected <% } %> value="<%= tax.id %>" tax="<%= tax.value %>" ><%= tax.name %></option>
+                  <%})%>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <label class="label is-inline is-size-7" for="price_wt">Precio IVA incluído</label>
+            <div class="field">
+              <p class="control has-icons-left">
+                <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
+                <span class="icon is-small is-left is-size-7">
+                  <i class="bx bx-dollar"></i>
+                </span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="seller">Seller</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="seller" id="seller" required>
+                  <option value=""> -- Seller --</option>
+                  <% sellers.forEach(function(seller){ %>
+                    <option <% if(action=='edit' && seller.id==product.seller){ %> selected <% } %> value="<%= seller.id %>"><%= seller.name %></option>
+                  <%})%>
+                </select>                  
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="reference">Referencia</label>
+              <input class="input is-capitalized is-size-7" <%if(action=='edit'){%>readonly<%}%> type="text" placeholder="Referencia del Producto" name="reference" <% if(action=='edit'){ %> value="<%= product.reference %>" <% } %> />
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="reference">Ancho del empaque (cm)</label>
+              <input class="input is-size-7" type="number" placeholder="Ancho del Empaque" name="width" <% if(action=='edit'){ %> value="<%= product.width %>" <% } %> />
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="reference">Alto del empaque (cm)</label>
+              <input class="input is-size-7" type="number" placeholder="Alto del Empaque" name="height" <% if(action=='edit'){ %> value="<%= product.height %>" <% } %> />
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="reference">Largo del empaque (cm)</label>
+              <input class="input is-size-7" type="number" placeholder="Largo" name="length" <% if(action=='edit'){ %> value="<%= product.length %>" <% } %> />
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="reference">Peso Empacado (kg)</label>
+              <input class="input is-size-7" type="number" placeholder="Peso" name="weight" <% if(action=='edit'){ %> value="<%= product.weight %>" <% } %> />
+            </div>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column">
             <div class="tabs">
               <ul>
                 <li class="is-active"><a option="ctl-descriptionshort">Resumen</a></li>
@@ -111,43 +169,7 @@
             </div>
           </div>
           <div class="column">
-            <div class="columns">
-              <div class="column">
-                <label class="label is-inline" for="price_nt">Precio sin impuestos</label>
-                <div class="field">
-                  <p class="control has-icons-left">
-                    <input class="input" name="price_nt" type="number" placeholder="Sin impuestos" <% if(action=='edit'){ %> value="<%= product.price.toFixed(2) %>" <% } else { %> value="0.00" <% } %>/>
-                    <span class="icon is-small is-left">
-                      <i class="bx bx-dollar"></i>
-                    </span>
-                  </p>
-                </div>
-              </div>
-              <div class="column">
-                <div class="control">
-                  <label class="label is-inline is-size-7-mobile" for="tax">Impuesto</label>
-                  <div class="select is-fullwidth">
-                    <select name="tax" id="tax" required>
-                      <% taxes.forEach(function(tax){ %>
-                        <option class="is-capitalized" <% if(action=='edit' && tax.id==product.tax.id ){ %> selected <% } %> value="<%= tax.id %>" tax="<%= tax.value %>" ><%= tax.name %></option>
-                      <%})%>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="column">
-                <label class="label is-inline" for="price_wt">Precio IVA incluído</label>
-                <div class="field">
-                  <p class="control has-icons-left">
-                    <input class="input" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
-                    <span class="icon is-small is-left">
-                      <i class="bx bx-dollar"></i>
-                    </span>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <hr>
+            <br><br>
             <div style="margin: 5px 5px; " class="field is-pulled-right">
               <div class="control">
                 <div class="select is-small is-danger">

@@ -1,7 +1,7 @@
 <div class="container">
     <%if(object.products.length<1){%>
-    <div class="columns">
-        <div class="column is-centered">
+    <div class="columns is-gapless">
+        <div class="column is-centered is-gapless">
             <br> <br>
             <div class="container is-fluid">
                 <h4 class="title is-4">Tu búsqueda no arrojó ningún resultado.</h4>
@@ -11,7 +11,7 @@
         </div>
     </div>
     <%}else{%>
-    <div class="columns is-centered">
+    <div class="columns is-centered is-gapless">
         <div class="column is-2">
             <div id="filter">
                 <p id="filter-title" class="box has-text-centered has-text-weight-bold is-size-7 is-uppercase is-marginless has-text-dark">
@@ -61,7 +61,7 @@
             <%}%>
             <%if(typeof object.children == 'object' && object.children.length>0){%>
                 <div class="container">
-                    <div class="columns is-centered is-paddingless is-marginless">
+                    <div class="columns is-centered is-gapless">
                     <% object.children.forEach(children=>{ %>
                         <%if(children.active){%>
                           <div class="column has-text-centered subcat">
@@ -74,7 +74,7 @@
                 <br>
             <%}%>
             <% let count = 0 %>
-            <div class="container has-text-centered" itemscope itemtype="https://schema.org/ItemList">
+            <div class="container" itemscope itemtype="https://schema.org/ItemList">
             <% object.products.forEach((product)=>{ %>
                 <%if(product.active){ %>
                     <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
@@ -87,10 +87,10 @@
                         <div class="card-content">
                                 <div itemprop="description" class="is-hidden"><%-product.description%></div>
                                 <div itemprop="disambiguatingDescription" class="is-hidden"><%-product.descriptionShort%></div>
-                                <span class="is-pulled-right"><span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></span>
-                                <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>&nbsp;-&nbsp;<span gender="<%=product.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=product.gender.name%></span>
-                                <p itemprop="name" class="has-text-weight-bold is-uppercase"><%=product.name%></p>
-                                <span class="is-hidden" itemprop="sku"><%=product.reference%></span>
+                                <p><span class="is-pulled-right"><span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></span>
+                                <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>&nbsp;-&nbsp;<span gender="<%=product.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=product.gender.name%></span></p>
+                                <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span itemprop="name" class="has-text-weight-bold is-uppercase"><%=product.name%></span></p>
+                                <p><span class="is-hidden" itemprop="sku"><%=product.reference%></span>
                                 <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                                     <meta itemprop="priceCurrency" content="COP">
                                     <%if(product.discount!==null && product.discount!==undefined){%>
@@ -104,9 +104,9 @@
                                         <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
                                     <%}%>
                                 </div>
+                                </p>
                                 <br>
-                                <div class="columns">
-                                    <div class="column">
+                                    
                                         <div class="select is-primary is-size-7 is-fullwidth">
                                             <select class="is-uppercase s-variation" name="variations">
                                                 <option value="0">Seleccione</option>
@@ -115,13 +115,12 @@
                                                 <%})%>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="column">
+                                        <br><br>
                                         <div class="buttons">
                                             <button id="push-to-cart" product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
                                         </div>
-                                    </div>
-                                </div>
+                                    
+                                
                         </div>
                     </div>
                 <%} %>

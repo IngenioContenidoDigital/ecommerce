@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drift-zoom@1.4.0/dist/drift-basic.min.css">
 <script src="https://cdn.jsdelivr.net/npm/drift-zoom@1.4.0/dist/Drift.min.js"></script>
 <div class="container" itemscope itemtype="https://schema.org/Product">
-    <div class="columns">
+    <div class="columns is-gapless">
         <div class="column is-two-fifths">
             <div class="box">
                 <span class="is-hidden" itemprop="productID"><%=product.id%></span>
@@ -28,6 +28,7 @@
         </div>
         <div class="column is-two-fifths">
             <div class="container is-fluid">
+                <br>
                 <h2 itemprop="brand" class="is-capitalized"><%=product.manufacturer.name%></h2>
                 <h4 itemprop="name" class="is-uppercase is-size-4"><%=product.name%></h4>
                 <hr>
@@ -84,7 +85,7 @@
         </div>
     </div>
     <hr>
-    <div class="columns">
+    <div class="columns is-gapless">
         <div class="column">
             <div class="container is-fluid">
                 <h4 class="is-size-4 has-text-weight-bold">Descripción del Producto</h4>

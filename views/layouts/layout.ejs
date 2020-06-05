@@ -75,12 +75,16 @@
       fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
   </script>
-    <div class="columns is-centered">
+    <div class="columns is-centered is-gapless">
       <div class="column">
         <%- partial('../partials/navbar.ejs') %>
       </div>
     </div>
-    <div class="container"><%- body %></div>
+    <div class="columns is-gapless">
+      <div class="column">
+         <%- body %>
+      </div>
+    </div>
   <script>
     
     const toogleMenu = (elm) => {

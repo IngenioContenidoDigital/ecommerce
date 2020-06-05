@@ -95,7 +95,11 @@ module.exports = {
           mainColor: req.body.mainColor,
           manufacturer: req.body.manufacturer,
           gender:req.body.gender,
-          seller: req.body.seller
+          seller: req.body.seller,
+          width:req.body.width,
+          height:req.body.height,
+          length:req.body.length,
+          weight:req.body.weight
         }).fetch();
         await Product.addToCollection(product.id,'categories').members(JSON.parse(req.body.categories));
       }else{
@@ -111,14 +115,17 @@ module.exports = {
           mainColor: req.body.mainColor,
           manufacturer: req.body.manufacturer,
           gender:req.body.gender,
-          seller: req.body.seller
+          seller: req.body.seller,
+          width:req.body.width,
+          height:req.body.height,
+          length:req.body.length,
+          weight:req.body.weight
         });
         await Product.replaceCollection(product.id,'categories').members(JSON.parse(req.body.categories));
       }
     }catch(err){
       error = err.msg;
     }
-    //await new Promise(resolve => setTimeout(resolve, 1000));
     if (error===undefined || error===null){
       return res.send(product.id);
     }else{
