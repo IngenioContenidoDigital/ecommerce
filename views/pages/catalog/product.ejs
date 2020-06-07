@@ -338,7 +338,7 @@
             <a href="#" class="has-text-primary" id="add-row"><i class="is-size-4 bx bxs-plus-square"></i></a>
           </p>
           <form id="variations-form">
-            <table class="table is-striped is-hoverable" id="variations-table">
+            <table class="table is-striped is-hoverable is-fullwidth" id="variations-table">
                 <thead>
                 <tr class="theader">  
                     <th scope="col" class="is-primary is-size-7">Tamaño/Talla</th>
@@ -360,10 +360,12 @@
                           <div class="field">
                             <div class="select is-primary is-small">
                               <select required class="variations is-uppercase" field="variation" name="variations[<%=rowcount%>][variation]">
-                                <option value="0"> -- Seleccionar --</option>
+                                <option class="is-hidden" value="0"> -- Seleccionar --</option>
                                 <%if(variations!==null){%>
                                 <% variations.forEach((variation)=>{ %>
-                                <option class="is-uppercase" <%if(pv.variation==variation.id){%>selected<%}%> value="<%= variation.id %>"><%= variation.name %></option>
+                                  <%if(pv.variation.id==variation.id){%>
+                                    <option class="is-uppercase" <%if(pv.variation.id==variation.id){%>selected<%}%> value="<%= variation.id %>"><%= variation.name %></option>
+                                  <%}%>
                                 <% })%>
                                 <%}%>
                               </select>
@@ -380,7 +382,7 @@
                         <td scope="row" class="align-middle">
                           <div class="field is-small">
                             <div class="control">                          
-                              <input class="input is-primary is-small" type="text" field="supplierreference" name="variations[<%=rowcount%>][supplierreference]" value="<%= pv.supplierreference %>" placeholder="Referencia Proveedor"/>
+                              <input class="input is-primary is-small" type="text" readonly field="supplierreference" name="variations[<%=rowcount%>][supplierreference]" value="<%= pv.supplierreference %>" placeholder="Referencia Proveedor"/>
                             </div>
                           </div>
                         </td>
@@ -401,7 +403,7 @@
                         <td scope="row" class="align-middle">
                           <div class="field">
                             <div class="control has-icons-left">                          
-                              <input class="input is-primary is-small has-text-right" required type="number" field="price" name="variations[<%=rowcount%>][price]" value="<%=pv.price.toFixed(2)%>" placeholder="Precio"/>
+                              <input class="input is-primary is-small has-text-right prices" required type="number" field="price" name="variations[<%=rowcount%>][price]" value="<%=pv.price.toFixed(2)%>" placeholder="Precio"/>
                               <span class="icon is-small is-left">
                                 <i class="bx bx-dollar"></i>
                               </span>
@@ -415,78 +417,10 @@
                             </div>
                           </div>
                         </td>
-                        <td scope="row" class="align-middle">
-                          <%if(rowcount!==0){%>
-                            <a class="delete-row"><i class="bx bx-trash"></i></a>
-                          <%}%>
-                        </td>
+                        <td scope="row" class="align-middle"></td>
                       </tr>
                       <% rowcount++%>
                     <%})%>
-                  <%}else{%>
-                    <tr>
-                      <td scope="row" class="align-middle">
-                        <div class="field">
-                          <div class="select is-primary is-small">
-                            <select required class="variations is-uppercase" field="variation" name="variations[0][variation]">
-                              <option value="0"> -- Seleccionar --</option>
-                              <%if(variations!==null){%>
-                              <% variations.forEach((variation)=>{ %>
-                              <option class="is-uppercase" value="<%= variation.id %>"><%= variation.name %></option>
-                              <% })%>
-                              <%}%>
-                            </select>
-                          </div>
-                        </div>
-                      </td>
-                      <td scope="row" class="align-middle">
-                        <div class="field is-small">
-                          <div class="control">                          
-                            <input class="input is-primary is-small" type="text" field="reference" name="variations[0][reference]" placeholder="Referencia"/>
-                          </div>
-                        </div>
-                      </td>
-                      <td scope="row" class="align-middle">
-                        <div class="field is-small">
-                          <div class="control">                          
-                            <input class="input is-primary is-small" type="text" field="supplierreference" name="variations[0][supplierreference]" placeholder="Referencia Proveedor" <% if(action=='edit'){ %> value="<%=product.reference%>" <% } else { %> value="" <%}%>/>
-                          </div>
-                        </div>
-                      </td>
-                      <td scope="row" class="align-middle">
-                        <div class="field is-small">
-                          <div class="control">                          
-                            <input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations[0][ean13]" placeholder="EAN13"/>
-                          </div>
-                        </div>
-                      </td>
-                      <td scope="row" class="align-middle">
-                        <div class="field is-small">
-                          <div class="control">                          
-                            <input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations[0][upc]" placeholder="UPC"/>
-                          </div>
-                        </div>
-                      </td>
-                      <td scope="row" class="align-middle">
-                        <div class="field">
-                          <div class="control has-icons-left">                          
-                            <input required class="input is-primary is-small has-text-right" type="number" field="price" name="variations[0][price]" placeholder="Precio" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="0" <%}%>/>
-                            <span class="icon is-small is-left">
-                              <i class="bx bx-dollar"></i>
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td scope="row" class="align-middle">
-                        <div class="field is-small">
-                          <div class="control">                          
-                            <input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations[0][quantity]" placeholder="Cantidad" value="0"/>
-                          </div>
-                        </div>
-                      </td>
-                      <td scope="row" class="align-middle">
-                      </td>
-                    </tr>
                   <%}%>
                 </tbody>
             </table>
@@ -535,7 +469,7 @@
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
           '<td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>'
         ];
@@ -713,7 +647,7 @@
     
     function price(e){
       let tax = document.querySelector('#tax');
-      let range = tax.options[tax.selectedIndex].getAttribute('tax')
+      let range = tax.options[tax.selectedIndex].getAttribute('tax');
       let name = this.getAttribute('name');
       let target = this;
       switch(name){
@@ -872,6 +806,10 @@
           categories:lcat,
           price:form.querySelector('input[name="price_nt"]').value,
           tax:form.querySelector('select[name="tax"]').value,
+          width:form.querySelector('input[name="width"]').value,
+          height:form.querySelector('input[name="height"]').value,
+          length:form.querySelector('input[name="length"]').value,
+          weight:form.querySelector('input[name="weight"]').value,
           descriptionshort:textdescriptionshort,
           description:textdescription
         }, 
@@ -880,9 +818,12 @@
             let productdata = document.querySelector('#product-data');
             let pricep = document.querySelector('input[name="price_wt"]');
             let referencep = document.querySelector('input[name="reference"]');
-            productdata.value=resData;
-            document.querySelector('input[name="variations[0][price]"]').value=parseFloat(pricep.value).toFixed(2);
-            document.querySelector('input[name="variations[0][supplierreference]"]').value=referencep.value;
+            productdata.value=resData.id;
+
+            let prices = document.querySelectorAll('.prices');
+            for(let v in prices){
+              prices[v].value=parseFloat(resData.priceWt).toFixed(2);
+            }
             let productabs = document.querySelectorAll('.product-tab ul li');
             productabs.forEach((li)=>{
               let option = li.querySelector('a').getAttribute('option');

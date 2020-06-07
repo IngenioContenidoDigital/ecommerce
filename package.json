@@ -19,7 +19,7 @@
     "moment": "^2.24.0",
     "open": "^7.0.3",
     "randomatic": "^3.1.1",
-    "sails": "^1.2.3",
+    "sails": "^1.2.4",
     "sails-hook-cron": "^3.1.0",
     "sails-hook-grunt": "^4.0.0",
     "sails-hook-httpsredirect": "^1.2.0",

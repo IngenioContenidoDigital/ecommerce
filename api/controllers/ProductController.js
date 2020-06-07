@@ -41,6 +41,11 @@ module.exports = {
       if(product.gender!==undefined && product.gender!==null){
         variations = await Variation.find({gender:product.gender});
       }
+      for(let pv in product.variations){
+        product.variations[pv].variation = await Variation.findOne({id:product.variations[pv].variation});
+      }
+      //return a.variation.name.localeCompare(b.variation.name)
+      product.variations.sort((a,b)=>{return parseFloat(a.variation.name) - parseFloat(b.variation.name);});
 
     }
     if(action===null){
@@ -101,7 +106,7 @@ module.exports = {
           length:req.body.length,
           weight:req.body.weight
         }).fetch();
-        await Product.addToCollection(product.id,'categories').members(JSON.parse(req.body.categories));
+        await Product.addToCollection(product.id,'categories',JSON.parse(req.body.categories));
       }else{
         product = await Product.updateOne({id:exists.id}).set({
           name: req.body.name.toLowerCase().trim(),
@@ -123,11 +128,12 @@ module.exports = {
         });
         await Product.replaceCollection(product.id,'categories').members(JSON.parse(req.body.categories));
       }
+      product.priceWt= product.price*(1+((await Tax.findOne({id:product.tax})).value/100));
     }catch(err){
       error = err.msg;
     }
     if (error===undefined || error===null){
-      return res.send(product.id);
+      return res.send(product);
     }else{
       return res.send(error);
     }

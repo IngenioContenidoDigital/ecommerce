@@ -119,7 +119,7 @@ module.exports.models = {
   *                                                                          *
   ***************************************************************************/
 
-  cascadeOnDestroy: true
+  //cascadeOnDestroy: true
 
 
 };

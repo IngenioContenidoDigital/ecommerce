@@ -109,7 +109,7 @@
                                     
                                         <div class="select is-primary is-size-7 is-fullwidth">
                                             <select class="is-uppercase s-variation" name="variations">
-                                                <option value="0">Seleccione</option>
+                                                <option value="0">Talla / Tamaño</option>
                                                 <% product.productvariation.forEach((v)=>{%>
                                                     <option class="is-uppercase" qty="<%=v.quantity%>" value="<%=v.id%>"><%=v.variation.name%></option>
                                                 <%})%>
