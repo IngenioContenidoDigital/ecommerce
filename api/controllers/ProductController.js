@@ -276,7 +276,110 @@ module.exports = {
     }catch(err){
       return res.send(err);
     }
-  }
-
+  },
+  import: async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
+    let error = null;
+    if(req.method==='POST'){
+      let header = null;
+      const https = require('https');
+      let route = sails.config.views.locals.imgurl;
+      let checkdata = async (header, data) => {
+        let body = [];
+        let errors =[];
+        for(let d in data){
+          let row = data[d].split(';');
+          let result = {};
+          try{
+            for(let i in header){
+              switch(header[i]){
+                case 'reference':
+                  result[header[i]] = row[i].trim().toUpperCase();
+                  break;
+                case 'name':
+                  result[header[i]] = row[i].trim().toLowerCase();
+                  break;
+                case 'tax':
+                  result[header[i]] = (await Tax.findOne({value:row[i]})).id;
+                  break;
+                case 'mainCategory':
+                  result[header[i]] = (await Category.findOne({name:row[i].trim().toLowerCase()})).id;
+                  break;
+                case 'mainColor':
+                  result[header[i]] = (await Color.findOne({name:row[i].trim().toLowerCase()})).id;
+                  break;
+                case 'manufacturer':
+                  result[header[i]] = (await Manufacturer.findOne({name:row[i].trim().toLowerCase()})).id;
+                  break;
+                case 'gender':
+                  result[header[i]] = (await Gender.findOne({name:row[i].trim().toLowerCase()})).id;
+                  break;
+                case 'active':
+                  let eval = row[i].toLowerCase().trim();
+                  result[header[i]] = (eval==='true' || eval==='1' || eval==='verdadero' || eval==='si' || eval==='sí') ? true : false;
+                  break;
+                case 'width':
+                  result[header[i]] = parseFloat(row[i].replace(',','.'));
+                  break;
+                case 'height':
+                  result[header[i]] = parseFloat(row[i].replace(',','.'));
+                  break;
+                case 'length':
+                  result[header[i]] = parseFloat(row[i].replace(',','.'));
+                  break;
+                case 'weight':
+                  result[header[i]] = parseFloat(row[i].replace(',','.'));
+                  break;
+                case 'seller':
+                  result[header[i]] = (await Seller.findOne({domain:row[i].trim().toLowerCase()})).id;
+                  break;
+                case 'price':
+                  result[header[i]] = parseFloat(row[i].replace(',','.'));
+                  break;
+                default:
+                  result[header[i]] = row[i];
+                  break;
+              }
+            }
+            body.push(result);
+          }catch(err){
+            errors.push(err.message);
+          }
+        }
+        return body;
+      };
+      try{
+        let filename = await sails.helpers.fileUpload(req,'csv',3000000,'uploads');
+        https.get(route+'/uploads/'+filename[0], response => {
+          let str ='';
+          response.on('data', chunk=>{
+            str += chunk.toString();
+          });
+          response.on('end', ()=>{
+            let rows = str.split('\n');
+            header = rows[0].split(';');
+            rows.shift();
+            rowdata = rows;
+            checkdata(header,rowdata).then(async result =>{
+              try{
+                let products = await Product.createEach(result).fetch();
+                console.log(products.length);
+              }catch(cerr){
+                console.log(cerr);
+              }
+            }).catch(err=>{
+              console.log(err);
+            });
+          });
+        });
+      }catch(err){
+        error = err.msg;
+      }
+    }
+    return res.view('pages/configuration/import',{error:error});
+  },
 };
 
