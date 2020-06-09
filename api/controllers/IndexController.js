@@ -84,13 +84,7 @@ module.exports = {
     let genderlist = [];
     for(let p of object.products){
       p.cover= await ProductImage.findOne({product:p.id,cover:1});
-      if(!colorlist.includes(p.mainColor)){
-        colorlist.push(p.mainColor);
-      }
       p.mainColor=await Color.findOne({id:p.mainColor});
-      if(!brandlist.includes(p.manufacturer)){
-        brandlist.push(p.manufacturer);
-      }
       p.manufacturer=await Manufacturer.findOne({id:p.manufacturer});
       p.seller=await Seller.findOne({id:p.seller});
       p.tax=await Tax.findOne({id:p.tax});
@@ -99,10 +93,11 @@ module.exports = {
       p.productvariation.sort((a,b)=>{return parseFloat(a.variation.name) - parseFloat(b.variation.name);});
       p.discount = await sails.helpers.discount(p.id);
       p.gender = await Gender.findOne({id:p.gender});
-      if(!genderlist.includes(p.gender.id)){
-        genderlist.push(p.gender.id);
-      }
+      if(!brandlist.includes(p.manufacturer.id)){brandlist.push(p.manufacturer.id);}
+      if(!colorlist.includes(p.mainColor.id)){colorlist.push(p.mainColor.id);}
+      if(!genderlist.includes(p.gender.id)){genderlist.push(p.gender.id);}
     }
+
     let colors = await Color.find({where:{id:{'in':colorlist}}});
     let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
     let genders = await Gender.find({where:{id:{'in':genderlist}}});
@@ -175,7 +170,7 @@ module.exports = {
 
   },
   listproduct: async function(req, res){
-    let product = await Product.findOne({name:decodeURIComponent(req.param('name'))})
+    let product = await Product.findOne({name:decodeURIComponent(req.param('name')),reference:decodeURIComponent(req.param('reference'))})
       .populate('manufacturer')
       .populate('mainColor')
       .populate('tax')

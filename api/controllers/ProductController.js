@@ -294,58 +294,129 @@ module.exports = {
           let row = data[d].split(';');
           let result = {};
           try{
-            for(let i in header){
-              switch(header[i]){
-                case 'reference':
-                  result[header[i]] = row[i].trim().toUpperCase();
-                  break;
-                case 'name':
-                  result[header[i]] = row[i].trim().toLowerCase();
-                  break;
-                case 'tax':
-                  result[header[i]] = (await Tax.findOne({value:row[i]})).id;
-                  break;
-                case 'mainCategory':
-                  result[header[i]] = (await Category.findOne({name:row[i].trim().toLowerCase()})).id;
-                  break;
-                case 'mainColor':
-                  result[header[i]] = (await Color.findOne({name:row[i].trim().toLowerCase()})).id;
-                  break;
-                case 'manufacturer':
-                  result[header[i]] = (await Manufacturer.findOne({name:row[i].trim().toLowerCase()})).id;
-                  break;
-                case 'gender':
-                  result[header[i]] = (await Gender.findOne({name:row[i].trim().toLowerCase()})).id;
-                  break;
-                case 'active':
-                  let eval = row[i].toLowerCase().trim();
-                  result[header[i]] = (eval==='true' || eval==='1' || eval==='verdadero' || eval==='si' || eval==='sí') ? true : false;
-                  break;
-                case 'width':
-                  result[header[i]] = parseFloat(row[i].replace(',','.'));
-                  break;
-                case 'height':
-                  result[header[i]] = parseFloat(row[i].replace(',','.'));
-                  break;
-                case 'length':
-                  result[header[i]] = parseFloat(row[i].replace(',','.'));
-                  break;
-                case 'weight':
-                  result[header[i]] = parseFloat(row[i].replace(',','.'));
-                  break;
-                case 'seller':
-                  result[header[i]] = (await Seller.findOne({domain:row[i].trim().toLowerCase()})).id;
-                  break;
-                case 'price':
-                  result[header[i]] = parseFloat(row[i].replace(',','.'));
-                  break;
-                default:
-                  result[header[i]] = row[i];
-                  break;
+            if(req.body.entity==='ProductVariation'){
+              for(let i in header){
+                switch(header[i]){
+                  case 'reference':
+                    result[header[i]] = row[i] ? row[i].trim().toUpperCase() : '';
+                    break;
+                  case 'supplierreference':
+                    result[header[i]] = row[i].trim().toUpperCase();
+                    break;
+                  case 'ean13':
+                    result[header[i]] = row[i] ? parseInt(row[i]) : 0;
+                    break;
+                  case 'upc':
+                    result[header[i]] = row[i] ? parseInt(row[i]) : 0;
+                    break;
+                  case 'quantity':
+                    result[header[i]] = row[i] ? parseInt(row[i]) : 0;
+                    break;
+                  case 'seller':
+                    result[header[i]] = (await Seller.findOne({domain:row[i].trim().toLowerCase()})).id;
+                    break;
+                  default:
+                    result[header[i]] = row[i];
+                    break;
+                }
               }
+              let product = await Product.findOne({reference:result['supplierreference'],seller:result['seller']}).populate('tax');
+              result['product'] = product.id;
+              result['price'] = parseInt(product.price*(1+product.tax.value/100));
+              result['variation'] = (await Variation.findOne({name:result['variation'].replace(',','.').trim().toLowerCase(),gender:product.gender})).id;
+              delete result['seller'];
+            }
+            if(req.body.entity==='Product'){
+              for(let i in header){
+                switch(header[i]){
+                  case 'reference':
+                    result[header[i]] = row[i].trim().toUpperCase();
+                    break;
+                  case 'name':
+                    result[header[i]] = row[i].trim().toLowerCase();
+                    break;
+                  case 'tax':
+                    result[header[i]] = (await Tax.findOne({value:row[i]})).id;
+                    break;
+                  case 'categories':
+                    let categories = await Category.find({
+                      where: {name: row[i].trim().toLowerCase().split(',')},
+                      sort: 'level DESC'
+                    });
+                    let categoriesids = [];
+                    for(let c in categories){
+                      if(!categoriesids.includes(categories[c].id)){
+                        categoriesids.push(categories[c].id);
+                      }
+                    }
+                    result[header[i]] = categoriesids;
+                    result['mainCategory'] = categories[0].id;
+                    break;
+                  case 'mainCategory':
+                    break;
+                  case 'mainColor':
+                    result[header[i]] = (await Color.findOne({name:row[i].trim().toLowerCase()})).id;
+                    break;
+                  case 'manufacturer':
+                    result[header[i]] = (await Manufacturer.findOne({name:row[i].trim().toLowerCase()})).id;
+                    break;
+                  case 'gender':
+                    result[header[i]] = (await Gender.findOne({name:row[i].trim().toLowerCase()})).id;
+                    break;
+                  case 'active':
+                    let eval = row[i].toLowerCase().trim();
+                    result[header[i]] = (eval==='true' || eval==='1' || eval==='verdadero' || eval==='si' || eval==='sí') ? true : false;
+                    break;
+                  case 'width':
+                    result[header[i]] = parseFloat(row[i].replace(',','.'));
+                    break;
+                  case 'height':
+                    result[header[i]] = parseFloat(row[i].replace(',','.'));
+                    break;
+                  case 'length':
+                    result[header[i]] = parseFloat(row[i].replace(',','.'));
+                    break;
+                  case 'weight':
+                    result[header[i]] = parseFloat(row[i].replace(',','.'));
+                    break;
+                  case 'seller':
+                    result[header[i]] = (await Seller.findOne({domain:row[i].trim().toLowerCase()})).id;
+                    break;
+                  case 'price':
+                    result[header[i]] = parseFloat(row[i].replace(',','.'));
+                    break;
+                  case 'variation':
+                    result[header[i]] = parseFloat(row[i].replace(',','.'));
+                    break;
+                  default:
+                    result[header[i]] = row[i];
+                    break;
+                }
+              }
+            }
+            if(req.body.entity==='ProductImage'){
+              for(let i in header){
+                switch(header[i]){
+                  case 'reference':
+                    result[header[i]] = row[i].trim().toUpperCase();
+                    break;
+                  case 'seller':
+                    result[header[i]] = (await Seller.findOne({domain:row[i].trim().toLowerCase()})).id;
+                    break;
+                  case 'files':
+                    let files = row[i].trim().split(',').sort();
+                    result[header[i]] = files;
+                    break;
+                  default:
+                    result[header[i]] = row[i].trim();
+                    break;
+                }
+              }
+              result['product'] = (await Product.findOne({reference:result['reference'],seller:result['seller']})).id;
             }
             body.push(result);
           }catch(err){
+            console.log(err);
             errors.push(err.message);
           }
         }
@@ -353,6 +424,9 @@ module.exports = {
       };
       try{
         let filename = await sails.helpers.fileUpload(req,'csv',3000000,'uploads');
+        //let filename = ['27bf4a07-5fea-4caa-a113-17c6d47a4428.csv']; //Product
+        //let filename = ['6f29ddf3-d601-48a2-8d4f-cc2bbe94bc99.csv']; //ProductVariation
+        //let filename = ['899d7ab0-9d13-4a3d-9128-f74f5015916e.csv']; //ProductImage
         https.get(route+'/uploads/'+filename[0], response => {
           let str ='';
           response.on('data', chunk=>{
@@ -361,12 +435,62 @@ module.exports = {
           response.on('end', ()=>{
             let rows = str.split('\n');
             header = rows[0].split(';');
+            if(req.body.entity==='Product'){
+              header.push('mainCategory');
+            }
+            if(req.body.entity==='ProductVariation'){
+              for(let h in header){
+                if(header[h]==='reference'){header[h]='supplierreference';}
+                if(header[h]==='reference2'){header[h]='reference';}
+              }
+            }
             rows.shift();
             rowdata = rows;
             checkdata(header,rowdata).then(async result =>{
+              console.log(result);
               try{
-                let products = await Product.createEach(result).fetch();
-                console.log(products.length);
+                if(req.body.entity==='Product'){await Product.createEach(result);}
+                if(req.body.entity==='ProductVariation'){await ProductVariation.createEach(result);}
+                if(req.body.entity==='ProductImage'){
+                  let fs = require('fs');
+                  let AWS = require('aws-sdk');
+                  AWS.config.loadFromPath('./config.json');
+                  var s3 = new AWS.S3();
+                  let params = {
+                    Bucket: 'iridio.co',
+                    ContentType: 'image/jpeg'
+                  };
+                  for(let r in result){
+                    let position=1;
+                    let cover = 1;
+                    for(let f in result[r].files){
+                      if(position>1){cover=0;}
+                      let productimage = {
+                        file:result[r].files[f],
+                        position:position,
+                        cover:cover,
+                        product:result[r].product
+                      };
+                      fs.readFile(result[r].route+result[r].files[f], (err,data)=>{
+                        if(err){console.log(err);}
+                        if(data){
+                          params['Key'] = 'images/products/'+result[r].product+'/'+result[r].files[f];
+                          params['Body'] = new Buffer(data, 'binary');
+                          s3.upload(params, async (err, data) => {
+                            if(err){console.log(err);}
+                            console.log(data);
+                            try{
+                              await ProductImage.create(productimage);
+                            }catch(err){
+                              console.log(err);
+                            }
+                          });
+                        }
+                      });
+                      position++;
+                    }
+                  }
+                }
               }catch(cerr){
                 console.log(cerr);
               }
@@ -376,10 +500,11 @@ module.exports = {
           });
         });
       }catch(err){
+        console.log(err);
         error = err.msg;
       }
     }
-    return res.view('pages/configuration/import',{error:error});
+    return res.view('pages/configuration/import',{layout:'layouts/admin',error:error});
   },
 };
 

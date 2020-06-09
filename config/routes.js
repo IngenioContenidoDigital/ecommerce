@@ -31,7 +31,7 @@ module.exports.routes = {
   'GET /ver/:entity/:parent?/:name' : {controller:'IndexController',action:'list'},
   'GET /contenido/:tipo' : {controller:'IndexController',action:'cms'},
   'POST /ver/resultados':{controller:'IndexController',action:'search'},
-  'GET /list/product/:name' : {controller:'IndexController',action:'listproduct'},
+  'GET /list/product/:name/:reference' : {controller:'IndexController',action:'listproduct'},
   'GET /cart' : {controller:'CartController',action:'viewcart'},
   'PUT /cart' : {controller:'CartController',action:'addtocart'},
   'PUT /apply' : {controller:'CartController',action:'applycoupon'},

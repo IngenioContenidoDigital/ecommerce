@@ -76,12 +76,12 @@
             <% let count = 0 %>
             <div class="container" itemscope itemtype="https://schema.org/ItemList">
             <% object.products.forEach((product)=>{ %>
-                <%if(product.active){ %>
+                <%if(product.active && product.cover !== undefined){ %>
                     <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
                         <span class="is-hidden" itemprop="productID"><%=product.id%></span>
                         <div class="card-image has-badge-danger has-badge-rounded has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
                             <figure class="image is-256x256 is-inline-block">
-                                <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>"><img itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
+                                <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><img async itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
                             </figure>
                         </div>
                         <div class="card-content">
