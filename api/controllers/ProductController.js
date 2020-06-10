@@ -229,6 +229,15 @@ module.exports = {
     let variations = await Variation.find({gender:product.gender});
     return res.send(variations);
   },
+  findproductvariations:async(req,res)=>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let productvariations = await ProductVariation.find({product:req.param('id'), quantity:{'>':0}})
+    .populate('variation');
+
+    return res.send(productvariations);
+  },
   deletevariations: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'deletevariations')){

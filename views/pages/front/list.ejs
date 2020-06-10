@@ -57,7 +57,7 @@
         </div>
         <div class="column is-10">
             <%if(object.logo!== undefined && object.logo!== null && object.logo!==''){%>
-                <p class="has-text-centered"><img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
+                <p class="has-text-centered"><img async src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
             <%}%>
             <%if(typeof object.children == 'object' && object.children.length>0){%>
                 <div class="container">
@@ -76,12 +76,12 @@
             <% let count = 0 %>
             <div class="container" itemscope itemtype="https://schema.org/ItemList">
             <% object.products.forEach((product)=>{ %>
-                <%if(product.active && product.cover !== undefined){ %>
+                <%if(product.active){ %>
                     <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
-                        <span class="is-hidden" itemprop="productID"><%=product.id%></span>
+                        <span class="is-hidden productid" itemprop="productID"><%=product.id%></span>
                         <div class="card-image has-badge-danger has-badge-rounded has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=product.discount.value%>%"<%}%>>
                             <figure class="image is-256x256 is-inline-block">
-                                <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><img async itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"></a>
+                                <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><%if(product.cover!==undefined){%><img async itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"><%}%></a>
                             </figure>
                         </div>
                         <div class="card-content">
@@ -106,21 +106,30 @@
                                 </div>
                                 </p>
                                 <br>
-                                    
-                                        <div class="select is-primary is-size-7 is-fullwidth">
-                                            <select class="is-uppercase s-variation" name="variations">
-                                                <option value="0">Talla / Tamaño</option>
-                                                <% product.productvariation.forEach((v)=>{%>
-                                                    <option class="is-uppercase" qty="<%=v.quantity%>" value="<%=v.id%>"><%=v.variation.name%></option>
-                                                <%})%>
-                                            </select>
+                                <div class="dropdown is-fullwidth">
+                                    <div class="dropdown-trigger">
+                                        <button class="button is-small" product="<%=product.id%>" aria-haspopup="true" aria-controls="dropdown-menu">
+                                            <span id="drop-selected" class="is-uppercase is-size-7" value="0" >Talla / Tamaño</span>
+                                            <span class="icon is-small">
+                                                <i class='bx bx-chevron-down'></i>
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                                        <div class="dropdown-content">
                                         </div>
-                                        <br><br>
-                                        <div class="buttons">
-                                            <button id="push-to-cart" product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
-                                        </div>
-                                    
-                                
+                                    </div>
+                                </div>
+                                <br>
+                                <!--<div class="select is-primary is-size-7 is-fullwidth">
+                                    <select class="is-uppercase s-variation" name="variations">
+                                        <option style="min-height:30px;" value="0"></option>                                        
+                                            <option class="is-uppercase" qty="<%#=v.quantity%>" value="<%#=v.id%>"><%#=v.variation.name%></option>
+                                    </select>
+                                </div>-->
+                                <div class="buttons">
+                                    <button id="push-to-cart" product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
+                                </div>
                         </div>
                     </div>
                 <%} %>
@@ -143,9 +152,51 @@
         }
     });
 
-    live('.s-variation','change',(e) => {
-        let button = e.target.parentNode.parentNode.parentNode.querySelector('button');
-        let selected = e.target.options[e.target.selectedIndex]
+    live('.dropdown .button','click', e=>{
+        let elm = e.target;
+        if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
+        if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
+        let node = elm.parentNode.parentNode;
+        if(!hasClass(node,'is-active')){
+            let id = elm.getAttribute('product');
+            let content = elm.parentNode.parentNode.querySelector('.dropdown-content')
+            if(content.children.length<1){
+                io.socket.get('/findproductvariations/'+id,resData=>{
+                    let o = document.createElement('a');
+                    addClass(o,'dropdown-item');
+                    addClass(o,'is-uppercase');
+                    addClass(o,'is-size-7');
+                    o.setAttribute('qty','0');
+                    o.setAttribute('value','0');
+                    o.text='Talla / Tamaño';
+                    content.prepend(o);
+                    resData.forEach(op =>{
+                        o = document.createElement('a');
+                        addClass(o,'dropdown-item');
+                        addClass(o,'is-uppercase');
+                        addClass(o,'is-size-7');
+                        o.setAttribute('qty',op.quantity);
+                        o.setAttribute('value',op.id);
+                        o.text=op.variation.name;
+                        content.appendChild(o)
+                    });
+                });
+            }
+            addClass(node,'is-active');
+        }else{
+            removeClass(node,'is-active');
+        }
+    });
+
+    live('.dropdown-item','click',e=>{
+        let option = e.target
+        let elm = e.target.parentNode.parentNode.parentNode;
+        let selected = elm.querySelector('#drop-selected');
+        selected.setAttribute('qty',option.getAttribute('qty'))
+        selected.setAttribute('value',option.getAttribute('value'))
+        selected.innerHTML=option.text;
+        removeClass(elm,'is-active');
+        let button = elm.parentNode.querySelector('#push-to-cart');
         if(selected.getAttribute('qty')>0){
             removeClass(button,'is-disabled');
             button.disabled=false;
@@ -156,6 +207,7 @@
             button.disabled=true;
         }
     });
+
     live('.filter','click', e =>{
         let color = e.target.getAttribute('color');
         let cards = document.querySelectorAll('.card');
@@ -221,8 +273,7 @@
     });
 
     live('#push-to-cart','click',(e)=>{
-        let vrt = e.target.parentNode.parentNode.parentNode.querySelector('select[name="variations"]').value
-        console.log(vrt);
+        let vrt = e.target.parentNode.parentNode.querySelector('#drop-selected').getAttribute('value');
         io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'},(resData)=>{
             window.location.href='/cart';
         });

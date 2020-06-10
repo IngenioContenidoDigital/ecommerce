@@ -105,6 +105,22 @@
     filter: grayscale(1); /* Microsoft Edge and Firefox 35+ */
 }
 
+.dropdown.is-fullwidth {
+    display: flex;
+
+    .dropdown-trigger,
+    .dropdown-menu {
+        width: 100%;
+    }
+    .button {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+        border: solid 1px #3595d9;
+    }
+
+}
+
 .card-catalog{
     display: inline-block;
 }

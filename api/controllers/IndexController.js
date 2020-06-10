@@ -52,12 +52,18 @@ module.exports = {
     let entity = req.param('entity');
     let ename = req.param('name');
     let object = null;
+    let exists = async (element,compare) =>{
+      for(let c of element){
+        if(c.id === compare.id){return true;}
+      }
+      return false;
+    };
     switch(entity){
       case 'categoria':
         try{
           let parent = await Category.findOne({url:req.param('parent')});
           object = await Category.findOne({url:ename, parent:parent.id})
-          .populate('products')
+          .populate('products',{active:true})
           .populate('children');
           object.route = '/images/categories/';
           for(let c of object.children){
@@ -79,32 +85,34 @@ module.exports = {
         return res.notFound();
     }
 
-    let colorlist = [];
-    let brandlist = [];
-    let genderlist = [];
-    for(let p of object.products){
+    let colors = [];
+    let brands = [];
+    let genders = [];
+
+    object.products.forEach(async p=>{
       p.cover= await ProductImage.findOne({product:p.id,cover:1});
       p.mainColor=await Color.findOne({id:p.mainColor});
       p.manufacturer=await Manufacturer.findOne({id:p.manufacturer});
       p.seller=await Seller.findOne({id:p.seller});
       p.tax=await Tax.findOne({id:p.tax});
-      p.productvariation=await ProductVariation.find({product:p.id}).populate('variation');
-      //return a.variation.name.localeCompare(b.variation.name)
-      p.productvariation.sort((a,b)=>{return parseFloat(a.variation.name) - parseFloat(b.variation.name);});
       p.discount = await sails.helpers.discount(p.id);
       p.gender = await Gender.findOne({id:p.gender});
-      if(!brandlist.includes(p.manufacturer.id)){brandlist.push(p.manufacturer.id);}
-      if(!colorlist.includes(p.mainColor.id)){colorlist.push(p.mainColor.id);}
-      if(!genderlist.includes(p.gender.id)){genderlist.push(p.gender.id);}
-    }
 
-    let colors = await Color.find({where:{id:{'in':colorlist}}});
-    let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
-    let genders = await Gender.find({where:{id:{'in':genderlist}}});
+      if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
+      if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
+      if(!await exists(genders, p.gender)){genders.push(p.gender);}
+
+    });
     return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   },
   search: async(req, res) =>{
     let terms = req.body.search.toLowerCase().split(' ');
+    let exists = async (element,compare) =>{
+      for(let c of element){
+        if(c.id === compare.id){return true;}
+      }
+      return false;
+    };
     let products = await Product.find()
     .populate('tax')
     .populate('manufacturer')
@@ -116,9 +124,9 @@ module.exports = {
       search:req.body.search,
       products:[]
     };
-    let colorlist = [];
-    let brandlist = [];
-    let genderlist = [];
+    let colors = [];
+    let brands = [];
+    let genders = [];
 
     let found = (terms, products,i)=>{
       products = products.filter(product =>
@@ -142,29 +150,17 @@ module.exports = {
 
     let set = found(terms,products,0);
 
-    for(let p of set){
+    //for(let p of set){
+    set.forEach(async p=>{
       if(!result.products.includes(p.id)){
-        p.cover= await ProductImage.findOne({product:p.id,cover:1});
-        p.productvariation=await ProductVariation.find({product:p.id}).populate('variation');
-        //return a.variation.name.localeCompare(b.variation.name)
-        p.productvariation.sort((a,b)=>{return parseFloat(a.variation.name) - parseFloat(b.variation.name);});
+        p.cover= await ProductImage.findOne({product:p.id,cover:1});        
         p.discount = await sails.helpers.discount(p.id);
         result.products.push(p);
-        if(!colorlist.includes(p.mainColor.id)){
-          colorlist.push(p.mainColor.id);
-        }
-        if(!brandlist.includes(p.manufacturer.id)){
-          brandlist.push(p.manufacturer.id);
-        }
-        if(!genderlist.includes(p.gender.id)){
-          genderlist.push(p.gender.id);
-        }
+        if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
+        if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
+        if(!await exists(genders, p.gender)){genders.push(p.gender);}
       }
-    }
-
-    let colors = await Color.find({where:{id:{'in':colorlist}}});
-    let brands = await Manufacturer.find({where:{id:{'in':brandlist}}});
-    let genders = await Gender.find({where:{id:{'in':genderlist}}});
+    });
 
     return res.view('pages/front/list',{object:result,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
 
@@ -197,7 +193,7 @@ module.exports = {
       title:title,
       description:description,
       keywords:keywords,
-      tag:await sails.helpers.getTag(req.hostname), 
+      tag:await sails.helpers.getTag(req.hostname),
       menu:await sails.helpers.callMenu()});
   },
   cms: async (req,res)=>{

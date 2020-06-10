@@ -83,6 +83,7 @@ module.exports.routes = {
   'POST /products/variations/:id' : {controller:'ProductController',action:'productvariations'},
   'DELETE /variations/remove/:id' : {controller:'ProductController',action:'deletevariations'},
   'GET /findvariations/:id' : {controller:'ProductController',action:'findvariations'},
+  'GET /findproductvariations/:id' : {controller:'ProductController',action:'findproductvariations'},
   'GET /taxes/:action?/:id?' : {controller:'TaxController',action:'showtaxes'},
   'POST /tax/create' : {controller:'TaxController',action:'createtax'},
   'POST /tax/edit/:id' : {controller:'TaxController',action:'edittax'},

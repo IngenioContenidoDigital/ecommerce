@@ -902,7 +902,7 @@
                     </span>
                     </td>
                     <td class="align-middle">
-                      <a href="/products/edit/<%= product.id %>" class="button is-small">
+                      <a href="/products/edit/<%= product.id %>" class="button">
                         <span class="icon">
                           <i class="bx bx-edit"></i>
                         </span>
@@ -930,7 +930,6 @@
     });
 
     live('.state', 'click', function(){ 
-      if(confirm('Seguro Desea Continuar')){
         var elm = this;
         var id = this.getAttribute('product');
         var status = null;
@@ -945,7 +944,6 @@
             addClass(elm,'bx-check-circle');
           }
         });
-      }
     });
   </script>
 <% } %>
