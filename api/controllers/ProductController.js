@@ -282,14 +282,30 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
       throw 'forbidden';
     }
-    let error = null;
-    if(req.method==='POST'){
-      let header = null;
-      const https = require('https');
-      let route = sails.config.views.locals.imgurl;
-      let checkdata = async (header, data) => {
-        let body = [];
-        let errors =[];
+    let error = req.param('error') ? req.param('error') : null;
+    return res.view('pages/configuration/import',{layout:'layouts/admin',error:error});
+  },
+  importexecute:async (req,res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
+    let header = null;
+    let checkheader={
+      product:['name','reference','description','descriptionShort','active','price','tax','manufacturer','width','height','length','weight','gender','seller','mainColor','categories','mainCategory'],
+      productvariation:['supplierreference','reference','ean13','upc','quantity','variation','seller'],
+      productimage:['reference','seller','route','files']
+    };
+    let checked = false;
+    const https = require('https');
+    let route = sails.config.views.locals.imgurl;
+    let checkdata = async (header, data) => {
+      let body = {
+        items:[],
+        errors:[],
+      };
+      try{
+        let fila = 2;
         for(let d in data){
           let row = data[d].split(';');
           let result = {};
@@ -320,11 +336,21 @@ module.exports = {
                     break;
                 }
               }
+
               let product = await Product.findOne({reference:result['supplierreference'],seller:result['seller']}).populate('tax');
-              result['product'] = product.id;
-              result['price'] = parseInt(product.price*(1+product.tax.value/100));
-              result['variation'] = (await Variation.findOne({name:result['variation'].replace(',','.').trim().toLowerCase(),gender:product.gender})).id;
-              delete result['seller'];
+              if(product){
+                result['product'] = product.id;
+                result['price'] = parseInt(product.price*(1+product.tax.value/100));
+                let variation = await Variation.findOne({name:result['variation'].replace(',','.').trim().toLowerCase(),gender:product.gender});
+                if(variation){
+                  result['variation'] = variation.id;
+                  delete result['seller'];
+                }else{
+                  let v = result['variation'];
+                  result = null;
+                  throw {name:'NOVARIATION',message:'Variación '+v+' no disponible para este producto'};
+                }
+              }
             }
             if(req.body.entity==='Product'){
               for(let i in header){
@@ -414,97 +440,100 @@ module.exports = {
               }
               result['product'] = (await Product.findOne({reference:result['reference'],seller:result['seller']})).id;
             }
-            body.push(result);
+            if(result!==null){
+              body['items'].push(result);
+            }
           }catch(err){
-            console.log(err);
-            errors.push(err.message);
+            body['errors'].push('Fila '+fila+': '+err.message);
           }
+          fila++;
         }
         return body;
-      };
-      try{
-        let filename = await sails.helpers.fileUpload(req,'csv',3000000,'uploads');
-        //let filename = ['27bf4a07-5fea-4caa-a113-17c6d47a4428.csv']; //Product
-        //let filename = ['6f29ddf3-d601-48a2-8d4f-cc2bbe94bc99.csv']; //ProductVariation
-        //let filename = ['899d7ab0-9d13-4a3d-9128-f74f5015916e.csv']; //ProductImage
-        https.get(route+'/uploads/'+filename[0], response => {
-          let str ='';
-          response.on('data', chunk=>{
-            str += chunk.toString();
-          });
-          response.on('end', ()=>{
-            let rows = str.split('\n');
-            header = rows[0].split(';');
-            if(req.body.entity==='Product'){
-              header.push('mainCategory');
+      }catch(err){
+        return err;
+      }
+    };
+    try{
+      let filename = await sails.helpers.fileUpload(req,'csv',3000000,'uploads');
+      https.get(route+'/uploads/'+filename[0], response => {
+        let str ='';
+        response.on('data', chunk=>{str += chunk.toString();});
+        response.on('end', ()=>{
+          let rows = str.split('\n');
+          header = rows[0].split(';');
+          if(req.body.entity==='Product'){
+            header.push('mainCategory');
+            if(JSON.stringify(header)===JSON.stringify(checkheader.product)){checked=true;}
+          }
+          if(req.body.entity==='ProductVariation'){
+            for(let h in header){
+              if(header[h]==='reference'){header[h]='supplierreference';}
+              if(header[h]==='reference2'){header[h]='reference';}
             }
-            if(req.body.entity==='ProductVariation'){
-              for(let h in header){
-                if(header[h]==='reference'){header[h]='supplierreference';}
-                if(header[h]==='reference2'){header[h]='reference';}
-              }
-            }
-            rows.shift();
-            rowdata = rows;
-            checkdata(header,rowdata).then(async result =>{
-              console.log(result);
-              try{
-                if(req.body.entity==='Product'){await Product.createEach(result);}
-                if(req.body.entity==='ProductVariation'){await ProductVariation.createEach(result);}
-                if(req.body.entity==='ProductImage'){
-                  let fs = require('fs');
-                  let AWS = require('aws-sdk');
-                  AWS.config.loadFromPath('./config.json');
-                  var s3 = new AWS.S3();
-                  let params = {
-                    Bucket: 'iridio.co',
-                    ContentType: 'image/jpeg'
-                  };
-                  for(let r in result){
-                    let position=1;
-                    let cover = 1;
-                    for(let f in result[r].files){
-                      if(position>1){cover=0;}
-                      let productimage = {
-                        file:result[r].files[f],
-                        position:position,
-                        cover:cover,
-                        product:result[r].product
-                      };
-                      fs.readFile(result[r].route+result[r].files[f], (err,data)=>{
-                        if(err){console.log(err);}
-                        if(data){
-                          params['Key'] = 'images/products/'+result[r].product+'/'+result[r].files[f];
-                          params['Body'] = new Buffer(data, 'binary');
-                          s3.upload(params, async (err, data) => {
-                            if(err){console.log(err);}
-                            console.log(data);
-                            try{
-                              await ProductImage.create(productimage);
-                            }catch(err){
-                              console.log(err);
-                            }
-                          });
-                        }
-                      });
-                      position++;
+            if(JSON.stringify(header)===JSON.stringify(checkheader.productvariation)){checked=true;}
+          }
+          if(req.body.entity==='ProductImage'){if(JSON.stringify(header)===JSON.stringify(checkheader.productimage)){checked=true;}}
+          try{
+            if(checked){
+              rows.shift();
+              rowdata = rows;
+              checkdata(header,rowdata).then(async result =>{
+                try{
+                  if(req.body.entity==='Product'){await Product.createEach(result.items);}
+                  if(req.body.entity==='ProductVariation'){await ProductVariation.createEach(result.items);}
+                  if(req.body.entity==='ProductImage'){
+                    let fs = require('fs');
+                    let AWS = require('aws-sdk');
+                    AWS.config.loadFromPath('./config.json');
+                    var s3 = new AWS.S3();
+                    let params = {
+                      Bucket: 'iridio.co',
+                      ContentType: 'image/jpeg'
+                    };
+                    for(let r in result.items){
+                      let position=1;
+                      let cover = 1;
+                      for(let f in result.items[r].files){
+                        if(position>1){cover=0;}
+                        let productimage = {
+                          file:result.items[r].files[f],
+                          position:position,
+                          cover:cover,
+                          product:result.items[r].product
+                        };
+                        fs.readFile(result.items[r].route+result.items[r].files[f], (err,data)=>{
+                          if(err){console.log(err);}
+                          if(data){
+                            params['Key'] = 'images/products/'+result.items[r].product+'/'+result.items[r].files[f];
+                            params['Body'] = new Buffer(data, 'binary');
+                            s3.upload(params, async (err, data) => {
+                              if(err){console.log(err);}
+                              if(data){await ProductImage.create(productimage);}
+                            });
+                          }
+                        });
+                        position++;
+                      }
                     }
                   }
+                  return res.view('pages/configuration/import',{layout:'layouts/admin',error:null, resultados:result});
+                }catch(cerr){
+                  return res.redirect('/import?error='+cerr.message);
                 }
-              }catch(cerr){
-                console.log(cerr);
-              }
-            }).catch(err=>{
-              console.log(err);
-            });
-          });
+              }).catch(err=>{
+                return res.redirect('/import?error='+err.message);
+              });
+            }else{
+              throw {name:'E_FORMATO',message:'El Archivo no cumple con el formato requerido para ser procesado.'};
+            }
+          }catch(err){
+            return res.redirect('/import?error='+err.message);
+          }
         });
-      }catch(err){
-        console.log(err);
-        error = err.msg;
-      }
+      });
+    }catch(err){
+      return res.redirect('/import?error='+err.message);
     }
-    return res.view('pages/configuration/import',{layout:'layouts/admin',error:error});
-  },
+  }
 };
 
