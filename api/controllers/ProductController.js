@@ -510,16 +510,14 @@ module.exports = {
                           cover:cover,
                           product:result.items[r].product
                         };
-                        fs.readFile(result.items[r].route+result.items[r].files[f], (err,data)=>{
+                        fs.readFile(result.items[r].route+result.items[r].files[f],(err,data)=>{
                           if(err){console.log(err);}
-                          if(data){
-                            params['Key'] = 'images/products/'+result.items[r].product+'/'+result.items[r].files[f];
-                            params['Body'] = new Buffer(data, 'binary');
-                            s3.upload(params, async (err, data) => {
-                              if(err){console.log(err);}
-                              if(data){await ProductImage.create(productimage);}
-                            });
-                          }
+                          params['Key'] = 'images/products/'+result.items[r].product+'/'+result.items[r].files[f];
+                          params['Body'] = new Buffer(data, 'binary');
+                          s3.upload(params, async (err, data) => {
+                            if(err){console.log(err);}
+                            await ProductImage.create(productimage);
+                          });
                         });
                         position++;
                       }
