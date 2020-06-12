@@ -1,104 +1,112 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/css/bulma-carousel.min.css">
         <%if(typeof slider == 'object'){%>
-        <%let main = slider.filter(el => el.position =='main');%>
-        <%if(main.length>1){%>
-            <section style="overflow: hidden;" class="section is-paddingless is-marginless" id="carousel">
-                <div id="carousel-demo" class="carousel">
-                    <%for(let m of main){%>
-                        <div class="container"><a href="<%=m.url%>"><img src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a></div>
+          <div class="columns is-centered">
+            <div class="column">
+              <%let main = slider.filter(el => el.position =='main');%>
+              <%if(main.length>1){%>
+                <section style="overflow: hidden;" class="section is-paddingless is-marginless" id="carousel">
+                    <div id="carousel-demo" class="carousel">
+                        <%for(let m of main){%>
+                            <div class="container"><a href="<%=m.url%>"><img src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a></div>
+                        <%}%>
+                    </div>
+                </section>
+              <%}else if(main.length==1){%>
+                <section style="overflow: hidden;" class="section is-paddingless is-marginless">
+                  <div class="container"><a href="<%=main[0].url%>"><img src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a></div>
+                </section>
+              <%}%>
+            </div>
+          </div>
+          <div class="columns is-centered">
+            <div class="column is-8-desktop">
+              <%let featured = slider.filter(el => el.position =='featured');%>
+              <%if(featured.length>=1){%>
+                <section class="section is-paddingless is-marginless">
+                  <div class="columns">
+                    <%for(let f of featured){%>
+                      <div class="column is-centered">
+                        <p class="has-text-centered"><a href="<%=f.url%>"><img src="<%=imgurl%>/images/slides/<%= f.image %>" alt="<%=f.name%>"/></a></p>
+                      </div>
                     <%}%>
-                </div>
-            </section>
-          <%}else if(main.length==1){%>
-            <section style="overflow: hidden;" class="section is-paddingless is-marginless">
-              <div class="container"><a href="<%=main[0].url%>"><img src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a></div>
-            </section>
-          <%}%>
-          <%let featured = slider.filter(el => el.position =='featured');%>
-          <%if(featured.length>=1){%>
-            <section class="section is-paddingless is-marginless">
-              <div class="columns">
-                <%for(let f of featured){%>
-                  <div class="column is-centered">
-                    <p class="has-text-centered"><a href="<%=f.url%>"><img src="<%=imgurl%>/images/slides/<%= f.image %>" alt="<%=f.name%>"/></a></p>
                   </div>
-                <%}%>
-              </div>
-            </section>
-          <%}%>
-          <%let mosaic = slider.filter(el => (el.position =='vertical' || el.position =='bottom' || el.position =='wide' || el.position =='middle' || el.position =='tall'));%>
-          <%if(mosaic.length>=1){%>
-              <section class="section is-paddingless is-marginless">
-              <p class="container has-text-centered">
-                <div class="tile is-ancestor">
-                  <%let vbm = mosaic.filter(el => el.position =='vertical' || el.position =='bottom'|| el.position =='middle')%>
-                    <%if(vbm.length>0){%>
-                    <div class="tile is-vertical">
-                      <div class="tile">
-                        <%let vb = mosaic.filter(el => el.position =='vertical' || el.position =='bottom')%>
-                        <%if(vb.length>0){%>
-                        <div class="tile is-parent is-vertical">
-                          <%let vertical = mosaic.filter(el => el.position =='vertical')%>
-                          <%if(vertical.length>0){%>
-                          <article class="tile is-child notification" style="color:<%=vertical[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= vertical[0].image %>'); background-size: cover;">
-                            <a style="text-decoration: none;" href="<%=vertical[0].url%>" ><div class="is-capitalized is-size-5"><%=vertical[0].name%></div>
-                            <div class="is-size-6"><%=vertical[0].text%></div></a>
-                          </article>
+                </section>
+              <%}%>
+            <%let mosaic = slider.filter(el => (el.position =='vertical' || el.position =='bottom' || el.position =='wide' || el.position =='middle' || el.position =='tall'));%>
+            <%if(mosaic.length>=1){%>
+                <section class="section is-paddingless is-marginless">
+                <p class="container has-text-centered">
+                  <div class="tile is-ancestor">
+                    <%let vbm = mosaic.filter(el => el.position =='vertical' || el.position =='bottom'|| el.position =='middle')%>
+                      <%if(vbm.length>0){%>
+                      <div class="tile is-vertical">
+                        <div class="tile">
+                          <%let vb = mosaic.filter(el => el.position =='vertical' || el.position =='bottom')%>
+                          <%if(vb.length>0){%>
+                          <div class="tile is-parent is-vertical">
+                            <%let vertical = mosaic.filter(el => el.position =='vertical')%>
+                            <%if(vertical.length>0){%>
+                            <article class="tile is-child notification" style="color:<%=vertical[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= vertical[0].image %>'); background-size: cover;">
+                              <a style="text-decoration: none;" href="<%=vertical[0].url%>" ><div class="is-capitalized is-size-5"><%=vertical[0].name%></div>
+                              <div class="is-size-6"><%=vertical[0].text%></div></a>
+                            </article>
+                            <%}%>
+                            <%let bottom = mosaic.filter(el => el.position =='bottom')%>
+                            <%if(bottom.length>0){%>
+                              <article class="tile is-child notification" style="color:<%=bottom[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= bottom[0].image %>'); background-size: cover;">
+                                <a style="text-decoration: none;" href="<%=bottom[0].url%>"><div class="is-capitalized is-size-5"><%=bottom[0].name%></div>
+                              <div class="is-size-6"><%=bottom[0].text%></div></a>
+                            </article>
+                            <%}%>
+                          </div>
                           <%}%>
-                          <%let bottom = mosaic.filter(el => el.position =='bottom')%>
-                          <%if(bottom.length>0){%>
-                            <article class="tile is-child notification" style="color:<%=bottom[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= bottom[0].image %>'); background-size: cover;">
-                              <a style="text-decoration: none;" href="<%=bottom[0].url%>"><div class="is-capitalized is-size-5"><%=bottom[0].name%></div>
-                            <div class="is-size-6"><%=bottom[0].text%></div></a>
-                          </article>
+                          <%let middle = mosaic.filter(el => el.position =='middle')%>
+                          <%if(middle.length>0){%>
+                            <div class="tile is-parent">
+                              <article class="tile is-child notification" style="color:<%=middle[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= middle[0].image %>'); background-size: cover;">
+                                <a style="text-decoration: none;" href="<%=middle[0].url%>" ><div class="is-capitalized is-size-5"><%=middle[0].name%></div>
+                                <div class="subtitle is-size-6"><%=middle[0].text%></div></a>
+                                <div class="content" style="min-height:180px;">
+                                  <!-- Content -->
+                                </div>
+                              </article>
+                            </div>
                           <%}%>
                         </div>
-                        <%}%>
-                        <%let middle = mosaic.filter(el => el.position =='middle')%>
-                        <%if(middle.length>0){%>
-                          <div class="tile is-parent">
-                            <article class="tile is-child notification" style="color:<%=middle[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= middle[0].image %>'); background-size: cover;">
-                              <a style="text-decoration: none;" href="<%=middle[0].url%>" ><div class="is-capitalized is-size-5"><%=middle[0].name%></div>
-                              <div class="subtitle is-size-6"><%=middle[0].text%></div></a>
-                              <div class="content" style="min-height:180px;">
-                                <!-- Content -->
-                              </div>
-                            </article>
-                          </div>
+                        <%let wide = mosaic.filter(el => el.position =='wide')%>
+                        <%if(wide.length>0){%>
+                        <div class="tile is-parent">
+                          <article class="tile is-child notification" style="color:<%=wide[0].textColor.code%>; background-image: url('<%=imgurl%>/images/slides/<%= wide[0].image %>'); background-size: cover;">
+                            <a style="text-decoration: none;" href="<%=wide[0].url%>"><div class="is-capitalized is-size-5"><%=wide[0].name%></div>
+                            <div class="is-size-6"><%=wide[0].text%></div>
+                            <div style="min-height:250px;" class="content">
+                              <!-- Content -->
+                            </div></a>
+                          </article>
+                        </div>
                         <%}%>
                       </div>
-                      <%let wide = mosaic.filter(el => el.position =='wide')%>
-                      <%if(wide.length>0){%>
-                      <div class="tile is-parent">
-                        <article class="tile is-child notification" style="color:<%=wide[0].textColor.code%>; background-image: url('<%=imgurl%>/images/slides/<%= wide[0].image %>'); background-size: cover;">
-                          <a style="text-decoration: none;" href="<%=wide[0].url%>"><div class="is-capitalized is-size-5"><%=wide[0].name%></div>
-                          <div class="is-size-6"><%=wide[0].text%></div>
-                          <div style="min-height:250px;" class="content">
-                            <!-- Content -->
+                      <%}%>
+                      <%let tall = mosaic.filter(el => el.position =='tall')%>
+                      <%if(tall.length>0){%>
+                      <div class="tile is-parent" style="color:<%=tall[0].textColor.code%>">
+                        <article class="tile is-child notification" style="color:<%=tall[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= tall[0].image %>'); background-size: cover;">
+                          <a style="text-decoration: none;" href="<%=tall[0].url%>"><div class="content">
+                            <div class="is-capitalized is-size-5"><%=tall[0].name%></div>
+                            <div class="is-size-6"><%=tall[0].text%></div>
+                            <div class="content" style="min-height: 320px;">
+                              <!-- Content -->
+                            </div>
                           </div></a>
                         </article>
                       </div>
                       <%}%>
-                    </div>
-                    <%}%>
-                    <%let tall = mosaic.filter(el => el.position =='tall')%>
-                    <%if(tall.length>0){%>
-                    <div class="tile is-parent" style="color:<%=tall[0].textColor.code%>">
-                      <article class="tile is-child notification" style="color:<%=tall[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= tall[0].image %>'); background-size: cover;">
-                        <a style="text-decoration: none;" href="<%=tall[0].url%>"><div class="content">
-                          <div class="is-capitalized is-size-5"><%=tall[0].name%></div>
-                          <div class="is-size-6"><%=tall[0].text%></div>
-                          <div class="content" style="min-height: 320px;">
-                            <!-- Content -->
-                          </div>
-                        </div></a>
-                      </article>
-                    </div>
-                    <%}%>
-                </div>
-                </p>
-              </section>            
-          <%}%>
+                  </div>
+                  </p>
+                </section>            
+            <%}%>
+            </div>
+          </div>
       <%}%>
   <hr>
   <div class="columns is-mobile is-gapless">

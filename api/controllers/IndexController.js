@@ -153,7 +153,7 @@ module.exports = {
     //for(let p of set){
     set.forEach(async p=>{
       if(!result.products.includes(p.id)){
-        p.cover= await ProductImage.findOne({product:p.id,cover:1});        
+        p.cover= await ProductImage.findOne({product:p.id,cover:1});
         p.discount = await sails.helpers.discount(p.id);
         result.products.push(p);
         if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
