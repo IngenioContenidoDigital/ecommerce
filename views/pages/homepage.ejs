@@ -7,7 +7,7 @@
                 <section style="overflow: hidden;" class="section is-paddingless is-marginless" id="carousel">
                     <div id="carousel-demo" class="carousel">
                         <%for(let m of main){%>
-                            <div class="container"><a href="<%=m.url%>"><img src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a></div>
+                            <a href="<%=m.url%>"><img src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a>
                         <%}%>
                     </div>
                 </section>
