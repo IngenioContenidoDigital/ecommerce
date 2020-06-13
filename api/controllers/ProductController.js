@@ -147,13 +147,17 @@ module.exports = {
     let route ='images/products/'+id;
     let cover=0;
     let result = null;
-    let response = await sails.helpers.fileUpload(req,'file',12000000,route);
-    for(let i=0; i<response.length; i++){
-      let hascover = await ProductImage.findOne({product:id, cover:1});
-      if (!hascover){cover = 1;}else{cover=0;}
-      await ProductImage.create({file:response[i],position:i,cover:cover,product:id});
+    try{
+      let response = await sails.helpers.fileUpload(req,'file',12000000,route);
+      for(let i=0; i<response.length; i++){
+        let hascover = await ProductImage.findOne({product:id, cover:1});
+        if (!hascover){cover = 1;}else{cover=0;}
+        await ProductImage.create({file:response[i].filename,position:i,cover:cover,product:id});
+      }
+      result = await ProductImage.find({product:id});
+    }catch(err){
+      console.log(err);
     }
-    result = await ProductImage.find({product:id});
 
     res.send(result);
   },
@@ -308,6 +312,9 @@ module.exports = {
     let checked = false;
     const https = require('https');
     let route = sails.config.views.locals.imgurl;
+    let findFromReference = async(reference) =>{
+      return await Product.findOne({reference:reference});
+    };
     let checkdata = async (header, data) => {
       let body = {
         items:[],
@@ -429,26 +436,6 @@ module.exports = {
                 }
               }
             }
-            if(req.body.entity==='ProductImage'){
-              for(let i in header){
-                switch(header[i]){
-                  case 'reference':
-                    result[header[i]] = row[i].trim().toUpperCase();
-                    break;
-                  case 'seller':
-                    result[header[i]] = (await Seller.findOne({domain:row[i].trim().toLowerCase()})).id;
-                    break;
-                  case 'files':
-                    let files = row[i].trim().split(',').sort();
-                    result[header[i]] = files;
-                    break;
-                  default:
-                    result[header[i]] = row[i].trim();
-                    break;
-                }
-              }
-              result['product'] = (await Product.findOne({reference:result['reference'],seller:result['seller']})).id;
-            }
             if(result!==null){
               body['items'].push(result);
             }
@@ -463,81 +450,94 @@ module.exports = {
       }
     };
     try{
-      let filename = await sails.helpers.fileUpload(req,'csv',3000000,'uploads');
-      https.get(route+'/uploads/'+filename[0], response => {
-        let str ='';
-        response.on('data', chunk=>{str += chunk.toString();});
-        response.on('end', ()=>{
-          let rows = str.split('\n');
-          header = rows[0].split(';');
-          if(req.body.entity==='Product'){
-            header.push('mainCategory');
-            if(JSON.stringify(header)===JSON.stringify(checkheader.product)){checked=true;}
-          }
-          if(req.body.entity==='ProductVariation'){
-            for(let h in header){
-              if(header[h]==='reference'){header[h]='supplierreference';}
-              if(header[h]==='reference2'){header[h]='reference';}
-            }
-            if(JSON.stringify(header)===JSON.stringify(checkheader.productvariation)){checked=true;}
-          }
-          if(req.body.entity==='ProductImage'){if(JSON.stringify(header)===JSON.stringify(checkheader.productimage)){checked=true;}}
+      if(req.body.entity==='ProductImage'){
+        req.setTimeout(240000);
+        let result={
+          items:[],
+          errors:[]
+        };
+        let imageslist = await sails.helpers.fileUpload(req,'file',200000000,'images/products/tmp');
+        let AWS = require('aws-sdk');
+        AWS.config.loadFromPath('./config.json');
+        var s3 = new AWS.S3();
+        let params = {
+          Bucket: 'iridio.co',
+          ContentType: 'image/jpeg'
+        };
+        let fila = 1;
+        for(let r in imageslist){
           try{
-            if(checked){
-              rows.shift();
-              rowdata = rows;
-              checkdata(header,rowdata).then(async result =>{
-                try{
-                  if(req.body.entity==='Product'){await Product.createEach(result.items);}
-                  if(req.body.entity==='ProductVariation'){await ProductVariation.createEach(result.items);}
-                  if(req.body.entity==='ProductImage'){
-                    let fs = require('fs');
-                    let AWS = require('aws-sdk');
-                    AWS.config.loadFromPath('./config.json');
-                    var s3 = new AWS.S3();
-                    let params = {
-                      Bucket: 'iridio.co',
-                      ContentType: 'image/jpeg'
-                    };
-                    for(let r in result.items){
-                      let position=1;
-                      let cover = 1;
-                      for(let f in result.items[r].files){
-                        if(position>1){cover=0;}
-                        let productimage = {
-                          file:result.items[r].files[f],
-                          position:position,
-                          cover:cover,
-                          product:result.items[r].product
-                        };
-                        fs.readFile(result.items[r].route+result.items[r].files[f],(err,data)=>{
-                          if(err){console.log(err);}
-                          params['Key'] = 'images/products/'+result.items[r].product+'/'+result.items[r].files[f];
-                          params['Body'] = new Buffer(data, 'binary');
-                          s3.upload(params, async (err, data) => {
-                            if(err){console.log(err);}
-                            await ProductImage.create(productimage);
-                          });
-                        });
-                        position++;
-                      }
-                    }
-                  }
-                  return res.view('pages/configuration/import',{layout:'layouts/admin',error:null, resultados:result});
-                }catch(cerr){
-                  return res.redirect('/import?error='+cerr.message);
-                }
-              }).catch(err=>{
-                return res.redirect('/import?error='+err.message);
-              });
-            }else{
-              throw {name:'E_FORMATO',message:'El Archivo no cumple con el formato requerido para ser procesado.'};
-            }
+            let file = imageslist[r].original.split('.');
+            let info = file[0].split('_');
+            let reference = info[0].trim().toUpperCase();
+            let position = info[1];
+            let cover = (position===1 || position==='1') ? 1 : 0;
+            let product = await findFromReference(reference);
+            let productimage = {
+              file:imageslist[r].filename,
+              position:parseInt(position),
+              cover:parseInt(cover),
+              product:product.id
+            };
+
+            params['Key'] = 'images/products/'+product.id+'/'+imageslist[r].filename;
+            params['CopySource'] = '/iridio.co/images/products/tmp/'+imageslist[r].filename;
+
+            s3.copyObject(params, async (err, data) => {
+              if(err){result['errors'].push('Archivo '+fila+': '+err.message);}
+              if(data){
+                await ProductImage.create(productimage);
+              }
+            });
+            result['items'].push({fila:fila,archivo:imageslist[r].original});
           }catch(err){
-            return res.redirect('/import?error='+err.message);
+            result['errors'].push('Archivo '+imageslist[r].original+': '+err.message);
           }
+          fila++;
+        }
+        return res.view('pages/configuration/import',{layout:'layouts/admin',error:null, resultados:result});
+      }else{
+        let filename = await sails.helpers.fileUpload(req,'file',2000000,'uploads');
+        https.get(route+'/uploads/'+filename[0].filename, response => {
+          let str ='';
+          response.on('data', chunk=>{str += chunk.toString();});
+          response.on('end', ()=>{
+            let rows = str.split('\n');
+            header = rows[0].split(';');
+            if(req.body.entity==='Product'){
+              header.push('mainCategory');
+              if(JSON.stringify(header)===JSON.stringify(checkheader.product)){checked=true;}
+            }
+            if(req.body.entity==='ProductVariation'){
+              for(let h in header){
+                if(header[h]==='reference'){header[h]='supplierreference';}
+                if(header[h]==='reference2'){header[h]='reference';}
+              }
+              if(JSON.stringify(header)===JSON.stringify(checkheader.productvariation)){checked=true;}
+            }
+            try{
+              if(checked){
+                rows.shift();
+                rowdata = rows;
+                checkdata(header,rowdata).then(async result =>{
+                  try{
+                    if(req.body.entity==='Product'){await Product.createEach(result.items);}
+                    if(req.body.entity==='ProductVariation'){await ProductVariation.createEach(result.items);}
+                  }catch(cerr){
+                    return res.redirect('/import?error='+cerr.message);
+                  }
+                }).catch(err=>{
+                  return res.redirect('/import?error='+err.message);
+                });
+              }else{
+                throw {name:'E_FORMATO',message:'El Archivo no cumple con el formato requerido para ser procesado.'};
+              }
+            }catch(err){
+              return res.redirect('/import?error='+err.message);
+            }
+          });
         });
-      });
+      }
     }catch(err){
       return res.redirect('/import?error='+err.message);
     }

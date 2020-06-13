@@ -56,7 +56,7 @@ module.exports = {
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
         name:req.body.nombre.trim().toLowerCase(),
-        logo:filename[0],
+        logo:filename[0].filename,
         description:req.body.descripcion,
         dafiti:dafiticat,
         parent:current.id,
@@ -113,7 +113,7 @@ module.exports = {
         description:req.body.descripcion,
         parent:parent.id,
         dafiti:dafiticat,
-        logo:uploaded[0],
+        logo:uploaded[0].filename,
         active:isActive,
         level:parent.level+1});
     }catch(err){

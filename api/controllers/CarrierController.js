@@ -33,7 +33,7 @@ module.exports = {
       await Carrier.create({
         name:req.body.name.trim().toLowerCase(),
         url:req.body.url,
-        logo: filename[0],
+        logo: filename[0].filename,
         active:isActive});
     }catch(err){
       error=err;
@@ -59,7 +59,7 @@ module.exports = {
       await Carrier.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         url: req.body.url,
-        logo: uploaded[0],
+        logo: uploaded[0].filename,
         active:isActive});
 
     }catch(err){

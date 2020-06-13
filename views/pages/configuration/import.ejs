@@ -23,7 +23,7 @@
                 <div class="field">
                     <div id="file-loader" class="file has-name is-fullwidth">
                     <label class="file-label">
-                        <input class="file-input" required accept=".csv" type="file" id="csv" name="csv" />
+                        <input class="file-input" required accept=".csv" type="file" id="file" name="file" />
                         <span class="file-cta">
                         <span class="file-icon">
                             <i class="bx bx-upload"></i>
@@ -86,4 +86,19 @@
         addClass(box,'is-hidden');
         document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
     });
+
+    live('select[name="entity"]','change',e=>{
+        let elm = document.querySelector('#file');
+        if(e.target.value==='ProductImage'){
+            elm.setAttribute('accept','image/*');
+            elm.setAttribute('multiple','multiple');
+            document.querySelector('span .file-label').innerHTML='Imagenes a Procesar'
+            document.querySelector('.file-name').innerHTML='Cargar Varias Imagenes'
+        }else{
+            elm.setAttribute('accept','.csv');
+            elm.removeAttribute('multiple');
+            document.querySelector('span .file-label').innerHTML='Archivo .CSV'
+            document.querySelector('.file-name').innerHTML='Cargar Archivo .csv a procesar'
+        }
+    })
   </script>

@@ -34,7 +34,7 @@ module.exports = {
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/brands');
       await Manufacturer.create({
         name:req.body.nombre.trim().toLowerCase(),
-        logo: filename[0],
+        logo: filename[0].filename,
         description:req.body.descripcion,
         url:(req.body.nombre.trim().toLowerCase()).replace(/\s/gi,'-'),
         active:isActive});
@@ -82,7 +82,7 @@ module.exports = {
       await Manufacturer.updateOne({id:id}).set({
         name:req.body.nombre.trim().toLowerCase(),
         description:req.body.description,
-        logo: filename[0],
+        logo: filename[0].filename,
         active:isActive,
         url:(req.body.nombre.trim().toLowerCase()).replace(' ','-')});
     }catch(err){

@@ -42,7 +42,7 @@ module.exports = {
       let filename = await sails.helpers.fileUpload(req,'image',2000000,'images/slides');
       await Slider.create({
         name:req.body.name.trim().toLowerCase(),
-        image: filename[0],
+        image: filename[0].filename,
         text:req.body.text,
         textColor:(req.body.color) ? req.body.color : (await Color.findOne({name:'negro'})).id,
         position:req.body.position,
@@ -71,7 +71,7 @@ module.exports = {
       let filename = await sails.helpers.fileUpload(req,'image',2000000,'images/slides');
       await Slider.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
-        image: filename[0],
+        image: filename[0].filename,
         position:req.body.position,
         text:req.body.text,
         textColor:(req.body.color) ? req.body.color : (await Color.findOne({name:'negro'})).id,

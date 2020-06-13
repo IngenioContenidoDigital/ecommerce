@@ -55,7 +55,7 @@ module.exports = {
         tagManager: req.body.tagManager,
         phone:req.body.phone,
         domain:req.body.url,
-        logo: filename[0],
+        logo: filename[0].filename,
         mainAddress:address.id,
         active:isActive});
     }catch(err){
@@ -122,7 +122,7 @@ module.exports = {
         phone:req.body.phone,
         tagManager: req.body.tagManager,
         domain:req.body.url,
-        logo: filename[0],
+        logo: filename[0].filename,
         mainAddress:address.id,
         active:isActive});
     }catch(err){
