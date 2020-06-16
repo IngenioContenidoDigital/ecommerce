@@ -312,6 +312,7 @@ module.exports = {
     let checked = false;
     const https = require('https');
     let route = sails.config.views.locals.imgurl;
+    req.setTimeout(300000);
     let findFromReference = async(reference) =>{
       return await Product.findOne({reference:reference});
     };
@@ -451,7 +452,6 @@ module.exports = {
     };
     try{
       if(req.body.entity==='ProductImage'){
-        req.setTimeout(240000);
         let result={
           items:[],
           errors:[]

@@ -3,28 +3,28 @@
           
           <%let main = slider.filter(el => el.position =='main');%>
           <%if(main.length>1){%>
-            <section class="section is-paddingless">
-              <div class="container">
-                <div style="overflow:hidden;" id="carousel-demo" class="carousel">
+            <section class="hero is-hidden-mobile">
+              <div style="min-width:100%;" class="container">
+                <p class="carousel has-text-centered">
                   <%for(let m of main){%>
                       <a href="<%=m.url%>"><img src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a>
                   <%}%>
-                </div>
+                  </p>
               </div>
             </section>
           <%}else if(main.length==1){%>
-            <section style="overflow: hidden;" class="section is-paddingless">
-              <div class="container"><a href="<%=main[0].url%>"><img src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a></div>
+            <section class="hero is-hidden-mobile">
+              <a href="<%=main[0].url%>"><img src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a>
             </section>
           <%}%>
-          <div class="columns is-centered">
-            <div class="column is-8-desktop">
+          <div class="columns is-centered is-gapless">
+            <div class="column is-7">
               <%let featured = slider.filter(el => el.position =='featured');%>
               <%if(featured.length>=1){%>
-                <section class="section">
+                <section class="section is-paddingless is-gapless">
                   <div class="columns">
                     <%for(let f of featured){%>
-                      <div class="column is-centered">
+                      <div class="column">
                         <p class="has-text-centered"><a href="<%=f.url%>"><img src="<%=imgurl%>/images/slides/<%= f.image %>" alt="<%=f.name%>"/></a></p>
                       </div>
                     <%}%>
@@ -126,21 +126,4 @@
         pagination:'HH:mm',
         autoplaySpeed:4000,
         pauseOnHover:true});
-
-    // Loop on each carousel initialized
-    for(var i = 0; i < carousels.length; i++) {
-        // Add listener to  event
-        carousels[i].on('before:show', state => {
-            console.log(state);
-        });
-    }
-
-    // Access to bulmaCarousel instance of an element
-    var element = document.querySelector('#my-element');
-    if (element && element.bulmaCarousel) {
-        // bulmaCarousel instance is available as element.bulmaCarousel
-        element.bulmaCarousel.on('before-show', function(state) {
-            console.log(state);
-        });
-    }
 </script>

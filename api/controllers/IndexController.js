@@ -63,7 +63,7 @@ module.exports = {
         try{
           let parent = await Category.findOne({url:req.param('parent')});
           object = await Category.findOne({url:ename, parent:parent.id})
-          .populate('products',{active:true})
+          .populate('products',{where:{active:true},sort: 'updatedAt DESC'})
           .populate('children');
           object.route = '/images/categories/';
           for(let c of object.children){
