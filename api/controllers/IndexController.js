@@ -75,7 +75,7 @@ module.exports = {
         break;
       case 'marca':
         try{
-          object = await Manufacturer.findOne({url:ename}).populate('products');
+          object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true},sort: 'updatedAt DESC'});
           object.route = '/images/brands/';
         }catch(err){
           return res.notFound(err);
