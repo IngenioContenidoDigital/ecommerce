@@ -16,7 +16,7 @@ module.exports = {
     let publicKey = '';
     let privateKey = '';
 
-    if(inputs.method==='CC'){
+    if(inputs.method==='CC' || inputs.method==='PSE'){
       // Modelo Gateway
       publicKey = '6a7d08a5cc7410769c22029ea34108f6';
       privateKey = 'c4f2b4893fcb720b78f405e3a34cbc9c';
