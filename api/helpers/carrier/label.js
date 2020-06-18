@@ -18,13 +18,13 @@ module.exports = {
     let url = 'http://guias.coordinadora.com/ws/guias/1.6/server.php?wsdl';
     let tracking=inputs.tracking;
     /******** Tabla Rotulos ********
-    * 
+    *
     * 44 - Generico 6 x 15
     * 55 - Genérico 10 x 10
     * 57 - Generico Tercio de Página
     * 58 - Generico Media Página
     * 59 - Denérico Cuarto de Página
-    * 
+    *
     ******************************/
     let requestArgs={
       'p':{
