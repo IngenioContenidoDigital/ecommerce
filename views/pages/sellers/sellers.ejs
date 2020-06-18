@@ -89,25 +89,6 @@
                         <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
                       </div>
                     </div>
-                    <div class="field">
-                      <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
-                        <label class="file-label">
-                          <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
-                          <span class="file-cta">
-                            <span class="file-icon">
-                              <i class="bx bx-upload"></i>
-                            </span>
-                            <span class="file-label">
-                              Logotipo
-                            </span>
-                          </span>
-                          <span class="file-name">
-                            No ha cargado ningún archivo.
-                          </span>
-                        </label>
-                      </div>
-                    </div>
-                    <br>
                     <%if(action=='edit'){%>
                       <a href="/integrations/<%=seller.id%>">
                         <span class="icon">
@@ -193,6 +174,25 @@
                           </div>
                   </div>
                 </div>
+                <div class="field">
+                  <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
+                    <label class="file-label">
+                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                      <span class="file-cta">
+                        <span class="file-icon">
+                          <i class="bx bx-upload"></i>
+                        </span>
+                        <span class="file-label">
+                          Logotipo
+                        </span>
+                      </span>
+                      <span class="file-name">
+                        No ha cargado ningún archivo.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <br>
                 <div class="control buttons is-right">
                   <% if(action=='edit'){ %> 
                     <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Seller</button>
@@ -200,6 +200,8 @@
                     <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
                   <% } %>
                 </div>
+              
+              
               </div>
             </form>
           </div>

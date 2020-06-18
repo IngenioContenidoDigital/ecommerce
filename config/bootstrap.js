@@ -67,7 +67,7 @@ module.exports.bootstrap = async function() {
 
     await Variation.createEach([
       {gender: masculino.id ,name:'único',col:'único'},
-      {gender: masculino.id ,name:'4',cm:22.7,col:'34',us:'4'},
+      {gender: masculino.id ,name:'4',cm:22.5,col:'34',us:'4'},
       {gender: masculino.id ,name:'4.5',cm:23,col:'34.5',us:'4.5'},
       {gender: masculino.id ,name:'5',cm:23.5,col:'35',us:'5'},
       {gender: masculino.id ,name:'5.5',cm:24,col:'36',us:'5.5'},
@@ -81,7 +81,8 @@ module.exports.bootstrap = async function() {
       {gender: masculino.id ,name:'9.5',cm:27.5,col:'41',us:'9.5'},
       {gender: masculino.id ,name:'10',cm:28,col:'41.5',us:'10'},
       {gender: masculino.id ,name:'10.5',cm:28.5,col:'42',us:'10.5'},
-      {gender: masculino.id ,name:'11',cm:28.75,col:'43',us:'11'},
+      {gender: masculino.id ,name:'11',cm:29,col:'43',us:'11'},
+      {gender: masculino.id ,name:'12',cm:29.5,col:'44',us:'12'},
       {gender: masculino.id ,name:'xs',col:'xs',us:'xs'},
       {gender: masculino.id ,name:'s',col:'s',us:'s'},
       {gender: masculino.id ,name:'m',col:'m',us:'m'},
@@ -114,6 +115,7 @@ module.exports.bootstrap = async function() {
       {gender: ninos.id ,name:'único',col:'único'},
       {gender: ninas.id ,name:'único',col:'único'},
       {gender: bebes.id ,name:'único',col:'único'},
+
       {gender: unisex.id ,name:'único',col:'único'},
       {gender: unisex.id ,name:'21.5cm',cm:21.5,col:'34',us:'3.5/5',eu:'35'},
       {gender: unisex.id ,name:'22cm',cm:22,col:'34.5',us:'4/5.5',eu:'35.5'},
