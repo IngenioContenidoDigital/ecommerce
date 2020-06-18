@@ -15,7 +15,8 @@ module.exports = {
 
   fn: async function (inputs, exits) {
     let soap = require('strong-soap').soap;
-    let url = 'http://sandbox.coordinadora.com/ags/1.5/server.php?wsdl';
+    //let url = 'http://sandbox.coordinadora.com/ags/1.5/server.php?wsdl';
+    let url = 'https://ws.coordinadora.com/ags/1.5/server.php?wsdl';
 
     let order = await Order.findOne({tracking:inputs.tracking}).populate('addressDelivery');
     let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
