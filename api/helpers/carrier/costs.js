@@ -21,8 +21,21 @@ module.exports = {
     let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
     seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city');
     let city = await City.findOne({id:order.addressDelivery.city});
-    let oitems = await OrderItem.find({order:order.id});
+    let oitems = await OrderItem.find({order:order.id}).populate('product');
     let items = oitems.length;
+    let alto = 0;
+    let largo = 0;
+    let ancho = 0;
+    let peso = 0;
+
+    for(let p in oitems){
+      if(p < 1 || p ==='0'){
+        largo=oitems[0].product.length;
+        ancho=oitems[0].product.width;
+      }
+      alto+=oitems[p].product.height;
+      peso+=oitems[p].product.weight;
+    }
 
     let requestArgs={
       'p':{
@@ -39,10 +52,10 @@ module.exports = {
         'detalle':{
           'item':{
             'ubl':'0',
-            'alto':(11*items).toString(),
-            'ancho':'21',
-            'largo':'33',
-            'peso':(1*items).toString(),
+            'alto':(alto).toString(),
+            'ancho':(ancho).toString(),
+            'largo':(largo).toString(),
+            'peso': (peso).toString(),
             'unidades':(items).toString(),
           }
         },

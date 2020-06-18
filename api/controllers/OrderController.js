@@ -345,7 +345,7 @@ module.exports = {
     }else{
       await OrderHistory.create({order:order.id,state:req.body.orderState});
     }
-    return res.send(newstate);
+    return res.send({newstate:newstate,order:order});
   },
   confirmation: async(req, res)=>{
     let orders = await Order.find({paymentId:req.body.x_ref_payco});

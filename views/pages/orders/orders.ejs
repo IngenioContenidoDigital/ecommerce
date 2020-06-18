@@ -163,7 +163,7 @@
             let order= document.getElementById('order').getAttribute('order');
             let state= document.querySelector('select[name="orderState"]').value;
             io.socket.put('/order/update',{id:order,orderState:state},(resData) =>{
-              let colorcode = resData.color.code;
+              let colorcode = resData.newstate.color.code;
               document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
             });
           });

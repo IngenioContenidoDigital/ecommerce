@@ -27,8 +27,23 @@ module.exports = {
     seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city');
 
     let city = await City.findOne({id:order.addressDelivery.city});
-    let oitems = await OrderItem.find({order:order.id});
+    let oitems = await OrderItem.find({order:order.id}).populate('product');
     let items = oitems.length;
+    let alto = 0;
+    let largo = 0;
+    let ancho = 0;
+    let peso = 0;
+
+    for(let p in oitems){
+      if(p < 1 || p ==='0'){
+        largo=oitems[0].product.length;
+        ancho=oitems[0].product.width;
+      }
+      alto+=oitems[p].product.height;
+      peso+=oitems[p].product.weight;
+    }
+
+
     let recaudo = null;
     if(order.paymentMethod==='COD'){
       let formapago = 1;
@@ -80,10 +95,10 @@ module.exports = {
         'detalle' : {
           'Agw_typeGuiaDetalle':{
             'ubl':0,
-            'alto':11*items,
-            'ancho':21,
-            'largo':33,
-            'peso':1*items,
+            'alto':alto,
+            'ancho':ancho,
+            'largo':largo,
+            'peso':peso,
             'unidades':items,
             'referencia':null,
             'nombre_empaque':null
