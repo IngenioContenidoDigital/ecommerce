@@ -125,10 +125,12 @@
           <div class="column is-3">
             <p class="has-text-centered title is-6">Equivalencia Marketplace</p>
             <hr>
-            <progress class="progress is-small is-primary" max="100">15%</progress>
-            <h6 class="title is-6">Categoría en Dafiti</h6>
-            <ul class="cattree tree" id="dafiti">
-            </ul>
+            <div class="equivalencias">
+              <progress class="progress is-small is-primary" max="100">15%</progress>
+              <h6 class="title is-6">Categoría en Dafiti</h6>
+              <ul class="cattree tree" id="dafiti">
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -175,11 +177,13 @@
     
     const dft = () =>{
       let obj = document.querySelector('#dafiti');
-      io.socket.get('/integrations/dafiti/categories',(res)=>{
-        if(res){
+      io.socket.get('/integrations/dafiti/categories',(resData, res)=>{
+        if(res.statusCode==200){
           let progress = document.querySelector('progress');
           progress.parentNode.removeChild(progress);
-          options(obj,res.SuccessResponse.Body.Categories.Category,1);
+          options(obj,resData.SuccessResponse.Body.Categories.Category,1);
+        }else{
+          document.querySelector('.equivalencias').innerHTML='';
         }
       });
     }

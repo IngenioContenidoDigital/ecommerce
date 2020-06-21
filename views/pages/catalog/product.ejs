@@ -861,6 +861,7 @@
               <th scope="col">Portada</th>
               <th scope="col">Nombre</th>
               <th scope="col">SKU</th>
+              <th scope="col">Marca</th>
               <th scope="col">Precio</th>
               <th scope="col">Color</th>
               <th scope="col">Activo</th>
@@ -883,6 +884,7 @@
                     </td>
                     <td class="align-middle is-uppercase"><%= product.name %></td>
                     <td class="align-middle"><%= product.reference %></td>
+                    <td class="align-middle is-capitalized"><%= product.manufacturer.name %></td>
                     <td class="align-middle">$ <%= parseInt(product.price*(1+(product.tax.value/100))).toLocaleString('es-CO') %></td>
                     <td class="align-middle is-capitalized"><%= product.mainColor.name %></td>
                     <td class="align-middle">

@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const Integration = require("../models/Integration");
+
 module.exports = {
   showcategories: async function (req,res) {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -201,11 +203,16 @@ module.exports = {
       return res.badrequest();
     }
     try{
-      let route = await sails.helpers.channel.dafiti.sign('GetCategoryTree',(await Seller.findOne({domain:'seventeenst.com'})).id);
-      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
-      return res.send(JSON.parse(response));
+      let keys = await Integrations.find({where:{channel:'dafiti'},limit:1});
+      if(keys.length>0){
+        let route = await sails.helpers.channel.dafiti.sign('GetCategoryTree',keys[0].seller);
+        let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+        return res.ok(JSON.parse(response));
+      }else{
+        return res.serverError();
+      }
     }catch(err){
-      return res.send(err);
+      return res.serverError(err);
     }
   }
 };

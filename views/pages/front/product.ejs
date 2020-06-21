@@ -23,6 +23,7 @@
                             </div>
                         <%}%>
                     <%})%>
+                    <div style="z-index:9;" class="img-zoom"></div>
                 </div>
             </div>
         </div>
@@ -31,7 +32,8 @@
                 <br>
                 <h2 itemprop="brand" class="is-capitalized"><%=product.manufacturer.name%></h2>
                 <h4 itemprop="name" class="is-uppercase is-size-4"><%=product.name%></h4>
-                <hr>
+                <span class="is-x-small">Referencia: <%=product.reference.toUpperCase()%></span>
+                <br><br>
                 <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                     <meta itemprop="priceCurrency" content="COP">
                 <table class="table is-size-6 is-fullwidth">
@@ -47,6 +49,7 @@
                       <tr><td>Precio:</td><td itemprop="price" class="has-text-right">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO"); %></td></tr>
                     <%}%>
                 </table>
+                <hr>
                 </div>
                 <div class="columns is-mobile">
                     <div class="column">
@@ -69,7 +72,6 @@
                 <table id="size-table" class="table is-size-7 is-hidden is-fullwidth">
                 </table>
                 <div itemprop="disambiguatingDescription" class="content description-short"><%-product.descriptionShort%></div>
-                <div class="img-zoom"></div>
             </div>
         </div>
         <div class="column is-one-fifth has-text-centered">
@@ -85,6 +87,7 @@
         </div>
     </div>
     <hr>
+    <%if(product.description.length>50){%>
     <div class="columns is-gapless">
         <div class="column">
             <div class="container is-fluid">
@@ -93,6 +96,7 @@
             </div>
         </div>
     </div>
+    <%}%>
 </div>
 <script>
     const figure = document.querySelectorAll('.media-left > figure')
@@ -108,7 +112,8 @@
 
     
     let drift = new Drift(document.querySelector('#main'),{
-        paneContainer: document.querySelector('.img-zoom')
+        inlineContainer: document.querySelector('.img-zoom'),
+        inlinePane: 320,
     });
 
     live('select[name="variations"]','change',(e)=>{

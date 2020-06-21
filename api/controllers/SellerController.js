@@ -166,13 +166,13 @@ module.exports = {
       throw 'forbidden';
     }
     let seller = await Seller.findOne({id:req.param('id')});
-    let integrations = await Integration.find({seller:seller.id});
+    let integrations = await Integrations.find({seller:seller.id});
     return res.view('pages/sellers/integrations',{layout:'layouts/admin',seller:seller,integrations:integrations});
   },
   setintegration:async (req,res)=>{
     let seller = req.param('seller');
     let channel = req.param('channel');
-    Integration.findOrCreate({seller:seller,channel:channel},{
+    Integrations.findOrCreate({seller:seller,channel:channel},{
       channel:channel,
       url:req.body.url,
       user:req.body.user,
@@ -181,7 +181,7 @@ module.exports = {
     }).exec(async (err, record, created)=>{
       if(err){return res.redirect('/sellers?error='+err);}
       if(!created){
-        await Integration.updateOne({id:record.id}).set({
+        await Integrations.updateOne({id:record.id}).set({
           channel:channel,
           url:req.body.url,
           user:req.body.user,

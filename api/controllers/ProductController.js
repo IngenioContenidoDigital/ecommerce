@@ -53,12 +53,14 @@ module.exports = {
         products = await Product.find({seller:req.session.user.seller})
         .populate('images')
         .populate('tax')
-        .populate('mainColor');
+        .populate('mainColor')
+        .populate('manufacturer');
       }else{
         products = await Product.find()
         .populate('images')
         .populate('tax')
-        .populate('mainColor');
+        .populate('mainColor')
+        .populate('manufacturer');
       }
     }
     return res.view('pages/catalog/product',{layout:'layouts/admin',
