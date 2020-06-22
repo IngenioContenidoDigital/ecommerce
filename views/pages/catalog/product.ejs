@@ -585,22 +585,25 @@
               </td>
             </tr>
             <tr>
-              <td><img src="/images/mercadolibre.png" width="100px"/></td>
+              <td>
+                <img src="/images/mercadolibre.png" width="100px"/>
+                <input type="hidden" name="mlid" <%if(typeof product=='object' && product.mlid){%>value="<%=product.mlid%>"<%}%> />
+              </td>
               <td>
                 <div class="select is-small">
                   <select name="pricemercadolibre">
-                    <option value="0">+ 0%</option>
-                    <option value="0.05">+ 5%</option>
-                    <option value="0.1">+ 10%</option>
-                    <option value="0.15">+ 15%</option>
-                    <option value="0.2">+ 20%</option>
-                    <option value="0.25">+ 25%</option>
-                    <option value="0.3">+ 30%</option>
+                    <option value="0" <%if(typeof product=='object' &&  product.mlprice==0){%>selected<%}%>>+ 0%</option>
+                    <option value="0.05" <%if(typeof product=='object' &&  product.mlprice==0.05){%>selected<%}%>>+ 5%</option>
+                    <option value="0.1" <%if(typeof product=='object' &&  product.mlprice==0.1){%>selected<%}%>>+ 10%</option>
+                    <option value="0.15" <%if(typeof product=='object' &&  product.mlprice==0.15){%>selected<%}%>>+ 15%</option>
+                    <option value="0.2" <%if(typeof product=='object' &&  product.mlprice==0.2){%>selected<%}%>>+ 20%</option>
+                    <option value="0.25" <%if(typeof product=='object' &&  product.mlprice==0.25){%>selected<%}%>>+ 25%</option>
+                    <option value="0.3" <%if(typeof product=='object' &&  product.mlprice==0.3){%>selected<%}%>>+ 30%</option>
                   </select>
                 </div>
               </td>
               <td>
-                <input id="mercadolibre" type="checkbox" name="mercadolibre" class="switch is-success">
+                <input id="mercadolibre" type="checkbox" name="mercadolibre" <%if(typeof product=='object' && product.mlstatus){%>checked<%}%> class="switch is-success">
                 <label for="mercadolibre"></label>
               </td>
             </tr>
@@ -635,6 +638,14 @@
         let dafitiprice = document.querySelector('select[name="dafitiprice"]').value;
         //if(e.target.checked){
           io.socket.post('/dafiti/add',{product:p, dafitiprice:dafitiprice, status:e.target.checked});
+        //}
+      });
+
+      live('#mercadolibre','click',e=>{
+        let p = document.querySelector('#product-data').value;
+        let pricemercadolibre = document.querySelector('select[name="pricemercadolibre"]').value;
+        //if(e.target.checked){
+          io.socket.post('/mercadolibre/add',{product:p, pricemercadolibre:pricemercadolibre, status:e.target.checked});
         //}
       });
 

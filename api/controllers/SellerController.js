@@ -177,6 +177,7 @@ module.exports = {
       url:req.body.url,
       user:req.body.user,
       key:req.body.key,
+      secret:req.body.secret ? req.body.secret : '',
       seller:seller
     }).exec(async (err, record, created)=>{
       if(err){return res.redirect('/sellers?error='+err);}
@@ -186,6 +187,7 @@ module.exports = {
           url:req.body.url,
           user:req.body.user,
           key:req.body.key,
+          secret:req.body.secret ? req.body.secret : '',
           seller:seller
         });
       }

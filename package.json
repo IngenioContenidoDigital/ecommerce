@@ -16,6 +16,7 @@
     "epayco-sdk-node": "^1.0.1",
     "grunt": "1.0.4",
     "jsontoxml": "^1.0.1",
+    "mercadolibre": "0.0.13",
     "moment": "^2.24.0",
     "randomatic": "^3.1.1",
     "sails": "^1.2.4",

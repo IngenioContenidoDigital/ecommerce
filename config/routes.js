@@ -149,6 +149,7 @@ module.exports.routes = {
   'POST /integration/set/:seller/:channel' : {controller:'SellerController',action:'setintegration'},
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
+  'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
   'GET /token' : {action:'security/grant-csrf-token'}
   /* ----- FIN ADMIN ROUTES  -----*/
 

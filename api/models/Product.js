@@ -29,6 +29,10 @@ module.exports = {
     dafitiprice:{type:'number', defaultsTo:0},
     dafitistatus:{type:'boolean', defaultsTo:false},
     dafiti:{type:'boolean', defaultsTo:false},
+    mlprice:{type:'number', defaultsTo:0},
+    mlstatus:{type:'boolean', defaultsTo:false},
+    ml:{type:'boolean', defaultsTo:false},
+    mlid:{type:'string',defaultsTo:''},
     categories:{
       collection:'category',
       via:'products'

@@ -25,6 +25,9 @@ module.exports = {
       type:'string',
       required:true
     },
+    secret:{
+      type:'string',
+    },
     seller:{
       model:'seller',
       required:true
