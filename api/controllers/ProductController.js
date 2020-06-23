@@ -342,7 +342,7 @@ module.exports = {
       });
       body ={
         //'official_store_id':'123',
-        'title':product.name,
+        'title':product.name.substring(0,59),
         'price':Math.round((parseFloat(product.price)*(1+(parseFloat(product.tax.value)/100)))*(1+parseFloat(req.body.pricemercadolibre))),
         'currency_id':'COP',
         'buying_mode':'buy_it_now',
