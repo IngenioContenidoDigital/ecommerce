@@ -56,7 +56,7 @@ module.exports = {
             'alto':(alto).toString(),
             'ancho':(ancho).toString(),
             'largo':(largo).toString(),
-            'peso': (peso).toString(),
+            'peso': (peso < 1 ? 1 : peso).toString(),
             'unidades':(items).toString(),
           }
         },

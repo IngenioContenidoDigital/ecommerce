@@ -33,7 +33,7 @@
                         <div class="field">
                         <label class="label">Usuario Dafiti</label>
                         <div class="control has-icons-left">
-                        <input class="input" type="text" name="user" placeholder="Usuario de Conexión" required <%if(dafiti.length>0){%>value="<%=dafiti[0].user%>"<%}%>/>
+                        <input class="input" type="text" name="user" placeholder="Usuario de Conexión" required <%if(dafiti!==null && dafiti.length>0){%>value="<%=dafiti[0].user%>"<%}%>/>
                             <span class="icon is-small is-left">
                             <i class='bx bx-user-circle' ></i>
                             </span>
@@ -42,7 +42,7 @@
                         <div class="field">
                         <label class="label">Clave de API</label>
                         <div class="control has-icons-left">
-                            <input class="input" type="text" name="key" placeholder="Llave del API" required <%if(dafiti.length>0){%>value="<%=dafiti[0].key%>"<%}%>/>
+                            <input class="input" type="text" name="key" placeholder="Llave del API" required <%if(dafiti!==null &&  dafiti.length>0){%>value="<%=dafiti[0].key%>"<%}%>/>
                             <span class="icon is-small is-left">
                             <i class='bx bx-key' ></i>
                             </span>
@@ -51,7 +51,7 @@
                         <div class="field">
                             <label class="label">URL Petición</label>
                             <div class="control has-icons-left">
-                                <input class="input" type="text" name="url" placeholder="Url de Petición" required <%if(dafiti.length>0){%>value="<%=dafiti[0].url%>"<%}%>/>
+                                <input class="input" type="text" name="url" placeholder="Url de Petición" required <%if(dafiti!==null && dafiti.length>0){%>value="<%=dafiti[0].url%>"<%}%>/>
                                 <span class="icon is-small is-left">
                                     <i class='bx bx-world'></i>
                                 </span>
@@ -70,7 +70,7 @@
                         <div class="field">
                         <label class="label">Usuario Linio</label>
                         <div class="control has-icons-left">
-                        <input class="input" type="text" name="user" placeholder="Usuario de Conexión" required <%if(linio.length>0){%>value="<%=linio[0].user%>"<%}%>/>
+                        <input class="input" type="text" name="user" placeholder="Usuario de Conexión" required <%if(linio!==null && linio.length>0){%>value="<%=linio[0].user%>"<%}%>/>
                             <span class="icon is-small is-left">
                             <i class='bx bx-user-circle' ></i>
                             </span>
@@ -79,7 +79,7 @@
                         <div class="field">
                         <label class="label">Clave de API</label>
                         <div class="control has-icons-left">
-                            <input class="input" type="text" name="key" placeholder="Llave del API" required <%if(linio.length>0){%>value="<%=linio[0].key%>"<%}%>/>
+                            <input class="input" type="text" name="key" placeholder="Llave del API" required <%if(linio!==null && linio.length>0){%>value="<%=linio[0].key%>"<%}%>/>
                             <span class="icon is-small is-left">
                             <i class='bx bx-key' ></i>
                             </span>
@@ -88,7 +88,7 @@
                         <div class="field">
                             <label class="label">URL Petición</label>
                             <div class="control has-icons-left">
-                                <input class="input" type="text" name="url" placeholder="Url de Petición" required <%if(linio.length>0){%>value="<%=linio[0].url%>"<%}%>/>
+                                <input class="input" type="text" name="url" placeholder="Url de Petición" required <%if(linio!==null && linio.length>0){%>value="<%=linio[0].url%>"<%}%>/>
                                 <span class="icon is-small is-left">
                                     <i class='bx bx-world'></i>
                                 </span>
@@ -107,7 +107,7 @@
                         <div class="field">
                         <label class="label">Client Id</label>
                         <div class="control has-icons-left">
-                        <input class="input" type="text" name="user" placeholder="Id de Cliente" required <%if(mercadolibre.length>0){%>value="<%=mercadolibre[0].user%>"<%}%>/>
+                        <input class="input" type="text" name="user" placeholder="Id de Cliente" required <%if(mercadolibre!==null && mercadolibre.length>0){%>value="<%=mercadolibre[0].user%>"<%}%>/>
                             <span class="icon is-small is-left">
                             <i class='bx bx-user-circle' ></i>
                             </span>
@@ -116,7 +116,7 @@
                         <div class="field">
                         <label class="label">Client Secret</label>
                         <div class="control has-icons-left">
-                            <input class="input" type="text" name="key" placeholder="Clave de API" required <%if(mercadolibre.length>0){%>value="<%=mercadolibre[0].key%>"<%}%>/>
+                            <input class="input" type="text" name="key" placeholder="Clave de API" required <%if(mercadolibre!==null && mercadolibre.length>0){%>value="<%=mercadolibre[0].key%>"<%}%>/>
                             <span class="icon is-small is-left">
                             <i class='bx bx-key' ></i>
                             </span>
@@ -125,7 +125,7 @@
                         <div class="field">
                             <label class="label">Access Token</label>
                             <div class="control has-icons-left">
-                                <input class="input" type="text" name="url" placeholder="Token de Acceso" required <%if(mercadolibre.length>0){%>value="<%=mercadolibre[0].url%>"<%}%>/>
+                                <input class="input" type="text" name="url" placeholder="Token de Acceso" required <%if(mercadolibre!==null && mercadolibre.length>0){%>value="<%=mercadolibre[0].url%>"<%}%>/>
                                 <span class="icon is-small is-left">
                                     <i class='bx bx-world'></i>
                                 </span>
@@ -134,7 +134,7 @@
                         <div class="field">
                             <label class="label">API Token</label>
                             <div class="control has-icons-left">
-                                <input class="input" type="text" name="secret" placeholder="Clave de API" required <%if(mercadolibre.length>0){%>value="<%=mercadolibre[0].secret%>"<%}%>/>
+                                <input class="input" type="text" name="secret" placeholder="Clave de API" required <%if(mercadolibre!==null && mercadolibre.length>0){%>value="<%=mercadolibre[0].secret%>"<%}%>/>
                                 <span class="icon is-small is-left">
                                     <i class='bx bx-world'></i>
                                 </span>
