@@ -102,7 +102,7 @@ module.exports = {
     let sign = await sails.helpers.channel.dafiti.sign(inputs.action,product.seller);
     await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
     .then(async (response)=>{
-      console.log(response);
+      setTimeout(() => {console.log(response);}, 2500);
       let xmlimages = jsonxml(imagebody,true);
       let signimg = await sails.helpers.channel.dafiti.sign('Image',product.seller);
       await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+signimg,'POST',xmlimages);
