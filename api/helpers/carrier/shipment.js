@@ -99,7 +99,7 @@ module.exports = {
             'alto':alto,
             'ancho':ancho,
             'largo':largo,
-            'peso':peso,
+            'peso':peso < 1 ? 1 : peso,
             'unidades':items,
             'referencia':null,
             'nombre_empaque':null

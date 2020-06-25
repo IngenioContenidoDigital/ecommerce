@@ -165,8 +165,10 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'integrations')){
       throw 'forbidden';
     }
+    let integrations = [];
     let seller = await Seller.findOne({id:req.param('id')});
-    let integrations = await Integrations.find({seller:seller.id});
+    integrations = await Integrations.find({seller:seller.id});
+
     return res.view('pages/sellers/integrations',{layout:'layouts/admin',seller:seller,integrations:integrations});
   },
   setintegration:async (req,res)=>{
