@@ -684,5 +684,58 @@ module.exports = {
     }catch(err){
       return res.redirect('/import?error='+err.message);
     }
+  },
+  searchindex: async (req,res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
+    let documents = [];
+    let products = await Product.find()
+    .populate('tax')
+    .populate('manufacturer')
+    .populate('mainColor')
+    .populate('seller')
+    .populate('gender');
+
+    products.forEach(pr =>{
+      let doc = {
+        type:req.param('action'), // add or delete
+        id:pr.id
+      };
+
+      if(req.param('action')==='add'){
+        doc['fields'] = {
+          id:pr.id,
+          name:pr.name,
+          reference:pr.reference,
+          price:pr.price,
+          description:pr.description,
+          shortdescription:pr.descriptionShort,
+          brand:pr.manufacturer.name,
+          color:pr.mainColor.name,
+          gender:pr.gender.name,
+        };
+      }
+      documents.push(doc);
+    });
+    let AWS = require('aws-sdk');
+    AWS.config.loadFromPath('./config.json');
+    let endpoint = 'doc-iridio-kqxoxbqunm62wui765a5ms5nca.us-east-1.cloudsearch.amazonaws.com';
+    var csd = new AWS.CloudSearchDomain({endpoint:endpoint});
+    var params = {
+      contentType: 'application/json', // required
+      documents:  JSON.stringify(documents) // required
+    };
+    csd.uploadDocuments(params, (err, data) => {
+      if (err){console.log(err, err.stack);} // an error occurred
+      console.log(data);
+      let index = new AWS.CloudSearch();
+      index.indexDocuments({DomainName:'iridio'},(err,data) =>{
+        if(err){console.log(err);}
+        console.log(data);
+        return res.redirect('/iridio');
+      });
+    });
   }
 };

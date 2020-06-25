@@ -106,64 +106,66 @@ module.exports = {
     return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
   },
   search: async(req, res) =>{
-    let terms = req.body.search.toLowerCase().split(' ');
+
+    let AWS = require('aws-sdk');
+    AWS.config.loadFromPath('./config.json');
+    let csd = new AWS.CloudSearchDomain({endpoint: 'search-iridio-kqxoxbqunm62wui765a5ms5nca.us-east-1.cloudsearch.amazonaws.com'});
+    let params = {
+      query: req.param('q'),
+      return: 'id'
+      //queryOptions: {'defaultOperator':'or','sort':'_score asc'},
+      /*cursor: 'STRING_VALUE',
+      expr: 'STRING_VALUE',
+      facet: 'STRING_VALUE',
+      filterQuery: 'STRING_VALUE',
+      highlight: 'STRING_VALUE',
+      partial: true || false,
+      queryOptions: 'STRING_VALUE',
+      queryParser: simple | structured | lucene | dismax,
+      size: 'NUMBER_VALUE',
+      sort: 'STRING_VALUE',
+      start: 'NUMBER_VALUE',
+      stats: 'STRING_VALUE'*/
+    };
+
     let exists = async (element,compare) =>{
       for(let c of element){
         if(c.id === compare.id){return true;}
       }
       return false;
     };
-    let products = await Product.find()
-    .populate('tax')
-    .populate('manufacturer')
-    .populate('mainColor')
-    .populate('seller')
-    .populate('gender');
 
-    let result={
-      search:req.body.search,
-      products:[]
-    };
-    let colors = [];
-    let brands = [];
-    let genders = [];
+    csd.search(params, async (err, data) => {
+      let colors = [];
+      let brands = [];
+      let genders = [];
+      let response = {products:[]};
 
-    let found = (terms, products,i)=>{
-      products = products.filter(product =>
-        product.active===true && (
-          product.reference.includes(terms[i].toUpperCase()) ||
-          product.name.includes(terms[i]) ||
-          product.manufacturer.name.includes(terms[i]) ||
-          product.mainColor.name.includes(terms[i]) ||
-          product.description.toLowerCase().includes(terms[i]) ||
-          product.descriptionShort.toLowerCase().includes(terms[i]) ||
-          product.seller.name.includes(terms[i])
-        )
-      );
-      i++;
-      if(terms.length>i){
-        return found(terms,products,i);
-      }else{
-        return products;
+      if(err){console.log(err, err.stack);}
+      if(data.hits.found>0){
+        let results = [];
+        data.hits.hit.forEach(h =>{
+          results.push(h.id);
+        });
+
+        let set = await Product.find({id:results,active:true})
+        .populate('tax')
+        .populate('manufacturer')
+        .populate('mainColor')
+        .populate('seller')
+        .populate('gender');
+
+        for(let p of set){
+          p.cover= await ProductImage.findOne({product:p.id,cover:1});
+          p.discount = await sails.helpers.discount(p.id);
+          if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
+          if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
+          if(!await exists(genders, p.gender)){genders.push(p.gender);}
+        }
+        response['products'] = set;
       }
-    };
-
-    let set = found(terms,products,0);
-
-    //for(let p of set){
-    set.forEach(async p=>{
-      if(!result.products.includes(p.id)){
-        p.cover= await ProductImage.findOne({product:p.id,cover:1});
-        p.discount = await sails.helpers.discount(p.id);
-        result.products.push(p);
-        if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
-        if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
-        if(!await exists(genders, p.gender)){genders.push(p.gender);}
-      }
+      return res.view('pages/front/list',{object:response,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
     });
-
-    return res.view('pages/front/list',{object:result,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
-
   },
   listproduct: async function(req, res){
     let product = await Product.findOne({name:decodeURIComponent(req.param('name')),reference:decodeURIComponent(req.param('reference'))})
