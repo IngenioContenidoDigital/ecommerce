@@ -112,8 +112,9 @@ module.exports = {
     let csd = new AWS.CloudSearchDomain({endpoint: 'search-iridio-kqxoxbqunm62wui765a5ms5nca.us-east-1.cloudsearch.amazonaws.com'});
     let params = {
       query: req.param('q'),
-      return: 'id'
-      //queryOptions: {'defaultOperator':'or','sort':'_score asc'},
+      return: 'id',
+      queryParser: 'simple',
+      sort:'_score desc'
       /*cursor: 'STRING_VALUE',
       expr: 'STRING_VALUE',
       facet: 'STRING_VALUE',
