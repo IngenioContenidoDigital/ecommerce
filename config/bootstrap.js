@@ -23,7 +23,7 @@ module.exports.bootstrap = async function() {
   }
 
   if(await Category.count()<1){
-    await Category.create({name:'Inicio',description:'Categoria Raiz',active:true,url:'inicio',level:1});
+    await Category.create({name:'inicio',description:'Categoria Raiz',active:true,url:'inicio',level:1});
   }
 
   if(await Tax.count()<1){

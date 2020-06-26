@@ -11,7 +11,7 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showproducts')){
       throw 'forbidden';
     }
-    const root = await Category.findOne({name:'Inicio'});
+    const root = await Category.findOne({name:'inicio'});
     const brands = await Manufacturer.find();
     const colors = await Color.find();
     const genders = await Gender.find();
@@ -524,8 +524,12 @@ module.exports = {
                     result[header[i]] = (await Tax.findOne({value:row[i]})).id;
                     break;
                   case 'categories':
+                    row[i]+=',Inicio';
+                    row[i]=row[i].replace(/\,(\s)+/gi,',');
+                    let clist = row[i].toLowerCase().split(',');
+                    clist = clist.map(r => r.trim());
                     let categories = await Category.find({
-                      where: {name: row[i].trim().toLowerCase().split(',')},
+                      where: {name: clist},
                       sort: 'level DESC'
                     });
                     let categoriesids = [];
@@ -534,7 +538,14 @@ module.exports = {
                         categoriesids.push(categories[c].id);
                       }
                     }
-                    result[header[i]] = categoriesids;
+                    let realcats = categories.filter(cat => categoriesids.includes(cat.parent));
+                    let rcatsids=[];
+                    for(let rc in realcats){
+                      if(!rc.includes(realcats[rc].id)){
+                        rcatsids.push(realcats[rc].id);
+                      }
+                    }
+                    result[header[i]] = rcatsids;
                     result['mainCategory'] = categories[0].id;
                     break;
                   case 'mainCategory':

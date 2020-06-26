@@ -27,13 +27,13 @@ module.exports = {
       let parent = await Category.findOne({id:category.parent.id});
       parentId = parent.id;
     }else{
-      category = await Category.findOne({name:'Inicio'});
+      category = await Category.findOne({name:'inicio'});
       childs = await sails.helpers.categoryChildren(category.id);
       parentId = category.id;
     }
     if(req.param('action')){
       action = req.param('action');
-      childs['children'] = [await Category.findOne({name:'Inicio'})];
+      childs['children'] = [await Category.findOne({name:'inicio'})];
     }
     return res.view('pages/catalog/categories',{layout:'layouts/admin',categories:childs.children,action:action,error:error,current:category,parent:parentId});
   },

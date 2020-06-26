@@ -174,13 +174,13 @@
               <div class="control">
                 <div class="select is-small is-danger">
                   <select name="mainCategory" id="mainCategory">
-                    <option>Categoría Principal</option>
+                    <option level="0">Categoría Principal</option>
                     <% if(action=='edit') {%> 
                       <% product.categories.forEach(function(cl){ %>
                         <% if(cl.id == product.mainCategory.id ) { %>
-                          <option selected value="<%= cl.id %>"><%= cl.name %></option>
+                          <option selected level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>
                         <%}else{%>
-                          <option value="<%= cl.id %>"><%= cl.name %></option>
+                          <option level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>
                         <%}%>
                       <% })%>
                     <% } %>
@@ -770,14 +770,23 @@
         let op = document.createElement('option');
         op.value=cat.value;
         op.innerHTML=catname.innerHTML;
-        op.selected=true;
+        op.setAttribute('level',cat.parentNode.getAttribute('level'));
         select.appendChild(op);
       }else{
         let op = select.querySelector('option[value="'+cat.value+'"]');
         select.removeChild(op);
-        select.children[1].selected=true;
       }
-  
+      let lowest = select.options[0];
+      for(let o=0; o<select.options.length; o++){
+        if(parseInt(lowest.getAttribute('level'))<=parseInt(select.options[o].getAttribute('level'))){
+          lowest = select.options[o];
+        }
+      }
+      for(let s=0; s<select.options.length; s++){
+        if(select.options[s].value==lowest.value){
+          select.options[s].selected=true;
+        }
+      }
     });
   
     live('#save-product','click',function(e){

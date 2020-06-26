@@ -15,7 +15,7 @@ module.exports = {
     let error = req.param('error') ? req.param('error') : null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
-    let root = await Category.findOne({name:'Inicio'});
+    let root = await Category.findOne({name:'inicio'});
     let discount = null;
     if(id){
       discount = await CatalogDiscount.findOne({id:id});

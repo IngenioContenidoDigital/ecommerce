@@ -9,7 +9,7 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    let menu = await Category.findOne({name:'Inicio'})
+    let menu = await Category.findOne({name:'inicio'})
     .populate('children',{active:true});
     for(let c in menu.children){
       menu.children[c] = await Category.findOne({id:(menu.children[c]).id,active:true})
