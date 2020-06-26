@@ -11,7 +11,7 @@ module.exports = {
     //await sails.helpers.channel.INGENIO.orders('5ec570dd855a321811d1735b',['CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(6,'hours').toISOString(true),'Status=pending','SortDirection=ASC']);
     let slider = await Slider.find({active:true}).populate('textColor');
     let viewed=[];
-    if(req.session.viewed.length>0){
+    if(req.session.viewed!==undefined && req.session.viewed.length>0){
       let products = await Product.find({
         where:{id:req.session.viewed},
         limit: 4
