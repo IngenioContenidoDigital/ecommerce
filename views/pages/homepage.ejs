@@ -31,6 +31,63 @@
                   </div>
                 </section>
               <%}%>
+            <%if(viewed.length>0){%>
+              <hr>
+              <h6 class="subtitle is-6 has-text-weight-bold">Productos vistos recientemente</h6>
+              <br>
+              <%viewed.forEach(vw =>{%>
+                <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
+                  <span class="is-hidden productid" itemprop="productID"><%=vw.id%></span>
+                  <div class="card-image has-badge-danger has-badge-rounded has-badge-medium" <%if(vw.discount!==null && vw.discount!==undefined){%>data-badge="<%=vw.discount.value%>%"<%}%>>
+                      <figure class="image is-256x256 is-inline-block">
+                          <a itemprop="url" href="/list/product/<%=encodeURIComponent((vw.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(vw.reference)%>"><%if(vw.cover!==undefined){%><img async itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=vw.id%>/<%= vw.cover.file %>" alt="<%vw.manufacturer.name%> - <%vw.reference%>"><%}%></a>
+                      </figure>
+                  </div>
+                  <div class="card-content">
+                    <div itemprop="description" class="is-hidden"><%-vw.description%></div>
+                    <div itemprop="disambiguatingDescription" class="is-hidden"><%-vw.descriptionShort%></div>
+                    <p><span class="is-pulled-right"><span class="is-hidden" itemprop="color"><%=vw.mainColor.name%></span><span class="color-container" color="<%=vw.mainColor.name%>" style="background-color: <%= vw.mainColor.code %>;border:solid 1px <%= vw.mainColor.code %>;"></span></span>
+                    <span itemprop="brand" brand="<%=vw.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=vw.manufacturer.name%></span>&nbsp;-&nbsp;<span gender="<%=vw.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=vw.gender.name%></span></p>
+                    <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span itemprop="name" class="has-text-weight-bold is-uppercase"><%=vw.name%></span></p>
+                    <p><span class="is-hidden" itemprop="sku"><%=vw.reference%></span>
+                    <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
+                        <meta itemprop="priceCurrency" content="COP">
+                        <%if(vw.discount!==null && vw.discount!==undefined){%>
+                            <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
+                                <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((vw.price*(1+(vw.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
+                                <span class="is-hidden" itemprop="offerCount">1</span>
+                            </div>
+                            <span itemprop="price" class="is-hidden">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
+                        <%}else{%>
+                            <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((vw.price*(1+(vw.tax.value/100)))).toLocaleString("es-CO");%></span>
+                        <%}%>
+                    </div>
+                    </p>
+                    <br>
+                    <div class="dropdown is-fullwidth">
+                        <div class="dropdown-trigger">
+                            <button class="button is-small" product="<%=vw.id%>" aria-haspopup="true" aria-controls="dropdown-menu">
+                                <span id="drop-selected" class="is-uppercase is-size-7" value="0" >Talla / Tamaño</span>
+                                <span class="icon is-small">
+                                    <i class='bx bx-chevron-down'></i>
+                                </span>
+                            </button>
+                        </div>
+                        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                            <div class="dropdown-content">
+                            </div>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="buttons">
+                        <button id="push-to-cart" product="<%=vw.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
+                    </div>
+                  </div>
+                </div>
+              <%})%>
+              <hr>
+            <%}%>
             <%let mosaic = slider.filter(el => (el.position =='vertical' || el.position =='bottom' || el.position =='wide' || el.position =='middle' || el.position =='tall'));%>
             <%if(mosaic.length>=1){%>
                 <section class="section">

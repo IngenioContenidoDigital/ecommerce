@@ -152,62 +152,6 @@
         }
     });
 
-    live('.dropdown .button','click', e=>{
-        let elm = e.target;
-        if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
-        if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
-        let node = elm.parentNode.parentNode;
-        if(!hasClass(node,'is-active')){
-            let id = elm.getAttribute('product');
-            let content = elm.parentNode.parentNode.querySelector('.dropdown-content')
-            if(content.children.length<1){
-                io.socket.get('/findproductvariations/'+id,resData=>{
-                    let o = document.createElement('a');
-                    addClass(o,'dropdown-item');
-                    addClass(o,'is-uppercase');
-                    addClass(o,'is-size-7');
-                    o.setAttribute('qty','0');
-                    o.setAttribute('value','0');
-                    o.text='Talla / Tamaño';
-                    content.prepend(o);
-                    resData.forEach(op =>{
-                        o = document.createElement('a');
-                        addClass(o,'dropdown-item');
-                        addClass(o,'is-uppercase');
-                        addClass(o,'is-size-7');
-                        o.setAttribute('qty',op.quantity);
-                        o.setAttribute('value',op.id);
-                        o.text=op.variation.name;
-                        content.appendChild(o)
-                    });
-                });
-            }
-            addClass(node,'is-active');
-        }else{
-            removeClass(node,'is-active');
-        }
-    });
-
-    live('.dropdown-item','click',e=>{
-        let option = e.target
-        let elm = e.target.parentNode.parentNode.parentNode;
-        let selected = elm.querySelector('#drop-selected');
-        selected.setAttribute('qty',option.getAttribute('qty'))
-        selected.setAttribute('value',option.getAttribute('value'))
-        selected.innerHTML=option.text;
-        removeClass(elm,'is-active');
-        let button = elm.parentNode.querySelector('#push-to-cart');
-        if(selected.getAttribute('qty')>0){
-            removeClass(button,'is-disabled');
-            button.disabled=false;
-            addClass(button,'is-primary');
-        }else{
-            removeClass(button,'is-primary');
-            addClass(button,'is-disabled');
-            button.disabled=true;
-        }
-    });
-
     live('.filter','click', e =>{
         let color = e.target.getAttribute('color');
         let cards = document.querySelectorAll('.card');
@@ -272,10 +216,4 @@
         addClass(e.target.parentNode.parentNode,'has-background-warning');
     });
 
-    live('#push-to-cart','click',(e)=>{
-        let vrt = e.target.parentNode.parentNode.querySelector('#drop-selected').getAttribute('value');
-        io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'},(resData)=>{
-            window.location.href='/cart';
-        });
-    })
 </script>

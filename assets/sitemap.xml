@@ -3,1182 +3,1252 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	  xmlns:xhtml="http://www.w3.org/1999/xhtml"
       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
-      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">	  	  
-<!-- www.check-domains.com sitemap generator -->
-
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url>
    <loc>https://iridio.co/</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>1.0000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/categoria/inicio-zapatos</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/categoria/zapatos-masculino</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/masculino-botas</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/masculino-casuales</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/masculino-formales</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/masculino-sandalias</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/accesorios-outdoor</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/categoria/zapatos-femenino</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/femenino-botines</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/femenino-botas</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/femenino-botas-medias</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/femenino-botas-outdoor</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/femenino-tenis</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/categoria/inicio-accesorios</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/categoria/accesorios-masculino</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/masculino-relojes</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/categoria/accesorios-femenino</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.8000</priority>
+</url>
+<url>
+   <loc>https://iridio.co/ver/categoria/femenino-relojes</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/cart</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/login</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/marca/open-house</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/marca/longines</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/ver/marca/san-polos</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.8000</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-062%20%20blanco%20x%20gris/LA-062%20BLANCO%20X%20GRIS</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-2130%20negro/LA-2130%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-001%20negro/LA-001%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20hombre%20san%20polos%20la-28714%20azul%20claro/LA-28714%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-4506%20negro/LA-4506%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-5117%20negro/LA-5117%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-5207%20negro/LA-5207%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-525%20gris/LA-525%20GRIS</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-5259%20negro/LA-5259%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-5259%20nude/LA-5259%20NUDE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20mujer%20san%20polos%20ms006%20negro/MS006%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20mujer%20san%20polos%20ms3087%20negro/MS3087%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20hombre%20san%20polos%203269%20gris/3269%20GRIS</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20mocasin%20para%20hombre%20san%20polos%202000%20caf%C3%A9/2000%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20trekking%20para%20mujer%20san%20polos%203062%20caf%C3%A9/3062%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20apache%20para%20hombre%20san%20polos%20174%20miel%20x%20azul/174%20MIEL%20X%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20hombre%20san%20polos%203264%20arena/3264%20ARENA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20hombre%20san%20polos%203252%20caf%C3%A9%20x%20beige/3252%20CAF%C3%89%20X%20BEIGE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sandalia%20en%20cuero%20para%20hombre%20san%20polos%203229%20caf%C3%A9/3229%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sandalia%20en%20cuero%20para%20hombre%20san%20polos%203228%20caf%C3%A9/3228%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sandalia%20en%20cuero%20para%20hombre%20san%20polos%203227%20caf%C3%A9/3227%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sandalia%20en%20cuero%20para%20hombre%20san%20polos%203226%20caf%C3%A9/3226%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sandalia%20en%20cuero%20para%20hombre%20san%20polos%203225%20caf%C3%A9/3225%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20outdoor%20para%20hombre%20san%20polos%203222%20%20cafe/3222%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20outdoor%20para%20hombre%20san%20polos%203221%20caf%C3%A9/3221%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20outdoor%20para%20hombre%20san%20polos%203175%20beige/3175%20BEIGE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20hombre%20san%20polos%203166%20cigarra/3166%20CIGARRA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203158%20miel%20oscuro/3158%20MIEL%20OSCURO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203158%20miel%20claro/3158%20MIEL%20CLARO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203147%20miel/3147%20MIEL%20%20X%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203147%20miel/3147%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203147%20caf%C3%A9/3147%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20tipo%20driver%20mocasin%20para%20hombre%20san%20polos%203022%20caf%C3%A9/3022%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20tipo%20driver%20mocasin%20para%20hombre%20san%20polos%203022%20azul/3022%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20de%20seguridad%20industrial%20para%20hombre%20san%20polos%202838%20negro%20-%20magenta/2838%20NEGRO%20%E2%80%93%20MAGENTA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20de%20seguridad%20industrial%20para%20hombre%20san%20polos%202838%20caf%C3%A9-amarillo/2838%20CAF%C3%89%20X%20AMARILLO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20mocasin%20para%20hombre%20san%20polos%202010%20caf%C3%A9/2010%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20de%20seguridad%20industrial%20para%20hombre%20san%20polos%203394%20caf%C3%A9/3394%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20zeus%20cuero%20pf%20miel%20hombre%20open%20house/ZEUS%20PF%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20zeus%20cuero%20pf%20cafe%20hombre%20open%20house/ZEUS%20PF%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20zeus%20cuero%20pf%20azul%20hombre%20open%20house/ZEUS%20PF%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20vii%20cuero%20tb%20miel%20hombre%20open%20house/VII%20TB%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20vii%20cuero%20tb%20cafe%20hombre%20open%20house/VII%20TB%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20v%20cuero%20tb%20miel%20hombre%20open%20house/V%20TB%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20v%20cuero%20tb%20cafe%20hombre%20open%20house/V%20TB%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20titan%20cuero%20pf%20rojo%20hombre%20open%20house/TITAN%20PF%20ROJO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20titan%20cuero%20pf%20negro%20hombre%20open%20house/TITAN%20PF%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20titan%20cuero%20pf%20miel%20hombre%20open%20house/TITAN%20PF%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20titan%20ii%20cuero%20shine%20miel%20hombre%20open%20house/TITAN%20II%20SHINE%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20titan%20ii%20cuero%20shine%20azul%20hombre%20open%20house/TITAN%20II%20SHINE%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20thiago%20cuero%20tb%20co%C3%B1ac%20hombre%20open%20house/TIHAGO%20TB%20CO%C3%91AC</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/sneakers%20thiago%20cuero%20tb%20azul%20hombre%20open%20house/TIHAGO%20TB%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20star%20ii%20cuero%20pf%20negro%20hombre%20open%20house/STAR%20II%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20star%20ii%20cuero%20pf%20cafe%20hombre%20open%20house/STAR%20II%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/slippers%20gandini%20cuero%20patina%20verde%20hombre%20open%20house/SLIPPERS%20GANDINI%20VERDE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/slippers%20gandini%20cuero%20patina%20negro%20hombre%20open%20house/SLIPPERS%20GANDINI%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/slippers%20gandini%20cuero%20patina%20miel%20hombre%20open%20house/SLIPPERS%20GANDINI%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/slippers%20gandini%20cuero%20patina%20cafe%20hombre%20open%20house/SLIPPERS%20GANDINI%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20ii%20cuero%20tb%20miel%20hombre%20open%20house/POSEIDON%20TB%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20ii%20cuero%20tb%20co%C3%B1ac%20hombre%20open%20house/POSEIDON%20TB%20CO%C3%91AC</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20ii%20cuero%20tb%20cafe%20hombre%20open%20house/POSEIDON%20TB%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20ii%20cuero%20pf%20negro%20hombre%20open%20house/POSEIDON%20II%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20ii%20cuero%20pf%20miel%20hombre%20open%20house/POSEIDON%20II%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20ii%20cuero%20pf%20azul%20hombre%20open%20house/POSEIDON%20II%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20cuero%20gamuza%20negro%20hombre%20open%20house/POSEIDON%20GAMUZA%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20cuero%20gamuza%20beige%20hombre%20open%20house/POSEIDON%20GAMUZA%20BEIGE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20cuero%20gamuza%20azul%20hombre%20open%20house/POSEIDON%20GAMUZA%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20poseidon%20croco%20cuero%20ru%20miel%20hombre%20open%20house/POSEIDON%20CROCO%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20one%20cuero%20patina%20vino%20hombre%20open%20house/OXFORD%20ONE%20VINO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20one%20cuero%20patina%20cafe%20hombre%20open%20house/OXFORD%20ONE%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20one%20cuero%20patina%20azul%20hombre%20open%20house/OXFORD%20ONE%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20land%20cuero%20patina%20verde%20hombre%20open%20house/OXFORD%20LAND%20VERDE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20land%20cuero%20patina%20miel%20hombre%20open%20house/OXFORD%20LAND%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20land%20cuero%20patina%20madera%20hombre%20open%20house/OXFORD%20LAND%20MADERA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20land%20cuero%20patina%20cafe%20hombre%20open%20house/OXFORD%20LAND%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20heaven%20cuero%20patina%20verde%20hombre%20open%20house/OXFORD%20HEAVEN%20VERDE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/oxford%20heaven%20cuero%20patina%20madera%20hombre%20open%20house/OXFORD%20HEAVEN%20MADERA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20katar%20cuero%20nobuck%20negro%20hombre%20open%20house/KATAR%20NOBUCK%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20katar%20cuero%20nobuck%20miel%20hombre%20open%20house/KATAR%20NOBUCK%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20hamilton%20casual%20cuero%20gamuza%20hombre%20open%20house/HAMILTON%20GAMUZA%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20hamilton%20casual%20cuero%20gamuza%20hombre%20open%20house/HAMILTON%20GAMUZA%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20hamilton%20elegance%20cuero%20gamuza%20hombre%20open%20house/HAMILTON%20ELEGANCE%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20hamilton%20elegance%20cuero%20gamuza%20hombre%20open%20house/HAMILTON%20ELEGANCE%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20gandini%20cuero%20nobuck%20cafe%20hombre%20open%20house/GANDINI%20NOBUCK%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20ferros%20cuero%20tb%20miel%20hombre%20open%20house/FERROS%20TB%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20ferros%20cuero%20tb%20co%C3%B1ac%20hombre%20open%20house/FERROS%20TB%20CO%C3%91AC</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20ferros%20cuero%20tb%20cafe%20hombre%20open%20house/FERROS%20TB%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20classic%20dionisio%20cuero%20shine%20vino%20hombre%20open%20house/DIONISIO%20CLASSIC%20VINO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20classic%20dionisio%20cuero%20shine%20miel%20hombre%20open%20house/DIONISIO%20CLASSIC%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20derby%20cuero%20shine%20miel%20hombre%20open%20house/DERBY%20SHINE%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/derby%20federic%20cuero%20nobuck%20cafe%20hombre%20open%20house/DERBY%20FEDERIC%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20cuero%20shine%20vino%20hombre%20open%20house/APOLO%20SHINE%20VINO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20cuero%20shine%20negro%20hombre%20open%20house/APOLO%20SHINE%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20cuero%20shine%20miel%20hombre%20open%20house/APOLO%20SHINE%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20ii%20cuero%20pf%20negro%20hombre%20open%20house/APOLO%20II%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20ii%20cuero%20pf%20miel%20hombre%20open%20house/APOLO%20II%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20ii%20cuero%20pf%20azul%20hombre%20open%20house/APOLO%20II%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20cuero%20cvr%20negro%20hombre%20open%20house/APOLO%20CVR%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20cuero%20cvr%20co%C3%B1ac%20hombre%20open%20house/APOLO%20CVR%20CO%C3%91AC</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/mocasines%20apolo%20cuero%20cvr%20cafe%20hombre%20open%20house/APOLO%20CVR%20CAFE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-060%20%20blanco/LA-060%20BLANCO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-05%20negro/LA-05%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20mujer%20san%20polos%20la-0333%20negro/LA-0333%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-026%20gris%20x%20blanco/LA-026%20GRIS%20X%20BLANCO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-022%20gris%20x%20blanco/LA-022%20GRIS%20X%20BLANCO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-022%20gris/LA-022%20GRIS</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-013%20%20blanco/LA-013%20BLANCO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20mujer%20san%20polos%20la-012%20%20blanco%20x%20gris/LA-012%20BLANCO%20X%20GRIS</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20hombre%20san%20polos%20ju-040%20negro/JU-040%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20deportivo%20para%20hombre%20san%20polos%20ju-040%20%20co%C3%B1ac/JU-040%20CO%C3%91AC</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20mujer%20san%20polos%20ji05%20negro/JI05%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20de%20seguridad%20para%20hombre%20san%20polos%20gm001%20blanco/GM001%20BLANCO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20casual%20para%20mujer%20san%20polos%20at-3009%20negro%20x%20blanco/AT-3009%20NEGRO%20X%20BLANCO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20casual%20para%20mujer%20san%20polos%20at-2114%20rojo/AT-2114%20ROJO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-2108%20azul/AT-2108%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20casual%20para%20mujer%20san%20polos%20at-2043%20negro%20x%20blanco/AT-2043%20NEGRO%20X%20BLANCO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-2036%20mapana%20talco/AT-2036%20MAPANA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-200%20negro/AT-200%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-161%20negro/AT-161%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-161%20azul/AT-161%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-160%20azul/AT-160%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-149%20negro/AT-149%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-149%20amarillo/AT-149%20AMARILLO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-143%20rojo/AT-143%20ROJO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-143%20negro/AT-143%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-142%20vinotinto/AT-142%20VINOTINTO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-140%20caf%C3%A9/AT-140%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-139%20negro/AT-139%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-139%20azul/AT-139%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-137%20negro/AT-137%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-137%20miel/AT-137%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-134%20rojo/AT-134%20ROJO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-134%20negro/AT-134%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-132%20negro/AT-132%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-130%20negro/AT-130%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-1267%20caf%C3%A9/AT-1267%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-1232%20negro/AT-1232%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-102%20azul/AT-102%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/botin%20formal%20para%20dama%20san%20polos%20at-089%20caf%C3%A9/AT-089%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20multiproposito%20para%20hombre%20san%20polos%203395%20caf%C3%A9/3395%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20sneaker%20para%20hombre%20san%20polos%203376%20caf%C3%A9/3376%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20hombre%20san%20polos%203375%20arena/3375%20ARENA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20%20outdoor%20para%20hombre%20san%20polos%203369%20%20caf%C3%A9/3369%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20sneaker%20para%20hombre%20san%20polos%203361%20crosta%20caf%C3%A9-rojo/3361%20CAF%C3%89%20X%20ROJO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203354%20otelo%20verde/3354%20VERDE</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20casual%20para%20hombre%20san%20polos%203353%20miel/3353%20MIEL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20hombre%20san%20polos%203347%20negro%20x%20caf%C3%A9/3347%20NEGRO%20X%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203345%20%20negro-azul/3345%20NEGRO%20X%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203344%20caf%C3%A9/3344%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20casual%20para%20hombre%20san%20polos%203343%20negro/3343%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203334%20negro/3334%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20sneaker%20para%20hombre%20san%20polos%203303%20azul/3303%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20tecno%20para%20mujer%20san%20polos%203297%20negro/3297%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20mujer%20san%20polos%203296%20azul/3296%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20mujer%20%20san%20polos%203293%20negro/3293%20NEGRO%20X%20FUCSIA</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20mujer%20%20san%20polos%203293%20negro/3293%20NEGRO%20X%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20mujer%20san%20polos%203293%20azul/3293%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20outdoor%20para%20hombre%20san%20polos%203292%20azul/3292%20AZUL</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/zapato%20sneaker%20para%20hombre%20san%20polos%203283%20caf%C3%A9/3283%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20casual%20para%20hombre%20san%20polos%203279%20caf%C3%A9/3279%20CAF%C3%89</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/bota%20outdoor%20para%20hombre%20san%20polos%203273%20negro/3273%20NEGRO</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20pr%20100%20chronograph%20hombre%20acero%20ref%3A%20t101%252E417%252E33%252E051%252E00/T1014173305100</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20%20t-race%20black%20dial%20naranja%20%20ref%3A%20t0482172705700/T0482172705700</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20%20tissot%20t-race%20cronografos%20ref%3A%20t115%252E417%252E27-011%252E01/T1154172701101</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20cronografo%20correa%20de%20goma%20ref%3A%20t1004173720100/T1004173720100</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20%20t-race%20cronografos%20ref%3A%20t048%252E417%252E27%252E057%252E00/T0484172705700</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20%20t-race%20cronografos%20ref%3A%20t048%252E417%252E37%252E057%252E00/T0484173705700</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20t-%20touch%20t091%252E420%252E47%252E057%252E00/T0914204705700</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20t-race%20ref%3A%20t1154173705100/T1154173705100</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20t-race%20ref%3A%20%20t1154172706100/T1154172706100</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
-   <changefreq>daily</changefreq>
-   <priority>0.6400</priority>
-</url>
-<url>
-   <loc>https://iridio.co/list/product/reloj%20tissot%20t-race%20%20cronografo%20ref%3A%20t1154173706103/T1154173706103</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20prima%20luna%20dama%20ref%3A%20l81144876/L81144876</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20pr%20100%20chronograph%20hombre%20acero%20ref%3A%20t101%252E417%252E33%252E051%252E00/T1014173305100</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20%20t-race%20black%20dial%20naranja%20%20ref%3A%20t0482172705700/T0482172705700</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20%20tissot%20t-race%20cronografos%20ref%3A%20t115%252E417%252E27-011%252E01/T1154172701101</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20cronografo%20correa%20de%20goma%20ref%3A%20t1004173720100/T1004173720100</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20%20t-race%20cronografos%20ref%3A%20t048%252E417%252E27%252E057%252E00/T0484172705700</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20%20t-race%20cronografos%20ref%3A%20t048%252E417%252E37%252E057%252E00/T0484173705700</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20t-%20touch%20t091%252E420%252E47%252E057%252E00/T0914204705700</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20t-race%20ref%3A%20t1154173705100/T1154173705100</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20t-race%20ref%3A%20%20t1154172706100/T1154172706100</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
+   <changefreq>daily</changefreq>
+   <priority>0.6400</priority>
+</url>
+<url>
+   <loc>https://iridio.co/list/product/reloj%20tissot%20t-race%20%20cronografo%20ref%3A%20t1154173706103/T1154173706103</loc>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20la%20grande%20clasique%20hombre%20ref%3A%20l47664116/L47664116</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20la%20grande%20clasic%20hombre%20ref%3A%20l47554582/L47554582</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20la%20grande%20ref%3A%20l42092117/L42092117</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20hydroconquest%20hombre%20ref%3A%20l37824566/L37824566</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20conquest%20hombre%20ref%3A%20l36604766/L36604766</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20conquest%20ref%3A%20l36594766/L36594766</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20conquest%20l36594586/L36594586</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/list/product/reloj%20longines%20hombre%20cronografos%20master%20collection%20ref%3A%20l27734786/L27734786</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/register</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/forgot</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/contenido/terminos-y-condiciones</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>
 <url>
    <loc>https://iridio.co/contenido/politica-de-datos</loc>
-   <lastmod>2020-06-26T22:06:20+00:00</lastmod>
+   <lastmod>2020-06-26T22:24:45+00:00</lastmod>
    <changefreq>daily</changefreq>
    <priority>0.6400</priority>
 </url>

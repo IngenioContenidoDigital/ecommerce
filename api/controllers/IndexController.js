@@ -9,9 +9,28 @@ module.exports = {
   index: async function(req, res){
     //let moment = require('moment');
     //await sails.helpers.channel.INGENIO.orders('5ec570dd855a321811d1735b',['CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(6,'hours').toISOString(true),'Status=pending','SortDirection=ASC']);
-
     let slider = await Slider.find({active:true}).populate('textColor');
-    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+    let viewed=[];
+    if(req.session.viewed.length>0){
+      let products = await Product.find({
+        where:{id:req.session.viewed},
+        limit: 4
+      })
+      .populate('mainColor')
+      .populate('tax')
+      .populate('gender')
+      .populate('manufacturer')
+      .populate('seller');
+
+      for(let p of products){
+        p.cover= await ProductImage.findOne({product:p.id,cover:1});
+        p.discount = await sails.helpers.discount(p.id);
+        viewed.push(p);
+      }
+      return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(),viewed:viewed});
+    }else{
+      return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(),viewed:viewed});
+    }
   },
   admin: async function(req, res){
     return res.view('pages/homeadmin',{layout:'layouts/admin'});
@@ -177,6 +196,12 @@ module.exports = {
       .populate('variations')
       .populate('images');
 
+    if(req.session.viewed===undefined){
+      req.session.viewed=[];
+    }
+    if(!req.session.viewed.includes(product.id)){
+      req.session.viewed.push(product.id);
+    }
     let discount = await sails.helpers.discount(product.id);
     let title = product.name;
     let description = product.descriptionShort.replace(/<\/?[^>]+(>|$)/g, '')+' '+product.description.replace(/<\/?[^>]+(>|$)/g, '');
