@@ -18,14 +18,21 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     var jsonxml = require('jsontoxml');
+    let moment = require('moment');
     let product = await Product.findOne({id:inputs.product})
     .populate('gender')
     .populate('mainColor')
     .populate('manufacturer')
     .populate('mainCategory')
-    .populate('categories');
-
-
+    .populate('categories')
+    .populate('discount',{
+      where:{
+        to:{'>=':moment().valueOf()},
+        from:{'<=':moment().valueOf()}
+      },
+      sort: 'createdAt ASC',
+      limit: 1
+    });
     let status='active';
     if(!product.dafitistatus){status='inactive';}
 
@@ -70,9 +77,6 @@ module.exports = {
           Condition:'new',
           Variation:pv.variation.col.replace(/\.5/,'½').toString(),
           Price:(pv.price*(1+product.dafitiprice)).toFixed(2),
-          /*SalePrice:,
-          SaleStartDate:,
-          SaleEndDate:,*/
           Quantity:pv.quantity,
           ProductData:{
             Gender:product.gender.name,
@@ -85,9 +89,24 @@ module.exports = {
       if(i>0 && productvariation.length>1){
         data.Product.ParentSku=parent;
       }
+
+      if(product.discount.length>0){
+        let discPrice=0;
+        switch(product.discount[0].type){
+          case 'P':
+            discPrice+=((pv.price*(1+product.dafitiprice))*(1-(product.discount[0].value/100)));
+            break;
+          case 'C':
+            discPrice+=((pv.price*(1+product.dafitiprice))-product.discount[0].value);
+            break;
+        }
+        data.Product.SalePrice=discPrice.toFixed(2);
+        data.Product.SaleStartDate=moment(product.discount[0].from).format();
+        data.Product.SaleEndDate=moment(product.discount[0].to).format();
+      }
+
       body.Request.push(data);
       i++;
-
       let img = {
         ProductImage:{
           SellerSku:pv.id,
