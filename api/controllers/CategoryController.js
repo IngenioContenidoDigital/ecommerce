@@ -116,6 +116,7 @@ module.exports = {
         parent:parent.id,
         dafiti:dafiticat,
         logo:uploaded[0].filename,
+        url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
         active:isActive,
         level:parent.level+1});
     }catch(err){
@@ -125,6 +126,7 @@ module.exports = {
           name:req.body.nombre,
           description:req.body.descripcion,
           parent:parent.id,
+          url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
           dafiti:dafiticat,
           active:isActive,
           level:parent.level+1});
