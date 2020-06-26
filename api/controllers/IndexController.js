@@ -114,6 +114,7 @@ module.exports = {
       query: req.param('q'),
       return: 'id',
       queryParser: 'simple',
+      size:50,
       sort:'_score desc'
       /*cursor: 'STRING_VALUE',
       expr: 'STRING_VALUE',
