@@ -65,7 +65,7 @@
                     <% object.children.forEach(children=>{ %>
                         <%if(children.active){%>
                           <div class="column has-text-centered subcat">
-                            <a href="/ver/categoria/<%if(children.parent.url!==null){%><%=children.parent.url%>/<%}%><%=children.url%>"><span style="min-width:100%;" class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
+                            <a href="/ver/categoria/<%=children.url%>"><span style="min-width:100%;" class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
                           </div>
                         <%}%>
                     <%});%>

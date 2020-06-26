@@ -31,7 +31,7 @@
                               <div class="navbar-content">
                                 <%if(c.hasChildren){%>
                                     <%c.children.forEach(d => {%>
-                                      <a class="navbar-item is-uppercase is-size-7" href="/ver/categoria/<%=c.url%>"><%=d.name%></a>
+                                      <a class="navbar-item is-uppercase is-size-7" href="/ver/categoria/<%=d.url%>"><%=d.name%></a>
                                     <%})%>
                                 <%}%>
                               </div>
