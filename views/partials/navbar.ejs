@@ -13,7 +13,7 @@
       <%if(typeof menu=='object'){%>
         <% menu.children.forEach(child =>{%>
             <div class="navbar-item has-dropdown is-hoverable is-mega">
-                <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="/ver/categoria/<%if(child.parent.url!==null){%><%=child.parent.url%>/<%}%><%=child.url%>"><%=child.name%></a></div>
+                <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="/ver/categoria/<%=child.url%>"><%=child.name%></a></div>
                 <div class="navbar-dropdown">
                   <div class="container is-fluid">
                     <div class="columns">
@@ -23,7 +23,7 @@
                         <%child.children.forEach(c =>{%>
                           <%if(c.active){%>
                           <div class="column">
-                              <a class="navbar-item is-uppercase" href="/ver/categoria/<%if(c.parent.url!==null){%><%=c.parent.url%>/<%}%><%=c.url%>">
+                              <a class="navbar-item is-uppercase" href="/ver/categoria/<%=c.url%>">
                                 <p class="is-size-7 has-text-left has-text-weight-bold"><%=c.name%></p>
                               </a>
                               <hr class="is-marginless is-paddingless">
@@ -31,7 +31,7 @@
                               <div class="navbar-content">
                                 <%if(c.hasChildren){%>
                                     <%c.children.forEach(d => {%>
-                                      <a class="navbar-item is-uppercase is-size-7" href="/ver/categoria/<%=c.url%>/<%=d.url%>"><%=d.name%></a>
+                                      <a class="navbar-item is-uppercase is-size-7" href="/ver/categoria/<%=c.url%>"><%=d.name%></a>
                                     <%})%>
                                 <%}%>
                               </div>

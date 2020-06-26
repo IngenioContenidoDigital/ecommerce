@@ -63,7 +63,7 @@ module.exports = {
         dafiti:dafiticat,
         parent:current.id,
         active:isActive,
-        url:(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
+        url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
         level:current.level+1
       }).fetch();
     }catch(err){
@@ -75,7 +75,7 @@ module.exports = {
           parent:current.id,
           dafiti:dafiticat,
           active:isActive,
-          url:(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
+          url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
           level:current.level+1
         }).fetch();
       }
