@@ -707,13 +707,20 @@ module.exports = {
     .populate('manufacturer')
     .populate('mainColor')
     .populate('seller')
-    .populate('gender');
+    .populate('gender')
+    .populate('categories');
 
     products.forEach(pr =>{
       let doc = {
         type:req.param('action'), // add or delete
         id:pr.id
       };
+      let categories = [];
+      pr.categories.forEach(cat =>{
+        if(!categories.includes(cat.name)){
+          categories.push(cat.name);
+        }
+      });
 
       if(req.param('action')==='add'){
         doc['fields'] = {
@@ -726,6 +733,7 @@ module.exports = {
           brand:pr.manufacturer.name,
           color:pr.mainColor.name,
           gender:pr.gender.name,
+          categories:categories
         };
       }
       documents.push(doc);
