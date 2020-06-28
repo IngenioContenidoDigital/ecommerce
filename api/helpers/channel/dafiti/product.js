@@ -123,6 +123,7 @@ module.exports = {
     .then(async (response)=>{
       let result = JSON.parse(response);
       if(result.SuccessResponse){
+        setTimeout(() => { console.log(result); }, 2800);
         let xmlimages = jsonxml(imagebody,true);
         let signimg = await sails.helpers.channel.dafiti.sign('Image',product.seller);
         await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+signimg,'POST',xmlimages);
