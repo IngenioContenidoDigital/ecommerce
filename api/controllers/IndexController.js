@@ -18,18 +18,16 @@ module.exports = {
         }
       }
       if(req.session.viewed.length>0){
-        let psorted = req.session.viewed.sort((a,b) => a.viewedAt - b.viewedAt);
+        let psorted = req.session.viewed.sort((a,b) => b.viewedAt - a.viewedAt );
         let pshow =[];
         for(let i in psorted){
           if(!pshow.includes(psorted[i].product)){
             pshow.push(psorted[i].product);
           }
         }
+        pshow = pshow.reverse().slice(-4);
         if(pshow.length>0){
-          let products = await Product.find({
-            where:{id:pshow},
-            limit: 4
-          })
+          let products = await Product.find({id:pshow})
           .populate('mainColor')
           .populate('tax')
           .populate('gender')
@@ -215,9 +213,15 @@ module.exports = {
 
     if(req.session.viewed===undefined){
       req.session.viewed=[];
-    }
-    if(!req.session.viewed.includes(product.id)){
-      req.session.viewed.push({viewedAt:moment().valueOf(),product:product.id});
+    }else{
+      let exists = false;
+      for(let i in req.session.viewed){
+        if(req.session.viewed[i].product===product.id){
+          req.session.viewed[i].viewedAt=moment().valueOf();
+          exists=true;
+        }
+      }
+      if(!exists){req.session.viewed.push({viewedAt:moment().valueOf(),product:product.id});}
     }
     let discount = await sails.helpers.discount(product.id);
     let title = product.name;
