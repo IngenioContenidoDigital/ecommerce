@@ -491,7 +491,7 @@ module.exports = {
                     result[header[i]] = (await Seller.findOne({domain:row[i].trim().toLowerCase()})).id;
                     break;
                   default:
-                    result[header[i]] = row[i];
+                    result[header[i]] = row[i].toString();
                     break;
                 }
               }
@@ -506,9 +506,14 @@ module.exports = {
                   delete result['seller'];
                 }else{
                   let v = result['variation'];
+                  delete result['variation'];
                   result = null;
                   throw {name:'NOVARIATION',message:'Variación '+v+' no disponible para este producto'};
                 }
+              }else{
+                let r = result['supplierreference'];
+                result = null;
+                throw {name:'NOPRODUCT',message:'Producto '+r+' no localizado'};
               }
             }
             if(req.body.entity==='Product'){
