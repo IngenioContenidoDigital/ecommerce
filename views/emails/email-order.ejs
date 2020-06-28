@@ -1,0 +1,169 @@
+<style>
+  .container {
+    font-family: 'lato', sans-serif;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+  
+  .detail{
+      font-size:12px;
+  }
+  
+  h2 {font-size: 26px;margin: 10px 0;text-align: center;}
+  h2 > small {font-size: 0.5em;}
+  
+  
+  .responsive-table > li {
+      border-radius: 3px;
+      padding: 15px 10px;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+  }
+  .responsive-table > .table-header {
+      background-color: #FAFAFA;
+      font-size: 10px;
+      font-weight:bold;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+  .responsive-table > .table-row {
+      background-color: #ffffff;
+      box-shadow: 0px 0px 9px 0px rgba(0,0,0,0.1);
+      font-size: 12px;
+    }
+    .col-1 {
+      flex-basis: 10%;
+    }
+    .col-2 {
+      flex-basis: 40%;
+    }
+    .col-3 {
+      flex-basis: 25%;
+    }
+    .col-4 {
+      flex-basis: 25%;
+    }
+    
+    .button{
+      font-size:12px;
+      background-color: transparent;
+      border: solid #47A0DD 1px;
+      border-radius:3px;
+      color: #47A0DD;
+      text-decoration:none;
+      padding: 10px 15px 10px 15px;
+    }
+    
+    .button:hover{
+      background-color: #47A0DD;
+      color: #FFF;
+      text-decoration:none;
+      padding: 10px 15px 10px 15px;
+    }
+    
+    @media all and (max-width: 767px) {
+      .table-header {
+        display: none;
+      }
+      .table-row{
+        
+      }
+      li {
+        display: block;
+      }
+      .col {flex-basis: 100%;}
+      .col {
+        display: flex;
+        padding: 5px 0;
+        &:before {
+          color: #6C7A89;
+          padding-right: 10px;
+          content: attr(data-label);
+          flex-basis: 50%;
+          text-align: right;
+        }
+      }
+    }
+  </style>    
+  <div style="margin-bottom: 25px; text-align: center;">
+      <div class="container">
+            <p style="margin-bottom: 25px;">Gracias por comprar en iridio</p>
+        <p style="margin-bottom: 25px;">Encuentra a continuación los detalles de tu pedido</p>
+        <ul class="responsive-table">
+        <%if(order[0].paymentMethod=='CC'){%>
+          <li class="table-header">
+            <div class="col col-3">Medio de pago</div>
+            <div class="col col-3">Referencia de pago</div>
+            <div class="col col-3">Total</div>
+          </li>
+          <li class="table-row">
+            <div class="col col-3">Tarjeta de Crédito</div>
+            <div class="col col-3"><%=payment.data['ref_payco']%></div>
+            <div class="col col-3">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></div>
+          </li>
+      <%}%>
+      <%if(order[0].paymentMethod=='PSE'){%>
+        <li class="table-header">
+          <div class="col col-3">Medio de pago</div>
+          <div class="col col-3">Referencia de pago</div>
+          <div class="col col-3">Total</div>
+        </li>
+        <li class="table-row">
+          <div class="col col-3">PSE</div>
+          <div class="col col-3"><%=payment.data['ref_payco']%></div>
+          <div class="col col-3">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></div>
+        </li>
+      <%}%>
+      <%if(order[0].paymentMethod=='CS'){%>
+        <li class="table-header">
+          <div class="col col-3">Medio de pago</div>
+          <div class="col col-3">Referencia de pago</div>
+          <div class="col col-3">PIN</div>
+          <div class="col col-3">Total</div>
+        </li>
+        <li class="table-row">
+          <div class="col col-3"><%=payment.data.banco%></div>
+          <div class="col col-3"><span style="color:#990033; font-weight: bold; margin-left: 10px; margin-right:10px; font-size:15px;"><%=payment.data.codigoproyecto%></span></div>
+          <div class="col col-3"><span style="color:#990033; font-weight: bold; margin-left: 10px; margin-right:10px; font-size:15px;"><%=payment.data.pin%></span></div>
+          <div class="col col-3">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></div>
+        </li>
+      <%}%>
+      <%if(order[0].paymentMethod=='COD'){%>
+        <li class="table-header">
+          <div class="col col-3">Medio de pago</div>
+          <div class="col col-3">Tipo de pago</div>
+          <div class="col col-3">Total</div>
+        </li>
+        <li class="table-row">
+          <div class="col col-3">Contra entrega</div>
+          <div class="col col-3">
+            <%if(order[0].paymentOption=='terminal'){%>
+              Dat&aacute;fono
+            <%}else{%>
+              Efectivo
+            <%}%>
+          </div>
+          <div class="col col-3">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></div>
+        </li>
+      <%}%>
+      </ul>
+      <%if(order[0].paymentMethod=='CS'){%>
+        <br>
+        <p style="text-align:justify;font-size:12px;">Recuerda acercarte al punto <strong><%=payment.data.banco%></strong> m&aacute;s cercano para realizar tu pago. Una vez verifiquemos el pago, procederemos con el despacho. Reservaremos tus productos por un m&aacute;ximo 2 d&iacute;s mientras realizas el pago.</p>
+      <%}%>
+        <br>
+         <% order.forEach(o=>{ %>
+            <p class="detail">Pedido:&nbsp;#&nbsp;<strong><%=o.reference%></strong>&nbsp;-&nbsp;Vendedor:&nbsp;</strong><%=o.seller.name%></p>
+          <% }); %>
+            <br>
+          <p>
+            <a style="float:left;" href="https://iridio.co/" class="button is-link is-outlined" target="_blank">Visitar Sitio</a>
+            <a style="float:right;" href="https://iridio.co/account/orders" class="button is-link is-outlined" target="_blank">Ver Detalles</a>
+          </p>
+          <br>
+      </div>
+  </div>

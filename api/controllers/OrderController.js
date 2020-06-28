@@ -251,10 +251,12 @@ module.exports = {
         }
         break;
       case 'COD':
-        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:{data:{estado:'Pendiente',ref_payco:''}},extra:req.body.codOp,carrier:'coordinadora'});
+        payment={data:{estado:'Pendiente',ref_payco:''}};
+        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.codOp,carrier:'coordinadora'});
         break;
     }
     delete req.session.cart;
+    await sails.helpers.sendEmail('email-order',{fullName:req.session.user.fullName,order:order,payment:payment},req.session.user.emailAddress,'Confirmación de Pedido');
     return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu()});
   },
   listorders: async function(req, res){
