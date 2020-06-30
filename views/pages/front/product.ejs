@@ -39,10 +39,10 @@
                 <table class="table is-size-6 is-fullwidth">
                     <%if(discount!==null && discount!==undefined){%>
                         <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
-                            <tr><td>Precio recomendado:</td><td class="has-text-right"><span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr>
-                            <tr><td>Precio:</td><td class="has-text-right" itemprop="lowPrice">$&nbsp;<%= Math.round(discount.price).toLocaleString("es-CO"); %></td></tr>
+                            <tr><td>Precio recomendado:</td><td class="has-text-right"><span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr>
+                            <tr><td>Precio:</td><td class="has-text-right" itemprop="lowPrice">$<%= Math.round(discount.price).toLocaleString("es-CO"); %></td></tr>
                             <% let savings = parseInt((product.price*(1+(product.tax.value/100)))-discount.price) %>
-                            <tr><td>Ahorro:</td><td class="has-text-success has-text-right">$&nbsp;<%= savings.toLocaleString('es-CO'); %></td></tr>
+                            <tr><td>Ahorro:</td><td class="has-text-success has-text-right">$<%= savings.toLocaleString('es-CO'); %></td></tr>
                             <span class="is-hidden" itemprop="offerCount">1</span>
                             <span itemprop="price" class="is-hidden">$<%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
                         </div>

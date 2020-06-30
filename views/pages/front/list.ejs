@@ -95,8 +95,8 @@
                                     <meta itemprop="priceCurrency" content="COP">
                                     <%if(product.discount!==null && product.discount!==undefined){%>
                                         <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
-                                            <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
-                                            <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                            <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                            <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                                             <span class="is-hidden" itemprop="offerCount">1</span>
                                         </div>
                                         <span itemprop="price" class="is-hidden">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
