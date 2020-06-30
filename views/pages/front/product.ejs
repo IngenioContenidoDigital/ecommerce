@@ -44,10 +44,10 @@
                             <% let savings = parseInt((product.price*(1+(product.tax.value/100)))-discount.price) %>
                             <tr><td>Ahorro:</td><td class="has-text-success has-text-right">$&nbsp;<%= savings.toLocaleString('es-CO'); %></td></tr>
                             <span class="is-hidden" itemprop="offerCount">1</span>
-                            <span itemprop="price" class="is-hidden">$&nbsp;<%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
+                            <span itemprop="price" class="is-hidden">$<%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
                         </div>
                     <%}else{%>
-                      <tr><td>Precio:</td><td itemprop="price" class="has-text-right">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO"); %></td></tr>
+                      <tr><td>Precio:</td><td itemprop="price" class="has-text-right">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO"); %></td></tr>
                     <%}%>
                 </table>
                 <hr>

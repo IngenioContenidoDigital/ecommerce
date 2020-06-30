@@ -66,26 +66,15 @@
     }
     
     @media all and (max-width: 767px) {
-      .table-header {
-        display: none;
-      }
-      .table-row{
-        
-      }
-      li {
-        display: block;
-      }
-      .col {flex-basis: 100%;}
-      .col {
-        display: flex;
-        padding: 5px 0;
-        &:before {
+      .table-header {display: none;}
+      li {display: block;}
+      .col {flex-basis: 100%;display: flex;padding: 5px 0;}
+      .col:before{
           color: #6C7A89;
           padding-right: 10px;
           content: attr(data-label);
           flex-basis: 50%;
           text-align: right;
-        }
       }
     }
   </style>    

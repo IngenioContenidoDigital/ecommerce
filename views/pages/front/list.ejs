@@ -99,9 +99,9 @@
                                             <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                                             <span class="is-hidden" itemprop="offerCount">1</span>
                                         </div>
-                                        <span itemprop="price" class="is-hidden">$&nbsp;<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                        <span itemprop="price" class="is-hidden">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                                     <%}else{%>
-                                        <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                        <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
                                     <%}%>
                                 </div>
                                 </p>
