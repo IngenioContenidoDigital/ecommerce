@@ -7,8 +7,6 @@
 
 module.exports = {
   index: async function(req, res){
-    //let moment = require('moment');
-    //await sails.helpers.channel.INGENIO.orders('5ec570dd855a321811d1735b',['CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(6,'hours').toISOString(true),'Status=pending','SortDirection=ASC']);
     let slider = await Slider.find({active:true}).populate('textColor');
     let viewed=[];
     if(req.session.viewed!==undefined){
