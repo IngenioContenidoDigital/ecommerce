@@ -27,6 +27,21 @@ module.exports = {
       case 'Fallida':
         name='fallido';
         break;
+      case 'shipped':
+        name='enviado';
+        break;
+      case 'delivered':
+        name='entregado';
+        break;
+      case 'returned':
+        name='retornado';
+        break;
+      case 'canceled':
+        name='cancelado';
+        break;
+      case 'failed':
+        name='fallido';
+        break;
       default:
         name='pendiente';
         break;

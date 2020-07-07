@@ -121,14 +121,10 @@ module.exports = {
     let sign = await sails.helpers.channel.dafiti.sign(inputs.action,product.seller);
     await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
     .then(async (response)=>{
-      let result = JSON.parse(response);
-      if(result.SuccessResponse){
-        setTimeout(async () => {
-          let xmlimages = jsonxml(imagebody,true);
-          let signimg = await sails.helpers.channel.dafiti.sign('Image',product.seller);
-          await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+signimg,'POST',xmlimages);
-        }, 2800);
-      }
+      console.log(response);
+      let xmlimages = jsonxml(imagebody,true);
+      let signimg = await sails.helpers.channel.dafiti.sign('Image',product.seller);
+      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+signimg,'POST',xmlimages);
     });
 
     return exits.success();
