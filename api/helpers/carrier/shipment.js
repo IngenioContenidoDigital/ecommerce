@@ -74,7 +74,7 @@ module.exports = {
         'id_cliente' : 33152,
         'id_remitente' : 0,
         'nit_remitente' : seller.dni,
-        'nombre_remitente' : seller.name,
+        'nombre_remitente' : seller.name.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g,''),
         'direccion_remitente' : seller.mainAddress.addressline1+' '+seller.mainAddress.addressline2,
         'telefono_remitente' : seller.phone,
         'ciudad_remitente' : seller.mainAddress.city.code+'000',
@@ -144,7 +144,6 @@ module.exports = {
      *   Seguimiento_simple - Verificación de Estado de Entrega
      *   Guias_liquidacionGuia - Consultar el Valor de la Guía
      */
-
     let options = {};
     soap.createClient(url, options, (err, client) =>{
       let method = client['Guias_generarGuia'];
