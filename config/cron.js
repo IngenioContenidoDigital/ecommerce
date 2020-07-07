@@ -1,7 +1,7 @@
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
   dafitiOrders: {
-    schedule: '00 25 */1 * * *',
+    schedule: '00 10 * * * *',
     onTick: async () => {
       console.log('Iniciando Captura de Ordenes Dafiti');
       let moment = require('moment');
