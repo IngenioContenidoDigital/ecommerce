@@ -34,12 +34,12 @@ module.exports = {
       limit: 1
     });
     let status='active';
-    if(!product.dafitistatus){status='inactive';}
+    if(product.dafitistatus){status='inactive';}
 
     let imagebody={
       Request:[]
     };
-    let images = await ProductImage.find({product:product.id});
+    let images = await ProductImage.find({product:product.id}).sort('position ASC');
     let ilist = {
       Images:[]
     };
@@ -121,14 +121,18 @@ module.exports = {
     let sign = await sails.helpers.channel.dafiti.sign(inputs.action,product.seller);
     await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
     .then(async (response)=>{
-      console.log(response);
-      let xmlimages = jsonxml(imagebody,true);
-      let signimg = await sails.helpers.channel.dafiti.sign('Image',product.seller);
-      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+signimg,'POST',xmlimages);
+      let result = JSON.parse(response);
+      if(result.SuccessResponse.Head.RequestId!==undefined && result.SuccessResponse.Head.RequestId!==null && result.SuccessResponse.Head.RequestId!==''){
+        let xmlimages = jsonxml(imagebody,true);
+        setTimeout(async () => {
+          let signimg = await sails.helpers.channel.dafiti.sign('Image',product.seller);
+          await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+signimg,'POST',xmlimages);
+        }, 4000);
+        return exits.success(response);
+      }else{
+        return exits.error(response);
+      }
     });
-
-    return exits.success();
-
   }
 };
 

@@ -281,14 +281,21 @@ module.exports = {
       }else{
         action='ProductUpdate';
       }
-      await Product.updateOne({id:req.param('product')}).set({
-        dafiti:true,
-        dafitistatus:req.body.status,
-        dafitiprice:req.body.dafitiprice,
-      });
       let response = await sails.helpers.channel.dafiti.product(req.param('product'),action);
+      if(response){
+        await Product.updateOne({id:req.param('product')}).set({
+          dafiti:true,
+          dafitistatus:(product.dafitistatus) ? false : true,
+          dafitiprice:req.body.dafitiprice,
+        });
+      }
       return res.send(response);
     }catch(err){
+      await Product.updateOne({id:req.param('product')}).set({
+        dafiti:false,
+        dafitistatus:false,
+        dafitiprice:0,
+      });
       return res.send(err);
     }
   },
