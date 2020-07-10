@@ -58,7 +58,9 @@ module.exports = {
     });
 
     if(inputs.method.toUpperCase()==='POST'){
-      rq.write(data);
+      if(inputs.data!==undefined && inputs.data!==null && inputs.data.length>0){
+        rq.write(data);
+      }
     }
     rq.end();
   }

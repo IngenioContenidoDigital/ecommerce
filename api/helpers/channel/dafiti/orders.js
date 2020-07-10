@@ -32,7 +32,7 @@ module.exports = {
           orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
         }
         for(let order of orders.Order){
-          let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderNumber});
+          let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId});
           if(order.Statuses.Status==='pending'){
             let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');
 
@@ -64,7 +64,7 @@ module.exports = {
                 data:{
                   estado:'Aceptada',
                   channel:'dafiti',
-                  channelref:order.OrderNumber
+                  channelref:order.OrderId
                 }
               };
               payment.data['ref_payco'] = order.OrderNumber;
