@@ -97,9 +97,26 @@ module.exports = {
       throw 'forbidden';
     }
     let tracking = req.param('tracking');
-
-    let guia = await sails.helpers.carrier.guia(tracking);
-    let label = await sails.helpers.carrier.label(tracking);
+    let order = await Order.findOne({tracking:tracking});
+    let guia=null;
+    let label=null;
+    if(order.channel==='direct'){
+      guia = await sails.helpers.carrier.guia(tracking);
+      label = await sails.helpers.carrier.label(tracking);
+    }
+    if(order.channel==='dafiti'){
+      let oitems = await OrderItem.find({order:order.id});
+      let litems = [];
+      for(let it of oitems){
+        if(!litems.includes(it.externalReference)){
+          litems.push(it.externalReference);
+        }
+      }
+      let route = await sails.helpers.channel.dafiti.sign('GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
+      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+      let result = JSON.parse(response);
+      guia = result.SuccessResponse.Body.Documents.Document.File;
+    }
 
     return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});
   }

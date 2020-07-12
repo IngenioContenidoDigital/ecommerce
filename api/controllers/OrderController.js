@@ -341,17 +341,6 @@ module.exports = {
     if(newstate.name==='empacado' && order.tracking===''){
       await sails.helpers.carrier.shipment(id);
     }
-    if(newstate.name==='listo para envío' && order.channel==='dafiti'){
-      let oitems = await OrderItem.find({order:order.id});
-      let litems = [];
-      for(let it of oitems){
-        if(!litems.includes(it.externalReference)){
-          litems.push(it.externalReference);
-        }
-      }
-      let route = await sails.helpers.channel.dafiti.sign('SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega','TrackingNumber='+order.tracking]);
-      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'POST');
-    }
 
     if(user!==null && user!== undefined){
       await OrderHistory.create({order:order.id,state:req.body.orderState,user:user.id});

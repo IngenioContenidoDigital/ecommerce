@@ -11,7 +11,7 @@
             <div class="box">
               <h7 class="title is-7">Información del Pedido</h7><span id="order" order="<%=order.id %>" class="is-pulled-right is-size-5"><%=order.reference %></span>
               <hr>
-              <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Nombre:&nbsp;</span><span class="is-pulled-right"><%= order.customer.fullName %></span>-<span><%= order.customer.dniType %>:&nbsp;<%= order.customer.dni %></span></p>
+              <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Nombre:&nbsp;</span><span class="is-pulled-right"><%= order.customer.fullName %>&nbsp;-&nbsp;<%= order.customer.dniType %>:&nbsp;<%= order.customer.dni %></span></p>
               <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Pedido creado:&nbsp;</span><span class="is-pulled-right"><%= moment(order.createdAt).locale('es').format('LLL')%></span></p>
               <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Tiempo Transcurrido:&nbsp;</span><span class="is-pulled-right"><%= moment.duration((new Date())-order.createdAt).locale('es').humanize()%></span></p>
               <br>

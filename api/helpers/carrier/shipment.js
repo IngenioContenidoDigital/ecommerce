@@ -167,14 +167,21 @@ module.exports = {
       }
       let route = await sails.helpers.channel.dafiti.sign('SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega']);
       let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'POST');
-      console.log(response);
       let result = JSON.parse(response);
       if(result.SuccessResponse){
         let itemsign = await sails.helpers.channel.dafiti.sign('GetOrderItems',order.seller,['OrderId='+order.channelref]);
-        let oitems = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+itemsign,'GET');
-        let rs = JSON.parse(oitems);
-        let tracking = rs.SuccessResponse.Body.OrderItems.OrderItem[0].TrackingCode;
+        let citems = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+itemsign,'GET');
+        let rs = JSON.parse(citems);
+        let items = {OrderItem:[]};
+        if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
+          items = rs.SuccessResponse.Body.OrderItems;
+        }else{
+          items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+        }
+        let tracking = items.OrderItem[0].TrackingCode;
         await Order.updateOne({id:order.id}).set({tracking:tracking});
+        let rts = await sails.helpers.channel.dafiti.sign('SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega','TrackingNumber='+tracking]);
+        await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+rts,'POST');
       }
     }
 
