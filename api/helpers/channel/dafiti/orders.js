@@ -46,7 +46,7 @@ module.exports = {
                 dniType:'CC',
                 dni:order.NationalRegistrationNumber,
                 mobilecountry:city[0].region.country,
-                mobile:(order.AddressShipping.Phone2!==undefined && order.AddressShipping.Phone2!=='') ? parseInt(order.AddressShipping.Phone2) : parseInt(order.AddressShipping.Phone),
+                mobile:parseInt(order.AddressShipping.Phone2),
                 mobileStatus:'unconfirmed',
                 profile:profile.id
               });
