@@ -17,6 +17,7 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
+    let moment = require('moment');
     let sign = await sails.helpers.channel.dafiti.sign('GetOrders',inputs.seller,inputs.params);
     let profile = await Profile.findOne({name:'customer'});
     await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET')
@@ -96,7 +97,8 @@ module.exports = {
                   }
                 }
                 if((await CartProduct.count({cart:cart.id}))>0){
-                  await sails.helpers.order({address:address,user:user,cart:cart,method:order.PaymentMethod,payment:payment,carrier:'servientrega'});
+                  let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.PaymentMethod,payment:payment,carrier:'servientrega'});
+                  await Order.updateOne({id:(corders[0]).id}).set({createdAt:moment(order.createdAt).valueOf()});
                 }
               });
             }
