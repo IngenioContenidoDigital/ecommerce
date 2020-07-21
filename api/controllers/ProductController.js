@@ -710,7 +710,7 @@ module.exports = {
   },
   searchindex: async (req,res)=>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'updateindex')){
       throw 'forbidden';
     }
     let documents = [];

@@ -231,6 +231,7 @@ module.exports.bootstrap = async function() {
       {name:'addcategory', group:'catalogo', description:'Crear una Nueva Categoría'},
       {name:'editcategory', group:'catalogo', description:'Editar una categoría existente'},
       {name:'categorystate', group:'catalogo', description:'Activar o Desactivar una Categoría'},
+      {name:'updateindex',group:'catalogo',description:'Actualizar o Eliminar el Indice de Productos'},
 
       {name:'users', group:'usuarios', description:'Ver la Lista de usuarios'},
       {name:'admincreate', group:'usuarios', description:'Crear un nuevo usuario administrativo'},

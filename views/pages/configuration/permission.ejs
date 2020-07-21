@@ -1,0 +1,50 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+        <h4 class="title is-4">Crear Permiso</h4>
+        <hr>
+        <form action="/permission/create" method="POST">
+        <div class="columns">
+        <div class="column"></div>
+        <div class="column">
+            <div class="box">
+                <div class="field">
+                    <label class="label">Nombre</label>
+                    <div class="control">
+                    <input class="input is-capitalized is-size-7" type="text" name="name" required="true" placeholder="Nombre del Permiso" />
+                    </div>
+                </div>    
+                <div class="field">
+                <div class="control">
+                    <label class="label is-inline is-size-7" for="grupo">Grupo</label>
+                    <div class="select is-fullwidth is-size-7">
+                        <select class="is-capitalized" name="group" id="group" required>
+                        <option value=""> -- Grupo del Permiso --</option>
+                        <option value="localizacion">localizacion</option>
+                        <option value="catalogo">catalogo</option>
+                        <option value="usuarios">usuarios</option>
+                        <option value="sellers">sellers</option>
+                        <option value="pedidos">pedidos</option>
+                        <option value="descuentos">descuentos</option>
+                        <option value="transporte">transporte</option>
+                        </select>
+                    </div>
+                    </div>
+                </div>
+                <div class="field">
+                <label class="label">Descripción</label>
+                <div class="control">
+                <input class="input is-capitalized is-size-7" type="text" name="description" required="true" placeholder="Descripción del Permiso" />
+                </div>
+                </div>
+                <div class="control buttons is-right">
+                <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Permiso</button>
+            </div>           
+            </div>
+        </div>
+        <div class="column"></div>
+        </form>
+  </div>

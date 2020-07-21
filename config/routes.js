@@ -145,6 +145,8 @@ module.exports.routes = {
   'POST /profile/edit/:id' : {controller:'UserController',action:'editprofile'},
   'GET /permissions/:id' : {controller:'UserController',action:'permissions'},
   'POST /permissions/set/:id' : {controller:'UserController',action:'setpermissions'},
+  'GET /permission' : {controller:'UserController',action:'newpermission'},
+  'POST /permission/create' : {controller:'UserController',action:'addpermission'},
 
   'GET /integrations/:id' : {controller:'SellerController',action:'integrations'},
   'POST /integration/set/:seller/:channel' : {controller:'SellerController',action:'setintegration'},

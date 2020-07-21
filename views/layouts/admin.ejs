@@ -52,37 +52,38 @@
     <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
   </head>
   <body>
-    <nav class="navbar is-size-7" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="/"><img src="/images/iridio.png"></a>
-          <!--<a class="navbar-item" href="/"><img src="/images/1ecommerce-logo.png"></a>-->
-          <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
-        <div id="navbarBasicExample" class="navbar-menu">
-        </div>
-        <div class="navbar-end">
-          <div class="navbar-item">
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="/"><img src="<%=imgurl%>/iridio.png"></a>
+        <!--<a class="navbar-item" href="/"><img src="/images/1ecommerce-logo.png"></a>-->
+        <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div id="navbarBasicExample" class="navbar-menu">
+      </div>
+      <div class="navbar-end has-text-right">
+        <div class="navbar-item is-inline-block">
             <div class="buttons">
               <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
               <div class="dropdown is-right is-hoverable">
                 <div class="dropdown-trigger">
                   <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
                     <% if(session.user === undefined) { %>
-                     <span><i class="is-size-4 bx bxs-user"></i></span>
+                      <span><i class="is-size-4 bx bxs-user"></i></span>
                     <%}else{%>
-                     <span><i class='is-size-4 bx bxs-user-detail'></i></span>
+                      <span><i class='is-size-4 bx bxs-user-detail'></i></span>
                     <%}%>
                   </button>
                 </div>
                 <div class="dropdown-menu" id="dropdown-menu4" role="menu">
                   <div class="dropdown-content">
                     <% if(session.user === undefined) { %>
-                    <a id="login" class="dropdown-item">Iniciar Sesión</a>
+                    <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
                     <% } else { %>
+                    <a href="/account" class="dropdown-item">Mi Cuenta</a>
                     <a href="/addresses" class="dropdown-item">Direcciones</a>
                     <hr class="dropdown-divider">
                     <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
@@ -91,10 +92,9 @@
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
-    </nav>
+  </nav>
     <div class="columns">
       <div class="column is-2">
         <div class="container">
@@ -172,6 +172,7 @@
           <ul class="menu-list">
             <li><a href="/users">Usuarios</a></li>
             <li><a href="/profiles">Perfiles</a></li>
+            <li><a href="/permission">Crear Permisos</a></li>
             <li><a href="/index/add">Indexar Productos</a></li>
             <li><a href="/index/delete">Eliminar Indice de Productos</a></li>
           </ul>

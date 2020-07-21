@@ -374,6 +374,36 @@ module.exports = {
       console.log(err);
     }
     return res.redirect('/profiles');
+  },
+  newpermission: async(req,res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin'){
+      throw 'forbidden';
+    }
+    let error= req.param('error') ? req.param('error') : null;
+    return res.view('pages/configuration/permission',{layout:'layouts/admin',error:error});
+
+  },
+  addpermission: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin'){
+      throw 'forbidden';
+    }
+    let error = null;
+    try{
+      await Permission.create({
+        name:req.body.name.trim().toLowerCase(),
+        group:req.body.group,
+        description:req.body.description
+      });
+    }catch(err){
+      error = err;
+    }
+    if(error!==null && error!==undefined){
+      return res.redirect('/permission?error='+error);
+    }else{
+      return res.redirect('/permission');
+    }
   }
 };
 
