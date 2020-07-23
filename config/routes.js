@@ -131,6 +131,9 @@ module.exports.routes = {
   'POST /confirmacion' : {controller:'OrderController', action:'confirmation', csrf:false},
   'GET /discounts/:action?/:id?' : {controller:'DiscountController',action:'discounts'},
   'POST /discount/:action/:id?' : {controller:'DiscountController',action:'creatediscount'},
+  'POST /productdiscount' : {controller:'DiscountController',action:'productdiscount'},
+  'PUT /removepdiscount' : {controller:'DiscountController',action:'removepdiscount'},
+
   'GET /coupons/:action?/:id?' : {controller:'DiscountController',action:'coupons'},
   'POST /coupon/create' : {controller:'DiscountController',action:'createcoupon'},
   'POST /coupon/edit/:id' : {controller:'DiscountController',action:'editcoupon'},

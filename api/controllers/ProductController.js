@@ -36,7 +36,8 @@ module.exports = {
       .populate('mainCategory')
       .populate('mainColor')
       .populate('categories')
-      .populate('variations');
+      .populate('variations')
+      .populate('discount');
 
       if(product.gender!==undefined && product.gender!==null){
         variations = await Variation.find({gender:product.gender});
@@ -63,6 +64,7 @@ module.exports = {
         .populate('manufacturer');
       }
     }
+    let moment = require('moment');
     return res.view('pages/catalog/product',{layout:'layouts/admin',
       products:products,
       root:root,
@@ -75,6 +77,7 @@ module.exports = {
       action:action,
       product:product,
       error:error,
+      moment:moment,
     });
   },
   createproduct: async function(req, res){

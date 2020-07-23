@@ -23,7 +23,7 @@ module.exports = {
         to:{'>=':moment().valueOf()},
         from:{'<=':moment().valueOf()}
       },
-      sort: 'createdAt ASC'});
+      sort: 'createdAt DESC'});
 
     let discPrice=0;
     let discAmount=0;

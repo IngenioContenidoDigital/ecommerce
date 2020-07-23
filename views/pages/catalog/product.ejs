@@ -1,3 +1,4 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
 <div class="container">
 <% if (error != undefined || error != null) { %>
   <div class="notification is-danger is-light" id="error">
@@ -11,6 +12,7 @@
         <li class="is-active"><a option="basics" >Información Básica</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="images">Imágenes</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="variations">Variaciones</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
       </ul>
     </div>
@@ -553,6 +555,159 @@
       </script>
       </div>
     </div>
+    <div class="is-hidden" id="discounts">
+      <div class="box">
+        <h6 class="title is-7 is-uppercase"><%if(product!==undefined){%><%=product.name%><%}%></h6>
+        <h6 class="subtitle is-7 is-uppercase"><%if(product!==undefined){%>REF:&nbsp;<%=product.reference%><%}%></h6>
+        <div class="columns">
+          <div class="column">
+              <div class="columns is-mobile">
+                  <div class="column">
+                    <div class="field">
+                        <label class="label">Tipo</label>
+                        <div class="select is-fullwidth">
+                            <select name="type">
+                            <option value="P">Porcentaje</option>
+                            <option value="C">Valor</option>
+                            </select>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                        <label class="label">Valor</label>
+                        <div class="control">
+                          <input class="input" type="text" name="value" required="true" placeholder="Cantidad de Descuento" />
+                        </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Periodo de descuento</label>
+                      <div class="control">
+                          <input class="input" type="date" name="range" required placeholder="Fecha de Inicio"/>
+                      </div>
+                    </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+        <div class="buttons is-right">
+          <button id="add-discount" class="button is-primary"><i class="bx bx-save"></i>&nbsp;Agregar Descuento</button>
+        </div>
+        <div class="columns">
+          <div class="column">
+              <div id="discount-container">
+                <table class="table is-striped is-hoverable is-fullwidth">
+                  <thead>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th>Desde</th>
+                    <th>Hasta</th>
+                    <th>Eliminar</th>
+                  </thead>
+                  <tbody>
+                  <%if(product!==undefined && product.discount.length>0){%>
+                    <% product.discount.forEach(discount =>{ %>
+                      <tr>
+                        <td><%=discount.name%></td>
+                        <td><% if(discount.type==='P'){%>%&nbsp;<%}else{%>$&nbsp;<%}%></td>
+                        <td><%=discount.value%></td>
+                        <td><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss');%></td>
+                        <td><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss');%> </td>
+                        <td><a did="<%=discount.id%>" class="delete-discount"><i class="bx bx-trash"></i></a></td>
+                      </tr>
+                    <%})%>
+                  <%}%>
+                </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <script>
+        // Initialize all input of date type.
+        const calendars = bulmaCalendar.attach('[type="date"]', {
+            type:'datetime',
+            isRange: true,
+            allowSameDayRange: true,
+            dateFormat:'YYYY-MM-DD',
+            timeFormat:'HH:mm:ss',
+            displayMode:'dialog',
+            cancelLabel:'Cancelar',
+            clearLabel:'Limpiar',
+            todayLabel:'Hoy',
+            nowLabel:'Ahora',
+            validateLabel:'Seleccionar',
+            minDate: new Date()
+        });
+
+        // Loop on each calendar initialized
+        calendars.forEach(calendar => {
+            // Add listener to date:selected event
+            calendar.on('date:selected', date => {
+                console.log(date);
+            });
+        });
+
+        // To access to bulmaCalendar instance of an element
+        const element = document.querySelector('#my-element');
+        if (element) {
+            // bulmaCalendar instance is available as element.bulmaCalendar
+            element.bulmaCalendar.on('select', datepicker => {
+                console.log(datepicker.data.value());
+            });
+        }
+        
+        live('#add-discount','click', e =>{
+          let p = document.querySelector('#product-data').value;
+          let range = document.querySelector('input[name="range"]').value;
+          let type= document.querySelector('select[name="type"]').value;
+          let dvalue = document.querySelector('input[name="value"]').value
+          let table = document.getElementById('discount-container').querySelector('.table')
+          if(range!=='' && type!=='' && dvalue!==''){
+            io.socket.post('/productdiscount',{product:p, range:range,type:type,value:dvalue},resData =>{
+              let sign = '';
+              if(resData.type=='P'){sign ='% ';}else{sign ='$ ';}
+              let newrow=[
+                '<td>'+resData.name+'</td>',
+                '<td>'+sign+'</td>',
+                '<td>'+resData.value+'</td>',
+                '<td>'+moment(resData.from).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
+                '<td>'+moment(resData.to).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
+                '<td><a did="'+resData.id+'" class="delete-discount"><i class="bx bx-trash"></i></a></td>'
+              ];
+              let row = table.getElementsByTagName('tbody')[0].insertRow(-1);
+              newrow.forEach((cell, index)=>{
+                row.insertCell(index).innerHTML=cell;
+              });
+              
+            });
+          }else{
+            alert('Todos los campos son requeridos');
+          }
+        });
+
+        live('.delete-discount','click', e =>{
+          e.preventDefault();
+          let elm = e.target;
+          if(e.target.tagName=='I'){
+            elm = e.target.parentNode;
+          }
+          let id = elm.getAttribute('did');
+          let p = document.querySelector('#product-data').value;
+          io.socket.put('/removepdiscount',{product:p,discount:id},resData =>{
+            if(resData=='ok'){
+              let row = elm.parentNode.parentNode;
+              let table = document.getElementById('discount-container').querySelector('.table')          
+              table.deleteRow(row.rowIndex);
+            }
+          });
+        });
+
+      </script>
+    </div>
     <div class="is-hidden" id="integrations">
       <div class="box">
         <table class="table">
@@ -946,7 +1101,7 @@
         searchable:true,
         sortable:true,
         paging:true,
-        perPage:25,
+        perPage:100,
         labels: {
           placeholder: "Buscar...",
           perPage: "{select} registros por página",

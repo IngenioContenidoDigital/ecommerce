@@ -172,6 +172,55 @@ module.exports = {
     }
     let random = sails.helpers.strings.random();
     return res.send(random);
+  },
+  productdiscount: async (req, res) => {
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'discounts')){
+      throw 'forbidden';
+    }
+    let moment = require('moment');
+    let range = req.body.range.split(' - ');
+    let discount = null;
+    let affected = [];
+    let product = await Product.findOne({id:req.body.product});
+
+    discount = await CatalogDiscount.create({
+      name:product.name.toLowerCase().trim(),
+      from:moment(range[0]).valueOf(),
+      to:moment(range[1]).valueOf(),
+      type:req.body.type,
+      value:req.body.value,
+      seller:product.seller
+    }).fetch();
+
+    affected.push(product.id);
+
+    await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
+
+    //let discounts = await Product.findOne({id:product.id}).populate('discount');
+
+    return res.send(discount);
+  },
+  removepdiscount: async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'discounts')){
+      throw 'forbidden';
+    }
+    let members = [];
+    try{
+      members.push(req.body.product);
+      await CatalogDiscount.removeFromCollection(req.body.discount,'products').members(members);
+      return res.send('ok');
+    }catch(err){
+      console.log(err);
+      return res.send(err.message);
+    }
   }
 
 };
