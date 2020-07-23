@@ -30,7 +30,7 @@ module.exports = {
         to:{'>=':moment().valueOf()},
         from:{'<=':moment().valueOf()}
       },
-      sort: 'createdAt ASC',
+      sort: 'createdAt DESC',
       limit: 1
     });
     let status='active';
