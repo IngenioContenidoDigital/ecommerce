@@ -174,24 +174,40 @@ module.exports = {
   setintegration:async (req,res)=>{
     let seller = req.param('seller');
     let channel = req.param('channel');
-    Integrations.findOrCreate({seller:seller,channel:channel},{
-      channel:channel,
-      url:req.body.url,
-      user:req.body.user,
-      key:req.body.key,
-      secret:req.body.secret ? req.body.secret : '',
-      seller:seller
-    }).exec(async (err, record, created)=>{
+
+    let data = {
+        channel:channel,
+        url:req.body.url,
+        key:req.body.key,
+        secret:req.body.secret ? req.body.secret : '',
+        seller:seller
+    };
+
+    if(req.body.user)
+        data.user = req.body.user
+    
+    if(req.body.version)
+        data.version = req.body.version
+
+    Integrations.findOrCreate({seller:seller,channel:channel}, data).exec(async (err, record, created)=>{
       if(err){return res.redirect('/sellers?error='+err);}
       if(!created){
-        await Integrations.updateOne({id:record.id}).set({
+        
+      let updateData = {
           channel:channel,
           url:req.body.url,
-          user:req.body.user,
           key:req.body.key,
           secret:req.body.secret ? req.body.secret : '',
           seller:seller
-        });
+      };
+  
+      if(req.body.user)
+          updateData.user = req.body.user
+      
+      if(req.body.version)
+          updateData.version = req.body.version
+
+        await Integrations.updateOne({id:record.id}).set(updateData);
       }
       return res.redirect('/sellers');
     });
