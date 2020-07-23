@@ -90,13 +90,97 @@
                       </div>
                     </div>
                     <%if(action=='edit'){%>
-                      <a href="/integrations/<%=seller.id%>">
+                      <% let dafiti = null, mercadolibre = null, linio = null, woocommerce = null; %>
+                      <%if(integrations.length>0){%>
+                          <% dafiti=integrations.filter(data => data.channel=='dafiti');%>
+                          <% linio=integrations.filter(data => data.channel=='linio');%>
+                          <% mercadolibre=integrations.filter(data => data.channel=='mercadolibre');%>
+                          <% woocommerce=integrations.filter(data => data.channel=='woocommerce');%>
+                      <%}%>
+                    <%}%>
+                      <a id="setup-import">
                         <span class="icon">
                           <i class='bx bx-shape-polygon'></i>
                         </span>
-                        Configurar Integraciones
+                        Configurar importación de productos
                       </a>
-                    <%}%>
+                      <br/>
+                      <br/>
+                      <div class="card is-hidden" id="setup-panel">
+                        <div class="card-content">
+                          <div class="tabs is-toggle is-fullwidth o-x-h">
+                            <ul>
+                              <li>
+                                <a>
+                                  <p class="has-text-centered" id="woocommerce"><img src="/images/wooCommerce.png" /></p>
+                                </a>
+                              </li>
+                            </ul>
+                          </div>
+                          <div class="setup woocommerce">
+                                <div class="container">
+                                        <div class="field">
+                                        <label class="label">Consumer key</label>
+                                        <div class="control has-icons-left">
+                                          <%if(action == 'edit'){%>
+                                              <input class="input" type="text" name="key" placeholder="Consumer key" required <%if(woocommerce!==null &&  woocommerce.length>0){%>value="<%=woocommerce[0].key%>"<%}%>/>
+                                          <%}else{%>
+                                            <input class="input" type="text" name="key" placeholder="Consumer key" required/>
+                                          <%}%>
+                                            <span class="icon is-small is-left">
+                                            <i class='bx bx-key' ></i>
+                                            </span>
+                                        </div>
+                                        </div>
+                                        <div class="field">
+                                        <label class="label">Consumer secret</label>
+                                        <div class="control has-icons-left">
+                                          <%if(action == 'edit'){%>
+                                            <input class="input" type="text" name="secret" placeholder="Consumer secret" required <%if(woocommerce!==null &&  woocommerce.length>0){%>value="<%=woocommerce[0].secret%>"<%}%>/>
+                                          <%}else{%>
+                                            <input class="input" type="text" name="secret" placeholder="Consumer secret" required />
+                                          <%}%>
+                                            <span class="icon is-small is-left">
+                                            <i class='bx bx-key' ></i>
+                                            </span>
+                                        </div>
+                                        </div>
+                                        <div class="field">
+                                            <label class="label">URL Petición</label>
+                                            <div class="control has-icons-left">
+                                                <%if(action == 'edit'){%>
+                                                  <input class="input" type="text" name="apiUrl" placeholder="Url de Petición" required <%if(woocommerce!==null && woocommerce.length>0){%>value="<%=woocommerce[0].url%>"<%}%>/>
+                                                <%}else{%>
+                                                  <input class="input" type="text" name="apiUrl" placeholder="Url de Petición" required />
+                                                 <%}%>
+                                                <span class="icon is-small is-left">
+                                                    <i class='bx bx-world'></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <%if(action == 'edit'){%>
+                                          <input class="input" type="hidden" name="channel" <%if(woocommerce!==null && woocommerce.length>0){%>value="<%=woocommerce[0].channel%>"<%}%> required />
+                                        <%}else{%>
+                                          <input class="input" type="hidden" name="channel" required />
+                                        <%}%>
+                                        <div class="field">
+                                            <label class="label">Versión</label>
+                                            <div class="control has-icons-left">
+                                              <%if(action == 'edit'){%>
+                                                <input class="input" type="text" name="version" placeholder="Versión" <%if(woocommerce!==null && woocommerce.length>0){%>value="<%=woocommerce[0].version%>"<%}%>/>
+                                              <%}else{%>
+                                                <input class="input" type="text" name="version" placeholder="Versión" />
+                                              <%}%>
+                                                <span class="icon is-small is-left">
+                                                    <i class='bx bx-world'></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <br>
+                                </div>
+                          </div>
+                        </div>
+                      </div>
                   </div>
                   <div class="column">
                           <div class="field">
@@ -331,6 +415,19 @@
           el.style.display='none';
         }
       }, 4000);
+
+      live('#setup-import', 'click', function(e){
+        e.preventDefault();
+
+        var elm = this;
+        var pane = document.getElementById('setup-panel');
+
+        if (hasClass(pane, 'is-hidden')){
+            removeClass(pane, 'is-hidden');
+        }else{
+            addClass(pane, 'is-hidden');
+        }
+      });
 
       live('.state', 'click', function(){ 
         if(confirm('Seguro Desea Continuar')){

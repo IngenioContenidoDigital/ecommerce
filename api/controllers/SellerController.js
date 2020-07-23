@@ -16,6 +16,7 @@ module.exports = {
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     let sellers = await Seller.find();
+    let integrations = await Integrations.find({seller:id});
     if(id){
       seller = await Seller.findOne({id:id}).populate('mainAddress');
       if(seller.mainAddress!==undefined && seller.mainAddress!==null){
@@ -26,7 +27,7 @@ module.exports = {
       }
     }
     let countries = await Country.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,countries:countries});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,countries:countries, integrations : integrations});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -174,40 +175,24 @@ module.exports = {
   setintegration:async (req,res)=>{
     let seller = req.param('seller');
     let channel = req.param('channel');
-
-    let data = {
-        channel:channel,
-        url:req.body.url,
-        key:req.body.key,
-        secret:req.body.secret ? req.body.secret : '',
-        seller:seller
-    };
-
-    if(req.body.user)
-        data.user = req.body.user
-    
-    if(req.body.version)
-        data.version = req.body.version
-
-    Integrations.findOrCreate({seller:seller,channel:channel}, data).exec(async (err, record, created)=>{
+    Integrations.findOrCreate({seller:seller,channel:channel},{
+      channel:channel,
+      url:req.body.url,
+      user:req.body.user,
+      key:req.body.key,
+      secret:req.body.secret ? req.body.secret : '',
+      seller:seller
+    }).exec(async (err, record, created)=>{
       if(err){return res.redirect('/sellers?error='+err);}
       if(!created){
-        
-      let updateData = {
+        await Integrations.updateOne({id:record.id}).set({
           channel:channel,
           url:req.body.url,
+          user:req.body.user,
           key:req.body.key,
           secret:req.body.secret ? req.body.secret : '',
           seller:seller
-      };
-  
-      if(req.body.user)
-          updateData.user = req.body.user
-      
-      if(req.body.version)
-          updateData.version = req.body.version
-
-        await Integrations.updateOne({id:record.id}).set(updateData);
+        });
       }
       return res.redirect('/sellers');
     });
