@@ -506,13 +506,24 @@ module.exports = {
                 }
               }
 
-              let product = await Product.findOne({reference:result['supplierreference'],seller:result['seller']}).populate('tax');
+              let product = await Product.findOne({reference:result['supplierreference'],seller:result['seller']})
+              .populate('tax')
+              .populate('categories');
+              let categories = [];
               if(product){
+                product.categories.forEach(category =>{
+                  if(!categories.includes(category.id)){
+                    categories.push(category.id);
+                  }
+                });
                 result['product'] = product.id;
                 result['price'] = parseInt(product.price*(1+product.tax.value/100));
-                let variation = await Variation.findOne({name:result['variation'].replace(',','.').trim().toLowerCase(),gender:product.gender});
+                let variation = await Variation.find({
+                  where:{name:result['variation'].replace(',','.').trim().toLowerCase(),gender:product.gender,category:{'in':categories}},
+                  limit:1
+                });
                 if(variation){
-                  result['variation'] = variation.id;
+                  result['variation'] = (variation[0]).id;
                   delete result['seller'];
                 }else{
                   let v = result['variation'];

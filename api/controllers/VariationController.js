@@ -13,14 +13,15 @@ module.exports = {
     }
     let error = null;
     let variation=null;
-    let variations = await Variation.find().populate('gender');
+    let variations = await Variation.find().populate('gender').populate('category');
     let genders = await Gender.find();
+    let categories = await Category.find({level:2});
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(id){
       variation = await Variation.findOne({id:id}).populate('gender');
     }
-    return res.view('pages/catalog/variations',{layout:'layouts/admin',variations:variations,action:action,error:error,variation:variation,genders:genders});
+    return res.view('pages/catalog/variations',{layout:'layouts/admin',variations:variations,categories:categories,action:action,error:error,variation:variation,genders:genders});
   },
   createvariation: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -32,6 +33,7 @@ module.exports = {
       await Variation.create({
         name:req.body.name.trim().toLowerCase(),
         gender:req.body.gender,
+        category: req.body.category ? req.body.category : null,
         cm:req.body.cm,
         col:req.body.col,
         us:req.body.us,
@@ -57,6 +59,7 @@ module.exports = {
       await Variation.updateOne({id:req.param('id')}).set({
         name:req.body.name.trim().toLowerCase(),
         gender:req.body.gender,
+        category: req.body.category ? req.body.category : null,
         cm:req.body.cm,
         col:req.body.col,
         us:req.body.us,

@@ -20,6 +20,19 @@
           <div class="column is-two-fifths">
             <div class="box">
               <div class="field">
+                <label class="label is-inline is-size-7-mobile" for="category">Categoria</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select class="is-capitalized" name="category" id="category">
+                      <option value="">-- Elegir Categoria --</option>
+                      <% categories.forEach(category => { %>
+                        <option class="is-capitalized" <% if(action=='edit' && variation.category !== null && category.id==variation.category ){ %> selected <% } %> value="<%= category.id %>" ><%= category.name %></option>
+                      <%})%>
+                    </select>
+                  </div>
+                </div>
+              </div>                
+              <div class="field">
                 <label class="label is-inline is-size-7-mobile" for="gender">Género</label>
                 <div class="control">
                   <div class="select is-fullwidth">
@@ -105,6 +118,7 @@
               <thead>
               <tr>
                   <th scope="col">Género</th>
+                  <th scope="col">Categoria</th>
                   <th scope="col">Nombre</th>
                   <th scope="col">Opciones</th>
               </tr>
@@ -113,6 +127,7 @@
                   <% variations.forEach(function(variation){ %>
                       <tr>
                         <td class="align-middle"><span class="is-uppercase"><%if(variation.gender!==null){%><%= variation.gender.name %><%}%></span></td>
+                        <td class="align-middle"><span class="is-uppercase"><%if(variation.category!==null){%><%= variation.category.name %><%}%></span></td>
                         <td class="align-middle"><span class="is-uppercase"><%= variation.name %></span></td>
                         <td class="align-middle">
                           <a href="/variations/edit/<%= variation.id %>" class="button is-small">
