@@ -20,12 +20,14 @@ module.exports = {
     if(id){
       discount = await CatalogDiscount.findOne({id:id});
     }
-    let discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]);
+    let discounts = null;
     let sellers = null;
     if(rights.name!=='superadmin'){
       sellers = await Seller.find({id:req.session.user.seller});
+      discounts = await CatalogDiscount.find({seller:req.session.user.seller}).sort([{createdAt: 'DESC'}]);
     }else{
       sellers = await Seller.find();
+      discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]);
     }
     let genders = await Gender.find();
     let colors = await Color.find();
