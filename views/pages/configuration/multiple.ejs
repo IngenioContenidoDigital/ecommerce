@@ -1,0 +1,82 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <h4 class="title is-4">Procesamiento Multiple de Productos</h4>
+    <hr>
+    <form action="/multiple" method="POST" enctype="multipart/form-data" id="multiple-form">
+    <div class="columns is-gapless">
+        <div class="column">
+            <div class="box">  
+                <%if(sellers!==null){%>
+                    <div class="field">
+                        <label class="label is-size-7">Elegir Seller</label>
+                        <div class="select is-fullwidth">
+                            <select class="is-capitalized" name="seller" required>
+                                <option class="is-capitalized" value="">-- Elegir Seller --</option>
+                                <% sellers.forEach(seller =>{ %>
+                                    <option class="is-capitalized" value="<%=seller.id%>"><%=seller.name%></option>
+                                <%})%>
+                            </select>
+                        </div>
+                    </div>
+                <%}%>
+                <div class="field">
+                    <br>
+                    <label class="label is-size-7">Tipo de Proceso</label>
+                    <div class="select is-fullwidth">
+                        <select name="action" required>
+                            <option value="ProductCreate">Crear Productos Faltantes</option>
+                            <option value="ProductUpdate">Actualizar los Cambios en los Productos</option>
+                            <option value="Image">Cargar/Actualizar Imágenes de mis Productos </option>
+                        </select>
+                    </div>
+                </div>
+                <br>
+                <div class="columns is-marginless is-gapless">
+                    <div class="column"><img src="/images/dafiti.png" /></div>
+                    <div class="column">
+                        <div class="buttons is-right is-fixed-bottom">
+                            <br><br><br>
+                          <button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Procesar Productos</button>
+                        </div>
+                    </div>
+                </div>                                
+            </div>
+        </div>
+        <div class="column">
+            <div class="container is-fluid">
+                <div class="loading"></div>
+            <%if(typeof resultados === 'object'){%>
+                <br>
+                <h6 class="title is-6">Resultado del Proceso</h6>
+                <hr>
+                <div class="notification is-primary">
+                    <%= JSON.stringify(resultados.items) %>
+                </div>
+                <%if(resultados.errors !== undefined){%>
+                    <div class="notification is-danger">
+                        <%=JSON.stringify(resultados.errors)%>
+                        <br>
+                    </div>
+                <%}%>
+            <%}%>
+            </div>
+        </div>
+    </div>
+    </form>
+  </div>
+  <script>
+    live('#process','click',e=>{
+        e.preventDefault();
+        let form = document.querySelector('#multiple-form');
+        if(validateForm(form)){
+            let box = document.querySelector('.box').parentNode;
+            addClass(box,'is-hidden');
+            document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+            form.submit();
+        }
+    });
+  </script>

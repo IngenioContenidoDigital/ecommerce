@@ -782,5 +782,42 @@ module.exports = {
         return res.redirect('/iridio');
       });
     });
+  },
+  multiple: async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
+    let sellers = null;
+    if(rights.name==='superadmin'){
+      let integrations = await Integrations.find({channel:'dafiti'});
+      let slist = integrations.map(i => i.seller);
+      sellers = await Seller.find({where:{id:{in:slist}},select: ['id', 'name']});
+    }
+    let error = req.param('error') ? req.param('error') : null;
+    return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:error,sellers:sellers});
+  },
+  multipleexecute: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
+    let seller = null;
+    let sellers = null;
+    if(rights.name==='superadmin'){
+      let integrations = await Integrations.find({channel:'dafiti'});
+      let slist = integrations.map(i => i.seller);
+      sellers = await Seller.find({where:{id:{in:slist}},select: ['id', 'name']});
+    }
+    if(req.body.seller===undefined){seller = req.session.user.seller}else{seller=req.body.seller;}
+    let response = {items:{}};
+    try{
+      let result = await sails.helpers.channel.dafiti.multiple(seller,req.body.action);
+      response.items=result;
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
+    }catch(err){
+      response.errors=err;
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
+    }
   }
 };
