@@ -76,6 +76,10 @@ module.exports.routes = {
   'GET /products/:action?/:id?' : {controller:'ProductController',action:'showproducts'},
   'GET /import' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},
+
+  'GET /multiple' : {controller:'ProductController',action:'multiple'},
+  'POST /multiple' : {controller:'ProductController',action:'multipleexecute'},
+
   'POST /product/create' : {controller:'ProductController',action:'createproduct'},
   'POST /product/images' : {controller:'ProductController',action:'productimages'},
   'PUT /image/:id' : {controller:'ProductController',action:'setcover'},
