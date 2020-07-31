@@ -816,6 +816,7 @@ module.exports = {
       response.items=result;
       return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
     }catch(err){
+      console.log(err);
       response.errors=err;
       return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
     }
