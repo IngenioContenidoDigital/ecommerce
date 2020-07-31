@@ -444,14 +444,164 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
       throw 'forbidden';
     }
+
+    let integrations = [];
+    let seller = req.session.user.seller; 
+    integrations = await Integrations.find({ seller : seller});
+
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/import',{layout:'layouts/admin',error:error});
+    return res.view('pages/configuration/import',{layout:'layouts/admin',error:error, integrations : integrations});
   },
+
   importexecute:async (req,res)=>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
       throw 'forbidden';
     }
+
+    if(req.body.channel){
+          let importedProducts = await sails.helpers.commerceImporter(
+              req.body.channel,
+              req.body.pk,
+              req.body.sk,
+              req.body.apiUrl
+        ).catch((e)=>console.log(e));
+
+
+        let each = async (array, callback) => {
+          for (let index = 0; index < array.length; index++) {
+            await callback(array[index], index, array);
+          }
+        }
+
+        let checkdata = async (p)=>{
+          return new Promise(async (resolve, reject)=>{
+            let pro = {}
+
+            let categorize = async (categoryList)=>{
+              
+              let clist = categoryList.map(c => c.name.toLowerCase().replace('amp;', ''));
+              clist.push('inicio');
+              //agregar categoria inicio
+              let categories = await Category.find({
+                where: {name: clist},
+                sort: 'level DESC'
+              });
+
+              let categoriesids = [];
+
+              for(let c in categories){
+                if(!categoriesids.includes(categories[c].id)){
+                    categoriesids.push(categories[c].id);
+                }
+              }
+
+              let realcats = categories.filter(cat => categoriesids.includes(cat.parent));
+              let rcatsids=[];
+
+              for(let rc in realcats){
+                if(!rc.includes(realcats[rc].id)){
+                    rcatsids.push(realcats[rc].id);
+                }
+              }
+
+              return rcatsids;
+            }
+
+            try {
+
+              pro.name = p.name.toUpperCase().trim();
+              pro.reference = p.reference.toUpperCase().trim();
+              pro.description = p.description.toLowerCase().trim();
+              pro.descriptionShort = p.descriptionShort.toLowerCase().trim();
+
+              if(p.images){
+                pro.imgTemp = p.images; 
+              }
+
+              pro.categories = await categorize(p.categories);
+              
+              if( pro.categories.length  > 0){
+                pro.mainCategory = pro.categories[0];
+              }
+              
+              Manufacturer.findOrCreate({ name : p.manufacturer}, { name : p.manufacturer, active : true}).exec( async (err, record, wasCreated)=>{
+                if(err){return console.log(err)}
+
+                pro.manufacturer = (await Manufacturer.findOne({name:p.manufacturer.toLowerCase()})).id
+              });
+
+              Color.findOrCreate({ name : p.mainColor.toLowerCase().trim()}, { name : p.mainColor, active : true}).exec( async (err, record, wasCreated)=>{
+                if(err){return console.log(err)}
+
+                pro.mainColor = (await Color.findOne({name:p.mainColor.toLowerCase()})).id
+              });
+
+              pro.gender = (await Gender.findOne({name:p.gender.toLowerCase()})).id;
+              
+              if(p.tax){
+                  pro.tax = (await Tax.findOne({ value:p.tax.rate})).id;
+              }else{
+                  pro.tax = (await Tax.findOne({ value:0 })).id;
+              }
+
+              pro.mainColor = (await Color.findOne({name:p.mainColor.toLowerCase()})).id;
+              pro.seller = req.session.user.seller;
+              pro.active = p.active;
+              pro.width = p.width;
+              pro.width = p.height;
+              pro.length = p.length;
+              pro.weight = p.weight;
+              pro.price = p.price;
+
+              return resolve(pro);
+
+            } catch (error) {
+              errors.push({p, error});
+              reject(errors);
+            }
+          });
+    }
+
+      let cols = [];
+      let errors = [];
+
+      await each(importedProducts, async (p)=>{
+          pro = await checkdata(p).catch(e=>errors.push(e));
+          cols.push(pro);
+      });
+
+      let result = await Product.createEach(cols).fetch();
+
+       await each(result, async(p)=>{
+          let source = cols.filter(c=>c.reference == p.reference)[0].imgTemp;
+          let hasCover = (source.filter(c=>c.cover).length > 0);
+          
+          if(!hasCover)
+              (source[0].cover = 1);
+
+          await each(source, async (s)=>{
+            (s.uploaded = await sails.helpers.uploadImageUrl(s.src, s.file, p.id));
+            return s;
+          });
+
+          await ProductImage.createEach(source.map((s, index)=>{
+                  let img = {};
+                      img.file = s.uploaded.filename;
+                      img.cover = s.cover || 0;
+                      img.product = p.id;
+                      
+                      if(img.position)
+                        (img.position = s.position);
+
+                  return img; 
+          }));
+      })
+
+      return res.status(200).json({ result });
+    
+    }
+
     let header = null;
     let checkheader={
       product:['name','reference','description','descriptionShort','active','price','tax','manufacturer','width','height','length','weight','gender','seller','mainColor','categories','mainCategory'],

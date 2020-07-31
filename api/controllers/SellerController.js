@@ -36,6 +36,7 @@ module.exports = {
     }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
+
     let address = await Address.create({
       name:'Principal '+req.body.name.trim().toLowerCase(),
       addressline1:req.body.addressline1,
@@ -48,7 +49,8 @@ module.exports = {
     }).fetch();
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      await Seller.create({
+      
+      let seller = await Seller.create({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
         contact:req.body.contact,
@@ -58,11 +60,51 @@ module.exports = {
         domain:req.body.url,
         logo: filename[0].filename,
         mainAddress:address.id,
-        active:isActive});
+        active:isActive}).fetch();
+
+        let integration = {
+          channel:req.body.channel,
+          url:req.body.apiUrl,
+          key:req.body.key,
+          secret:req.body.secret ? req.body.secret : '',
+          seller:seller.id
+      };
+    
+      if(integration.channel && integration.url && integration.key && integration.secret){
+        if(req.body.user)
+          integration.user = req.body.user
+      
+      if(req.body.version)
+          integration.version = req.body.version
+    
+      Integrations.findOrCreate({ seller: seller.id, channel:integration.channel}, integration, async (err, record , created )=>{
+          if(err){
+            error = err;
+          }
+    
+          if(!created){
+            let updateIntegration = {
+                channel:req.body.channel,
+                url:req.body.url,
+                key:req.body.key,
+                secret:req.body.secret ? req.body.secret : '',
+                seller:seller.id
+            };
+    
+            if(req.body.user)
+              updateIntegration.user = req.body.user
+          
+            if(req.body.version)
+              updateIntegration.version = req.body.version
+          
+            await Integrations.updateOne({id:record.id}).set(updateIntegration);
+          }
+        });
+      }
     }catch(err){
       error=err;
       if(err.code==='badRequest'){
-        await Seller.create({
+       let seller =  await Seller.create({
           name:req.body.name.trim().toLowerCase(),
           dni:req.body.dni,
           contact:req.body.contact,
@@ -71,7 +113,47 @@ module.exports = {
           phone:req.body.phone,
           domain:req.body.url,
           mainAddress:address.id,
-          active:isActive});
+          active:isActive}).fetch();
+
+          let integration = {
+            channel:req.body.channel,
+            url:req.body.apiUrl,
+            key:req.body.key,
+            secret:req.body.secret ? req.body.secret : '',
+            seller:seller.id
+        };
+      
+        if(integration.channel && integration.url && integration.key && integration.secret){
+          if(req.body.user)
+            integration.user = req.body.user
+        
+        if(req.body.version)
+            integration.version = req.body.version
+      
+        Integrations.findOrCreate({ seller: seller.id, channel:integration.channel}, integration, async (err, record , created )=>{
+            if(err){
+              error = err;
+            }
+      
+            if(!created){
+              let updateIntegration = {
+                  channel:req.body.channel,
+                  url:req.body.url,
+                  key:req.body.key,
+                  secret:req.body.secret ? req.body.secret : '',
+                  seller:seller.id
+              };
+      
+              if(req.body.user)
+                updateIntegration.user = req.body.user
+            
+              if(req.body.version)
+                updateIntegration.version = req.body.version
+            
+              await Integrations.updateOne({id:record.id}).set(updateIntegration);
+            }
+          });
+        }
       }
     }
     setTimeout(() => { return; }, 2000);
@@ -115,7 +197,8 @@ module.exports = {
     }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      await Seller.updateOne({id:id}).set({
+      
+       await Seller.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
         contact:req.body.contact,
@@ -125,7 +208,48 @@ module.exports = {
         domain:req.body.url,
         logo: filename[0].filename,
         mainAddress:address.id,
-        active:isActive});
+        active:isActive}).fetch();
+
+
+        let integration = {
+          channel:req.body.channel,
+          url:req.body.apiUrl,
+          key:req.body.key,
+          secret:req.body.secret ? req.body.secret : '',
+          seller:id
+      };
+    
+      if(integration.channel && integration.url && integration.key && integration.secret){
+        if(req.body.user)
+          integration.user = req.body.user
+      
+      if(req.body.version)
+          integration.version = req.body.version
+    
+      Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
+          if(err){
+            error = err;
+          }
+    
+          if(!created){
+            let updateIntegration = {
+                channel:req.body.channel,
+                url:req.body.url,
+                key:req.body.key,
+                secret:req.body.secret ? req.body.secret : '',
+                seller:record.seller
+            };
+    
+            if(req.body.user)
+              updateIntegration.user = req.body.user
+          
+            if(req.body.version)
+              updateIntegration.version = req.body.version
+          
+            await Integrations.updateOne({id:record.id}).set(updateIntegration);
+          }
+        });
+      } 
     }catch(err){
       error=err;
       if(err.code==='badRequest'){
@@ -139,6 +263,46 @@ module.exports = {
           domain:req.body.url,
           mainAddress:address.id,
           active:isActive});
+
+          let integration = {
+            channel:req.body.channel,
+            url:req.body.apiUrl,
+            key:req.body.key,
+            secret:req.body.secret ? req.body.secret : '',
+            seller:id
+        };
+      
+        if(integration.channel && integration.url && integration.key && integration.secret){
+          if(req.body.user)
+            integration.user = req.body.user
+        
+        if(req.body.version)
+            integration.version = req.body.version
+      
+        Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
+            if(err){
+              error = err;
+            }
+      
+            if(!created){
+              let updateIntegration = {
+                  channel:req.body.channel,
+                  url:req.body.url,
+                  key:req.body.key,
+                  secret:req.body.secret ? req.body.secret : '',
+                  seller:seller.id
+              };
+      
+              if(req.body.user)
+                updateIntegration.user = req.body.user
+            
+              if(req.body.version)
+                updateIntegration.version = req.body.version
+            
+              await Integrations.updateOne({id:record.id}).set(updateIntegration);
+            }
+          });
+        } 
       }
     }
     setTimeout(() => { return; }, 2000);

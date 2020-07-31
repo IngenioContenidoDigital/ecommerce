@@ -4,44 +4,84 @@
           <%= error %>
       </div>
     <% } %>
-    <h4 class="title is-4">Importar Productos vía CSV</h4>
+    <h4 class="title is-4">Importar Productos</h4>
     <hr>
-    <form action="/import" method="POST" enctype="multipart/form-data">
     <div class="columns is-gapless">
         <div class="column">
             <div class="box">  
-                <div class="field">
-                    <label class="label">Tipo de Importación</label>
-                    <div class="select is-fullwidth">
-                        <select name="entity" required>
-                            <option value="Product">Productos</option>
-                            <option value="ProductVariation">Variaciones de Producto</option>
-                            <option value="ProductImage">Imagenes de Producto</option>
-                        </select>
+                <div id="tabs-with-content">
+                    <div class="tabs is-centered">
+                      <ul>
+                        <li><a>CSV</a></li>
+                        <li><a>INTEGRACIONES</a></li>
+                      </ul>
                     </div>
-                </div>
-                <div class="field">
-                    <div id="file-loader" class="file has-name is-fullwidth">
-                    <label class="file-label">
-                        <input class="file-input" required accept=".csv" type="file" id="file" name="file" />
-                        <span class="file-cta">
-                        <span class="file-icon">
-                            <i class="bx bx-upload"></i>
-                        </span>
-                        <span class="file-label">
-                            Archivo CSV
-                        </span>
-                        </span>
-                        <span class="file-name has-text-grey">
-                        Cargar Archivo a Procesar
-                        </span>
-                    </label>
+                    <div>
+                      <section class="tab-content">
+                        <form action="/import" method="POST" enctype="multipart/form-data">
+                        <div class="field">
+                            <label class="label">Tipo de Importación</label>
+                            <div class="select is-fullwidth">
+                                <select name="entity" required>
+                                    <option value="Product">Productos</option>
+                                    <option value="ProductVariation">Variaciones de Producto</option>
+                                    <option value="ProductImage">Imagenes de Producto</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div id="file-loader" class="file has-name is-fullwidth">
+                            <label class="file-label">
+                                <input class="file-input" required accept=".csv" type="file" id="file" name="file" />
+                                <span class="file-cta">
+                                <span class="file-icon">
+                                    <i class="bx bx-upload"></i>
+                                </span>
+                                <span class="file-label">
+                                    Archivo CSV
+                                </span>
+                                </span>
+                                <span class="file-name has-text-grey">
+                                Cargar Archivo a Procesar
+                                </span>
+                            </label>
+                            </div>
+                        </div> 
+                        <div class="control buttons is-right">
+                            <button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Archivo</button>
+                        </div>  
+                        </form>
+                      </section>
+                      <section class="tab-content">
+                        <% woocommerce = null; %>
+                        <%if(integrations.length>0){%>
+                            <% woocommerce=integrations.filter(data => data.channel=='woocommerce')[0];%>
+                            <form action="/import" method="POST" enctype="multipart/form-data">
+                                <div class="field">
+                                    <div class="control">
+                                      <label class="label is-inline is-size-7" for="reference">Proveedor</label>
+                                      <input type="text" disabled class="input is-primary" type="text"  placeholder="Primary input" <%if(woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%> />
+                                      <input type="hidden" name="channel" <%if(woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%>>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <div class="control">
+                                      <label class="label is-inline is-size-7" for="reference">Url</label>
+                                      <input type="text" disabled class="input is-primary"  type="text" placeholder="Primary input" <%if(woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%> />
+                                      <input type="hidden" name="apiUrl" <%if(woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%>>
+                                    </div>
+                                </div>
+                                <div class="control buttons is-right">
+                                    <input type="hidden" name="pk" <%if(woocommerce!==null){%>value="<%=woocommerce.key%>"<%}%>>
+                                    <input type="hidden" name="sk" <%if(woocommerce!==null){%>value="<%=woocommerce.secret%>"<%}%>>
+                                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Productos</button>
+                                </div> 
+                            </form>
+                        <%}%>
+                      </section>
                     </div>
-                </div>
+                  </div>
                 <br>
-                <div class="control buttons is-right">
-                    <button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Archivo</button>
-                </div>                                
             </div>
         </div>
         <div class="column">
@@ -71,7 +111,6 @@
             </div>
         </div>
     </div>
-    </form>
   </div>
   <script>
     const fileInput = document.querySelector('#file-loader input[type=file]');
@@ -101,4 +140,42 @@
             document.querySelector('.file-name').innerHTML='Cargar Archivo .csv a procesar'
         }
     })
+
+    document.addEventListener("DOMContentLoaded", function(event) {
+        let tabsWithContent = (function () {
+  let tabs = document.querySelectorAll('.tabs li');
+  let tabsContent = document.querySelectorAll('.tab-content');
+
+  let deactvateAllTabs = function () {
+    tabs.forEach(function (tab) {
+      tab.classList.remove('is-active');
+    });
+  };
+
+  let hideTabsContent = function () {
+    tabsContent.forEach(function (tabContent) {
+      tabContent.classList.remove('is-active');
+    });
+  };
+
+  let activateTabsContent = function (tab) {
+    tabsContent[getIndex(tab)].classList.add('is-active');
+  };
+
+  let getIndex = function (el) {
+    return [...el.parentElement.children].indexOf(el);
+  };
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      deactvateAllTabs();
+      hideTabsContent();
+      tab.classList.add('is-active');
+      activateTabsContent(tab);
+    });
+  })
+
+  tabs[0].click();
+})();
+    });
   </script>
