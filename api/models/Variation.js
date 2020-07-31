@@ -18,6 +18,9 @@ module.exports = {
     },
     gender:{
       model:'gender'
+    },
+    category:{
+      model:'category'
     }
   },
 

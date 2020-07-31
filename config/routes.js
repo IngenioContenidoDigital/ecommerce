@@ -76,6 +76,10 @@ module.exports.routes = {
   'GET /products/:action?/:id?' : {controller:'ProductController',action:'showproducts'},
   'GET /import' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},
+
+  'GET /multiple' : {controller:'ProductController',action:'multiple'},
+  'POST /multiple' : {controller:'ProductController',action:'multipleexecute'},
+
   'POST /product/create' : {controller:'ProductController',action:'createproduct'},
   'POST /product/images' : {controller:'ProductController',action:'productimages'},
   'PUT /image/:id' : {controller:'ProductController',action:'setcover'},
@@ -131,6 +135,9 @@ module.exports.routes = {
   'POST /confirmacion' : {controller:'OrderController', action:'confirmation', csrf:false},
   'GET /discounts/:action?/:id?' : {controller:'DiscountController',action:'discounts'},
   'POST /discount/:action/:id?' : {controller:'DiscountController',action:'creatediscount'},
+  'POST /productdiscount' : {controller:'DiscountController',action:'productdiscount'},
+  'PUT /removepdiscount' : {controller:'DiscountController',action:'removepdiscount'},
+
   'GET /coupons/:action?/:id?' : {controller:'DiscountController',action:'coupons'},
   'POST /coupon/create' : {controller:'DiscountController',action:'createcoupon'},
   'POST /coupon/edit/:id' : {controller:'DiscountController',action:'editcoupon'},

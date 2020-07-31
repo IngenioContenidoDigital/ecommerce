@@ -36,7 +36,8 @@ module.exports = {
       .populate('mainCategory')
       .populate('mainColor')
       .populate('categories')
-      .populate('variations');
+      .populate('variations')
+      .populate('discount');
 
       if(product.gender!==undefined && product.gender!==null){
         variations = await Variation.find({gender:product.gender});
@@ -63,6 +64,7 @@ module.exports = {
         .populate('manufacturer');
       }
     }
+    let moment = require('moment');
     return res.view('pages/catalog/product',{layout:'layouts/admin',
       products:products,
       root:root,
@@ -75,6 +77,7 @@ module.exports = {
       action:action,
       product:product,
       error:error,
+      moment:moment,
     });
   },
   createproduct: async function(req, res){
@@ -653,13 +656,24 @@ module.exports = {
                 }
               }
 
-              let product = await Product.findOne({reference:result['supplierreference'],seller:result['seller']}).populate('tax');
+              let product = await Product.findOne({reference:result['supplierreference'],seller:result['seller']})
+              .populate('tax')
+              .populate('categories');
+              let categories = [];
               if(product){
+                product.categories.forEach(category =>{
+                  if(!categories.includes(category.id)){
+                    categories.push(category.id);
+                  }
+                });
                 result['product'] = product.id;
                 result['price'] = parseInt(product.price*(1+product.tax.value/100));
-                let variation = await Variation.findOne({name:result['variation'].replace(',','.').trim().toLowerCase(),gender:product.gender});
+                let variation = await Variation.find({
+                  where:{name:result['variation'].replace(',','.').trim().toLowerCase(),gender:product.gender,category:{'in':categories}},
+                  limit:1
+                });
                 if(variation){
-                  result['variation'] = variation.id;
+                  result['variation'] = (variation[0]).id;
                   delete result['seller'];
                 }else{
                   let v = result['variation'];
@@ -918,5 +932,43 @@ module.exports = {
         return res.redirect('/iridio');
       });
     });
+  },
+  multiple: async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
+    let sellers = null;
+    if(rights.name==='superadmin'){
+      let integrations = await Integrations.find({channel:'dafiti'});
+      let slist = integrations.map(i => i.seller);
+      sellers = await Seller.find({where:{id:{in:slist}},select: ['id', 'name']});
+    }
+    let error = req.param('error') ? req.param('error') : null;
+    return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:error,sellers:sellers});
+  },
+  multipleexecute: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){
+      throw 'forbidden';
+    }
+    let seller = null;
+    let sellers = null;
+    if(rights.name==='superadmin'){
+      let integrations = await Integrations.find({channel:'dafiti'});
+      let slist = integrations.map(i => i.seller);
+      sellers = await Seller.find({where:{id:{in:slist}},select: ['id', 'name']});
+    }
+    if(req.body.seller===undefined){seller = req.session.user.seller}else{seller=req.body.seller;}
+    let response = {items:{}};
+    try{
+      let result = await sails.helpers.channel.dafiti.multiple(seller,req.body.action);
+      response.items=result;
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
+    }catch(err){
+      console.log(err);
+      response.errors=err;
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
+    }
   }
 };
