@@ -110,20 +110,22 @@ module.exports = {
           //Imagenes
           let ilist = {Images:[]};
           let images = await ProductImage.find({product:product.id}).sort('position ASC');
-          for(let i of images){
-            ilist.Images.push({Image:await sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+i.file});
-          }
-          let productvariation = await ProductVariation.find({product:product.id});
-          if(productvariation.length>0){
-            for(let pv of productvariation){
-              let img = {
-                ProductImage:{
-                  SellerSku:pv.id,
-                  Images:ilist.Images
-                }
+          if(images.length>0){
+            for(let i of images){
+              ilist.Images.push({Image:await sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+i.file});
+            }
+            let productvariation = await ProductVariation.find({product:product.id});
+            if(productvariation.length>0){
+              for(let pv of productvariation){
+                let img = {
+                  ProductImage:{
+                    SellerSku:pv.id,
+                    Images:ilist.Images
+                  }
+                };
+                body.Request.push(img);
               };
-              body.Request.push(img);
-            };
+            }
           }
         };
       }
