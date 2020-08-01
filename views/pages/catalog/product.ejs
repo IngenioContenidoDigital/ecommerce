@@ -488,15 +488,15 @@
           }
         });
 
-        live('.dropdown .button','click', e=>{
+        live('.dropdown, .button, .button > span','mouseover', e=>{
           e.preventDefault();
           let elm = e.target;
-          if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
-          if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
-          let node = elm.parentNode.parentNode;
-          if(hasClass(elm.parentNode.nextElementSibling,'is-invisible')){
-            removeClass(elm.parentNode.nextElementSibling,'is-invisible');
+          let parent = elm.closest('.dropdown');
+          elm = parent;
+          if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
+            removeClass(parent.querySelector('.dropdown-menu'),'is-invisible');
           }
+          let node = elm.parentNode.parentNode;
           let id = document.querySelector('#product-data').value;
           let oplist = document.querySelectorAll('.dropdown input');
           let opcheck = [];

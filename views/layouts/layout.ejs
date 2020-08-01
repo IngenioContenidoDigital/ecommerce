@@ -109,10 +109,11 @@
         cart.setAttribute('data-badge',data.items);
     });
 
-    live('.dropdown .button','mouseover', e=>{
+    live('.dropdown, .button, .button > span','mouseover', e=>{
         let elm = e.target;
-        if(hasClass(elm.parentNode.nextElementSibling,'is-invisible')){
-          removeClass(elm.parentNode.nextElementSibling,'is-invisible');
+        let parent = elm.closest('.dropdown');
+        if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
+          removeClass(parent.querySelector('.dropdown-menu'),'is-invisible');
         }
         if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
         if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
