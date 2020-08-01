@@ -494,6 +494,9 @@
           if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
           if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
           let node = elm.parentNode.parentNode;
+          if(hasClass(elm.parentNode.nextElementSibling,'is-invisible')){
+            removeClass(elm.parentNode.nextElementSibling,'is-invisible');
+          }
           let id = document.querySelector('#product-data').value;
           let oplist = document.querySelectorAll('.dropdown input');
           let opcheck = [];
@@ -532,16 +535,16 @@
               removeClass(node,'is-active');
           }
     });
-        live('.dropdown-item','click',e=>{
-            let option = e.target
-            let elm = e.target.parentNode.parentNode.parentNode;
-            let selected = elm.querySelector('#drop-selected');
-            let variation = elm.querySelector('input');
-            variation.value=option.getAttribute('value');
-            selected.setAttribute('value',option.getAttribute('value'))
-            selected.innerHTML=option.text;
-            removeClass(elm,'is-active');
-        });
+    live('.dropdown-item','click',e=>{
+        let option = e.target
+        let elm = e.target.parentNode.parentNode.parentNode;
+        let selected = elm.querySelector('#drop-selected');
+        let variation = elm.querySelector('input');
+        variation.value=option.getAttribute('value');
+        selected.setAttribute('value',option.getAttribute('value'))
+        selected.innerHTML=option.text;
+        addClass(e.target.parentNode.parentNode,'is-invisible');
+    });
 
         live('.dropdown-content','mouseout',e=>{
           let node = e.target.parentNode.parentNode;
