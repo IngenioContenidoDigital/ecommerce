@@ -234,8 +234,9 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let product = await Product.findOne({id:req.param('id')});
-    let variations = await Variation.find({gender:product.gender});
+    let product = await Product.findOne({id:req.param('id')}).populate('categories',{level:2});
+    let level2 = product.categories.map(c => c.id);
+    let variations = await Variation.find({where:{gender:product.gender,category:{in:level2}}});
     return res.send(variations);
   },
   findproductvariations:async(req,res)=>{
