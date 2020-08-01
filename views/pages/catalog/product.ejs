@@ -488,7 +488,7 @@
           }
         });
 
-        live('.dropdown .button','mouseover', e=>{
+        live('.dropdown .button','click', e=>{
           e.preventDefault();
           let elm = e.target;
           if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
