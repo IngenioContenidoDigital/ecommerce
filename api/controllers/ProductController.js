@@ -77,7 +77,7 @@ module.exports = {
       action:action,
       product:product,
       error:error,
-      moment:moment,
+      moment:moment
     });
   },
   createproduct: async function(req, res){

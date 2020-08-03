@@ -160,7 +160,8 @@ module.exports.routes = {
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
-  'GET /token' : {action:'security/grant-csrf-token'}
+  'GET /token' : {action:'security/grant-csrf-token'},
+  'PUT /menu' : {controller:'UserController',action:'menuvisible'},
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************
