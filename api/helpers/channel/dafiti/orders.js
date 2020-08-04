@@ -98,7 +98,7 @@ module.exports = {
                 }
                 if((await CartProduct.count({cart:cart.id}))>0){
                   let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.PaymentMethod,payment:payment,carrier:'servientrega'});
-                  await Order.updateOne({id:(corders[0]).id}).set({createdAt:moment(order.createdAt).valueOf()});
+                  await Order.updateOne({id:corders[0].id}).set({createdAt:moment(order.createdAt).valueOf()});
                 }
               });
             }
