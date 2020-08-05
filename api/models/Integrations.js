@@ -19,7 +19,7 @@ module.exports = {
     },
     user:{
       type:'string',
-      required:true,
+      required : false
     },
     key:{
       type:'string',
@@ -27,12 +27,15 @@ module.exports = {
     },
     secret:{
       type:'string',
+      required:true
     },
     seller:{
       model:'seller',
       required:true
+    },
+    version:{
+      type:'string'
     }
-
   },
 
 };

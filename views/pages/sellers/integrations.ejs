@@ -2,7 +2,7 @@
     <div class="box">
         <p class="has-text-left"><img width="200" src="<%=imgurl%>/images/sellers/<%=seller.logo%>" /></p>
         <hr>
-        <div class="tabs is-toggle is-fullwidth">
+        <div class="tabs is-toggle is-fullwidth o-x-h">
             <ul>
               <li>
                 <a>
@@ -21,7 +21,7 @@
               </li>
             </ul>
         </div>
-        <% let dafiti = null, mercadolibre = null, linio = null; %>
+        <% let dafiti = null, mercadolibre = null, linio = null%>
         <%if(integrations.length>0){%>
             <% dafiti=integrations.filter(data => data.channel=='dafiti');%>
             <% linio=integrations.filter(data => data.channel=='linio');%>
@@ -153,6 +153,7 @@
     live('ul li','click',e=>{
         let group = e.target.parentNode.id;
         let blocks= document.querySelectorAll('.setup');
+
         for(let b of blocks){
             if(hasClass(b,group)){
                 removeClass(b,'is-hidden');

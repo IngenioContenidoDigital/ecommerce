@@ -25,6 +25,7 @@ module.exports = {
       key: 'AKIATQT7MH3O4B4COYDV',
       secret: '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',
       bucket: 'iridio.co',
+      maxTimeToBuffer : 20000,
       headers: {
         'x-amz-acl': 'public-read'
       },
