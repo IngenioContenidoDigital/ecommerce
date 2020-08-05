@@ -9,6 +9,10 @@ module.exports = {
     action:{
       type:'string',
       required:true,
+    },
+    dafitiprice:{
+      type:'number',
+      defaultsTo:0
     }
   },
   exits: {
@@ -76,7 +80,7 @@ module.exports = {
           Brand:product.manufacturer.name,
           Condition:'new',
           Variation:pv.variation.col.replace(/\.5/,'½').toString(),
-          Price:(pv.price*(1+product.dafitiprice)).toFixed(2),
+          Price:(pv.price*(1+inputs.dafitiprice)).toFixed(2),
           Quantity:pv.quantity,
           ProductData:{
             Gender:product.gender.name,
@@ -94,10 +98,10 @@ module.exports = {
         let discPrice=0;
         switch(product.discount[0].type){
           case 'P':
-            discPrice+=((pv.price*(1+product.dafitiprice))*(1-(product.discount[0].value/100)));
+            discPrice+=((pv.price*(1+inputs.dafitiprice))*(1-(product.discount[0].value/100)));
             break;
           case 'C':
-            discPrice+=((pv.price*(1+product.dafitiprice))-product.discount[0].value);
+            discPrice+=((pv.price*(1+inputs.dafitiprice))-product.discount[0].value);
             break;
         }
         data.Product.SalePrice=discPrice.toFixed(2);
