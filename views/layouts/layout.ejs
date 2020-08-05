@@ -109,8 +109,12 @@
         cart.setAttribute('data-badge',data.items);
     });
 
-    live('.dropdown .button','click', e=>{
+    live('.dropdown, .button, .button > span','mouseover', e=>{
         let elm = e.target;
+        let parent = elm.closest('.dropdown');
+        if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
+          removeClass(parent.querySelector('.dropdown-menu'),'is-invisible');
+        }
         if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
         if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
         let node = elm.parentNode.parentNode;
@@ -145,6 +149,10 @@
         }
     });
 
+    live('.dropdown-content','mouseout',e=>{
+          let node = e.target.parentNode.parentNode;
+          removeClass(node,'is-active');
+        });
     live('.dropdown-item','click',e=>{
         let option = e.target
         let elm = e.target.parentNode.parentNode.parentNode;
@@ -163,6 +171,7 @@
             addClass(button,'is-disabled');
             button.disabled=true;
         }
+        addClass(e.target.parentNode.parentNode,'is-invisible');
     });
 
     live('#push-to-cart','click',(e)=>{

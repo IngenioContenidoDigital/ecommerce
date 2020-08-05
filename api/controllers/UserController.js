@@ -404,6 +404,13 @@ module.exports = {
     }else{
       return res.redirect('/permission');
     }
+  },
+  menuvisible: async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    req.session.user.menu = req.body.menu;
+    return res.ok();
   }
 };
 
