@@ -285,7 +285,7 @@ module.exports = {
       }else{
         action='ProductUpdate';
       }
-      let response = await sails.helpers.channel.dafiti.product(req.param('product'),action);
+      let response = await sails.helpers.channel.dafiti.product(req.param('product'),action,req.body.dafitiprice);
       if(response){
         await Product.updateOne({id:req.param('product')}).set({
           dafiti:true,
@@ -308,137 +308,23 @@ module.exports = {
       return res.badRequest();
     }
     try{
-      let variations = [];
-      let images = [];
-      let vimages=[];
-      let categories = [];
-      let product = await Product.findOne({id:req.param('product')})
-      .populate('manufacturer')
-      .populate('gender')
-      .populate('mainColor')
-      .populate('categories')
-      .populate('tax');
-
-      let key = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
-      let mercadolibre = await sails.helpers.channel.mercadolibre.init(key);
-      let action='Create';
-      let response = null;
-      let body = null;
-
-      let productimages = await ProductImage.find({product:product.id});
-      productimages.forEach(image =>{
-        images.push({'source':sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file});
-        vimages.push(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
-      });
-
-      let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
-
-      productvariations.forEach(variation =>{
-        let v = {
-          'attribute_combinations':[
-            {
-              'id':'SIZE',
-              'value_name':variation.variation.col,
-            }
-          ],
-          'available_quantity':variation.quantity,
-          'price':Math.round(parseFloat(variation.price)*(1+parseFloat(req.body.pricemercadolibre))),
-          'attributes':[{
-            'id':'SELLER_SKU',
-            'value_name':variation.id
-          }],
-          'picture_ids':vimages
-        };
-        variations.push(v);
-      });
-      body ={
-        //'official_store_id':'123',
-        'title':product.name.substring(0,59),
-        'price':Math.round((parseFloat(product.price)*(1+(parseFloat(product.tax.value)/100)))*(1+parseFloat(req.body.pricemercadolibre))),
-        'currency_id':'COP',
-        'buying_mode':'buy_it_now',
-        'condition':'new',
-        'listing_type_id':'gold_special',
-        'description':{
-          'plain_text':(product.descriptionShort+' '+product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')
-        },
-        'sale_terms':[
-          {
-            'id':'WARRANTY_TYPE',
-            'value_name':'Garantía del vendedor'
-          },
-          {
-            'id':'WARRANTY_TIME',
-            'value_name':'30 días'
-          }
-        ],
-        'pictures':images,
-        'attributes':[
-          {
-            'id':'BRAND',
-            'value_name':product.manufacturer.name
-          },
-          {
-            'id':'MODEL',
-            'value_name':product.reference
-          },
-          {
-            'id':'GENDER',
-            'value_name':product.gender.name
-          },
-          {
-            'id':'COLOR',
-            'value_name':product.mainColor.name
-          },
-        ],
-        //'shipping':[
-        //  {
-        //    'mode':'me2',
-        //    'local_pick_up':false,
-        //    'free_shipping':true,
-        //    'free_methods':[]
-        //  }
-        //],
-        'variations':variations,
-      };
-
-      key = await Integrations.findOne({id:key.id});
-      if(product.ml && product.mlstatus){
+      let action = null;
+      let product = await Product.findOne({id:req.body.product});
+      if(product.ml){
         action='Update';
-        body = {
-          'status' : 'paused',
-        };
-        response = await sails.helpers.channel.mercadolibre.product(mercadolibre,body,key.secret,action,product.mlid);
-        await Product.updateOne({id:product.id}).set({mlstatus:false});
-      }else if(product.ml && !product.mlstatus){
-        body = {'status' : 'active'};
-        key = await Integrations.findOne({id:key.id});
-        response = await sails.helpers.channel.mercadolibre.product(mercadolibre,body,key.secret,'Get',product.mlid);
-        body['variations']=[];
-        response.variations.forEach(mlv =>{
-          for(let v in variations){
-            if(variations[v].attribute_combinations[0].value_name===mlv.attribute_combinations[0].value_name){
-              body.variations.push({id:mlv.id,price:variations[v].price});
-            }
-          }
-        });
-        response = await sails.helpers.channel.mercadolibre.product(mercadolibre,body,key.secret,'Update',product.mlid);
-        await Product.updateOne({id:product.id}).set({mlstatus:true});
       }else{
-        for(let c in product.categories){
-          categories.push(product.categories[c].name);
-        }
-        categories = categories.join(' ');
-        body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories);
-        response = await sails.helpers.channel.mercadolibre.product(mercadolibre,body,key.secret);
-        await Product.updateOne({id:product.id}).set({
-          mlprice:req.body.pricemercadolibre,
-          mlstatus:true,
+        action='Post';
+      }
+      let response = await sails.helpers.channel.mercadolibre.product(product.id,action,req.body.pricemercadolibre);
+      if(response){
+        await Product.updateOne({id:req.param('product')}).set({
           ml:true,
-          mlid:response.id
+          mlstatus:(req.body.status) ? true : false,
+          mlid:response.id,
+          mlprice:req.body.mlprice,
         });
       }
-      return res.ok();
+      return res.send(response);
     }catch(err){
       return res.send(err);
     }
