@@ -57,16 +57,28 @@
                         <%if(integrations.length>0){%>
                             <% woocommerce=integrations.filter(data => data.channel=='woocommerce')[0];%>
                             <form action="/import" method="POST" enctype="multipart/form-data">
+                              <%if(sellers.length>0){%>
+                                <div class="field">
+                                  <label class="label">Seller</label>
+                                  <div class="select is-fullwidth">
+                                      <select name="seller" required>
+                                        <% for(var i=0; i<sellers.length; i++) {%>
+                                          <option value="<%=sellers[i].id%>"><%=sellers[i].name%></option>
+                                         <% } %>
+                                      </select>
+                                  </div>
+                                </div>
+                                <% } %>
                                 <div class="field">
                                     <div class="control">
-                                      <label class="label is-inline is-size-7" for="reference">Proveedor</label>
+                                      <label class="label">Proveedor</label>
                                       <input type="text" disabled class="input is-primary" type="text"  placeholder="Primary input" <%if(woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%> />
                                       <input type="hidden" name="channel" <%if(woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%>>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="control">
-                                      <label class="label is-inline is-size-7" for="reference">Url</label>
+                                      <label class="label">Url</label>
                                       <input type="text" disabled class="input is-primary"  type="text" placeholder="Primary input" <%if(woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%> />
                                       <input type="hidden" name="apiUrl" <%if(woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%>>
                                     </div>

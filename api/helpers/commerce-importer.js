@@ -68,13 +68,15 @@ let getCatalog = async(data)=>{
               cover
               src
           }
-          variations{
-              quantity
-              reference
-              upc
-              price
-              ean13
-          }
+            variations{
+                quantity
+                reference
+                talla
+                gender
+                upc
+                price
+                ean13
+            }
           }
       }
   `
