@@ -86,7 +86,7 @@
                                 <div class="control buttons is-right">
                                     <input type="hidden" name="pk" <%if(woocommerce!==null){%>value="<%=woocommerce.key%>"<%}%>>
                                     <input type="hidden" name="sk" <%if(woocommerce!==null){%>value="<%=woocommerce.secret%>"<%}%>>
-                                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Productos</button>
+                                    <button id="process-from-provider" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Productos</button>
                                 </div> 
                             </form>
                         <%}%>
@@ -113,7 +113,11 @@
                         <div class="container is-fluid">
                             <ol>
                             <% resultados.errors.forEach(error =>{%>
-                                <li><%=error%></li>
+                                <% if(error.message){ %>
+                                  <li><%=error.message%></li>
+                                <%} else {%>
+                                  <li><%=error%></li>
+                                <% } %>
                             <%})%>
                             </ol>
                         </div>
@@ -136,6 +140,12 @@
         let box = document.querySelector('.box').parentNode;
         addClass(box,'is-hidden');
         document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+    });
+
+    live('#process-from-provider','click',e=>{
+        let box = document.querySelector('.box').parentNode;
+        addClass(box,'is-hidden');
+        document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
     });
 
     live('select[name="entity"]','change',e=>{

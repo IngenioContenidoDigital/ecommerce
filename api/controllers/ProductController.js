@@ -472,6 +472,7 @@ module.exports = {
 
     let images = [];
     let variations = [];
+    let errors = [];
 
     if(req.body.channel){
           let importedProducts = await sails.helpers.commerceImporter(
@@ -588,120 +589,127 @@ module.exports = {
           });
     }
 
-      let cols = [];
-      let errors = [];
+           let cols = [];
 
-      await each(importedProducts, async (p)=>{
-          pro = await checkdata(p).catch(e=>errors.push(e));
-          cols.push(pro);
-      });
-      
-      let result = await Product.createEach(cols).fetch();
-
-       await each(result, async(p)=>{
-          let source = images.filter((i)=>i.reference == p.reference)[0].images;
-          let hasCover = (source.filter(c=>c.cover).length > 0);
-          
-          if(!hasCover)
-              (source[0].cover = 1);
-
-          await each(source, async (s)=>{
-            (s.uploaded = await sails.helpers.uploadImageUrl(s.src, s.file, p.id));
-            return s;
+          await each(importedProducts, async (p)=>{
+              pro = await checkdata(p).catch(e=>errors.push(e));
+              cols.push(pro);
           });
+          
+          let result = await Product.createEach(cols).fetch();
 
-          await ProductImage.createEach(source.map((s)=>{
-                  let img = {};
-                      img.file = s.uploaded.filename;
-                      img.cover = s.cover || 0;
-                      img.product = p.id;
-                      
-                      if(img.position)
-                        (img.position = s.position);
+          await each(result, async(p)=>{
+              let source = images.filter((i)=>i.reference == p.reference)[0].images;
+              let hasCover = (source.filter(c=>c.cover).length > 0);
+              
+              if(!hasCover)
+                  (source[0].cover = 1);
+
+              await each(source, async (s)=>{
+                (s.uploaded = await sails.helpers.uploadImageUrl(s.src, s.file, p.id));
+                return s;
+              });
+
+              await ProductImage.createEach(source.map((s)=>{
+                      let img = {};
+                          img.file = s.uploaded.filename;
+                          img.cover = s.cover || 0;
+                          img.product = p.id;
+                          
+                          if(img.position)
+                            (img.position = s.position);
 
                   return img; 
-          }));
+              })).catch((e)=>errors.push(e));
 
-          if(variations.length > 0){
-            if(variations.filter(v=>v.reference == p.reference).length > 0 ){
-              let productVariations = variations.filter(v=>v.reference == p.reference)[0].variations;
+              try {
+                      if(variations.length > 0){
+                        if(variations.filter(v=>v.reference == p.reference).length > 0 ){
+                          let productVariations = variations.filter(v=>v.reference == p.reference)[0].variations;
 
-              each(productVariations, async (pv)=>{
-                let variation = {};
-                variation.seller = req.session.user.seller || req.body.seller;
-                variation.supplierreference = p.reference;
-                
-                if(pv.ean13)
-                    variation.ean13 = pv.ean13;
-                if(variation.upc)
-                    variation.upc = pv.upc;
-                
-                variation.quantity  = pv.quantity || 0;
-                let product = await Product.findOne({reference:variation.supplierreference, seller:variation.seller}).populate('tax').populate('categories');
-                let categories = [];
-                
-                if(product){
-                  product.categories.forEach(category =>{
-                    if(!categories.includes(category.id)){
-                        categories.push(category.id);
-                    }
-                  });
+                          each(productVariations, async (pv)=>{
+                            let variation = {};
+                            variation.seller = req.session.user.seller || req.body.seller;
+                            variation.supplierreference = p.reference;
+                            
+                            if(pv.ean13)
+                                variation.ean13 = pv.ean13;
+                            if(variation.upc)
+                                variation.upc = pv.upc;
+                            
+                            variation.quantity  = pv.quantity || 0;
+                            let product = await Product.findOne({reference:variation.supplierreference, seller:variation.seller}).populate('tax').populate('categories');
+                            let categories = [];
+                            
+                            if(product){
+                              product.categories.forEach(category =>{
+                                if(!categories.includes(category.id)){
+                                    categories.push(category.id);
+                                }
+                              });
 
-                  variation.product = product.id;
-                  variation.price = parseInt(product.price*(1+product.tax.value/100));
+                              variation.product = product.id;
+                              variation.price = parseInt(product.price*(1+product.tax.value/100));
 
-                  if(!pv.gender && pv.talla){
-                    let  uniqueSize = await Variation.find({
-                      where:{ name:pv.talla.trim().toLowerCase()},
-                      limit:1
-                    })
+                              if(!pv.gender && pv.talla){
+                                let  uniqueSize = await Variation.find({
+                                  where:{ name:pv.talla.trim().toLowerCase()},
+                                  limit:1
+                                })
 
-                    (variation.variation = uniqueSize[0].id);
+                                (variation.variation = uniqueSize[0].id);
 
-                  }else if(pv.gender && !pv.talla){
+                              }else if(pv.gender && !pv.talla){
 
-                    let gender = await Gender.findOne({ name : pv.gender.toLowerCase()});
-                    
-                    let  uniqueGender = await Variation.find({
-                      where:{ gender : gender.id, name:"único"}
-                    })
+                                let gender = await Gender.findOne({ name : pv.gender.toLowerCase()});
+                                
+                                let  uniqueGender = await Variation.find({
+                                  where:{ gender : gender.id, name:"único"}
+                                })
 
-                    if(uniqueGender){
-                      (variation.variation = uniqueGender[0].id);
-                    }
+                                if(uniqueGender){
+                                  (variation.variation = uniqueGender[0].id);
+                                }
 
-                  }else if(!pv.talla && !pv.gender){
-                    
-                    let unique = await Variation.find({
-                      where:{ name:"único"},
-                      limit:1
-                    });
+                              }else if(!pv.talla && !pv.gender){
+                                
+                                let unique = await Variation.find({
+                                  where:{ name:"único"},
+                                  limit:1
+                                });
 
-                    (variation.variation = unique[0].id);
+                                (variation.variation = unique[0].id);
 
-                  }else{
-                    let v = await Variation.find({
-                      where:{ name:pv.talla.trim().toLowerCase(),gender:product.gender,category:{'in':categories}},
-                      limit:1
-                    });
-                   
-                    (variation.variation = v[0].id);
-                  }
+                              }else{
+                                let v = await Variation.find({
+                                  where:{ name:pv.talla.trim().toLowerCase(),gender:product.gender,category:{'in':categories}},
+                                  limit:1
+                                });
+                              
+                                (variation.variation = v[0].id);
+                              }
 
-                  await ProductVariation.create(variation);
+                              await ProductVariation.create(variation);
 
-                }else{
-                  throw { name:'NOPRODUCT', message:'Producto '+ p.name +' no localizado'};
-                }
-            });
-          }else{
-            console.log("sin variacion");
-          }
-            }
-      })
+                            }else{
+                              throw { name:'NOPRODUCT', message:'Producto '+ p.name +' no localizado'};
+                            }
+                        });
+                      }else{
+                        throw { name:'NOPRODUCT', message:'Producto '+ p.name +' no localizado'};
+                      }
+                  }                
+              } catch (error) {
+                  errors.push(error);
+              }
+      });
 
-      return res.status(200).json({ result });
-    
+      if(errors.length > 0){
+        return res.view('pages/configuration/import',{ layout:'layouts/admin', error:null, resultados:{ items : result, errors : errors}, integrations : []});
+      }else{
+        res.view('pages/configuration/import',{ layout:'layouts/admin', error:null, resultados:{ items : result}, integrations : []});
+      }
+
     }
 
     let header = null;
