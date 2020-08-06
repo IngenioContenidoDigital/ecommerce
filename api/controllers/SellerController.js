@@ -173,6 +173,9 @@ module.exports = {
     let id = req.param('id');
     let seller = await Seller.findOne({id:id});
     let address = null;
+    let channel;
+    let integration;
+    
     if(seller.mainAddress!==null){
       address = await Address.updateOne({id:seller.mainAddress}).set({
         addressline1:req.body.addressline1,
@@ -209,22 +212,43 @@ module.exports = {
         logo: filename[0].filename,
         mainAddress:address.id,
         active:isActive}).fetch();
+        let channel;
 
+        if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
+          channel = "woocommerce";
+            
+          integration = {
+            channel:channel,
+            url:req.body.apiUrl,
+            key:req.body.key,
+            secret:req.body.secret ? req.body.secret : '',
+            seller:id
+          };
 
-        let integration = {
-          channel:req.body.channel,
-          url:req.body.apiUrl,
-          key:req.body.key,
-          secret:req.body.secret ? req.body.secret : '',
-          seller:id
-      };
-    
-      if(integration.channel && integration.url && integration.key && integration.secret){
-        if(req.body.user)
-          integration.user = req.body.user
+          if(req.body.user)
+            integration.user = req.body.user
       
-      if(req.body.version)
-          integration.version = req.body.version
+          if(req.body.version)
+            integration.version = req.body.version
+
+        }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+          channel = 'shopify';
+
+          integration = {
+            channel:channel,
+            url:req.body.shopifyApiUrl,
+            key:req.body.shopifyKey,
+            secret:req.body.shopifySecret ? req.body.shopifySecret : '',
+            seller:id
+          };
+
+          if(req.body.user)
+            integration.user = req.body.user
+    
+          if(req.body.shopifyVersion)
+            integration.version = req.body.shopifyVersion
+        }
+
     
       Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
           if(err){
@@ -232,24 +256,45 @@ module.exports = {
           }
     
           if(!created){
-            let updateIntegration = {
-                channel:req.body.channel,
-                url:req.body.url,
+            let updateIntegration;
+            if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
+              channel = "woocommerce";
+                
+              updateIntegration = {
+                channel:channel,
+                url:req.body.apiUrl,
                 key:req.body.key,
                 secret:req.body.secret ? req.body.secret : '',
-                seller:record.seller
-            };
+                seller:id
+              };
     
-            if(req.body.user)
+              if(req.body.user)
               updateIntegration.user = req.body.user
           
-            if(req.body.version)
+              if(req.body.version)
               updateIntegration.version = req.body.version
+    
+            }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+              channel = 'shopify';
+    
+              updateIntegration = {
+                channel:channel,
+                url:req.body.shopifyApiUrl,
+                key:req.body.shopifyKey,
+                secret:req.body.shopifySecret ? req.body.shopifySecret : '',
+                seller:id
+              };
+    
+              if(req.body.user)
+              updateIntegration.user = req.body.user
+        
+              if(req.body.shopifyVersion)
+              updateIntegration.version = req.body.shopifyVersion
+            }
           
             await Integrations.updateOne({id:record.id}).set(updateIntegration);
           }
         });
-      } 
     }catch(err){
       error=err;
       if(err.code==='badRequest'){
@@ -263,21 +308,41 @@ module.exports = {
           domain:req.body.url,
           mainAddress:address.id,
           active:isActive});
+          
+          if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
+            channel = "woocommerce";
+              
+            integration = {
+              channel:channel,
+              url:req.body.apiUrl,
+              key:req.body.key,
+              secret:req.body.secret ? req.body.secret : '',
+              seller:id
+            };
 
-          let integration = {
-            channel:req.body.channel,
-            url:req.body.apiUrl,
-            key:req.body.key,
-            secret:req.body.secret ? req.body.secret : '',
-            seller:id
-        };
-      
-        if(integration.channel && integration.url && integration.key && integration.secret){
-          if(req.body.user)
-            integration.user = req.body.user
+            if(req.body.user)
+              integration.user = req.body.user
         
-        if(req.body.version)
-            integration.version = req.body.version
+            if(req.body.version)
+              integration.version = req.body.version
+
+          }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+            channel = 'shopify';
+
+            integration = {
+              channel:channel,
+              url:req.body.shopifyApiUrl,
+              key:req.body.shopifyKey,
+              secret:req.body.shopifySecret ? req.body.shopifySecret : '',
+              seller:id
+            };
+
+            if(req.body.user)
+              integration.user = req.body.user
+      
+            if(req.body.shopifyVersion)
+              integration.version = req.body.shopifyVersion
+          }
       
         Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
             if(err){
@@ -285,24 +350,46 @@ module.exports = {
             }
       
             if(!created){
-              let updateIntegration = {
-                  channel:req.body.channel,
-                  url:req.body.url,
+              let updateIntegration;
+              
+              if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
+                channel = "woocommerce";
+                  
+                updateIntegration = {
+                  channel:channel,
+                  url:req.body.apiUrl,
                   key:req.body.key,
                   secret:req.body.secret ? req.body.secret : '',
-                  seller:seller.id
-              };
-      
-              if(req.body.user)
-                updateIntegration.user = req.body.user
+                  seller:id
+                };
+    
+                if(req.body.user)
+                  updateIntegration.user = req.body.user
             
-              if(req.body.version)
-                updateIntegration.version = req.body.version
+                if(req.body.version)
+                  updateIntegration.version = req.body.version
+    
+              }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+                channel = 'shopify';
+    
+                updateIntegration = {
+                  channel:channel,
+                  url:req.body.shopifyApiUrl,
+                  key:req.body.shopifyKey,
+                  secret:req.body.shopifySecret ? req.body.shopifySecret : '',
+                  seller:id
+                };
+    
+                if(req.body.user)
+                    updateIntegration.user = req.body.user
+          
+                if(req.body.shopifyVersion)
+                  updateIntegration.version = req.body.shopifyVersion
+              }
             
               await Integrations.updateOne({id:record.id}).set(updateIntegration);
             }
           });
-        } 
       }
     }
     setTimeout(() => { return; }, 2000);
