@@ -72,20 +72,20 @@
                                 <div class="field">
                                     <div class="control">
                                       <label class="label">Proveedor</label>
-                                      <input type="text" disabled class="input is-primary" type="text"  placeholder="Primary input" <%if(woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%> />
-                                      <input type="hidden" name="channel" <%if(woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%>>
+                                      <input type="text" disabled class="input is-primary" type="text"  placeholder="Primary input" <%if(woocommerce!=undefined && woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%> />
+                                      <input type="hidden" name="channel" <%if(woocommerce!=undefined && woocommerce!==null){%>value="<%=woocommerce.channel%>"<%}%>>
                                     </div>
                                 </div>
                                 <div class="field">
                                     <div class="control">
                                       <label class="label">Url</label>
-                                      <input type="text" disabled class="input is-primary"  type="text" placeholder="Primary input" <%if(woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%> />
-                                      <input type="hidden" name="apiUrl" <%if(woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%>>
+                                      <input type="text" disabled class="input is-primary"  type="text" placeholder="Primary input" <%if(woocommerce!=undefined && woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%> />
+                                      <input type="hidden" name="apiUrl" <%if(woocommerce!=undefined && woocommerce!==null){%>value="<%=woocommerce.url%>"<%}%>>
                                     </div>
                                 </div>
                                 <div class="control buttons is-right">
-                                    <input type="hidden" name="pk" <%if(woocommerce!==null){%>value="<%=woocommerce.key%>"<%}%>>
-                                    <input type="hidden" name="sk" <%if(woocommerce!==null){%>value="<%=woocommerce.secret%>"<%}%>>
+                                    <input type="hidden" name="pk" <%if(woocommerce!=undefined && woocommerce!==null){%>value="<%=woocommerce.key%>"<%}%>>
+                                    <input type="hidden" name="sk" <%if(woocommerce!=undefined && woocommerce!==null){%>value="<%=woocommerce.secret%>"<%}%>>
                                     <button id="process-from-provider" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Productos</button>
                                 </div> 
                             </form>
