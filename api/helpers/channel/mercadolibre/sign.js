@@ -2,10 +2,10 @@ module.exports = {
   friendlyName: 'Init',
   description: 'Init mercadolibre.',
   inputs: {
-    integration:{
-      type:'ref',
+    seller:{
+      type:'string',
       required:true,
-    }
+    },
   },
   exits: {
     success: {
@@ -14,10 +14,11 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     const meli = require('mercadolibre');
-    let mercadolibre = new meli.Meli(inputs.integration.user, inputs.integration.key, inputs.integration.secret,inputs.integration.url);
+    let integration = await Integrations.findOne({channel:'mercadolibre',seller:inputs.seller});
+    let mercadolibre = new meli.Meli(integration.user, integration.key, integration.secret,integration.url);
     mercadolibre.refreshAccessToken(async (error,callback)=>{
       if(error){ return exits.error(error);}
-      await Integrations.updateOne({id:inputs.integration.id}).set({
+      await Integrations.updateOne({id:integration.id}).set({
         url:callback['refresh_token'],
         secret:callback['access_token'],
       });
