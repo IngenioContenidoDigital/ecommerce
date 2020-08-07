@@ -49,7 +49,7 @@ module.exports.datastores = {
     *                                                                          *
     ***************************************************************************/
     adapter: 'sails-mongo',
-    url: 'mongodb://ingenio:X0tr.u21@localhost:27017/iridio',
+    url: 'mongodb://iridioDb:Y0tr.u21*@localhost:21021/iridio',
 
   },
 
