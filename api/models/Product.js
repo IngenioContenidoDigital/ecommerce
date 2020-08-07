@@ -24,6 +24,7 @@ module.exports = {
     height:{type:'number'},
     length:{type:'number'},
     weight:{type:'number'},
+    externalId:{type:'string'},
     stock:{type:'boolean',defaultsTo:false},
     seller: {model:'seller'},
     dafitiprice:{type:'number', defaultsTo:0},
