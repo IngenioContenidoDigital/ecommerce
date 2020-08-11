@@ -42,6 +42,15 @@ module.exports = {
       case 'failed':
         name='fallido';
         break;
+      case 'paid':
+        name='aceptado';
+        break;
+      case 'cancelled':
+        name='cancelado';
+        break;
+      case 'invalid':
+        name='fallido';
+        break;
       default:
         name='pendiente';
         break;
