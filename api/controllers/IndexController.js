@@ -45,7 +45,57 @@ module.exports = {
     }
   },
   admin: async function(req, res){
-    return res.view('pages/homeadmin',{layout:'layouts/admin'});
+    let totalOrders = 0;
+    let totalProducts = 0;
+    let totalSales = 0;
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    let fail = await OrderState.findOne({name: 'fallido'});
+    let cancel = await OrderState.findOne({name: 'cancelado'});
+    let rejected = await OrderState.findOne({name: 'rechazado'});
+    let products = [];
+    let topProducts = [];
+
+    if(rights.name !== 'superadmin'){
+      totalOrders   = await Order.count({where: {seller: req.session.user.seller}});
+      let orders  =  await Order.find({
+        where: {seller: req.session.user.seller}
+      });
+      for(let order of orders){
+        totalProducts += await OrderItem.count({order: order.id});
+      }
+    } else {
+      totalOrders  = await Order.count({currentstatus: { nin: [cancel.id, fail.id, rejected.id]}});
+      let orders  =  await Order.find({currentstatus: { nin: [cancel.id, fail.id, rejected.id]}});
+      for(let order of orders){
+        totalSales += order.totalOrder;
+        totalProducts += await OrderItem.count({order: order.id});
+        var items = await OrderItem.find({order: order.id}).populate('product');
+        items.forEach(async item => {
+          item.product = await Product.findOne({id:item.product.id}).populate('images');
+          item.quantity = 1;
+          products.push(item);
+        });
+      }
+      products.forEach((item) => {
+        var tempKey = item.product.id;
+        if (!topProducts.hasOwnProperty(tempKey)) {
+          topProducts[tempKey] = item;
+        } else {
+          topProducts[tempKey].quantity += 1;
+        }
+      });
+      topProducts = Object.keys(topProducts).map((key) => {
+        return topProducts[key];
+      });
+    }
+
+    return res.view('pages/homeadmin',{layout:'layouts/admin',
+      totalOrders: totalOrders,
+      totalProducts: totalProducts,
+      totalSales: totalSales,
+      topProductsCant: topProducts.sort((a, b)=> b.quantity - a.quantity).slice(0, 10),
+      topProductsPrice: topProducts.sort((a, b)=> b.product.price - a.product.price).slice(0, 10)
+    });
   },
   checkout: async function(req, res){
     if(req.session.cart===undefined || req.session.cart===null){

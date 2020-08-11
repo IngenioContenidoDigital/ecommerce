@@ -1,1 +1,459 @@
-<h6 class="title is-6">Tablero de Adminstración</h6>
+<div class="tabs is-boxed">
+  <ul>
+    <li class="tab is-active" onclick="openTab(event,'WebDev')">
+      <a>
+        <span class="icon is-small"><i class="bx bxs-shopping-bag" aria-hidden="true"></i></span>
+        <span>Ventas</span>
+      </a>
+    </li>
+    <li class="tab" onclick="openTab(event,'WebAud')">
+      <a>
+        <span class="icon is-small"><i class="bx bxs-purchase-tag" aria-hidden="true"></i></span>
+        <span>Inventario</span>
+      </a>
+    </li>
+    <li class="tab" onclick="openTab(event,'Support')">
+      <a>
+        <span class="icon is-small"><i class="bx bxs-package" aria-hidden="true"></i></span>
+        <span>Logística</span>
+      </a>
+    </li>
+    <li class="tab" onclick="openTab(event,'Account')">
+      <a>
+        <span class="icon is-small"><i class="bx bxs-dollar-circle" aria-hidden="true"></i></span>
+        <span>Estado de Cuenta</span>
+      </a>
+    </li>
+  </ul>
+</div>
+  
+<div class="container">
+  <div id="WebDev" class="content-tab" >
+    <section class="section-dashboard">
+      <div class="tile is-ancestor">
+        <div class="tile is-parent">
+          <div class="card tile is-child">
+            <div class="card-content">
+              <div class="level is-mobile">
+                <div class="level-item">
+                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                    Ventas totales
+                  </h3>
+                    <h1 class="title">$ <%= Math.round(totalSales).toLocaleString('es-CO') %></h1>
+                  </div>
+                </div>
+                <div class="level-item has-widget-icon">
+                  <div class="is-widget-icon"><span class="icon has-text-primary is-large"><i class='bx bxs-badge-dollar bx-md'></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tile is-parent">
+          <div class="card tile is-child">
+            <div class="card-content">
+              <div class="level is-mobile">
+                <div class="level-item">
+                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                    Total Productos Vendidos
+                  </h3>
+                    <h1 class="title"><%= totalProducts %></h1>
+                  </div>
+                </div>
+                <div class="level-item has-widget-icon">
+                  <div class="is-widget-icon"><span class="icon has-text-info is-large"><i class='bx bxs-shopping-bags bx-md'></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tile is-parent">
+          <div class="card tile is-child">
+            <div class="card-content">
+              <div class="level is-mobile">
+                <div class="level-item">
+                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                    Total Órdenes
+                  </h3>
+                    <h1 class="title"><%= totalOrders %></h1>
+                  </div>
+                </div>
+                <div class="level-item has-widget-icon">
+                  <div class="is-widget-icon"><span class="icon has-text-success is-large"><i class='bx bx-cart-alt bx-md'></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            <span class="icon"><i class="bx bx-line-chart"></i></span>
+            Evolución ventas diarias
+          </p>
+          <a href="#" class="card-header-icon">
+            <span class="icon"><i class="bx bx-line-chart"></i></span>
+          </a>
+        </header>
+        <div class="card-content">
+          <div class="chart-area">
+            <div style="height: 100%;">
+              <canvas id="big-line-chart" width="2992" height="1000" class="chartjs-render-monitor" style="display: block; height: 400px; width: 1197px;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns container-chart">
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <span class="icon"><i class="bx bx-pie-chart-alt"></i></span>
+                Distribución de ventas en unidades por canales
+              </p>
+              <a href="#" class="card-header-icon">
+                <span class="icon"><i class="bx bx-line-chart"></i></span>
+              </a>
+            </header>
+            <div class="card-content">
+              <div class="chart-area">
+                <canvas id="pie-chart-und" class="chartjs-render-monitor" style="display: block; height: 100%;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <span class="icon"><i class="bx bx-pie-chart-alt"></i></span>
+                Ciudades a las que más estoy vendiendo
+              </p>
+              <a href="#" class="card-header-icon">
+                <span class="icon"><i class="bx bx-line-chart"></i></span>
+              </a>
+            </header>
+            <div class="card-content">
+              <div class="chart-area">
+                <canvas id="pie-chart-country" class="chartjs-render-monitor" style="display: block; height: 100%;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns container-chart">
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                Top 10 Productos más vendidos (Precio)
+              </p>
+            </header>
+            <div class="card-content">
+              <div class='list'>
+                <ul>
+                  <% topProductsPrice.forEach(function(item){ %>
+                    <div class='list-item'>
+                      <figure class="image is-48x48 product-image">
+                        <% item.product.images.forEach(image =>{ %>
+                          <%if(image.cover==1){%>
+                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=image.file%>" />
+                          <%}%>
+                        <%})%>
+                      </figure>
+                      <div class="product-description">
+                        <h5><%= item.product.name %></h5>
+                      </div>
+                      <div class="product-sku">
+                        <%= item.product.reference %>
+                      </div>
+                    </div>
+                  <% }); %>
+                </ul> 
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                Top 10 Productos más vendidos (Unidades)
+              </p>
+            </header>
+            <div class="card-content">
+              <div class='list'>
+                <ul> 
+                  <% topProductsCant.forEach(function(item){ %>
+                    <div class='list-item'>
+                      <figure class="image is-48x48 product-image">
+                        <% item.product.images.forEach(image =>{ %>
+                          <%if(image.cover==1){%>
+                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=image.file%>" />
+                          <%}%>
+                        <%})%>
+                      </figure>
+                      <div class="product-description">
+                        <h5><%= item.product.name %></h5>
+                      </div>
+                      <div class="product-sku">
+                        <%= item.product.reference %>
+                      </div>
+                    </div>
+                  <% }); %>
+                </ul> 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div id="WebAud" class="content-tab" style="display:none">
+    <section class="section-dashboard">
+      <div class="tile container-inventory">
+        <div class="tile is-parent">
+          <div class="card tile is-child">
+            <div class="card-content">
+              <div class="level is-mobile">
+                <div class="level-item">
+                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                    Unidades en Inventario
+                  </h3>
+                    <h1 class="title">700</h1>
+                  </div>
+                </div>
+                <div class="level-item has-widget-icon">
+                  <div class="is-widget-icon"><span class="icon has-text-primary is-large"><i class='bx bxs-basket bx-md'></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns container-chart">
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                Productos con menos de 5 Unidades
+              </p>
+            </header>
+            <div class="card-content">
+              <div class='list'>
+                <ul> 
+                  <div class='list-item'>
+                    <figure class="image is-48x48 product-image">
+                      <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+                    </figure>
+                    <div class="product-description">
+                      <h5>MOCASINES APOLO CUERO CVR CAFE HOMBRE OPEN HOUSE</h5>
+                    </div>
+                    <div class="product-sku">
+                      APOLO CVR CAFE
+                    </div>
+                  </div>
+                </ul> 
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                Productos sin Inventario
+              </p>
+            </header>
+            <div class="card-content">
+              <div class='list'>
+                <ul> 
+                  <div class='list-item'>
+                    <figure class="image is-48x48 product-image">
+                      <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+                    </figure>
+                    <div class="product-description">
+                      <h5>MOCASINES APOLO CUERO CVR CAFE HOMBRE OPEN HOUSE</h5>
+                    </div>
+                    <div class="product-sku">
+                      APOLO CVR CAFE
+                    </div>
+                  </div>
+                </ul> 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="columns container-chart">
+        <div class="column">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                Productos menos Vendidos
+              </p>
+            </header>
+            <div class="card-content">
+              <div class='list'>
+                <ul> 
+                  <div class='list-item'>
+                    <figure class="image is-48x48 product-image">
+                      <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
+                    </figure>
+                    <div class="product-description">
+                      <h5>MOCASINES APOLO CUERO CVR CAFE HOMBRE OPEN HOUSE</h5>
+                    </div>
+                    <div class="product-sku">
+                      APOLO CVR CAFE
+                    </div>
+                  </div>
+                </ul> 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div id="Support" class="content-tab" style="display:none">
+    
+  </div>
+  <div id="Account" class="content-tab" style="display:none">
+    
+  </div>
+</div>
+
+<script>
+  var randomChartData = n => {
+    let data = [];
+    for (let i = 0; i < n; i++) {
+      data.push(Math.round(Math.random() * 200));
+    }
+    return data;
+  };
+
+  var chartColors = {
+    default: {
+      primary: '#00D1B2',
+      info: '#209CEE',
+      danger: '#FF3860'
+    }
+  };
+
+  var ctx = document.getElementById('big-line-chart');
+  var ctx1 = document.getElementById('pie-chart-und');
+  var ctx2 = document.getElementById('pie-chart-country');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: [
+        {
+          fill: false,
+          borderColor: chartColors.default.primary,
+          borderWidth: 2,
+          borderDash: [],
+          borderDashOffset: 0.0,
+          pointBackgroundColor: chartColors.default.primary,
+          pointBorderColor: 'rgba(255,255,255,0)',
+          pointHoverBackgroundColor: chartColors.default.primary,
+          pointBorderWidth: 20,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 15,
+          pointRadius: 4,
+          data: randomChartData(9)
+        },
+      ],
+      labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+    },
+    options: {
+      maintainAspectRatio: false,
+      legend: {
+        display: false
+      },
+      responsive: true,
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: 'nearest',
+        intersect: 0,
+        position: 'nearest'
+      },
+      scales: {
+        yAxes: [{
+          barPercentage: 1.6,
+          gridLines: {
+            drawBorder: false,
+            color: 'rgba(29,140,248,0.0)',
+            zeroLineColor: 'transparent'
+          },
+          ticks: {
+            padding: 20,
+            fontColor: '#9a9a9a'
+          }
+        }],
+
+        xAxes: [{
+          barPercentage: 1.6,
+          gridLines: {
+            drawBorder: false,
+            color: 'rgba(225,78,202,0.1)',
+            zeroLineColor: 'transparent'
+          },
+          ticks: {
+            padding: 20,
+            fontColor: '#9a9a9a'
+          }
+        }]
+      }
+    }
+  });
+  new Chart(ctx1, {
+    type: 'pie',
+    data: {
+      datasets: [
+        {
+          backgroundColor: [
+            '#00D1B2',
+            '#209CEE',
+            '#FF3860'
+          ],
+          data: [10, 20, 30]
+        },
+      ],
+      labels: ['yellow', 'red', 'blue']
+    },
+    options: {
+    }
+  });
+  new Chart(ctx2, {
+    type: 'pie',
+    data: {
+      datasets: [
+        {
+          backgroundColor: [
+            '#00D1B2',
+            '#209CEE',
+            '#FF3860'
+          ],
+          data: [10, 20, 30]
+        },
+      ],
+      labels: ['Medellin', 'Quindio', 'Cali']
+    },
+    options: {
+    }
+  });
+</script>
