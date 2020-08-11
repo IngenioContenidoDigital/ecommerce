@@ -142,8 +142,8 @@
                         </div>-->
                         <br>
                         <div class="control is-right">
-                            <%if(mercadolibre[0].secret=='' || mercadolibre[0].secret==null){%>
-                                <button type="submit" class="button is-info">Autorizar Acceso</button>
+                            <%if(mercadolibre ==null || mercadolibre.length<1){%>
+                            <button type="submit" class="button is-info">Autorizar Acceso</button>
                             <%}%>
                         </div>
                 </div>

@@ -428,7 +428,7 @@ module.exports = {
     let channel = req.param('channel');
     Integrations.findOrCreate({seller:seller,channel:channel},{
       channel:channel,
-      url:req.body.url,
+      url:req.body.url ? req.body.url : '',
       user:req.body.user,
       key:req.body.key,
       secret:req.body.secret ? req.body.secret : '',
@@ -438,14 +438,18 @@ module.exports = {
       if(!created){
         await Integrations.updateOne({id:record.id}).set({
           channel:channel,
-          url:req.body.url,
+          url:req.body.url ? req.body.url : '',
           user:req.body.user,
           key:req.body.key,
           secret:req.body.secret ? req.body.secret : '',
           seller:seller
         });
+        return res.redirect('/sellers');
+      }else{
+        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }
-      return res.redirect('/sellers');
+
+      
     });
   }
 };
