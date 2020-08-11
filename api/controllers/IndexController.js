@@ -54,6 +54,8 @@ module.exports = {
     let rejected = await OrderState.findOne({name: 'rechazado'});
     let products = [];
     let topProducts = [];
+    let cities = [];
+    let citiesCant = [];
 
     if(rights.name !== 'superadmin'){
       totalOrders   = await Order.count({where: {seller: req.session.user.seller}});
@@ -65,10 +67,20 @@ module.exports = {
       }
     } else {
       totalOrders  = await Order.count({currentstatus: { nin: [cancel.id, fail.id, rejected.id]}});
-      let orders  =  await Order.find({currentstatus: { nin: [cancel.id, fail.id, rejected.id]}});
+      let orders  =  await Order.find({currentstatus: { nin: [cancel.id, fail.id, rejected.id]}})
+      .populate('addressDelivery');
+
       for(let order of orders){
         totalSales += order.totalOrder;
         totalProducts += await OrderItem.count({order: order.id});
+        var address = await City.find({
+          where: {id: order.addressDelivery.city},
+          select: ['name']
+        });
+        address.forEach(async city => {
+          city.quantity = 1;
+          cities.push(city);
+        });
         var items = await OrderItem.find({order: order.id}).populate('product');
         items.forEach(async item => {
           item.product = await Product.findOne({id:item.product.id}).populate('images');
@@ -76,6 +88,17 @@ module.exports = {
           products.push(item);
         });
       }
+      cities.forEach((item) => {
+        var tempKey = item.id;
+        if (!citiesCant.hasOwnProperty(tempKey)) {
+          citiesCant[tempKey] = item;
+        } else {
+          citiesCant[tempKey].quantity += 1;
+        }
+      });
+      citiesCant = Object.keys(citiesCant).map((key) => {
+        return citiesCant[key];
+      });
       products.forEach((item) => {
         var tempKey = item.product.id;
         if (!topProducts.hasOwnProperty(tempKey)) {
@@ -94,7 +117,8 @@ module.exports = {
       totalProducts: totalProducts,
       totalSales: totalSales,
       topProductsCant: topProducts.sort((a, b)=> b.quantity - a.quantity).slice(0, 10),
-      topProductsPrice: topProducts.sort((a, b)=> b.product.price - a.product.price).slice(0, 10)
+      topProductsPrice: topProducts.sort((a, b)=> b.product.price - a.product.price).slice(0, 10),
+      cities: citiesCant.sort((a, b)=> b.quantity - a.quantity).slice(0, 10)
     });
   },
   checkout: async function(req, res){

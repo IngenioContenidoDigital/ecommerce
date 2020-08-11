@@ -334,6 +334,16 @@
 </div>
 
 <script>
+  let cities = <%- JSON.stringify(cities) %>;
+  let total = 0;
+  let dataCities = [];
+  let dataLabels = [];
+  cities.forEach(item => total += item.quantity);
+  cities.forEach(async item => {
+    dataLabels.push(item.name);
+    dataCities.push(((item.quantity / total) * 100).toFixed(2));
+  });
+
   var randomChartData = n => {
     let data = [];
     for (let i = 0; i < n; i++) {
@@ -446,12 +456,19 @@
           backgroundColor: [
             '#00D1B2',
             '#209CEE',
-            '#FF3860'
+            '#FF3860',
+            '#8000FF',
+            '#FFDD57',
+            '#48C774',
+            '#FF9D00',
+            '#825500',
+            '#9C55B5',
+            '#FF00F7'
           ],
-          data: [10, 20, 30]
+          data: dataCities
         },
       ],
-      labels: ['Medellin', 'Quindio', 'Cali']
+      labels: dataLabels
     },
     options: {
     }
