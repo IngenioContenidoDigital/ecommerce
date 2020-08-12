@@ -166,7 +166,7 @@
                           <%}%>
                         <%})%>
                       </figure>
-                      <div class="product-description">
+                      <div class="product-description is-uppercase">
                         <h5><%= item.product.name %></h5>
                       </div>
                       <div class="product-sku">
@@ -199,7 +199,7 @@
                           <%}%>
                         <%})%>
                       </figure>
-                      <div class="product-description">
+                      <div class="product-description is-uppercase">
                         <h5><%= item.product.name %></h5>
                       </div>
                       <div class="product-sku">
@@ -226,7 +226,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced">
                     Unidades en Inventario
                   </h3>
-                    <h1 class="title">700</h1>
+                    <h1 class="title"><%= totalInventory %></h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -247,20 +247,26 @@
                 Productos con menos de 5 Unidades
               </p>
             </header>
-            <div class="card-content">
+            <div class="card-content container-scroll">
               <div class='list'>
                 <ul> 
-                  <div class='list-item'>
-                    <figure class="image is-48x48 product-image">
-                      <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
-                    </figure>
-                    <div class="product-description">
-                      <h5>MOCASINES APOLO CUERO CVR CAFE HOMBRE OPEN HOUSE</h5>
+                  <% productsUnd.forEach(function(item){ %>
+                    <div class='list-item'>
+                      <figure class="image is-48x48 product-image">
+                        <% item.images.forEach(image =>{ %>
+                          <%if(image.cover==1){%>
+                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%=item.id%>/<%=image.file%>" />
+                          <%}%>
+                        <%})%>
+                      </figure>
+                      <div class="product-description is-uppercase">
+                        <h5><%= item.name %></h5>
+                      </div>
+                      <div class="product-sku">
+                        <%= item.reference %>
+                      </div>
                     </div>
-                    <div class="product-sku">
-                      APOLO CVR CAFE
-                    </div>
-                  </div>
+                  <% }); %>
                 </ul> 
               </div>
             </div>
@@ -274,20 +280,26 @@
                 Productos sin Inventario
               </p>
             </header>
-            <div class="card-content">
+            <div class="card-content container-scroll">
               <div class='list'>
                 <ul> 
-                  <div class='list-item'>
-                    <figure class="image is-48x48 product-image">
-                      <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
-                    </figure>
-                    <div class="product-description">
-                      <h5>MOCASINES APOLO CUERO CVR CAFE HOMBRE OPEN HOUSE</h5>
+                  <% productsInventory.forEach(function(item){ %>
+                    <div class='list-item'>
+                      <figure class="image is-48x48 product-image">
+                        <% item.images.forEach(image =>{ %>
+                          <%if(image.cover==1){%>
+                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%=item.id%>/<%=image.file%>" />
+                          <%}%>
+                        <%})%>
+                      </figure>
+                      <div class="product-description is-uppercase">
+                        <h5><%= item.name %></h5>
+                      </div>
+                      <div class="product-sku">
+                        <%= item.reference %>
+                      </div>
                     </div>
-                    <div class="product-sku">
-                      APOLO CVR CAFE
-                    </div>
-                  </div>
+                  <% }); %>
                 </ul> 
               </div>
             </div>
@@ -303,20 +315,26 @@
                 Productos menos Vendidos
               </p>
             </header>
-            <div class="card-content">
+            <div class="card-content container-scroll">
               <div class='list'>
                 <ul> 
-                  <div class='list-item'>
-                    <figure class="image is-48x48 product-image">
-                      <img class="is-rounded" src="https://bulma.io/images/placeholders/128x128.png">
-                    </figure>
-                    <div class="product-description">
-                      <h5>MOCASINES APOLO CUERO CVR CAFE HOMBRE OPEN HOUSE</h5>
+                  <% lessProducts.forEach(function(item){ %>
+                    <div class='list-item'>
+                      <figure class="image is-48x48 product-image">
+                        <% item.product.images.forEach(image =>{ %>
+                          <%if(image.cover==1){%>
+                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=image.file%>" />
+                          <%}%>
+                        <%})%>
+                      </figure>
+                      <div class="product-description is-uppercase">
+                        <h5><%= item.product.name %></h5>
+                      </div>
+                      <div class="product-sku">
+                        <%= item.product.reference %>
+                      </div>
                     </div>
-                    <div class="product-sku">
-                      APOLO CVR CAFE
-                    </div>
-                  </div>
+                  <% }); %>
                 </ul> 
               </div>
             </div>
@@ -335,12 +353,21 @@
 
 <script>
   let cities = <%- JSON.stringify(cities) %>;
+  let channels = <%- JSON.stringify(channels) %>;
   let total = 0;
+  let totalChannels = 0;
   let dataCities = [];
   let dataLabels = [];
+  let dataChannels = [];
+  let dataLabelsChannels = [];
+  channels.forEach(item => totalChannels += item.quantity);
+  channels.forEach(async item => {
+    dataLabelsChannels.push(item.name.charAt(0).toUpperCase() + item.name.slice(1));
+    dataChannels.push(((item.quantity / totalChannels) * 100).toFixed(2));
+  });
   cities.forEach(item => total += item.quantity);
   cities.forEach(async item => {
-    dataLabels.push(item.name);
+    dataLabels.push(item.name.charAt(0).toUpperCase() + item.name.slice(1));
     dataCities.push(((item.quantity / total) * 100).toFixed(2));
   });
 
@@ -380,16 +407,30 @@
           pointHoverRadius: 4,
           pointHoverBorderWidth: 15,
           pointRadius: 4,
-          data: randomChartData(9)
+          data: randomChartData(9),
+          label: "Dafiti"
+        },
+        {
+          fill: false,
+          borderColor: chartColors.default.info,
+          borderWidth: 2,
+          borderDash: [],
+          borderDashOffset: 0.0,
+          pointBackgroundColor: chartColors.default.info,
+          pointBorderColor: 'rgba(255,255,255,0)',
+          pointHoverBackgroundColor: chartColors.default.info,
+          pointBorderWidth: 20,
+          pointHoverRadius: 4,
+          pointHoverBorderWidth: 15,
+          pointRadius: 4,
+          data: randomChartData(9),
+          label: "Mercado Libre"
         },
       ],
       labels: ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
     },
     options: {
       maintainAspectRatio: false,
-      legend: {
-        display: false
-      },
       responsive: true,
       tooltips: {
         backgroundColor: '#f5f5f5',
@@ -440,10 +481,10 @@
             '#209CEE',
             '#FF3860'
           ],
-          data: [10, 20, 30]
+          data: dataChannels
         },
       ],
-      labels: ['yellow', 'red', 'blue']
+      labels: dataLabelsChannels
     },
     options: {
     }
