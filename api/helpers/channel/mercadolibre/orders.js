@@ -97,7 +97,7 @@ module.exports = {
           }else{
             if(oexists!==undefined){
               let currentStatus = await sails.helpers.orderState(order.status);
-              await Order.updateOne({id:oexists.id}).set({currentstatus:currentStatus});
+              await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order['last_updated']).valueOf()),currentstatus:currentStatus});
               await OrderHistory.create({
                 order:oexists.id,
                 state:currentStatus
