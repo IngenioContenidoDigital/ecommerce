@@ -24,7 +24,7 @@ module.exports = {
       if(err){console.log(err);}
       inputs.params.seller=result.id;
       inputs.params['access_token']=integrations.secret;
-      mercadolibre.get('orders/search/',inputs.params, (err, result) => {
+      mercadolibre.get('orders/search/',inputs.params, async (err, result) => {
         if(err){console.log(err); return exits.error(err);}
         for(let order of result.results){
           let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});
