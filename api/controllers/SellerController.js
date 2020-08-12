@@ -15,7 +15,11 @@ module.exports = {
     let seller = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
-    let sellers = await Seller.find();
+    if(rights.name!=='superadmin'){
+      sellers = await Seller.find({id:req.session.user.seller});
+    }else{
+      sellers = await Seller.find();
+    }
     let integrations = await Integrations.find({seller:id});
     if(id){
       seller = await Seller.findOne({id:id}).populate('mainAddress');
