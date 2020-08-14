@@ -27,6 +27,9 @@ module.exports = {
       case 'Fallida':
         name='fallido';
         break;
+      case 'ready_to_ship':
+        name='aceptado';
+        break;
       case 'shipped':
         name='enviado';
         break;
