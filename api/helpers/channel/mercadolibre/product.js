@@ -87,7 +87,6 @@ module.exports = {
       
 
       body ={
-        //'official_store_id':'123',
         'title':product.name.substring(0,59),
         'price':price,
         'currency_id':'COP',
@@ -150,6 +149,8 @@ module.exports = {
       let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
       body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories);
       let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
+      let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
+      if(storeid>0){body['official_store_id']=storeid;}
       switch(inputs.action){
         case 'Update':
           if(product.ml && product.mlstatus){body = {'status':'paused'};}
@@ -195,7 +196,6 @@ module.exports = {
         default:
           mercadolibre.get('items/'+inputs.mlid,{'access_token':integration.secret},(error,result) =>{
             if(error){console.log(error); return exits.error(error);}
-            console.log(result);
             return exits.success(result);
           });
           break;
