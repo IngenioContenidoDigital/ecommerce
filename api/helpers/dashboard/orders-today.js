@@ -8,7 +8,6 @@ module.exports = {
     },
     seller: {
       type:'string',
-      required: true,
     },
     date: {
       type: 'number',
@@ -35,7 +34,7 @@ module.exports = {
         }
       });
     } else {
-      totalOrders  =  await Order.count().where({
+      totalOrders  =  await Order.count({
         createdAt: {
           '>=': inputs.date,
           '<': inputs.dateEnd

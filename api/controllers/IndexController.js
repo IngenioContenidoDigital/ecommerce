@@ -53,7 +53,7 @@ module.exports = {
       return res.badRequest();
     }
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let seller = req.session.user.seller;
+    let seller = req.session.user.seller || '';
     let dateStart = moment(req.param('dateStart')).valueOf();
     let dateEnd =  moment(req.param('dateEnd')).valueOf();
     let day = moment().locale('es').format('dddd');
@@ -173,7 +173,11 @@ module.exports = {
       lessProducts: data.lessProducts,
       productsInventory: data.productsInventory,
       productsUnd: data.productsUnd,
-      ordersByDay: ordersByDay
+      ordersByDay: ordersByDay,
+      totalShippingCost: data.totalShippingCost,
+      averageHoursLogist: data.averageHoursLogist,
+      averageHoursClient: data.averageHoursClient,
+      averageHoursCellar: data.averageHoursCellar,
     });
   },
   checkout: async function(req, res){

@@ -274,7 +274,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Costo total de envíos
                   </h3>
-                    <h1 class="title">$ 555</h1>
+                    <h1 class="title" id="totalShippingCost"></h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -293,7 +293,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Tiempo promedio gestión Bodega
                   </h3>
-                    <h1 class="title">5 días</h1>
+                    <h1 class="title" id="averageHoursCellar"></h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -312,7 +312,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Tiempo promedio de entrega al Cliente
                   </h3>
-                    <h1 class="title">5 días</h1>
+                    <h1 class="title" id="averageHoursClient"></h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -333,7 +333,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Tiempo promedio total de logística
                   </h3>
-                    <h1 class="title">5 días</h1>
+                    <h1 class="title" id="averageHoursLogist"></h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -352,7 +352,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Devoluciones de pedidos
                   </h3>
-                    <h1 class="title"></h1>
+                    <h1 class="title" id="totalOrdersReturned"></h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -371,7 +371,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Cancelaciones del vendedor
                   </h3>
-                    <h1 class="title"></h1>
+                    <h1 class="title" id="totalOrdersCancel"></h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -390,7 +390,7 @@
                   <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Peso total de mercancía entregada
                   </h3>
-                    <h1 class="title">44</h1>
+                    <h1 class="title">0</h1>
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
@@ -594,22 +594,27 @@
     function filterDate(start, end) {
       $('#reportrange span').html(start.locale('es').format('ll') + ' - ' + end.locale('es').format('ll'));
       $('#containerDashboard').hide();
-      document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader-circle bx-spin"></i></span></div>';
+      document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader bx-spin"></i></span></div>';
       io.socket.post('/filter/dashboard', { dateStart: start, dateEnd: end }, (resData, jwRes) => {
         if(jwRes.statusCode == 200) {
           let imgurl = <%- JSON.stringify(imgurl) %>;
           let dataCh = getChannels(resData.channels);
           let dataCit = getCities(resData.cities);
           $('#totalSales').text('$' + Math.round(resData.totalSales).toLocaleString('es-CO'));
+          $('#totalShippingCost').text('$' + Math.round(resData.totalShippingCost).toLocaleString('es-CO'));
           $('#totalProducts').text(resData.totalProducts);
           $('#totalOrders').text(resData.totalOrders);
           $('#totalInventory').text(resData.totalInventory);
+          $('#totalOrdersReturned').text(resData.totalOrdersReturned);
+          $('#totalOrdersCancel').text(resData.totalOrdersCancel);
+          $('#averageHoursLogist').text(resData.averageHoursLogist + ' hrs');
+          $('#averageHoursClient').text(resData.averageHoursClient + ' hrs');
+          $('#averageHoursCellar').text(resData.averageHoursCellar + ' hrs');
           var ulTopProductsPrice = $('#topProductsPrice');
           var ulTopProductsCant = $("#topProductsCant");
           var ulProductsUnd = $("#productsUnd");
           var ulProductsInventory = $("#productsInventory");
           var ullessProducts = $("#lessProducts");
-
           ulTopProductsPrice.find('div').remove();
           ulTopProductsCant.find('div').remove();
           ulProductsUnd.find('div').remove();
