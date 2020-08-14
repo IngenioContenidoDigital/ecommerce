@@ -1,0 +1,63 @@
+module.exports = {
+    CATALOG :  `
+    {
+        ShopifyProductListQuery{
+        name
+        description
+        reference
+        descriptionShort
+        active
+        price
+        manufacturer
+        mainCategory {
+            id
+            name
+            description
+            parent
+            active
+            url
+            level
+            createdAt
+            updateAt
+            dafiti
+            mercadolibre
+            linio
+        }
+        categories{
+            id
+            name
+            description
+            parent
+            active
+            url
+            level
+            createdAt
+            updateAt
+            dafiti
+            mercadolibre
+            linio
+        }
+        gender
+        mainColor
+        width
+        height
+        weight
+        length
+        images{
+            file
+            position
+            cover
+            src
+        }
+        variations{
+            quantity
+            reference
+            talla
+            upc
+            price
+            ean13
+        }
+        }
+    }
+`
+}
