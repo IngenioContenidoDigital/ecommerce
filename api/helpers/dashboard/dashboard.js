@@ -6,6 +6,10 @@ module.exports = {
       type:'string',
       required: true,
     },
+    seller: {
+      type:'string',
+      required: true,
+    },
     dateStart: {
       type: 'number',
       required: true,
@@ -13,7 +17,7 @@ module.exports = {
     dateEnd: {
       type:'number',
       required: true,
-    }
+    },
   },
   exits: {
     success: {
@@ -38,11 +42,11 @@ module.exports = {
 
     if(inputs.profile !== 'superadmin'){
       orders  =  await Order.find({
-        seller: req.session.user.seller,
+        seller: inputs.seller,
         createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
       }).populate('addressDelivery').populate('currentstatus');
 
-      let productsSeller = await Product.find({seller: req.session.user.seller}).populate('images');
+      let productsSeller = await Product.find({seller: inputs.seller}).populate('images');
       for(let product of productsSeller){
         const totalCant = await ProductVariation.sum('quantity').where({product: product.id});
         const inventory = await ProductVariation.find({product: product.id});
