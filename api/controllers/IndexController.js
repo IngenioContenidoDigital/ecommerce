@@ -139,7 +139,7 @@ module.exports = {
           {dateStart: new Date(date27).valueOf(), dateEnd: new Date(date28).valueOf()},
           {dateStart: new Date(date28).valueOf(), dateEnd: new Date(date29).valueOf()},
           {dateStart: new Date(date29).valueOf(), dateEnd: new Date(date30).valueOf()},
-          {dateStart: new Date(date30).valueOf(), dateEnd: new Date(date24).valueOf()},
+          {dateStart: new Date(date30).valueOf(), dateEnd: new Date(date31).valueOf()},
           {dateStart: new Date(date31).valueOf(), dateEnd: new Date(date32).valueOf()},
           {dateStart: new Date(date32).valueOf(), dateEnd: new Date(date33).valueOf()},
         ];
