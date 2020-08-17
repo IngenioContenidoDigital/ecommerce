@@ -27,7 +27,7 @@ module.exports = {
     let productvariation = null; 
     if(inputs.action==='ProductUpdate' || inputs.action==='Image'){dafiti=true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
-      products = await Product.find({seller:inputs.seller,dafiti:dafiti})
+      products = await Product.find({seller:inputs.seller,dafiti:dafiti, active:true})
       .populate('gender')
       .populate('mainColor')
       .populate('manufacturer')
@@ -108,7 +108,7 @@ module.exports = {
       }
     }
     if(inputs.action==='Image'){
-      products = await Product.find({seller:inputs.seller,dafiti:dafiti});
+      products = await Product.find({seller:inputs.seller,dafiti:dafiti,active:true});
       if(products.length>0){
         for(let product of products){
           //Imagenes
@@ -143,7 +143,7 @@ module.exports = {
       let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
       //let result = JSON.parse(response);
       if(inputs.action==='ProductCreate'){
-        await Product.update({id:paffected}).set({dafiti:true});
+        await Product.update({id:paffected}).set({dafiti:true,dafitistatus:true});
       }
       return exits.success(response);
     }catch(err){
