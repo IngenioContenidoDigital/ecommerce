@@ -2,7 +2,7 @@
     <div class="box">
         <p class="has-text-left"><img width="200" src="<%=imgurl%>/images/sellers/<%=seller.logo%>" /></p>
         <hr>
-        <div class="tabs is-toggle is-fullwidth">
+        <div class="tabs is-toggle is-fullwidth o-x-h">
             <ul>
               <li>
                 <a>
@@ -21,7 +21,7 @@
               </li>
             </ul>
         </div>
-        <% let dafiti = null, mercadolibre = null, linio = null; %>
+        <% let dafiti = null, mercadolibre = null, linio = null%>
         <%if(integrations.length>0){%>
             <% dafiti=integrations.filter(data => data.channel=='dafiti');%>
             <% linio=integrations.filter(data => data.channel=='linio');%>
@@ -105,7 +105,7 @@
             <form method="POST" action="/integration/set/<%=seller.id%>/mercadolibre" id="meli-form">
                 <div class="container">
                         <div class="field">
-                        <label class="label">Client Id</label>
+                        <label class="label">App Id</label>
                         <div class="control has-icons-left">
                         <input class="input" type="text" name="user" placeholder="Id de Cliente" required <%if(mercadolibre!==null && mercadolibre.length>0){%>value="<%=mercadolibre[0].user%>"<%}%>/>
                             <span class="icon is-small is-left">
@@ -114,7 +114,7 @@
                         </div>
                         </div>
                         <div class="field">
-                        <label class="label">Client Secret</label>
+                        <label class="label">Secret Key</label>
                         <div class="control has-icons-left">
                             <input class="input" type="text" name="key" placeholder="Clave de API" required <%if(mercadolibre!==null && mercadolibre.length>0){%>value="<%=mercadolibre[0].key%>"<%}%>/>
                             <span class="icon is-small is-left">
@@ -122,7 +122,7 @@
                             </span>
                         </div>
                         </div>
-                        <div class="field">
+                        <!--<div class="field">
                             <label class="label">Access Token</label>
                             <div class="control has-icons-left">
                                 <input class="input" type="text" name="url" placeholder="Token de Acceso" required <%if(mercadolibre!==null && mercadolibre.length>0){%>value="<%=mercadolibre[0].url%>"<%}%>/>
@@ -139,10 +139,12 @@
                                     <i class='bx bx-world'></i>
                                 </span>
                             </div>
-                        </div>
+                        </div>-->
                         <br>
                         <div class="control is-right">
-                            <button type="submit" class="button is-dark">Aplicar Cambios</button>
+                            <%if(mercadolibre ==null || mercadolibre.length<1){%>
+                            <button type="submit" class="button is-info">Autorizar Acceso</button>
+                            <%}%>
                         </div>
                 </div>
             </form>
@@ -153,6 +155,7 @@
     live('ul li','click',e=>{
         let group = e.target.parentNode.id;
         let blocks= document.querySelectorAll('.setup');
+
         for(let b of blocks){
             if(hasClass(b,group)){
                 removeClass(b,'is-hidden');

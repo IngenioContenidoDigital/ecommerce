@@ -51,6 +51,10 @@ module.exports.policies = {
     'sendcode':true,
     '*': 'isLoggedIn',
   },
-  VariationController:{'*': 'isLoggedIn'}
+  VariationController:{'*': 'isLoggedIn'},
+  IntegrationsController:{
+    'meliauth' : true,
+    '*':'isLoggedIn'
+  },
 
 };

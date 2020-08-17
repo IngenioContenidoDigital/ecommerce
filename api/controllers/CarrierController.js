@@ -118,6 +118,10 @@ module.exports = {
       guia = result.SuccessResponse.Body.Documents.Document.File;
     }
 
+    if(order.channel==='mercadolibre'){
+      guia = await sails.helpers.channel.mercadolibre.shipping(order);
+    }
+
     return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});
   }
 

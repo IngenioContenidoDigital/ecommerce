@@ -8,10 +8,12 @@
 module.exports = {
 
   attributes: {
-
+    name:{type:'string'},
+    code:{type:'string'}
+    /*
     name:{type:'string', required:true, unique:true},
     code:{type:'string', required:true, unique:true}
-
+    */
   },
 
 };
