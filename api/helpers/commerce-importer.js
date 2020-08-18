@@ -43,7 +43,7 @@ let getCatalog = async (data) => {
       headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
-    }).catch((e) => reject(e));
+    }).catch((e) => console.log(e)); 
 
     if (response && response.data) {
         return resolve(response.data.data[Object.keys(response.data.data)[0]]);
