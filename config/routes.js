@@ -22,6 +22,7 @@ module.exports.routes = {
   /* ----- FRONT ROUTES  -----*/
   '/': {controller:'IndexController',action:'index'},
   'GET /iridio': {controller:'IndexController',action:'admin'},
+  'POST /filter/dashboard': {controller:'IndexController', action:'filterDashboard'},
   'GET /login' : {view:'pages/configuration/login', locals:{error:null}},
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},

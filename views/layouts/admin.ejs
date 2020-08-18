@@ -32,6 +32,7 @@
     -->
     <!--SCRIPTS-->
     <script src="/dependencies/sails.io.js"></script>
+    <script src="/dependencies/chart.min.js"></script>
     <script src="/dependencies/moment-with-locales.js"></script>
     <script src="/dependencies/moment.js"></script>
     <script src="/dependencies/bulma-calendar/dist/js/bulma-calendar.min.js"></script>
@@ -88,6 +89,9 @@
                     <% } else { %>
                     <a href="/account" class="dropdown-item">Mi Cuenta</a>
                     <a href="/addresses" class="dropdown-item">Direcciones</a>
+                    <% if(session.user.rights.name == 'superadmin' || session.user.rights.name == 'operaciones') { %>
+                      <a href="/iridio" class="dropdown-item">Dashboard</a>
+                    <% }%>
                     <hr class="dropdown-divider">
                     <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
                     <% }%>
