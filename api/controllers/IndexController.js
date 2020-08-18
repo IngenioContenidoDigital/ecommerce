@@ -54,8 +54,8 @@ module.exports = {
     }
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     let seller = req.session.user.seller || '';
-    let dateStart = moment(req.param('dateStart')).valueOf();
-    let dateEnd =  moment(req.param('dateEnd')).valueOf();
+    let dateStart =new Date(req.param('dateStart')).valueOf();
+    let dateEnd = new Date(req.param('dateEnd')).valueOf();
     let day = moment().locale('es').format('dddd');
     let ordersByDay = [];
     let dates = [];
@@ -156,7 +156,6 @@ module.exports = {
       const count = await sails.helpers.dashboard.ordersToday(rights.name, seller, date.dateStart, date.dateEnd);
       ordersByDay.push(count.totalOrders);
     }
-
     let data = await sails.helpers.dashboard.dashboard(rights.name, seller, dateStart, dateEnd);
 
     return res.send({

@@ -24,9 +24,8 @@
         <span>Estado de Cuenta</span>
       </a>
     </li> -->
-    <div id="reportrange" class="is-right input-datepiker ">
-      <i class="bx bx-calendar"></i>&nbsp;
-      <span></span> <i class="bx bx-caret-down"></i>
+    <div class="is-right input-datepiker">
+      <input class="input" type="date" name="range"/>
     </div>
   </ul>
 </div>
@@ -407,21 +406,37 @@
 </div>
 
 <script>
-  $(function() {
-    var start = moment().startOf('month');
-    var end = moment().endOf('month');
-    
-    var ctx1 = $('#pie-chart-und');
-    var ctx2 = $('#pie-chart-country');
-    var ctx = $('#big-line-chart');
-    var chartColors = {
-      default: {
-        primary: '#00D1B2',
-        info: '#209CEE',
-        danger: '#FF3860'
-      }
-    };
-    var myChartUnd = new Chart(ctx1, {
+  var start = moment().startOf('month');
+  var end = moment().endOf('month');
+  var ctx1 = document.getElementById('pie-chart-und');
+  var ctx2 = document.getElementById('pie-chart-country');
+  var ctx = document.getElementById('big-line-chart');
+  var chartColors = {
+    default: {
+      primary: '#00D1B2',
+      info: '#209CEE',
+      danger: '#FF3860'
+    }
+  };
+  var myChartUnd = new Chart(ctx1, {
+    type: 'pie',
+    data: {
+      datasets: [
+        {
+          backgroundColor: [
+            '#00D1B2',
+            '#209CEE',
+            '#FF3860'
+          ],
+          data: []
+        },
+      ],
+      labels: []
+    },
+    options: {
+    }
+  });
+  var myChartPrice = new Chart(ctx2, {
       type: 'pie',
       data: {
         datasets: [
@@ -429,7 +444,14 @@
             backgroundColor: [
               '#00D1B2',
               '#209CEE',
-              '#FF3860'
+              '#FF3860',
+              '#8000FF',
+              '#FFDD57',
+              '#48C774',
+              '#FF9D00',
+              '#825500',
+              '#9C55B5',
+              '#FF00F7'
             ],
             data: []
           },
@@ -439,32 +461,7 @@
       options: {
       }
     });
-    var myChartPrice = new Chart(ctx2, {
-        type: 'pie',
-        data: {
-          datasets: [
-            {
-              backgroundColor: [
-                '#00D1B2',
-                '#209CEE',
-                '#FF3860',
-                '#8000FF',
-                '#FFDD57',
-                '#48C774',
-                '#FF9D00',
-                '#825500',
-                '#9C55B5',
-                '#FF00F7'
-              ],
-              data: []
-            },
-          ],
-          labels: []
-        },
-        options: {
-        }
-      });
-    var myChartLine = new Chart(ctx, {
+  var myChartLine = new Chart(ctx, {
       type: 'line',
       data: {
         datasets: [
@@ -532,190 +529,196 @@
       }
     });
 
-    function getCities(cities) {
-      let total = 0;
-      let dataCities = [];
-      let dataLabels = [];
-      cities.forEach(item => total += item.quantity);
-      cities.forEach(async item => {
-        dataLabels.push(item.name.charAt(0).toUpperCase() + item.name.slice(1));
-        dataCities.push(((item.quantity / total) * 100).toFixed(2));
-      });
-      return {dataCities, dataLabels};
-    }
+  function getCities(cities) {
+    let total = 0;
+    let dataCities = [];
+    let dataLabels = [];
+    cities.forEach(item => total += item.quantity);
+    cities.forEach(async item => {
+      dataLabels.push(item.name.charAt(0).toUpperCase() + item.name.slice(1));
+      dataCities.push(((item.quantity / total) * 100).toFixed(2));
+    });
+    return {dataCities, dataLabels};
+  }
 
-    function getChannels(channels) {
-      let totalChannels = 0;
-      let dataChannels = [];
-      let dataLabelsChannels = [];
-      channels.forEach(item => totalChannels += item.quantity);
-      channels.forEach(async item => {
-        dataLabelsChannels.push(item.name.charAt(0).toUpperCase() + item.name.slice(1));
-        dataChannels.push(((item.quantity / totalChannels) * 100).toFixed(2));
-      });
-      return {dataChannels, dataLabelsChannels}
-    }
+  function getChannels(channels) {
+    let totalChannels = 0;
+    let dataChannels = [];
+    let dataLabelsChannels = [];
+    channels.forEach(item => totalChannels += item.quantity);
+    channels.forEach(async item => {
+      dataLabelsChannels.push(item.name.charAt(0).toUpperCase() + item.name.slice(1));
+      dataChannels.push(((item.quantity / totalChannels) * 100).toFixed(2));
+    });
+    return {dataChannels, dataLabelsChannels}
+  }
 
-    function graphics(dataLine, dataChannels, labelsChannels, dataCities, labelsCities, reset) {
-      const labelsLine = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-      if (reset) {
-        removeData(myChartLine);
-        removeData(myChartUnd);
-        removeData(myChartPrice);
-        addData(myChartLine, labelsLine, dataLine);
-        addData(myChartUnd, labelsChannels, dataChannels);
-        addData(myChartPrice, labelsCities, dataCities);
-      } else {
-        addData(myChartLine, labelsLine, dataLine);
-        addData(myChartUnd, labelsChannels, dataChannels);
-        addData(myChartPrice, labelsCities, dataCities);
+  function graphics(dataLine, dataChannels, labelsChannels, dataCities, labelsCities, reset) {
+    const labelsLine = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    if (reset) {
+      removeData(myChartLine);
+      removeData(myChartUnd);
+      removeData(myChartPrice);
+      addData(myChartLine, labelsLine, dataLine);
+      addData(myChartUnd, labelsChannels, dataChannels);
+      addData(myChartPrice, labelsCities, dataCities);
+    } else {
+      addData(myChartLine, labelsLine, dataLine);
+      addData(myChartUnd, labelsChannels, dataChannels);
+      addData(myChartPrice, labelsCities, dataCities);
+    }
+  }
+  
+  function addData(chart, labels, data) {
+    chart.data.labels = labels;
+    chart.data.datasets.forEach((dataset) => {
+      dataset.data = data;
+    });
+    chart.update();
+  }
+
+  function removeData(chart) {
+    chart.data.labels = [];
+    chart.data.datasets.forEach((dataset) => {
+      dataset.data = [];
+    });
+    chart.update();
+  }
+  
+  function filterDate(start, end) {
+    var dashboard = document.getElementById('containerDashboard');
+    dashboard.style.display = 'none';
+    document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader bx-spin"></i></span></div>';
+    io.socket.post('/filter/dashboard', { dateStart: start, dateEnd: end }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        let imgurl = <%- JSON.stringify(imgurl) %>;
+        let dataCh = getChannels(resData.channels);
+        let dataCit = getCities(resData.cities);
+        var totalSales = document.querySelector('#totalSales');
+        var totalShippingCost = document.querySelector('#totalShippingCost');
+        var totalProducts = document.querySelector('#totalProducts');
+        var totalOrders = document.querySelector('#totalOrders');
+        var totalInventory = document.querySelector('#totalInventory');
+        var totalOrdersReturned = document.querySelector('#totalOrdersReturned');
+        var totalOrdersCancel = document.querySelector('#totalOrdersCancel');
+        var averageHoursLogist = document.querySelector('#averageHoursLogist');
+        var averageHoursClient = document.querySelector('#averageHoursClient');
+        var averageHoursCellar = document.querySelector('#averageHoursCellar');
+        totalSales.textContent = '$' + Math.round(resData.totalSales).toLocaleString('es-CO');
+        totalShippingCost.textContent = '$' + Math.round(resData.totalShippingCost).toLocaleString('es-CO');
+        totalProducts.textContent = resData.totalProducts;
+        totalOrders.textContent = resData.totalOrders;
+        totalInventory.textContent = resData.totalInventory;
+        totalOrdersReturned .textContent = resData.totalOrdersReturned;
+        totalOrdersCancel.textContent = resData.totalOrdersCancel;
+        averageHoursLogist.textContent = resData.averageHoursLogist + ' hrs';
+        averageHoursClient.textContent = resData.averageHoursClient + ' hrs';
+        averageHoursCellar.textContent = resData.averageHoursCellar + ' hrs';
+
+        var ulTopProductsPrice = document.querySelector("#topProductsPrice");
+        var ulTopProductsCant = document.querySelector("#topProductsCant");
+        var ulProductsUnd = document.querySelector("#productsUnd");
+        var ulProductsInventory = document.querySelector("#productsInventory");
+        var ullessProducts = document.querySelector("#lessProducts");
+        ulTopProductsPrice.innerHTML = ''
+        ulTopProductsCant.innerHTML = ''
+        ulProductsUnd.innerHTML = ''
+        ulProductsInventory.innerHTML = ''
+        ullessProducts.innerHTML = ''
+
+        resData.topProductsPrice.forEach(item => {
+          var imageProduct = "";
+          if (item.product.images && item.product.images.length > 0) {
+            item.product.images.forEach(image => {
+              if(image.cover == 1){
+                imageProduct = image.file;
+              }
+            })
+          }
+          var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
+          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
+          ulTopProductsPrice.innerHTML += listItem;
+        });
+        resData.topProductsCant.forEach(item => {
+          var imageProduct = "";
+          if (item.product.images && item.product.images.length > 0) {
+            item.product.images.forEach(image => {
+              if(image.cover == 1){
+                imageProduct = image.file;
+              }
+            })
+          }
+          var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
+          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
+          ulTopProductsCant.innerHTML += listItem;
+        });
+        resData.productsUnd.forEach(item => {
+          var imageProduct = "";
+          if (item.images && item.images.length > 0) {
+            item.images.forEach(image => {
+              if(image.cover == 1){
+                imageProduct = image.file;
+              }
+            })
+          }
+          var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
+          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
+          ulProductsUnd.innerHTML += listItem;
+        });
+        resData.productsInventory.forEach(item => {
+          var imageProduct = "";
+          if (item.images && item.images.length > 0) {
+            item.images.forEach(image => {
+              if(image.cover == 1){
+                imageProduct = image.file;
+              }
+            })
+          }
+          var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
+          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
+          ulProductsInventory.innerHTML += listItem;
+        });
+        resData.lessProducts.forEach(item => {
+          var imageProduct;
+          if (item.product.images && item.product.images.length > 0) {
+            item.product.images.forEach(image => {
+              if(image.cover == 1){
+                imageProduct = image.file;
+              }
+            })
+          }
+          var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
+          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
+          ullessProducts.innerHTML += listItem;
+        });
+        
+        graphics(resData.ordersByDay, dataCh.dataChannels, dataCh.dataLabelsChannels, dataCit.dataCities, dataCit.dataLabels, true);
+        document.querySelector('.loading').innerHTML = '';
+        dashboard.style.display = 'inline';
       }
-    }
+    });
+  }
 
-    function addData(chart, labels, data) {
-      chart.data.labels = labels;
-      chart.data.datasets.forEach((dataset) => {
-        dataset.data = data;
-      });
-      chart.update();
-    }
-
-    function removeData(chart) {
-      chart.data.labels = [];
-      chart.data.datasets.forEach((dataset) => {
-        dataset.data = [];
-      });
-      chart.update();
-    }
-
-    function filterDate(start, end) {
-      $('#reportrange span').html(start.locale('es').format('ll') + ' - ' + end.locale('es').format('ll'));
-      $('#containerDashboard').hide();
-      document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader bx-spin"></i></span></div>';
-      io.socket.post('/filter/dashboard', { dateStart: start, dateEnd: end }, (resData, jwRes) => {
-        if(jwRes.statusCode == 200) {
-          let imgurl = <%- JSON.stringify(imgurl) %>;
-          let dataCh = getChannels(resData.channels);
-          let dataCit = getCities(resData.cities);
-          $('#totalSales').text('$' + Math.round(resData.totalSales).toLocaleString('es-CO'));
-          $('#totalShippingCost').text('$' + Math.round(resData.totalShippingCost).toLocaleString('es-CO'));
-          $('#totalProducts').text(resData.totalProducts);
-          $('#totalOrders').text(resData.totalOrders);
-          $('#totalInventory').text(resData.totalInventory);
-          $('#totalOrdersReturned').text(resData.totalOrdersReturned);
-          $('#totalOrdersCancel').text(resData.totalOrdersCancel);
-          $('#averageHoursLogist').text(resData.averageHoursLogist + ' hrs');
-          $('#averageHoursClient').text(resData.averageHoursClient + ' hrs');
-          $('#averageHoursCellar').text(resData.averageHoursCellar + ' hrs');
-          var ulTopProductsPrice = $('#topProductsPrice');
-          var ulTopProductsCant = $("#topProductsCant");
-          var ulProductsUnd = $("#productsUnd");
-          var ulProductsInventory = $("#productsInventory");
-          var ullessProducts = $("#lessProducts");
-          ulTopProductsPrice.find('div').remove();
-          ulTopProductsCant.find('div').remove();
-          ulProductsUnd.find('div').remove();
-          ulProductsInventory.find('div').remove();
-          ullessProducts.find('div').remove();
-
-          resData.topProductsPrice.forEach(item => {
-            var imageProduct = "";
-            if (item.product.images && item.product.images.length > 0) {
-              item.product.images.forEach(image => {
-                if(image.cover == 1){
-                  imageProduct = image.file;
-                }
-              })
-            }
-            var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-            var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-            ulTopProductsPrice.append(listItem);
-          });
-          resData.topProductsCant.forEach(item => {
-            var imageProduct = "";
-            if (item.product.images && item.product.images.length > 0) {
-              item.product.images.forEach(image => {
-                if(image.cover == 1){
-                  imageProduct = image.file;
-                }
-              })
-            }
-            var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-            var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-            ulTopProductsCant.append(listItem);
-          });
-          resData.productsUnd.forEach(item => {
-            var imageProduct = "";
-            if (item.images && item.images.length > 0) {
-              item.images.forEach(image => {
-                if(image.cover == 1){
-                  imageProduct = image.file;
-                }
-              })
-            }
-            var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
-            var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
-            ulProductsUnd.append(listItem);
-          });
-          resData.productsInventory.forEach(item => {
-            var imageProduct = "";
-            if (item.images && item.images.length > 0) {
-              item.images.forEach(image => {
-                if(image.cover == 1){
-                  imageProduct = image.file;
-                }
-              })
-            }
-            var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
-            var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
-            ulProductsInventory.append(listItem);
-          });
-          resData.lessProducts.forEach(item => {
-            var imageProduct;
-            if (item.product.images && item.product.images.length > 0) {
-              item.product.images.forEach(image => {
-                if(image.cover == 1){
-                  imageProduct = image.file;
-                }
-              })
-            }
-            var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-            var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-            ullessProducts.append(listItem);
-          });
-          
-          graphics(resData.ordersByDay, dataCh.dataChannels, dataCh.dataLabelsChannels, dataCit.dataCities, dataCit.dataLabels, true);
-          document.querySelector('.loading').innerHTML = '';
-          $('#containerDashboard').show();
-        }
-      });
-    }
-
-    $('#reportrange').daterangepicker({
-      startDate: start,
-      endDate: end,
-      ranges: {
-        'Últimos 7 días': [moment().subtract(6, 'days'), moment()],
-        'Últimos 30 días': [moment().subtract(29, 'days'), moment()],
-        'Este mes': [moment().startOf('month'), moment().endOf('month')],
-        'El mes pasado': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-      },
-      locale: {
-        "separator": " - ",
-        "applyLabel": "Filtrar",
-        "cancelLabel": "Cancelar",
-        "customRangeLabel": "Fecha predefinida",
-        "weekLabel": "W",
-        "daysOfWeek": ['Dom','Lun','Mar','Mié','Juv','Vie','Sáb'],
-        "monthNames": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", 
-          "Septiembre", "Octubre", "Noviembre",  "Diciembre"
-        ],
-      },
-      applyButtonClasses: "is-primary",
-      cancelButtonClasses: "is-light",
-      buttonClasses: "button is-small",
-    }, filterDate);
-    
-    filterDate(start, end);
+  // Initialize all input of date type.
+  const calendars = bulmaCalendar.attach('[type="date"]', {
+    type:'date',
+    isRange: true,
+    allowSameDayRange: true,
+    dateFormat:'YYYY-MM-DD',
+    displayMode:'default',
+    cancelLabel:'Cancelar',
+    clearLabel:'Limpiar',
+    todayLabel:'Hoy',
+    validateLabel:'Seleccionar',
+    startDate: new Date(start),
+    endDate: new Date(end),
   });
+
+  calendars.forEach(calendar => {
+    calendar.on('select', date => {
+      filterDate(moment(date.data.startDate).format('YYYY/MM/DD'), moment(date.data.endDate).add(1, 'days').format('YYYY/MM/DD'))
+    });
+  });
+
+  filterDate(start, end);
 </script>
