@@ -163,14 +163,28 @@
             <%}%>
             </div>
           </div>
+          <div class="columns is-centered">
+              <div class="column is-8">
+                <h6 class="title is-6">Marcas</h6>
+                <div class="tags">
+                <%brands.forEach(brand =>{%>
+                  <a href="/ver/marca/<%=brand.url%>"><span style="min-width: 100px;" class="tag is-white is-capitalized"><%=brand.name%></span></a>
+                <%})%>
+                </div>
+              </div>
+          </div>
+          <hr>
+          <div class="columns is-centered is-mobile is-gapless">
+            <div class="column is-12-mobile is-8-desktop">
+              <div class="columns is-centered is-mobile is-gapless">
+                <div class="column"><p class="has-text-centered"><img src="/images/envios.png" alt="envio a domicilio en toda colombia" /></p></div>
+                <div class="column"><p class="has-text-centered"><img src="/images/miles.png" alt="miles de productos disponibles" /></p></div>
+                <div class="column"><p class="has-text-centered"><img src="/images/originales.png" alt="tenemos productos de marcas originales" /></p></div>
+                <div class="column"><p class="has-text-centered"><img src="/images/seguro.png" alt="compra con tranquilidad este es un sitio seguro" /></p></div>
+              </div>
+            </div>
+          </div>
       <%}%>
-  <hr>
-  <div class="columns is-mobile is-gapless">
-    <div class="column"><p class="has-text-centered"><img src="/images/envios.png" alt="envio a domicilio en toda colombia" /></p></div>
-    <div class="column"><p class="has-text-centered"><img src="/images/miles.png" alt="miles de productos disponibles" /></p></div>
-    <div class="column"><p class="has-text-centered"><img src="/images/originales.png" alt="tenemos productos de marcas originales" /></p></div>
-    <div class="column"><p class="has-text-centered"><img src="/images/seguro.png" alt="compra con tranquilidad este es un sitio seguro" /></p></div>
-  </div>
     <hr>
 <script src="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/js/bulma-carousel.min.js"></script>
 <script>

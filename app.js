@@ -25,8 +25,8 @@
 // no matter where we actually lift from.
 // > Note: This is not required in order to lift, but it is a convenient default.
 process.chdir(__dirname);
-
-
+const Sentry = require('@sentry/node');
+Sentry.init({ dsn: 'https://371b6ce9af634741b53fe860c769a8e5@o427235.ingest.sentry.io/5371005' });
 
 // Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
 var sails;
@@ -46,8 +46,13 @@ try {
   console.error('also run this app with `sails lift`.  Running with `sails lift` will');
   console.error('not run this file (`app.js`), but it will do exactly the same thing.');
   console.error('(It even uses your app directory\'s local Sails install, if possible.)');
+  Sentry.captureException(err);
   return;
 }//-•
+
+process.on('uncaughtException', function(err) {
+  Sentry.captureException(err);
+});
 
 
 // Start server

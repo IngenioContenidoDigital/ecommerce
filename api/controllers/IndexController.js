@@ -39,10 +39,9 @@ module.exports = {
           }
         }
       }
-      return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(),viewed:viewed});
-    }else{
-      return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(),viewed:viewed});
     }
+    let brands = await Manufacturer.find({active:true}).sort('name ASC');
+    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(),viewed:viewed,brands:brands});
   },
   admin: async function(req, res){
     return res.view('pages/homeadmin',{layout:'layouts/admin'});

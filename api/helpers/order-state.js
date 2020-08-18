@@ -27,6 +27,9 @@ module.exports = {
       case 'Fallida':
         name='fallido';
         break;
+      case 'ready_to_ship':
+        name='aceptado';
+        break;
       case 'shipped':
         name='enviado';
         break;
@@ -40,6 +43,15 @@ module.exports = {
         name='cancelado';
         break;
       case 'failed':
+        name='fallido';
+        break;
+      case 'paid':
+        name='aceptado';
+        break;
+      case 'cancelled':
+        name='cancelado';
+        break;
+      case 'invalid':
         name='fallido';
         break;
       default:
