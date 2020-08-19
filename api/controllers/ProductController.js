@@ -359,6 +359,7 @@ module.exports = {
 
     let images = [];
     let variations = [];
+    let result = [];
     let errors = [];
 
     if (req.body.channel) {
@@ -375,7 +376,6 @@ module.exports = {
           await callback(array[index], index, array);
         }
       }
-
 
       let checkdata = async (p) => {
         return new Promise(async (resolve, reject) => {
@@ -449,7 +449,14 @@ module.exports = {
             }
 
             if(p.gender){
-              pro.gender = (await Gender.findOne({ name: p.gender.toLowerCase() })).id;
+              let gender =  (await Gender.findOne({ name: p.gender.toLowerCase() }));
+
+              if(gender){
+                  pro.gender = gender.id;
+              }else{
+                pro.gender = (await Gender.findOne({ name:'unisex' })).id;
+              }
+              
             }
 
             if (p.tax) {
@@ -477,8 +484,11 @@ module.exports = {
 
           } catch (error) {
             errors.push({ p, error });
-            reject(errors);
+            reject(error);
           }
+
+          resolve(pro);
+
         });
       }
 
@@ -486,13 +496,22 @@ module.exports = {
 
       await each(importedProducts, async (p) => {
         pro = await checkdata(p).catch(e => errors.push(e));
-        cols.push(pro);
+        if(pro)
+          cols.push(pro);
       });
 
-      let result = await Product.createEach(cols).fetch();
+      //create products
+       result = await Product.createEach(cols).fetch();
 
-      await each(result, async (p) => {
-        let source = images.filter((i) => i.reference == p.reference)[0].images;
+      //create images
+      await each(result, async(p)=>{
+       
+        let source = images.filter((i) => i.reference == p.reference)[0].images.slice(0, 1);
+
+        /*if(source.length > 5){
+           (source = source.slice(0, 5));
+        }*/
+
         let hasCover = (source.filter(c => c.cover).length > 0);
 
         if (!hasCover)
@@ -500,7 +519,6 @@ module.exports = {
 
         await each(source, async (s) => {
           (s.uploaded = await sails.helpers.uploadImageUrl(s.src, s.file, p.id));
-          return s;
         });
 
         await ProductImage.createEach(source.map((s) => {
@@ -513,14 +531,18 @@ module.exports = {
             (img.position = s.position);
 
           return img;
-        })).catch((e) => errors.push(e));
+        })).catch((e) => errors.push(e) && console.log("ERROR UPLOADING IMAGE : ", e));
+      });
 
+      //create variations
+      await each(result, async (p) => {
         try {
           if (variations.length > 0) {
             if (variations.filter(v => v.reference == p.reference).length > 0) {
               let productVariations = variations.filter(v => v.reference == p.reference)[0].variations;
+              let variationToStore = [];
 
-              each(productVariations, async (pv) => {
+              await each(productVariations, async (pv) => {
                 let variation = {};
                 variation.seller = req.session.user.seller || req.body.seller;
                 variation.supplierreference = p.reference;
@@ -531,24 +553,25 @@ module.exports = {
                   variation.upc = pv.upc;
 
                 variation.quantity = pv.quantity || 0;
-                let product = await Product.findOne({ reference: variation.supplierreference, seller: variation.seller }).populate('tax').populate('categories');
+                let product = await Product.find({ reference: variation.supplierreference, seller: variation.seller }).populate('tax').populate('categories');
                 let categories = [];
 
-                if (product) {
-                  product.categories.forEach(category => {
+                if(product[0].categories){
+                  product[0].categories.forEach(category => {
                     if (!categories.includes(category.id)) {
                       categories.push(category.id);
                     }
                   });
+                }
 
-                  variation.product = product.id;
-                  variation.price = parseInt(product.price * (1 + product.tax.value / 100));
+                  variation.product = product[0].id;
+                  variation.price = parseInt(product[0].price * (1 + product[0].tax.value / 100));
 
-                  if (!pv.gender && pv.talla) {
+                  if (!pv.gender && pv.talla.trim()) {
                     let uniqueSize = await Variation.find({
                       where: { name: pv.talla.trim().toLowerCase() },
                       limit: 1
-                    })
+                    }).catch((e)=>console.log(e));
 
                       (variation.variation = uniqueSize[0].id);
 
@@ -557,7 +580,7 @@ module.exports = {
                     let gender = await Gender.findOne({ name: pv.gender.toLowerCase() });
 
                     let uniqueGender = await Variation.find({
-                      where: { gender: gender.id, name: "único" }
+                      where: { gender: gender.id, name: "unisex" }
                     })
 
                     if (uniqueGender) {
@@ -567,7 +590,7 @@ module.exports = {
                   } else if (!pv.talla && !pv.gender) {
 
                     let unique = await Variation.find({
-                      where: { name: "único" },
+                      where: { name: "unisex" },
                       limit: 1
                     });
 
@@ -575,36 +598,32 @@ module.exports = {
 
                   } else {
                     let v = await Variation.find({
-                      where: { name: pv.talla.trim().toLowerCase(), gender: product.gender, category: { 'in': categories } },
+                      where: { name: pv.talla.trim().toLowerCase(), gender: product[0].gender, category: { 'in': categories } },
                       limit: 1
                     });
 
                     (variation.variation = v[0].id);
                   }
 
-                  await ProductVariation.create(variation);
-
-                } else {
-                  throw { name: 'NOPRODUCT', message: 'Producto ' + p.name + ' no localizado' };
-                }
+                  variationToStore.push(variation);
               });
+              
+              await ProductVariation.createEach(variationToStore);
             } else {
               throw { name: 'NOPRODUCT', message: 'Producto ' + p.name + ' no localizado' };
             }
           }
         } catch (error) {
           errors.push(error);
+          console.log("ERROR:", error);
         }
+     
       });
 
-      if (errors.length > 0) {
-        return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: errors }, integrations: [] });
-      } else {
-        return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result }, integrations: [] });
-      }
-
+      console.log("done");
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: (errors.length > 0) ? errors : null, resultados: { items :  result }, integrations : [] });
     }
-
+    
     let header = null;
     let checkheader = {
       product: ['name', 'reference', 'description', 'descriptionShort', 'active', 'price', 'tax', 'manufacturer', 'width', 'height', 'length', 'weight', 'gender', 'seller', 'mainColor', 'categories', 'mainCategory'],

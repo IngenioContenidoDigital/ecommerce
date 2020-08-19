@@ -1,5 +1,6 @@
 const axios = require('axios');
 const AWS = require('aws-sdk');
+const uuid = require('node-uuid');
 
 module.exports = {
 
@@ -36,15 +37,19 @@ module.exports = {
         secretAccessKey: 'LjPIa3U8WyUkKOCcKdsq43+9f8DddgmVNP359t8q'
       });
 
+      let hash = uuid.v4();
+      
       s3bucket.putObject({
           Bucket: `iridio.co/images/products/${inputs.product}`,
-          Key: inputs.file.trim(),
+          Key: hash,
           Body: buffer,
           ContentLength : buffer.length,
           ACL: 'public-read'
       }, (err, data)=>{
+        console.log("data", data);
+        console.log("filename", hash);
         if(!err){
-            return resolve({ filename :  `${inputs.file.trim()}`});
+            return resolve({ filename :  `${hash}`});
         }
 
         reject(err);

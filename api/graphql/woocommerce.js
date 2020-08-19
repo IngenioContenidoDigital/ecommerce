@@ -1,7 +1,7 @@
 module.exports = {
-    CATALOG : `
+    CATALOG :`
     {
-      WoocommerceProductListQuery{
+        WooCommerceProductListQuery{
         name
         description
         reference

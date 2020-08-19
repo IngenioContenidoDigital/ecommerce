@@ -25,7 +25,8 @@ let signRequest = (data) => {
         token: jwt.sign({
           url: data.apiUrl,
           consumerKey: data.pk,
-          consumerSecret: data.sk
+          consumerSecret: data.sk,
+          version: data.version
         }, 'secret'),
         query: rootQuery
       }
