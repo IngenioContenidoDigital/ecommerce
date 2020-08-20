@@ -15,7 +15,11 @@ module.exports = {
     let seller = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
-    let sellers = await Seller.find();
+    if(rights.name!=='superadmin'){
+      sellers = await Seller.find({id:req.session.user.seller});
+    }else{
+      sellers = await Seller.find();
+    }
     let integrations = await Integrations.find({seller:id});
     if(id){
       seller = await Seller.findOne({id:id}).populate('mainAddress');
@@ -428,7 +432,7 @@ module.exports = {
     let channel = req.param('channel');
     Integrations.findOrCreate({seller:seller,channel:channel},{
       channel:channel,
-      url:req.body.url,
+      url:req.body.url ? req.body.url : '',
       user:req.body.user,
       key:req.body.key,
       secret:req.body.secret ? req.body.secret : '',
@@ -438,14 +442,18 @@ module.exports = {
       if(!created){
         await Integrations.updateOne({id:record.id}).set({
           channel:channel,
-          url:req.body.url,
+          url:req.body.url ? req.body.url : '',
           user:req.body.user,
           key:req.body.key,
           secret:req.body.secret ? req.body.secret : '',
           seller:seller
         });
+        return res.redirect('/sellers');
+      }else{
+        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }
-      return res.redirect('/sellers');
+
+      
     });
   }
 };

@@ -69,7 +69,7 @@ module.exports = {
             paymentId:payment.data.ref_payco,
             paymentOption:extra,
             seller:seller,
-            carrier:carrier.id,
+            carrier:carrier.id ? carrier.id : '',
             channel:payment.data.channel ? payment.data.channel : 'direct',
             channelref:payment.data.channelref ? payment.data.channelref : ''
           }).fetch();

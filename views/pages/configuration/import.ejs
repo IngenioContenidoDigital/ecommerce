@@ -53,12 +53,10 @@
                         </form>
                       </section>
                       <section class="tab-content">
-                        <% provider = null; %>
-                        <%if(integrations.length>0){%>
-                            <% provider=integrations.filter((data)=>{
-                              return (data.channel=='woocommerce') || (data.channel=='shopify'); 
-                            })[0];%>
-                            <% if(provider){%>
+                        <% woocommerce = null; %>
+                        <%if(typeof integration =='object' && integrations.length>0){%>
+                            <% woocommerce=integrations.filter(data => data.channel=='woocommerce')[0];%>
+                            <% if(woocommerce){%>
                               <form action="/import" method="POST" enctype="multipart/form-data">
                                 <%if(sellers.length>0){%>
                                   <div class="field">

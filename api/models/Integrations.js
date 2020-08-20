@@ -15,11 +15,11 @@ module.exports = {
     },
     url:{
       type:'string',
-      required:true,
+      required:false,
     },
     user:{
       type:'string',
-      required : false
+      required : true
     },
     key:{
       type:'string',
@@ -27,7 +27,7 @@ module.exports = {
     },
     secret:{
       type:'string',
-      required:true
+      required:false
     },
     seller:{
       model:'seller',

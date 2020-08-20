@@ -719,29 +719,9 @@ module.exports = {
                     result[header[i]] = (await Tax.findOne({ value: row[i] })).id;
                     break;
                   case 'categories':
-                    row[i] += ',Inicio';
-                    row[i] = row[i].replace(/\,(\s)+/gi, ',');
-                    let clist = row[i].toLowerCase().split(',');
-                    clist = clist.map(r => r.trim());
-                    let categories = await Category.find({
-                      where: { name: clist },
-                      sort: 'level DESC'
-                    });
-                    let categoriesids = [];
-                    for (let c in categories) {
-                      if (!categoriesids.includes(categories[c].id)) {
-                        categoriesids.push(categories[c].id);
-                      }
-                    }
-                    let realcats = categories.filter(cat => categoriesids.includes(cat.parent));
-                    let rcatsids = [];
-                    for (let rc in realcats) {
-                      if (!rc.includes(realcats[rc].id)) {
-                        rcatsids.push(realcats[rc].id);
-                      }
-                    }
-                    result[header[i]] = rcatsids;
-                    result['mainCategory'] = categories[0].id;
+                    let categories = await sails.helpers.categorize(row[i]);
+                    result[header[i]] = categories.categories;
+                    result['mainCategory'] = categories.mainCategory;
                     break;
                   case 'mainCategory':
                     break;

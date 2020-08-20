@@ -32,10 +32,9 @@ module.exports = {
       const response = await axios.get(inputs.url,  { responseType: 'arraybuffer' });
       const buffer = Buffer.from(response.data, "utf-8");
 
-      let s3bucket = new AWS.S3({
-        accessKeyId: 'AKIATQT7MH3O4B4COYDV',
-        secretAccessKey: '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'
-      });
+      AWS.config.loadFromPath('./config.json');
+      let s3bucket = new AWS.S3();
+      
 
       let hash = uuid.v4();
       

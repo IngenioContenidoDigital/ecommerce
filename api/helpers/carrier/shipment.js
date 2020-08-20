@@ -17,8 +17,8 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     let soap = require('strong-soap').soap;
-    let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
-    //let url = 'http://guias.coordinadora.com/ws/guias/1.6/server.php?wsdl';
+    //let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
+    let url = 'http://guias.coordinadora.com/ws/guias/1.6/server.php?wsdl';
 
     let order = await Order.findOne({id:inputs.order})
     .populate('customer')

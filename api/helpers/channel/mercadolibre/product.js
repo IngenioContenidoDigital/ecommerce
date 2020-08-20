@@ -42,6 +42,21 @@ module.exports = {
         limit: 1
       });
       let body = null;
+      let price = 0;
+      //Se usa para llevar el precio con descuento debido a que el recurso promo no está disponible para colombia Líneas 163 a 182
+      //Si se habilita el recurso /promo en la MCO, se debe comentar Líneas 75 a 86 y habilitar líneas 163 a 182      
+      if(product.discount.length>0){
+        switch(product.discount[0].type){
+          case 'P':
+            price+=Math.round(((product.price*(1+inputs.mlprice))*(1-(product.discount[0].value/100)))*(1+(parseFloat(product.tax.value)/100)));
+            break;
+          case 'C':
+            price+=Math.round(((product.price*(1+inputs.mlprice))-product.discount[0].value)*(1+(parseFloat(product.tax.value)/100)));
+            break;
+        }
+      }else{
+        price = Math.round((product.price*(1+inputs.mlprice))*(1+(parseFloat(product.tax.value)/100)))
+      }
 
       let productimages = await ProductImage.find({product:product.id});
       productimages.forEach(image =>{
@@ -60,7 +75,7 @@ module.exports = {
             }
           ],
           'available_quantity':variation.quantity,
-          'price':Math.round(parseFloat(variation.price)*(1+parseFloat(inputs.mlprice))),
+          'price':price, //Crear función para validar precio específico de la variación
           'attributes':[{
             'id':'SELLER_SKU',
             'value_name':variation.id
@@ -69,11 +84,11 @@ module.exports = {
         };
         variations.push(v);
       });
+      
 
       body ={
-        //'official_store_id':'123',
         'title':product.name.substring(0,59),
-        'price':Math.round((parseFloat(product.price)*(1+(parseFloat(product.tax.value)/100)))*(1+parseFloat(inputs.mlprice))),
+        'price':price,
         'currency_id':'COP',
         'buying_mode':'buy_it_now',
         'condition':'new',
@@ -134,10 +149,19 @@ module.exports = {
       let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
       body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories);
       let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
+      let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
+      if(storeid>0){body['official_store_id']=storeid;}
       switch(inputs.action){
         case 'Update':
           if(product.ml && product.mlstatus){body = {'status':'paused'};}
-          if(product.ml && !product.mlstatus){body = {'status':'active'};}
+          if(product.ml && !product.mlstatus){
+            body['status']='active';
+            delete body['title'];
+            delete body['listing_type_id'];
+            delete body['buying_mode'];
+            delete body['price'];
+            delete body['description'];
+          }
           mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
             if(error){console.log(error); return exits.error(error);}
             return exits.success(result);
@@ -146,14 +170,32 @@ module.exports = {
         case 'Post':
           mercadolibre.post('items',body,{'access_token':integration.secret},(error,result) =>{
             if(error){console.log(error); return exits.error(error);}
-            console.log(result);
+            /*let mlproduct = result.id;
+            console.log(mlproduct);
+            if(product.discount.length>0){
+              mercadolibre.put('promo/item/'+mlproduct,
+              {'best_buyers_discount_percentage':null,
+              'buyers_discount_percentage':product.discount[0].value,
+              'start_date':moment(product.discount[0].from).toISOString(true),
+              'finish_date':moment(product.discount[0].to).toISOString(true),
+              'discount_type':'PRICE_DISCOUNT'}, {'access_token':integration.secret},(err, response) =>{
+                if(err){console.log('Poner Descuento'); console.log(err);}
+                console.log(response);
+                return exits.success(result);
+              });
+            }else{
+              mercadolibre.delete('promo/item/'+mlproduct,{'access_token':integration.secret}, (err, response) =>{
+                if(err){console.log('Quitar Descuento'); console.log(err);}
+                console.log(response);
+                return exits.success(result);
+              });
+            }*/
             return exits.success(result);
           });
           break;
         default:
           mercadolibre.get('items/'+inputs.mlid,{'access_token':integration.secret},(error,result) =>{
             if(error){console.log(error); return exits.error(error);}
-            console.log(result);
             return exits.success(result);
           });
           break;

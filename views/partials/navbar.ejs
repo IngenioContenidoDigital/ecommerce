@@ -1,8 +1,11 @@
 <div class="container">
 <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
-      <!--<a class="navbar-item" href="/"><img src="<%=imgurl%>/iridio.png"></a>-->
-      <a class="navbar-item" href="/"><img src="/images/1ecommerce-logo.png"></a>
+      <%if(req.hostname==='iridio.co'){%>
+        <a class="navbar-item" href="/"><img src="<%=imgurl%>/iridio.png"></a>
+      <%}else{%>
+        <a class="navbar-item" href="/"><img src="/images/1ecommerce-logo.png"></a>
+      <%}%>
       <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
         <span aria-hidden="true"></span>
         <span aria-hidden="true"></span>
@@ -81,6 +84,9 @@
                   <% } else { %>
                   <a href="/account" class="dropdown-item">Mi Cuenta</a>
                   <a href="/addresses" class="dropdown-item">Direcciones</a>
+                  <% if(session.user.rights.name == 'superadmin' || session.user.rights.name == 'operaciones') { %>
+                    <a href="/iridio" class="dropdown-item">Dashboard</a>
+                  <% }%>
                   <hr class="dropdown-divider">
                   <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
                   <% }%>
