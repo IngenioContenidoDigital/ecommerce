@@ -438,6 +438,8 @@ module.exports = {
   
                 pro.manufacturer = (await Manufacturer.findOne({ name: p.manufacturer.toLowerCase() })).id
               });
+            }else{
+              throw { name: 'NOCOLOR', message: 'Producto ' + p.name + ' sin color' }; 
             }
 
             if(p.mainColor){
@@ -621,7 +623,7 @@ module.exports = {
       });
 
       console.log("done");
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: (errors.length > 0) ? errors : null, resultados: { items :  result }, integrations : [] });
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items :  result, errors : (errors.length > 0) ? errors : null }, integrations : [] });
     }
     
     let header = null;
