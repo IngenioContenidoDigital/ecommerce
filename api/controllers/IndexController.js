@@ -52,6 +52,9 @@ module.exports = {
       return res.badRequest();
     }
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'dashboard')){
+      throw 'forbidden';
+    }
     let seller = req.session.user.seller || '';
     let dateStart =new Date(req.param('dateStart')).valueOf();
     let dateEnd = new Date(req.param('dateEnd')).valueOf();
