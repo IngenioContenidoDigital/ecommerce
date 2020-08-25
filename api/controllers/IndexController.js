@@ -55,105 +55,29 @@ module.exports = {
     let seller = req.session.user.seller || '';
     let dateStart =new Date(req.param('dateStart')).valueOf();
     let dateEnd = new Date(req.param('dateEnd')).valueOf();
-    let day = moment().locale('es').format('dddd');
     let ordersByDay = [];
     let dates = [];
-    switch (day) {
-      case 'martes':
-        const date1 = moment().subtract(1, 'days').format('YYYY/MM/DD');
-        const date2 = moment().format('YYYY/MM/DD');
-        const date3 = moment().add(1, 'days').format('YYYY/MM/DD');
-        dates = [
-          {dateStart: new Date(date1).valueOf(), dateEnd: new Date(date2).valueOf()},
-          {dateStart: new Date(date2).valueOf(), dateEnd: new Date(date3).valueOf()}
-        ];
-        break;
-      case 'miércoles':
-        const date4 = moment().subtract(2, 'days').format('YYYY/MM/DD');
-        const date5 = moment().subtract(1, 'days').format('YYYY/MM/DD');
-        const date6 = moment().format('YYYY/MM/DD');
-        const date7 = moment().add(1, 'days').format('YYYY/MM/DD');
-        dates = [
-          {dateStart: new Date(date4).valueOf(), dateEnd: new Date(date5).valueOf()},
-          {dateStart: new Date(date5).valueOf(), dateEnd: new Date(date6).valueOf()},
-          {dateStart: new Date(date6).valueOf(), dateEnd: new Date(date7).valueOf()}
-        ];
-        break;
-      case 'jueves':
-        const date8 = moment().subtract(3, 'days').format('YYYY/MM/DD');
-        const date9 = moment().subtract(2, 'days').format('YYYY/MM/DD');
-        const date10 = moment().subtract(1, 'days').format('YYYY/MM/DD');
-        const date11 = moment().format('YYYY/MM/DD');
-        const date12 = moment().add(1, 'days').format('YYYY/MM/DD');
-        dates = [
-          {dateStart: new Date(date8).valueOf(), dateEnd: new Date(date9).valueOf()},
-          {dateStart: new Date(date9).valueOf(), dateEnd: new Date(date10).valueOf()},
-          {dateStart: new Date(date10).valueOf(), dateEnd: new Date(date11).valueOf()},
-          {dateStart: new Date(date11).valueOf(), dateEnd: new Date(date12).valueOf()},
-        ];
-        break;
-      case 'viernes':
-        const date13 = moment().subtract(4, 'days').format('YYYY/MM/DD');
-        const date14 = moment().subtract(3, 'days').format('YYYY/MM/DD');
-        const date15 = moment().subtract(2, 'days').format('YYYY/MM/DD');
-        const date16 = moment().subtract(1, 'days').format('YYYY/MM/DD');
-        const date17 = moment().format('YYYY/MM/DD');
-        const date18 = moment().add(1, 'days').format('YYYY/MM/DD');
-        dates = [
-          {dateStart: new Date(date13).valueOf(), dateEnd: new Date(date14).valueOf()},
-          {dateStart: new Date(date14).valueOf(), dateEnd: new Date(date15).valueOf()},
-          {dateStart: new Date(date15).valueOf(), dateEnd: new Date(date16).valueOf()},
-          {dateStart: new Date(date16).valueOf(), dateEnd: new Date(date17).valueOf()},
-          {dateStart: new Date(date17).valueOf(), dateEnd: new Date(date18).valueOf()},
-        ];
-        break;
-      case 'sábado':
-        const date19 = moment().subtract(5, 'days').format('YYYY/MM/DD');
-        const date20 = moment().subtract(4, 'days').format('YYYY/MM/DD');
-        const date21 = moment().subtract(3, 'days').format('YYYY/MM/DD');
-        const date22 = moment().subtract(2, 'days').format('YYYY/MM/DD');
-        const date23 = moment().subtract(1, 'days').format('YYYY/MM/DD');
-        const date24 = moment().format('YYYY/MM/DD');
-        const date25 = moment().add(1, 'days').format('YYYY/MM/DD');
-        dates = [
-          {dateStart: new Date(date19).valueOf(), dateEnd: new Date(date20).valueOf()},
-          {dateStart: new Date(date20).valueOf(), dateEnd: new Date(date21).valueOf()},
-          {dateStart: new Date(date21).valueOf(), dateEnd: new Date(date22).valueOf()},
-          {dateStart: new Date(date22).valueOf(), dateEnd: new Date(date23).valueOf()},
-          {dateStart: new Date(date23).valueOf(), dateEnd: new Date(date24).valueOf()},
-          {dateStart: new Date(date24).valueOf(), dateEnd: new Date(date25).valueOf()},
-        ];
-        break;
-      case 'domingo':
-        const date26 = moment().subtract(6, 'days').format('YYYY/MM/DD');
-        const date27 = moment().subtract(5, 'days').format('YYYY/MM/DD');
-        const date28 = moment().subtract(4, 'days').format('YYYY/MM/DD');
-        const date29 = moment().subtract(3, 'days').format('YYYY/MM/DD');
-        const date30 = moment().subtract(2, 'days').format('YYYY/MM/DD');
-        const date31 = moment().subtract(1, 'days').format('YYYY/MM/DD');
-        const date32 = moment().format('YYYY/MM/DD');
-        const date33 = moment().add(1, 'days').format('YYYY/MM/DD');
-        dates = [
-          {dateStart: new Date(date26).valueOf(), dateEnd: new Date(date27).valueOf()},
-          {dateStart: new Date(date27).valueOf(), dateEnd: new Date(date28).valueOf()},
-          {dateStart: new Date(date28).valueOf(), dateEnd: new Date(date29).valueOf()},
-          {dateStart: new Date(date29).valueOf(), dateEnd: new Date(date30).valueOf()},
-          {dateStart: new Date(date30).valueOf(), dateEnd: new Date(date31).valueOf()},
-          {dateStart: new Date(date31).valueOf(), dateEnd: new Date(date32).valueOf()},
-          {dateStart: new Date(date32).valueOf(), dateEnd: new Date(date33).valueOf()},
-        ];
-        break;
-      default:
-        const date34 = moment().format('YYYY/MM/DD');
-        const date35 = moment().add(1, 'days').format('YYYY/MM/DD');
-        dates = [
-          {dateStart: new Date(date34).valueOf(), dateEnd: new Date(date35).valueOf()}
-        ];
-        break;
-    }
+    const date1 = moment().subtract(6, 'days').format('YYYY/MM/DD');
+    const date2 = moment().subtract(5, 'days').format('YYYY/MM/DD');
+    const date3 = moment().subtract(4, 'days').format('YYYY/MM/DD');
+    const date4 = moment().subtract(3, 'days').format('YYYY/MM/DD');
+    const date5 = moment().subtract(2, 'days').format('YYYY/MM/DD');
+    const date6 = moment().subtract(1, 'days').format('YYYY/MM/DD');
+    const date7 = moment().format('YYYY/MM/DD');
+    const date8 = moment().add(1, 'days').format('YYYY/MM/DD');
+    dates = [
+      {day: date1, dateStart: new Date(date1).valueOf(), dateEnd: new Date(date2).valueOf()},
+      {day: date2, dateStart: new Date(date2).valueOf(), dateEnd: new Date(date3).valueOf()},
+      {day: date3, dateStart: new Date(date3).valueOf(), dateEnd: new Date(date4).valueOf()},
+      {day: date4, dateStart: new Date(date4).valueOf(), dateEnd: new Date(date5).valueOf()},
+      {day: date5, dateStart: new Date(date5).valueOf(), dateEnd: new Date(date6).valueOf()},
+      {day: date6, dateStart: new Date(date6).valueOf(), dateEnd: new Date(date7).valueOf()},
+      {day: date7, dateStart: new Date(date7).valueOf(), dateEnd: new Date(date8).valueOf()}
+    ];
+
     for(let date of dates){
       const count = await sails.helpers.dashboard.ordersToday(rights.name, seller, date.dateStart, date.dateEnd);
-      ordersByDay.push(count.totalOrders);
+      ordersByDay.push({day: date.day, total: count.totalOrders, totalPrice: count.totalPrice});
     }
     let data = await sails.helpers.dashboard.dashboard(rights.name, seller, dateStart, dateEnd);
 
@@ -171,7 +95,7 @@ module.exports = {
       lessProducts: data.lessProducts,
       productsInventory: data.productsInventory,
       productsUnd: data.productsUnd,
-      ordersByDay: ordersByDay,
+      ordersByDay,
       totalShippingCost: data.totalShippingCost,
       averageHoursLogist: data.averageHoursLogist,
       averageHoursClient: data.averageHoursClient,

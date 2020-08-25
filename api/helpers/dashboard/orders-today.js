@@ -25,8 +25,16 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     let totalOrders = 0;
+    let totalPrice = 0;
     if(inputs.profile !== 'superadmin'){
       totalOrders  =  await Order.count({
+        seller: inputs.seller,
+        createdAt: {
+          '>=': inputs.date,
+          '<': inputs.dateEnd
+        }
+      });
+      totalPrice = await Order.sum('totalOrder').where({
         seller: inputs.seller,
         createdAt: {
           '>=': inputs.date,
@@ -40,10 +48,17 @@ module.exports = {
           '<': inputs.dateEnd
         }
       });
+      totalPrice = await Order.sum('totalOrder').where({
+        createdAt: {
+          '>=': inputs.date,
+          '<': inputs.dateEnd
+        }
+      });
     }
 
     return exits.success({
-      totalOrders:  totalOrders
+      totalOrders,
+      totalPrice: totalPrice.toFixed(2)
     });
   }
 };
