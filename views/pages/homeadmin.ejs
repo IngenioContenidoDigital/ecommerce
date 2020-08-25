@@ -188,7 +188,7 @@
   </div>
   <div id="Inventory" class="content-tab" style="display:none">
     <section class="section-dashboard">
-      <div class="tile container-inventory">
+      <div class="tile is-ancestor">
         <div class="tile is-parent">
           <div class="card tile is-child radius-card">
             <div class="card-content">
@@ -201,10 +201,40 @@
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
-                  <div class="is-widget-icon"><span class="icon has-text-danger is-large"><i class='bx bxs-basket bx-md'></i></span>
+                  <div class="is-widget-icon"><span class="icon has-text-info is-large"><i class='bx bxs-basket bx-md'></i></span>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="tile is-parent">
+          <div class="card tile is-child radius-card">
+            <div class="card-content">
+              <div class="level is-mobile">
+                <div class="level-item">
+                  <div class="is-widget-label">
+                    <h3 class="subtitle is-spaced">
+                      Total Referencias
+                    </h3>
+                    <h1 class="title" id="totalProductsReference"></h1>
+                  </div>
+                </div>
+                <div class="level-item has-widget-icon">
+                  <div class="is-widget-icon"><span class="icon has-text-warning is-large"><i class='bx bxs-purchase-tag-alt bx-md'></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer boder-foot">
+              <p class="card-footer-item boder-foot">
+                <span class="tag is-primary">Activas</span>
+                <a class="tag" id="totalProductsActive"></a>
+              </p>
+              <p class="card-footer-item boder-foot">
+                <span class="tag is-danger">Inactivas</span>
+                <a class="tag" id="totalProductsInactive"></a>
+              </p>
             </div>
           </div>
         </div>
@@ -599,6 +629,9 @@
         var averageHoursLogist = document.querySelector('#averageHoursLogist');
         var averageHoursClient = document.querySelector('#averageHoursClient');
         var averageHoursCellar = document.querySelector('#averageHoursCellar');
+        var totalProductsReference = document.querySelector('#totalProductsReference');
+        var totalProductsActive = document.querySelector('#totalProductsActive');
+        var totalProductsInactive = document.querySelector('#totalProductsInactive');
         totalSales.textContent = '$' + Math.round(resData.totalSales).toLocaleString('es-CO');
         totalShippingCost.textContent = '$' + Math.round(resData.totalShippingCost).toLocaleString('es-CO');
         totalProducts.textContent = resData.totalProducts;
@@ -606,6 +639,9 @@
         totalInventory.textContent = resData.totalInventory;
         totalOrdersReturned .textContent = resData.totalOrdersReturned;
         totalOrdersCancel.textContent = resData.totalOrdersCancel;
+        totalProductsReference.textContent = resData.totalProductsReference;
+        totalProductsActive.textContent = resData.totalProductsReferenceActive;
+        totalProductsInactive.textContent = resData.totalProductsReferenceInactive;
         averageHoursLogist.textContent = resData.averageHoursLogist + ' hrs';
         averageHoursClient.textContent = resData.averageHoursClient + ' hrs';
         averageHoursCellar.textContent = resData.averageHoursCellar + ' hrs';

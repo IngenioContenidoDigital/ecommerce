@@ -100,6 +100,9 @@ module.exports = {
       averageHoursLogist: data.averageHoursLogist,
       averageHoursClient: data.averageHoursClient,
       averageHoursCellar: data.averageHoursCellar,
+      totalProductsReference: data.totalProductsReference,
+      totalProductsReferenceInactive: data.totalProductsReferenceInactive,
+      totalProductsReferenceActive: data.totalProductsReferenceActive,
     });
   },
   checkout: async function(req, res){
