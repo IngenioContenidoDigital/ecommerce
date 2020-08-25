@@ -1,7 +1,7 @@
 <aside class="menu is-size-7 has-background-light">
   <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('dashboard')){%>
     <p class="menu-label is-size-7">
-      <i class='bx bxs-dashboard'></i><a class="navbar-item is-inline is-paddingless" href="/iridio">&nbsp;Estadisticas</a>
+      <i class='bx bxs-dashboard'></i><a class="navbar-item is-inline is-paddingless" href="/inicio">&nbsp;Estadisticas</a>
     </p>
   <%}%>
   <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('listorders') || req.session.user.rights.permissions.includes('liststates')){%>

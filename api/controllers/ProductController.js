@@ -902,7 +902,7 @@ module.exports = {
       index.indexDocuments({DomainName:'iridio'},(err,data) =>{
         if(err){console.log(err);}
         console.log(data);
-        return res.redirect('/iridio');
+        return res.redirect('/inicio');
       });
     });
   },

@@ -1,5 +1,6 @@
 User-agent: *
 Disallow: /iridio/
+Disallow: /inicio/
 Disallow: /manufacturers/
 Disallow: /categories/
 Disallow: /categories/
