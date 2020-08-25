@@ -159,6 +159,7 @@ module.exports.routes = {
   'GET /integrations/:id' : {controller:'SellerController',action:'integrations'},
   'POST /integration/set/:seller/:channel' : {controller:'SellerController',action:'setintegration'},
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
+  'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
   'GET /token' : {action:'security/grant-csrf-token'},

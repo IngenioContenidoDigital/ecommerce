@@ -449,11 +449,11 @@ module.exports = {
           seller:seller
         });
         return res.redirect('/sellers');
-      }else{
+      } else if(channel === 'mercadolibre'){
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
+      } else {
+        return res.redirect('/sellers');
       }
-
-      
     });
   }
 };
