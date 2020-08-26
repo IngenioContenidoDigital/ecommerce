@@ -4,6 +4,12 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
+const constants = {
+  PRODUCT_TYPE: 'Product',
+  PRODUCT_VARIATION: 'ProductVariation',
+  IMAGE_TYPE: 'ProductImage',
+  STATUS_UPLOADED : true
+}
 
 module.exports = {
   showproducts: async function (req, res) {
@@ -352,6 +358,7 @@ module.exports = {
   },
 
   importexecute: async (req, res) => {
+    req.setTimeout(440000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -361,260 +368,92 @@ module.exports = {
     let variations = [];
     let result = [];
     let errors = [];
+    let seller = req.session.user.seller || req.body.seller;
 
     if (req.body.channel) {
-      let importedProducts = await sails.helpers.commerceImporter(
-        req.body.channel,
-        req.body.pk,
-        req.body.sk,
-        req.body.apiUrl,
-        req.body.version
-      ).catch((e) => console.log(e));
-
+      
       let each = async (array, callback) => {
         for (let index = 0; index < array.length; index++) {
-          await callback(array[index], index, array);
+          await callback(array[index], index, array).catch((e) => errors.push(e));
         }
       }
 
-      let checkdata = async (p) => {
-        return new Promise(async (resolve, reject) => {
-          let pro = {}
+      switch (req.body.importType) {
+        case constants.PRODUCT_TYPE:
+        
+        let page = 1;
+        let pageSize = 100;
 
-          let categorize = async (categoryList) => {
+        do{
 
-            let clist = categoryList.map(c => c.name.toLowerCase().replace('amp;', ''));
-            clist.push('inicio');
+          let importedProducts = await sails.helpers.commerceImporter(
+            req.body.channel,
+            req.body.pk,
+            req.body.sk,
+            req.body.apiUrl,
+            req.body.version,
+            {page : page, pageSize  : pageSize}
+          ).catch((e) => console.log(e));
 
-            //agregar categoria inicio
-            let categories = await Category.find({
-              where: { name: clist },
-              sort: 'level DESC'
+          isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
+          
+          if(!isEmpty){
+            rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
+            result = [...result, ...rs.result]
+            errors = [...errors, ...rs.errors];
+          }else{
+            break;
+          }
+
+          page++;
+
+        }while((!isEmpty));
+        
+          break;
+        case constants.IMAGE_TYPE:
+
+          let imageTasks = await ImageUploadStatus.find({ uploaded : !constants.STATUS_UPLOADED});
+
+          await each(imageTasks, async (source)=>{
+            await each(source.images, async (s) => {
+              let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product);
+              (s.filename = uploaded.filename);
+            }).catch(e=>errors.push(e));
+          
+          }).catch(e=>errors.push(e));
+
+          await each(imageTasks, async (task)=>{
+            let coltemp = task.images.map((s) => {
+              let img = {};
+              img.file = s.filename;
+              img.cover = s.cover || 0;
+              img.product = task.product;
+
+              if (img.position)
+                (img.position = task.position);
+    
+              return img;
             });
 
-            let categoriesids = [];
-
-            for (let c in categories) {
-              if (!categoriesids.includes(categories[c].id)) {
-                categoriesids.push(categories[c].id);
-              }
+            let hasCover = (coltemp.filter((img)=>img.cover == 1).length > 0);
+            
+            if(!hasCover){
+                coltemp[0].cover = 1;
             }
 
-            let realcats = categories.filter(cat => categoriesids.includes(cat.parent));
-            let rcatsids = [];
+            let uploaded  = await ProductImage.createEach(coltemp).fetch();
+            each(uploaded, async (image)=>{
+              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED});
+            });
 
-            for (let rc in realcats) {
-              if (!rc.includes(realcats[rc].id)) {
-                rcatsids.push(realcats[rc].id);
-              }
-            }
-
-            return rcatsids;
-          }
-
-          try {
-
-            pro.name = p.name.toUpperCase().trim();
-            pro.reference = p.reference.toUpperCase().trim();
-            pro.description = p.description.toLowerCase().trim();
-            pro.descriptionShort = p.descriptionShort.toLowerCase().trim();
-
-            if (p.images) {
-              images.push({
-                reference: p.reference,
-                images: p.images
-              })
-            }
-
-            pro.categories = await categorize(p.categories);
-
-            if (pro.categories.length > 0) {
-              pro.mainCategory = pro.categories[0];
-            }
-
-            if (p.manufacturer) {
-              Manufacturer.findOrCreate({ name: p.manufacturer.toLowerCase() }, { name: p.manufacturer.toLowerCase(), active: true }).exec(async (err, record, wasCreated) => {
-                if (err) { return console.log(err) }
-
-                pro.manufacturer = (await Manufacturer.findOne({ name: p.manufacturer.toLowerCase() })).id
-                console.log(pro.manufacturer)
-              });
-            }
-
-            if (p.mainColor) {
-              Color.findOrCreate({ name: p.mainColor.toLowerCase().trim() }, { name: p.mainColor.toLowerCase(), active: true }).exec(async (err, record, wasCreated) => {
-                if (err) { return console.log(err) }
-
-                pro.mainColor = (await Color.findOne({ name: p.mainColor.toLowerCase() })).id
-              });
-            } else {
-              throw { name: 'NOCOLOR', message: 'Producto ' + p.name + ' sin color' };
-            }
-
-            if (p.gender) {
-              let gender = (await Gender.findOne({ name: p.gender.toLowerCase() }));
-
-              if (gender) {
-                pro.gender = gender.id;
-              } else {
-                pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
-              }
-
-            }
-
-            if (p.tax) {
-              pro.tax = (await Tax.findOne({ value: p.tax.rate })).id;
-            } else {
-              pro.tax = (await Tax.findOne({ value: 0 })).id;
-            }
-
-            pro.seller = req.session.user.seller || req.body.seller;
-            pro.active = p.active;
-            pro.width = p.width;
-            pro.width = p.height;
-            pro.length = p.length;
-            pro.weight = p.weight;
-            pro.price = p.price;
-
-            if (p.variations && p.variations.length > 0) {
-              variations.push({
-                reference: p.reference,
-                variations: p.variations
-              });
-            } else {
-              throw { name: 'NOVARIATION', message: 'Variación ' + p.description + ' no disponible para este producto' };
-            }
-
-            return resolve(pro);
-
-          } catch (error) {
-            reject(error);
-          }
-
-          resolve(pro);
-
-        });
-      }
-
-      let cols = [];
-
-      await each(importedProducts, async (p) => {
-        pro = await checkdata(p).catch(e => errors.push(e));
-        if (typeof (pro) === typeof ({}))
-          cols.push(pro);
-      });
-
-      if (cols.length > 0) {
-        result = await Product.createEach(cols).fetch();
-
-        //create images
-        await each(result, async (p) => {
-
-          let source = images.filter((i) => i.reference == p.reference)[0].images.slice(0, 1);
-
-          /*if(source.length > 5){
-            (source = source.slice(0, 5));
-          }*/
-
-          let hasCover = (source.filter(c => c.cover).length > 0);
-
-          if (!hasCover)
-            (source[0].cover = 1);
-
-          await each(source, async (s) => {
-            (s.uploaded = await sails.helpers.uploadImageUrl(s.src, s.file, p.id));
           });
 
-          await ProductImage.createEach(source.map((s) => {
-            let img = {};
-            img.file = s.uploaded.filename;
-            img.cover = s.cover || 0;
-            img.product = p.id;
-
-            if (img.position)
-              (img.position = s.position);
-
-            return img;
-          })).catch((e) => errors.push(e) && console.log("ERROR UPLOADING IMAGE : ", e));
-        });
-
-        //create variations
-        await each(result, async (p) => {
-          let productVariations = variations.filter(v => v.reference == p.reference)[0].variations;
-          let variationToStore = [];
-
-          await each(productVariations, async (pv) => {
-            let variation = {};
-            variation.seller = req.session.user.seller || req.body.seller;
-            variation.supplierreference = p.reference;
-
-            if (pv.ean13)
-              variation.ean13 = pv.ean13;
-            if (variation.upc)
-              variation.upc = pv.upc;
-
-            variation.quantity = pv.quantity || 0;
-            let product = await Product.find({ reference: variation.supplierreference, seller: variation.seller }).populate('tax').populate('categories');
-            let categories = [];
-
-            if (product[0].categories) {
-              product[0].categories.forEach(category => {
-                if (!categories.includes(category.id)) {
-                  categories.push(category.id);
-                }
-              });
-            }
-
-            variation.product = product[0].id;
-            variation.price = parseInt(product[0].price * (1 + product[0].tax.value / 100));
-
-            if (!pv.gender && pv.talla.trim()) {
-              let uniqueSize = await Variation.find({
-                where: { name: pv.talla.trim().toLowerCase() },
-                limit: 1
-              }).catch((e) => console.log(e));
-
-              (variation.variation = uniqueSize[0].id);
-
-            } else if (pv.gender && !pv.talla) {
-
-              let gender = await Gender.findOne({ name: pv.gender.toLowerCase() });
-
-              let uniqueGender = await Variation.find({
-                where: { gender: gender.id, name: "único" }
-              })
-
-              if (uniqueGender) {
-                (variation.variation = uniqueGender[0].id);
-              }
-
-            } else if (!pv.talla && !pv.gender) {
-
-              let unique = await Variation.find({
-                where: { name: "unisex" },
-                limit: 1
-              });
-
-              (variation.variation = unique[0].id);
-
-            } else {
-              let v = await Variation.find({
-                where: { name: pv.talla.trim().toLowerCase(), gender: product[0].gender, category: { 'in': categories } },
-                limit: 1
-              });
-
-              (variation.variation = v[0].id);
-            }
-
-            variationToStore.push(variation);
-          });
-
-          await ProductVariation.createEach(variationToStore);
-
-        });
+          break;
+        default:
+          break;
       }
 
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : null }, integrations: [] });
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [] }, integrations: [] });
     }
 
     let header = null;
