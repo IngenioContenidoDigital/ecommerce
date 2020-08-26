@@ -215,8 +215,7 @@ module.exports = {
         domain:req.body.url,
         logo: filename[0].filename,
         mainAddress:address.id,
-        active:isActive}).fetch();
-        let channel;
+        active:isActive});
 
         if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
           channel = "woocommerce";
@@ -235,7 +234,9 @@ module.exports = {
           if(req.body.version)
             integration.version = req.body.version
 
-        }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+        }
+        
+        if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
           channel = 'shopify';
 
           integration = {
@@ -253,52 +254,52 @@ module.exports = {
             integration.version = req.body.shopifyVersion
         }
 
-    
-      Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
-          if(err){
-            error = err;
-          }
-    
-          if(!created){
-            let updateIntegration;
-            if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
-              channel = "woocommerce";
-                
-              updateIntegration = {
-                channel:channel,
-                url:req.body.apiUrl,
-                key:req.body.key,
-                secret:req.body.secret ? req.body.secret : '',
-                seller:id
-              };
-    
-              if(req.body.user)
-              updateIntegration.user = req.body.user
+        if(integration !== undefined && integration.channel !== null ){
+          Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
+            if(err){error = err;}
+      
+            if(!created){
+              let updateIntegration;
+              if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
+                channel = "woocommerce";
+                  
+                updateIntegration = {
+                  channel:channel,
+                  url:req.body.apiUrl,
+                  key:req.body.key,
+                  secret:req.body.secret ? req.body.secret : '',
+                  seller:id
+                };
+      
+                if(req.body.user)
+                updateIntegration.user = req.body.user
+            
+                if(req.body.version)
+                updateIntegration.version = req.body.version
+      
+              }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+                channel = 'shopify';
+      
+                updateIntegration = {
+                  channel:channel,
+                  url:req.body.shopifyApiUrl,
+                  key:req.body.shopifyKey,
+                  secret:req.body.shopifySecret ? req.body.shopifySecret : '',
+                  seller:id
+                };
+      
+                if(req.body.user)
+                updateIntegration.user = req.body.user
           
-              if(req.body.version)
-              updateIntegration.version = req.body.version
-    
-            }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
-              channel = 'shopify';
-    
-              updateIntegration = {
-                channel:channel,
-                url:req.body.shopifyApiUrl,
-                key:req.body.shopifyKey,
-                secret:req.body.shopifySecret ? req.body.shopifySecret : '',
-                seller:id
-              };
-    
-              if(req.body.user)
-              updateIntegration.user = req.body.user
-        
-              if(req.body.shopifyVersion)
-              updateIntegration.version = req.body.shopifyVersion
+                if(req.body.shopifyVersion)
+                updateIntegration.version = req.body.shopifyVersion
+              }
+            
+              await Integrations.updateOne({id:record.id}).set(updateIntegration);
             }
-          
-            await Integrations.updateOne({id:record.id}).set(updateIntegration);
-          }
-        });
+          });
+        }
+
     }catch(err){
       error=err;
       if(err.code==='badRequest'){
@@ -330,7 +331,9 @@ module.exports = {
             if(req.body.version)
               integration.version = req.body.version
 
-          }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+          }
+          
+          if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
             channel = 'shopify';
 
             integration = {
@@ -347,53 +350,54 @@ module.exports = {
             if(req.body.shopifyVersion)
               integration.version = req.body.shopifyVersion
           }
-      
-        Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
-            if(err){
-              error = err;
-            }
-      
-            if(!created){
+          if(integration!==undefined && integration.channel!==null){
+            Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
+              if(err){error = err;}
               let updateIntegration;
-              
-              if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
-                channel = "woocommerce";
-                  
-                updateIntegration = {
-                  channel:channel,
-                  url:req.body.apiUrl,
-                  key:req.body.key,
-                  secret:req.body.secret ? req.body.secret : '',
-                  seller:id
-                };
-    
-                if(req.body.user)
-                  updateIntegration.user = req.body.user
-            
-                if(req.body.version)
-                  updateIntegration.version = req.body.version
-    
-              }else if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
-                channel = 'shopify';
-    
-                updateIntegration = {
-                  channel:channel,
-                  url:req.body.shopifyApiUrl,
-                  key:req.body.shopifyKey,
-                  secret:req.body.shopifySecret ? req.body.shopifySecret : '',
-                  seller:id
-                };
-    
-                if(req.body.user)
+
+              if(!created){
+                
+                if(req.body.secret && req.body.key && req.body.version && req.body.apiUrl){
+                  channel = "woocommerce";
+                    
+                  updateIntegration = {
+                    channel:channel,
+                    url:req.body.apiUrl,
+                    key:req.body.key,
+                    secret:req.body.secret ? req.body.secret : '',
+                    seller:id
+                  };
+      
+                  if(req.body.user)
                     updateIntegration.user = req.body.user
-          
-                if(req.body.shopifyVersion)
-                  updateIntegration.version = req.body.shopifyVersion
-              }
+              
+                  if(req.body.version)
+                    updateIntegration.version = req.body.version
+      
+                }
+                
+                if(req.body.shopifySecret && req.body.shopifyKey && req.body.shopifyVersion && req.body.shopifyApiUrl){
+                  channel = 'shopify';
+      
+                  updateIntegration = {
+                    channel:channel,
+                    url:req.body.shopifyApiUrl,
+                    key:req.body.shopifyKey,
+                    secret:req.body.shopifySecret ? req.body.shopifySecret : '',
+                    seller:id
+                  };
+      
+                  if(req.body.user)
+                      updateIntegration.user = req.body.user
             
-              await Integrations.updateOne({id:record.id}).set(updateIntegration);
-            }
-          });
+                  if(req.body.shopifyVersion)
+                    updateIntegration.version = req.body.shopifyVersion
+                }
+                
+                await Integrations.updateOne({id:record.id}).set(updateIntegration);
+              }
+            });
+          }
       }
     }
     setTimeout(() => { return; }, 2000);
