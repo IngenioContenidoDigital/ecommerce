@@ -937,7 +937,7 @@
     const descriptionshort = SUNEDITOR.create(document.querySelector('#descriptionshort'),{
         showPathLabel : false,
         charCounter : true,
-        maxCharCount : 720,
+        maxCharCount : 4000,
         width : 'auto',
         maxWidth : '700px',
         height : 'auto',
@@ -954,7 +954,7 @@
     const description = SUNEDITOR.create(document.querySelector('#description'),{
         showPathLabel : false,
         charCounter : true,
-        maxCharCount : 720,
+        maxCharCount : 10000,
         width : 'auto',
         maxWidth : '700px',
         height : 'auto',
@@ -1105,7 +1105,7 @@
                       product.images.forEach(function(image){
                         if(image.cover==1){ %>
                           <figure class="image is-64x64">
-                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%= product.id+'/'+image.file %>" />
+                            <img class="is-rounded" async src="<%=imgurl%>/images/products/<%= product.id+'/'+image.file %>" />
                           </figure>
                       <%  }
                       })}%>
