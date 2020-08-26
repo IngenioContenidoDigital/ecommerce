@@ -369,6 +369,7 @@ module.exports = {
     let result = [];
     let errors = [];
     let seller = req.session.user.seller || req.body.seller;
+		let integrations = await Integrations.find({ seller: seller });
 
     if (req.body.channel) {
       
@@ -453,7 +454,7 @@ module.exports = {
           break;
       }
 
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [] }, integrations: [] });
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [] }, integrations: integrations });
     }
 
     let header = null;
