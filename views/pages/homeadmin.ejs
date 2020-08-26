@@ -188,7 +188,7 @@
   </div>
   <div id="Inventory" class="content-tab" style="display:none">
     <section class="section-dashboard">
-      <div class="tile container-inventory">
+      <div class="tile is-ancestor">
         <div class="tile is-parent">
           <div class="card tile is-child radius-card">
             <div class="card-content">
@@ -201,10 +201,40 @@
                   </div>
                 </div>
                 <div class="level-item has-widget-icon">
-                  <div class="is-widget-icon"><span class="icon has-text-danger is-large"><i class='bx bxs-basket bx-md'></i></span>
+                  <div class="is-widget-icon"><span class="icon has-text-info is-large"><i class='bx bxs-basket bx-md'></i></span>
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="tile is-parent">
+          <div class="card tile is-child radius-card">
+            <div class="card-content">
+              <div class="level is-mobile">
+                <div class="level-item">
+                  <div class="is-widget-label">
+                    <h3 class="subtitle is-spaced">
+                      Total Referencias
+                    </h3>
+                    <h1 class="title" id="totalProductsReference"></h1>
+                  </div>
+                </div>
+                <div class="level-item has-widget-icon">
+                  <div class="is-widget-icon"><span class="icon has-text-warning is-large"><i class='bx bxs-purchase-tag-alt bx-md'></i></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-footer boder-foot">
+              <p class="card-footer-item boder-foot">
+                <span class="tag is-primary">Activas</span>
+                <a class="tag" id="totalProductsActive"></a>
+              </p>
+              <p class="card-footer-item boder-foot">
+                <span class="tag is-danger">Inactivas</span>
+                <a class="tag" id="totalProductsInactive"></a>
+              </p>
             </div>
           </div>
         </div>
@@ -463,72 +493,53 @@
       }
     });
   var myChartLine = new Chart(ctx, {
-      type: 'line',
-      data: {
-        datasets: [
-          {
-            fill: false,
-            borderColor: chartColors.default.primary,
-            borderWidth: 2,
-            borderDash: [],
-            borderDashOffset: 0.0,
-            pointBackgroundColor: chartColors.default.primary,
-            pointBorderColor: 'rgba(255,255,255,0)',
-            pointHoverBackgroundColor: chartColors.default.primary,
-            pointBorderWidth: 20,
-            pointHoverRadius: 4,
-            pointHoverBorderWidth: 15,
-            pointRadius: 4,
-            data: [],
-          },
-        ],
-        labels: []
-      },
-      options: {
-        maintainAspectRatio: false,
-        responsive: true,
-        legend: {
-          display: false
-        },
-        tooltips: {
-          backgroundColor: '#f5f5f5',
-          titleFontColor: '#333',
-          bodyFontColor: '#666',
-          bodySpacing: 4,
-          xPadding: 12,
-          mode: 'nearest',
-          intersect: 0,
-          position: 'nearest'
-        },
-        scales: {
-          yAxes: [{
-            barPercentage: 1.6,
-            gridLines: {
-              drawBorder: false,
-              color: 'rgba(29,140,248,0.0)',
-              zeroLineColor: 'transparent'
-            },
-            ticks: {
-              padding: 20,
-              fontColor: '#9a9a9a'
-            }
-          }],
-
-          xAxes: [{
-            barPercentage: 1.6,
-            gridLines: {
-              drawBorder: false,
-              color: 'rgba(225,78,202,0.1)',
-              zeroLineColor: 'transparent'
-            },
-            ticks: {
-              padding: 20,
-              fontColor: '#9a9a9a'
-            }
-          }]
-        }
+    type: 'bar',
+    data: {
+      labels: [],
+      datasets: [{
+        type: 'line',
+        label: 'Cantidad de Pedidos',
+        fill: false,
+        backgroundColor: chartColors.default.danger,
+        borderColor: chartColors.default.danger,
+        data: [],
+        yAxisID: 'left-axis'
+      }, {
+        label: 'Valor de las Ventas',
+        fill: true,
+        backgroundColor: chartColors.default.info,
+        borderColor: chartColors.default.info,
+        data: [],
+        yAxisID: 'right-axis'
+      }]
+    },
+    options: {
+      legend: {position: 'top', usePointStyle: true},
+      maintainAspectRatio: false,
+      responsive: true,
+      title: {display: false},
+      tooltips: {mode: 'index', intersect: false},
+      hover: {mode: 'nearest', intersect: true},
+      scales: {
+        xAxes: [{display: true, stacked: true, scaleLabel: {display: false, labelString: 'time'}}],
+        yAxes: [{
+          type: 'linear',
+          id: 'left-axis',
+          display: true,
+          position: 'left',
+          scaleLabel: {display: true, labelString: '#'}
+        },{
+          type: 'linear',
+          id: 'right-axis',
+          display: true,
+          position: 'right',
+          stacked:false,
+          scaleLabel: {display: true, labelString: '$'},
+          gridLines: {drawOnChartArea: false}
+        }]
       }
-    });
+    }
+  });
 
   function getCities(cities) {
     let total = 0;
@@ -554,20 +565,25 @@
     return {dataChannels, dataLabelsChannels}
   }
 
-  function graphics(dataLine, dataChannels, labelsChannels, dataCities, labelsCities, reset) {
-    const labelsLine = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    if (reset) {
-      removeData(myChartLine);
-      removeData(myChartUnd);
-      removeData(myChartPrice);
-      addData(myChartLine, labelsLine, dataLine);
-      addData(myChartUnd, labelsChannels, dataChannels);
-      addData(myChartPrice, labelsCities, dataCities);
-    } else {
-      addData(myChartLine, labelsLine, dataLine);
-      addData(myChartUnd, labelsChannels, dataChannels);
-      addData(myChartPrice, labelsCities, dataCities);
-    }
+  function orderDataLine(data) {
+    let dataLine1 = [];
+    let dataLine2 = [];
+    let labelsLine = [];
+    data.forEach(async item => {
+      labelsLine.push(item.day);
+      dataLine1.push(item.total);
+      dataLine2.push(Math.round(item.totalPrice));
+    });
+    return {dataLine1, dataLine2, labelsLine}
+  }
+
+  function graphics(dataLine1, dataLine2, labelsLine, dataChannels, labelsChannels, dataCities, labelsCities) {
+    removeData(myChartLine);
+    removeData(myChartUnd);
+    removeData(myChartPrice);
+    addDataLine(myChartLine, labelsLine, dataLine1, dataLine2);
+    addData(myChartUnd, labelsChannels, dataChannels);
+    addData(myChartPrice, labelsCities, dataCities);
   }
   
   function addData(chart, labels, data) {
@@ -575,6 +591,13 @@
     chart.data.datasets.forEach((dataset) => {
       dataset.data = data;
     });
+    chart.update();
+  }
+
+  function addDataLine(chart, labels, data1, data2) {
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = data1;
+    chart.data.datasets[1].data = data2;
     chart.update();
   }
 
@@ -595,6 +618,7 @@
         let imgurl = <%- JSON.stringify(imgurl) %>;
         let dataCh = getChannels(resData.channels);
         let dataCit = getCities(resData.cities);
+        let dataLin = orderDataLine(resData.ordersByDay);
         var totalSales = document.querySelector('#totalSales');
         var totalShippingCost = document.querySelector('#totalShippingCost');
         var totalProducts = document.querySelector('#totalProducts');
@@ -605,6 +629,9 @@
         var averageHoursLogist = document.querySelector('#averageHoursLogist');
         var averageHoursClient = document.querySelector('#averageHoursClient');
         var averageHoursCellar = document.querySelector('#averageHoursCellar');
+        var totalProductsReference = document.querySelector('#totalProductsReference');
+        var totalProductsActive = document.querySelector('#totalProductsActive');
+        var totalProductsInactive = document.querySelector('#totalProductsInactive');
         totalSales.textContent = '$' + Math.round(resData.totalSales).toLocaleString('es-CO');
         totalShippingCost.textContent = '$' + Math.round(resData.totalShippingCost).toLocaleString('es-CO');
         totalProducts.textContent = resData.totalProducts;
@@ -612,6 +639,9 @@
         totalInventory.textContent = resData.totalInventory;
         totalOrdersReturned .textContent = resData.totalOrdersReturned;
         totalOrdersCancel.textContent = resData.totalOrdersCancel;
+        totalProductsReference.textContent = resData.totalProductsReference;
+        totalProductsActive.textContent = resData.totalProductsReferenceActive;
+        totalProductsInactive.textContent = resData.totalProductsReferenceInactive;
         averageHoursLogist.textContent = resData.averageHoursLogist + ' hrs';
         averageHoursClient.textContent = resData.averageHoursClient + ' hrs';
         averageHoursCellar.textContent = resData.averageHoursCellar + ' hrs';
@@ -693,7 +723,7 @@
           ullessProducts.innerHTML += listItem;
         });
         
-        graphics(resData.ordersByDay, dataCh.dataChannels, dataCh.dataLabelsChannels, dataCit.dataCities, dataCit.dataLabels, true);
+        graphics(dataLin.dataLine1, dataLin.dataLine2, dataLin.labelsLine, dataCh.dataChannels, dataCh.dataLabelsChannels, dataCit.dataCities, dataCit.dataLabels);
         document.querySelector('.loading').innerHTML = '';
         dashboard.style.display = 'inline';
       }
