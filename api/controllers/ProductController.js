@@ -329,6 +329,36 @@ module.exports = {
       return res.send(err);
     }
   },
+  linioadd:async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    try {
+      let action = null;
+      let product = await Product.findOne({id: req.param('product')});
+      if(!product.linio){
+        action = 'ProductCreate';
+      } else {
+        action = 'ProductUpdate';
+      }
+      let response = await sails.helpers.channel.linio.product(req.param('product'), action, req.body.pricelinio);
+      if(response){
+        await Product.updateOne({id: req.param('product')}).set({
+          linio: true,
+          liniostatus: (product.liniostatus) ? false : true,
+          linioprice: req.body.linioprice,
+        });
+      }
+      return res.send(response);
+    } catch(err) {
+      await Product.updateOne({id: req.param('product')}).set({
+        linio: false,
+        liniostatus: false,
+        linioprice: 0,
+      });
+      return res.send(err);
+    }
+  },
   import: async (req, res)=>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createproduct')){

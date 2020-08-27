@@ -23,7 +23,7 @@ module.exports = {
     let moment = require('moment');
     let crypto = require('crypto');
     let seller = await Seller.findOne({id: inputs.seller});
-    let integration = await Integrations.findOne({channel:'linio', seller:seller.id});
+    let integration = await Integrations.findOne({channel: 'linio', seller: seller.id});
 
     let params=[
       encodeURIComponent('Version')+'='+encodeURIComponent('1.0'),

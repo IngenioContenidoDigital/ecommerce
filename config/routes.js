@@ -162,6 +162,7 @@ module.exports.routes = {
   'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
+  'POST /linio/add' : {controller:'ProductController',action:'linioadd'},
   'GET /token' : {action:'security/grant-csrf-token'},
   'PUT /menu' : {controller:'UserController',action:'menuvisible'},
   'GET /mlauth/:appid' : {controller:'IntegrationsController', action:'meliauth'}
