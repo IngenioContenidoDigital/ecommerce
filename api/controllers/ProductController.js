@@ -942,13 +942,30 @@ module.exports = {
       throw 'forbidden';
     }
     let sellers = null;
+    let channelDafiti = false;
+    let channelLinio = false;
     if(rights.name==='superadmin'){
-      let integrations = await Integrations.find({channel:'dafiti'});
+      let integrations = await Integrations.find({
+        or : [
+          { channel: 'dafiti' },
+          { channel: 'linio' }
+        ],
+      });
       let slist = integrations.map(i => i.seller);
-      sellers = await Seller.find({where:{id:{in:slist}},select: ['id', 'name']});
+      sellers = await Seller.find({where: {id: {in: slist}}, select: ['id', 'name']});
+      sellers = sellers.map(s => {
+        s.channelDafiti = integrations.some(i => i.seller === s.id && i.channel === 'dafiti') ? true : false;
+        s.channelLinio = integrations.some(i => i.seller === s.id && i.channel === 'linio') ? true : false;
+        return s;
+      });
+    } else {
+      let seller = req.session.user.seller;
+      let integrations = await Integrations.find({seller: seller});
+      channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
+      channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
     }
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:error,sellers:sellers});
+    return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: sellers, channelDafiti, channelLinio});
   },
   multipleexecute: async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -957,21 +974,45 @@ module.exports = {
     }
     let seller = null;
     let sellers = null;
+    let channel = req.body.channel;
+    let result = [];
+    let channelDafiti = false;
+    let channelLinio = false;
     if(rights.name==='superadmin'){
-      let integrations = await Integrations.find({channel:'dafiti'});
+      let integrations = await Integrations.find({
+        or : [
+          { channel: 'dafiti' },
+          { channel: 'linio' }
+        ],
+      });
       let slist = integrations.map(i => i.seller);
-      sellers = await Seller.find({where:{id:{in:slist}},select: ['id', 'name']});
+      sellers = await Seller.find({where: {id: {in: slist}}, select: ['id', 'name']});
+      sellers = sellers.map(s => {
+        s.channelDafiti = integrations.some(i => i.seller === s.id && i.channel === 'dafiti') ? true : false;
+        s.channelLinio = integrations.some(i => i.seller === s.id && i.channel === 'linio') ? true : false;
+        return s;
+      });
+    } else {
+      let sell = req.session.user.seller;
+      let integrations = await Integrations.find({seller: sell});
+      channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
+      channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
     }
-    if(req.body.seller===undefined){seller = req.session.user.seller}else{seller=req.body.seller;}
+    if(req.body.seller === undefined){seller = req.session.user.seller}else{seller = req.body.seller;}
     let response = {items:{}};
     try{
-      let result = await sails.helpers.channel.dafiti.multiple(seller,req.body.action);
-      response.items=result;
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
+      if (channel === 'dafiti') {
+        result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
+        response.items = result;
+      } else if(channel === 'linio'){
+        result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
+        response.items = result;
+      }
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: sellers, resultados: response, channelDafiti, channelLinio});
     }catch(err){
       console.log(err);
       response.errors=err;
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin',error:null, sellers:sellers,resultados:response});
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: sellers, resultados: response, channelDafiti, channelLinio});
     }
   }
 };

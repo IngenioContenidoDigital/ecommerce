@@ -55,71 +55,72 @@ module.exports = {
 
     let productvariation = await ProductVariation.find({product: inputs.product})
     .populate('variation');
-
-    let parent = productvariation[0].id;
-    let categories = product.mainCategory.linio.split(',');
-    categories.shift();
-
-    let body={
+    let body = {
       Request:[]
     };
-    let i = 0;
-    for(let pv of productvariation){
-      let data = {
-        Product: {
-          SellerSku: pv.id,
-          ProductId: pv.ean13,
-          Status: status,
-          Name: product.name,
-          Variation: pv.variation.col.replace(/\.5/,'').toString(),
-          PrimaryCategory: product.mainCategory.linio.split(',')[0],
-          Categories: categories.join(','),
-          Description: jsonxml.cdata(product.descriptionShort + ' ' + product.description),
-          Brand: product.manufacturer.name,
-          Price: (pv.price*(1+inputs.pricelinio)).toFixed(2),
-          Quantity: pv.quantity,
-          TaxClass: product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%',
-          ProductData: {
-            Gender: product.gender.name === 'masculino' ? 'hombre' : product.gender.name === 'femenino' ? 'mujer' : product.gender.name,
-            ShortDescription: jsonxml.cdata(product.descriptionShort),
-            PackageHeight: product.height,
-            PackageLength: product.length,
-            PackageWidth: product.width,
-            PackageWeight: product.weight,
-            ConditionType: 'Nuevo'
+    if (product.mainCategory.linio !== '') {
+      let parent = productvariation[0].id;
+      let categories = product.mainCategory.linio.split(',');
+      categories.shift();
+
+      let i = 0;
+      for(let pv of productvariation){
+        let data = {
+          Product: {
+            SellerSku: pv.id,
+            ProductId: pv.ean13,
+            Status: status,
+            Name: product.name,
+            Variation: pv.variation.col.replace(/\.5/,'').toString(),
+            PrimaryCategory: product.mainCategory.linio.split(',')[0],
+            Categories: categories.join(','),
+            Description: jsonxml.cdata(product.descriptionShort + ' ' + product.description),
+            Brand: product.manufacturer.name,
+            Price: (pv.price*(1+inputs.pricelinio)).toFixed(2),
+            Quantity: pv.quantity,
+            TaxClass: product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%',
+            ProductData: {
+              Gender: product.gender.name === 'masculino' ? 'hombre' : product.gender.name === 'femenino' ? 'mujer' : product.gender.name,
+              ShortDescription: jsonxml.cdata(product.descriptionShort),
+              PackageHeight: product.height,
+              PackageLength: product.length,
+              PackageWidth: product.width,
+              PackageWeight: product.weight,
+              ConditionType: 'Nuevo'
+            }
           }
-        }
-      };
+        };
 
-      if(i > 0 && productvariation.length > 1){
-        data.Product.ParentSku = parent;
+        if(i > 0 && productvariation.length > 1){
+          data.Product.ParentSku = parent;
+        }
+
+        if(product.discount.length > 0){
+          let discPrice = 0;
+          switch(product.discount[0].type){
+            case 'P':
+              discPrice+=((pv.price*(1+inputs.pricelinio))*(1-(product.discount[0].value/100)));
+              break;
+            case 'C':
+              discPrice+=((pv.price*(1+inputs.pricelinio))-product.discount[0].value);
+              break;
+          }
+          data.Product.SalePrice = discPrice.toFixed(2);
+          data.Product.SaleStartDate = moment(product.discount[0].from).format();
+          data.Product.SaleEndDate = moment(product.discount[0].to).format();
+        }
+
+        body.Request.push(data);
+        i++;
+        let img = {
+          ProductImage:{
+            SellerSku: pv.id,
+            Images: ilist.Images
+          }
+        };
+
+        imagebody.Request.push(img);
       }
-
-      if(product.discount.length > 0){
-        let discPrice = 0;
-        switch(product.discount[0].type){
-          case 'P':
-            discPrice+=((pv.price*(1+inputs.pricelinio))*(1-(product.discount[0].value/100)));
-            break;
-          case 'C':
-            discPrice+=((pv.price*(1+inputs.pricelinio))-product.discount[0].value);
-            break;
-        }
-        data.Product.SalePrice = discPrice.toFixed(2);
-        data.Product.SaleStartDate = moment(product.discount[0].from).format();
-        data.Product.SaleEndDate = moment(product.discount[0].to).format();
-      }
-
-      body.Request.push(data);
-      i++;
-      let img = {
-        ProductImage:{
-          SellerSku: pv.id,
-          Images: ilist.Images
-        }
-      };
-
-      imagebody.Request.push(img);
     }
     var xml = jsonxml(body, true);
     let sign = await sails.helpers.channel.linio.sign(inputs.action, product.seller);
