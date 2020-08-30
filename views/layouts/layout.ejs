@@ -110,7 +110,7 @@
         cart.setAttribute('data-badge',data.items);
     });
 
-    live('.dropdown, .button, .button > span','mouseover', e=>{
+    live('.dropdown, .button, .button > span','click', e=>{
         let elm = e.target;
         let parent = elm.closest('.dropdown');
         if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){

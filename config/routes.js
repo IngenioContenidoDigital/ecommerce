@@ -163,7 +163,8 @@ module.exports.routes = {
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
   'GET /token' : {action:'security/grant-csrf-token'},
   'PUT /menu' : {controller:'UserController',action:'menuvisible'},
-  'GET /mlauth/:appid' : {controller:'IntegrationsController', action:'meliauth'}
+  'GET /mlauth/:appid' : {controller:'IntegrationsController', action:'meliauth'},
+  'GET /getcover/:productid' : {controller:'ProductController', action:'getcover'},
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************
