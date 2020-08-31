@@ -16,10 +16,13 @@ module.exports = {
     const colors = await Color.find();
     const genders = await Gender.find();
     let sellers = null;
+    let integrations = null;
     if(rights.name!=='superadmin'){
-      sellers = await Seller.find({id:req.session.user.seller});
+      sellers = await Seller.find({id: req.session.user.seller});
+      integrations = await Integrations.find({seller: req.session.user.seller});
     }else{
       sellers = await Seller.find();
+      integrations = await Integrations.find();
     }
 
     const taxes = await Tax.find();
@@ -72,6 +75,7 @@ module.exports = {
       colors:colors,
       genders:genders,
       sellers:sellers,
+      integrations,
       taxes:taxes,
       variations:variations,
       action:action,
