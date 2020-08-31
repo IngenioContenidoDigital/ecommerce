@@ -488,7 +488,7 @@
           }
         });
 
-        live('.dropdown, .button, .button > span','mouseover', e=>{
+        live('.dropdown, .button, .button > span','click', e=>{
           e.preventDefault();
           let elm = e.target;
           let parent = elm.closest('.dropdown');
@@ -945,7 +945,7 @@
     const descriptionshort = SUNEDITOR.create(document.querySelector('#descriptionshort'),{
         showPathLabel : false,
         charCounter : true,
-        maxCharCount : 720,
+        maxCharCount : 4000,
         width : 'auto',
         maxWidth : '700px',
         height : 'auto',
@@ -962,7 +962,7 @@
     const description = SUNEDITOR.create(document.querySelector('#description'),{
         showPathLabel : false,
         charCounter : true,
-        maxCharCount : 720,
+        maxCharCount : 10000,
         width : 'auto',
         maxWidth : '700px',
         height : 'auto',
@@ -1093,7 +1093,7 @@
       <table class="table is-hoverable is-size-7" id="products-table">
           <thead>
           <tr>
-              <th scope="col">Portada</th>
+              <!--<th scope="col">Portada</th>-->
               <th scope="col">Nombre</th>
               <th scope="col">SKU</th>
               <th scope="col">Marca</th>
@@ -1107,18 +1107,18 @@
           <tbody>
               <% products.forEach(function(product){ %>
                 <tr>
-                    <td scope="row" class="align-middle">
-                      <% 
+                    <!--<td scope="row" class="align-middle">
+                      <%# 
                       if(product.images.length>0){
                       product.images.forEach(function(image){
                         if(image.cover==1){ %>
                           <figure class="image is-64x64">
-                            <img class="is-rounded" src="<%=imgurl%>/images/products/<%= product.id+'/'+image.file %>" />
+                            <img class="is-rounded" async src="<%#=imgurl%>/images/products/<%#= product.id+'/'+image.file %>" />
                           </figure>
-                      <%  }
-                      })}%>
-                    </td>
-                    <td class="align-middle is-uppercase"><%= product.name %></td>
+                      <%# }
+                      })}#%>
+                    </td>-->
+                    <td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="<%=product.id%>"><%= product.name %></a></td>
                     <td class="align-middle"><%= product.reference %></td>
                     <td class="align-middle is-capitalized"><%= product.manufacturer.name %></td>
                     <td class="align-middle">$ <%= parseInt(product.price*(1+(product.tax.value/100))).toLocaleString('es-CO') %></td>
@@ -1126,9 +1126,9 @@
                     <td class="align-middle">
                     <span class="action">
                     <% if(product.active===true) { %>
-                        <i product="<%= product.id %>" class="state bx bx-check-circle"></i>
+                        <i product="<%= product.id %>" class="state bx bx-check-circle is-size-5"></i>
                     <% }else{ %>
-                        <i product="<%= product.id %>" class="state bx bx-x-circle"></i>
+                        <i product="<%= product.id %>" class="state bx bx-x-circle is-size-5"></i>
                     <%}%>
                     </span>
                     </td>
@@ -1155,6 +1155,21 @@
               <% }); %>
           </tbody>
       </table>
+  </div>
+  <div class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title is-size-7 has-text-weight-bold"></p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <p class="modal-reference is-size-7 has-text-weight-bold"></p>
+        <p class="image is-square">
+          <img async src="" />
+        </p>
+      </section>
+    </div>
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', function(){
@@ -1188,6 +1203,22 @@
             addClass(elm,'bx-check-circle');
           }
         });
+    });
+    live('.product-image','mouseover',(e)=>{
+      let id = e.target.getAttribute('data-product');
+      io.socket.get('/getcover/'+id,resData=>{
+        if(resData){
+          let modal = document.querySelector('.modal');
+          modal.querySelector('.modal-card-title').innerHTML = resData.name.toUpperCase();
+          modal.querySelector('.modal-reference').innerHTML = 'REF:&nbsp;'+resData.reference.toUpperCase();
+          modal.querySelector('.image > img').setAttribute('src',resData.image);
+          addClass(modal,'is-active');
+        }
+      });
+    });
+    live('.modal-background, .delete','click',e=>{
+      let modal = document.querySelector('.modal');
+      removeClass(modal,'is-active');
     });
   </script>
 <% } %>

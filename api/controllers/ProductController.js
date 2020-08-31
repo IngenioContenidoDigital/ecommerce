@@ -246,6 +246,8 @@ module.exports = {
     let productvariations = await ProductVariation.find({product:req.param('id'), quantity:{'>':0}})
     .populate('variation');
 
+    productvariations = productvariations.sort((a, b) => a.variation.name - b.variation.name);
+
     return res.send(productvariations);
   },
   deletevariations: async function(req, res){
@@ -932,7 +934,7 @@ module.exports = {
       index.indexDocuments({DomainName:'iridio'},(err,data) =>{
         if(err){console.log(err);}
         console.log(data);
-        return res.redirect('/iridio');
+        return res.redirect('/inicio');
       });
     });
   },
@@ -1014,5 +1016,18 @@ module.exports = {
       response.errors=err;
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: sellers, resultados: response, channelDafiti, channelLinio});
     }
+  },
+  getcover: async (req,res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let product = await Product.findOne({id:req.param('productid')});
+    let cover = await ProductImage.findOne({product:req.param('productid'),cover:1});
+    let image = sails.config.views.locals.imgurl+'/images/products/'+req.param('productid')+'/'+cover.file;
+    let response = {};
+    response.name=product.name;
+    response.reference=product.reference;
+    response.image=image;
+    return res.send(response);
   }
 };

@@ -32,6 +32,9 @@ module.exports = {
     let totalSales = 0;
     let totalInventory = 0;
     let totalShippingCost = 0;
+    let totalProductsReference = 0;
+    let totalProductsReferenceInactive = 0;
+    let totalProductsReferenceActive = 0;
     let averageHoursLogist = 0;
     let averageHoursCellar = 0;
     let averageHoursClient = 0;
@@ -66,7 +69,13 @@ module.exports = {
         if (inventory.length === 0) {
           productsInventory.push(product);
         }
+        if (product.active) {
+          totalProductsReferenceActive += 1;
+        } else {
+          totalProductsReferenceInactive += 1;
+        }
         totalInventory += totalCant;
+        totalProductsReference += 1;
       }
     } else {
       orders  =  await Order.find({
@@ -87,7 +96,13 @@ module.exports = {
         if (inventory.length === 0) {
           productsInventory.push(product);
         }
+        if (product.active) {
+          totalProductsReferenceActive += 1;
+        } else {
+          totalProductsReferenceInactive += 1;
+        }
         totalInventory += totalCant;
+        totalProductsReference += 1;
       }
     }
 
@@ -178,23 +193,26 @@ module.exports = {
     });
 
     return exits.success({
-      totalOrdersCancel: totalOrdersCancel,
-      totalOrdersReturned: totalOrdersReturned,
-      totalOrders: totalOrders,
-      totalProducts: totalProducts,
-      totalSales: totalSales,
+      totalOrdersCancel,
+      totalOrdersReturned,
+      totalOrders,
+      totalProducts,
+      totalSales,
       topProductsCant: topProducts.sort((a, b)=> b.quantity - a.quantity).slice(0, 10),
       topProductsPrice: topProducts.sort((a, b)=> b.product.price - a.product.price).slice(0, 10),
       cities: citiesCant.sort((a, b)=> b.quantity - a.quantity).slice(0, 10),
-      channels: channels,
-      totalInventory: totalInventory,
+      channels,
+      totalInventory,
       lessProducts: topProducts.sort((a, b)=> a.quantity - b.quantity),
-      productsInventory: productsInventory,
-      productsUnd: productsUnd,
-      totalShippingCost: totalShippingCost,
-      averageHoursLogist: averageHoursLogist,
-      averageHoursClient: averageHoursClient,
-      averageHoursCellar: averageHoursCellar,
+      productsInventory,
+      productsUnd,
+      totalShippingCost,
+      averageHoursLogist,
+      averageHoursClient,
+      averageHoursCellar,
+      totalProductsReference,
+      totalProductsReferenceInactive,
+      totalProductsReferenceActive,
     });
   }
 };

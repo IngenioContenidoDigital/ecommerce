@@ -101,7 +101,7 @@ and exposed as \`req.me\`.)`
     this.req.session.user.rights = await sails.helpers.checkPermissions(userRecord.profile);
 
     if(profile.name!=='customer'){
-      return exits.admin('/iridio');
+      return exits.admin('/inicio');
     }else{
       let redirect = inputs.referer ? inputs.referer : '/';
       return exits.success(redirect);
