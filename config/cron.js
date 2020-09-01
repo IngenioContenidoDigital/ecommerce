@@ -52,5 +52,30 @@ module.exports.cron = {
       });
     },
     timezone: 'America/Bogota'
+  },
+  linioOrders:{
+    schedule: '00 35 * * * *',
+    onTick: async () =>{
+      console.log('Iniciando Captura de Ordenes Linio');
+      let moment = require('moment');
+      let integrations = await Integrations.find({channel: 'linio'});
+      integrations.forEach(async integration =>{
+        try{
+          let statuses = ['pending','shipped','delivered','returned','canceled','failed'];
+          let parameters=[];
+          statuses.forEach(async state =>{
+            if(state==='pending'){
+              parameters= ['CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(2,'hours').toISOString(true),'Status='+state,'SortDirection=ASC'];
+            }else{
+              parameters= ['UpdatedBefore='+moment(/*'2020-07-14 23:59:59'*/).toISOString(true),'UpdatedAfter='+moment(/*'2020-07-14 00:00:00'*/).subtract(2,'hours').toISOString(true),'Status='+state,'SortDirection=ASC'];
+            }
+            await sails.helpers.channel.linio.orders(integration.seller, parameters);
+          });
+        }catch(err){
+          console.log(err);
+        }
+      });
+    },
+    timezone: 'America/Bogota'
   }
 };
