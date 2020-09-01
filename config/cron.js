@@ -1,7 +1,7 @@
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
   dafitiOrders: {
-    schedule: '00 15 * * * *',
+    schedule: '00 31 * * * *',
     onTick: async () => {
       console.log('Iniciando Captura de Ordenes Dafiti');
       let moment = require('moment');
@@ -38,7 +38,7 @@ module.exports.cron = {
             let parameters={};
             parameters['order.status']=state;
             if(state==='paid'){
-              parameters['order.date_created.from']=moment(/*'2020-08-01 00:00:00'*/).subtract(6,'hours').toISOString(true);
+              parameters['order.date_created.from']=moment(/*'2020-08-01 00:00:00'*/).subtract(2,'hours').toISOString(true);
               parameters['order.date_created.to']=moment(/*'2020-08-10 23:59:59'*/).toISOString(true);
             }else{
               parameters['order.date_last_updated.from']=moment().subtract(2,'hours').toISOString(true);

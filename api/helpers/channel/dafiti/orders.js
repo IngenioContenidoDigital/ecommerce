@@ -33,7 +33,7 @@ module.exports = {
           orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
         }
         for(let order of orders.Order){
-          let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId});
+          let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId,seller:inputs.seller});
           if(order.Statuses.Status==='pending'){
             let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');
 

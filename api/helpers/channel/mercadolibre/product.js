@@ -48,14 +48,14 @@ module.exports = {
       if(product.discount.length>0){
         switch(product.discount[0].type){
           case 'P':
-            price+=Math.round(((product.price*(1+inputs.mlprice))*(1-(product.discount[0].value/100)))*(1+(parseFloat(product.tax.value)/100)));
+            price+=Math.round(((product.price*(1+parseFloat(inputs.mlprice)))*(1-(product.discount[0].value/100)))*(1+(parseFloat(product.tax.value)/100)));
             break;
           case 'C':
-            price+=Math.round(((product.price*(1+inputs.mlprice))-product.discount[0].value)*(1+(parseFloat(product.tax.value)/100)));
+            price+=Math.round(((product.price*(1+parseFloat(inputs.mlprice)))-product.discount[0].value)*(1+(parseFloat(product.tax.value)/100)));
             break;
         }
       }else{
-        price = Math.round((product.price*(1+inputs.mlprice))*(1+(parseFloat(product.tax.value)/100)))
+        price = Math.round((product.price*(1+parseFloat(inputs.mlprice)))*(1+(parseFloat(product.tax.value)/100)))
       }
 
       let productimages = await ProductImage.find({product:product.id});

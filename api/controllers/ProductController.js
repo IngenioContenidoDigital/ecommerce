@@ -327,7 +327,7 @@ module.exports = {
           ml:true,
           mlstatus:(req.body.status) ? true : false,
           mlid:response.id,
-          mlprice:req.body.mlprice,
+          mlprice:req.body.pricemercadolibre,
         });
       }
       return res.send(response);
