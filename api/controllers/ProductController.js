@@ -11,7 +11,7 @@ const constants = {
   STATUS_UPLOADED : true,
   SHOPIFY_CHANNEL : 'shopify',
   SHOPIFY_PAGESIZE : 50,
-  WOOCOMMERCE_PAGESIZE : 1,
+  WOOCOMMERCE_PAGESIZE : 50,
   WOOCOMMERCE_CHANEL : 'woocommerce'
 }
 
