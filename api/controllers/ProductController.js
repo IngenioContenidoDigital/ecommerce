@@ -8,7 +8,11 @@ const constants = {
   PRODUCT_TYPE: 'Product',
   PRODUCT_VARIATION: 'ProductVariation',
   IMAGE_TYPE: 'ProductImage',
-  STATUS_UPLOADED : true
+  STATUS_UPLOADED : true,
+  SHOPIFY_CHANNEL : 'shopify',
+  SHOPIFY_PAGESIZE : 50,
+  WOOCOMMERCE_PAGESIZE : 1,
+  WOOCOMMERCE_CHANEL : 'woocommerce'
 }
 
 module.exports = {
@@ -364,12 +368,21 @@ module.exports = {
       throw 'forbidden';
     }
 
+    if (rights.name !== 'superadmin') {
+      sellers = await Seller.find({ id: req.session.user.seller });
+    } else {
+      sellers = await Seller.find();
+    }
+
     let images = [];
     let variations = [];
     let result = [];
     let errors = [];
+    let imageErrors = [];
+    let imageItems = [];
+
     let seller = req.session.user.seller || req.body.seller;
-		let integrations = await Integrations.find({ seller: seller });
+    let integrations = await Integrations.find({ seller: seller });
 
     if (req.body.channel) {
       
@@ -381,9 +394,23 @@ module.exports = {
 
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
+
+        let page =  1;
+        let pageSize;
+        let next;
+
+        switch (req.body.channel) {
+          case constants.SHOPIFY_CHANNEL:
+              pageSize =  constants.SHOPIFY_PAGESIZE;
+            break;
+          case constants.WOOCOMMERCE_CHANEL:
+              pageSize = constants.WOOCOMMERCE_PAGESIZE;
+            break;
         
-        let page = 1;
-        let pageSize = 100;
+          default:
+            break;
+        }
+
 
         do{
 
@@ -393,8 +420,11 @@ module.exports = {
             req.body.sk,
             req.body.apiUrl,
             req.body.version,
-            {page : page, pageSize  : pageSize}
+            {page : page, pageSize  : pageSize, next : next || null}
           ).catch((e) => console.log(e));
+
+          if(importedProducts && importedProducts.pagination)
+              next = importedProducts.pagination;
 
           isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
           
@@ -408,6 +438,10 @@ module.exports = {
 
           page++;
 
+          if(pageSize === 1){
+            break;
+          }
+
         }while((!isEmpty));
         
           break;
@@ -419,7 +453,7 @@ module.exports = {
             await each(source.images, async (s) => {
               let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product);
               (s.filename = uploaded.filename);
-            }).catch(e=>errors.push(e));
+            }).catch(e=>imageErrors.push(e));
           
           }).catch(e=>errors.push(e));
 
@@ -441,12 +475,15 @@ module.exports = {
             if(!hasCover){
                 coltemp[0].cover = 1;
             }
-
+            
             let uploaded  = await ProductImage.createEach(coltemp).fetch();
+
             each(uploaded, async (image)=>{
               await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED});
             });
-
+            
+            imageItems.push(task);
+         
           });
 
           break;
@@ -454,7 +491,7 @@ module.exports = {
           break;
       }
 
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [] }, integrations: integrations });
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors : imageErrors, imageItems : imageItems }, integrations: integrations, sellers : sellers});
     }
 
     let header = null;

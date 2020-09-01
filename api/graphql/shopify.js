@@ -1,63 +1,74 @@
 module.exports = {
     CATALOG :  `
-    {
-        ShopifyProductListQuery{
-        name
-        description
-        reference
-        descriptionShort
-        active
-        price
-        manufacturer
-        mainCategory {
-            id
+    query ShopifyProductListQuery($pagination: PaginationInput) {
+        ShopifyProducts(listing: { pagination: $pagination}) {
+        totalRecords
+        pagination
+        pagesCount
+        data{
             name
             description
-            parent
-            active
-            url
-            level
-            createdAt
-            updateAt
-            dafiti
-            mercadolibre
-            linio
-        }
-        categories{
-            id
-            name
-            description
-            parent
-            active
-            url
-            level
-            createdAt
-            updateAt
-            dafiti
-            mercadolibre
-            linio
-        }
-        gender
-        mainColor
-        width
-        height
-        weight
-        length
-        images{
-            file
-            position
-            cover
-            src
-        }
-        variations{
-            quantity
             reference
-            talla
-            upc
+            descriptionShort
+            active
             price
-            ean13
+            manufacturer
+            tax{
+                name
+                rate
+            }
+            mainCategory {
+                id
+                name
+                description
+                parent
+                active
+                url
+                level
+                createdAt
+                updateAt
+                dafiti
+                mercadolibre
+                linio
+            }
+            categories{
+                id
+                name
+                description
+                product_id
+                parent
+                active
+                url
+                level
+                createdAt
+                updateAt
+                dafiti
+                mercadolibre
+                linio
+            }
+            gender
+            mainColor
+            width
+            weight
+            height
+            length
+            images{
+                file
+                position
+                cover
+                src
+            }
+                variations{
+                    quantity
+                    reference
+                    talla
+                    gender
+                    upc
+                    price
+                    ean13
+                }
+            }
         }
         }
-    }
 `
 }

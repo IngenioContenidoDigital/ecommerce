@@ -1108,7 +1108,11 @@
                             <img class="is-rounded" src="<%=imgurl%>/images/products/<%= product.id+'/'+image.file %>" />
                           </figure>
                       <%  }
-                      })}%>
+                      })}else{%>
+                      <figure class="image is-64x64">
+                          <img class="is-rounded" src="https://bulma.io/images/placeholders/64x64.png" />
+                        </figure>
+                      <%}%>
                     </td>
                     <td class="align-middle is-uppercase"><%= product.name %></td>
                     <td class="align-middle"><%= product.reference %></td>

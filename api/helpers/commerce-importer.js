@@ -40,8 +40,8 @@ let getCatalog = async (data) => {
   return new Promise(async (resolve, reject) => {
     let request = signRequest(data);
 
-    let response = await axios.post('http://localhost:9000/graphql', { query: request.query, variables: { pagination : {page : data.pagination.page, pageSize : data.pagination.pageSize } } }, {
-      headers: {
+    let response = await axios.post('http://localhost:9000/graphql', { query: request.query, variables: { pagination : {page : data.pagination.page, pageSize : data.pagination.pageSize, next : data.pagination.next} } }, {
+    headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
     }).catch((e) => console.log(e)); 

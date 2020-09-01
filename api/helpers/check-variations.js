@@ -65,7 +65,6 @@ module.exports = {
         } else if (pv.gender && !pv.talla) {
 
           let gender = await Gender.findOne({ name: pv.gender.toLowerCase() });
-
           let uniqueGender = await Variation.find({
             where: { gender: gender.id, name: "único" }
           })
@@ -85,9 +84,13 @@ module.exports = {
 
         } else {
           let v = await Variation.find({
-            where: { name: pv.talla.trim().toLowerCase(), gender: product[0].gender, category: { 'in': categories } },
+            where: { name: pv.talla.trim().replace(/ /g,'').toLowerCase(), gender: product[0].gender, category: { 'in': categories } },
             limit: 1
           });
+
+          if(v.length == 0){
+            console.log("v")
+          }
 
           (variation.variation = v[0].id);
         }

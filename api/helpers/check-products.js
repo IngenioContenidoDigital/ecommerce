@@ -56,6 +56,11 @@ module.exports = {
             }
 
                 pro.name = p.name.toUpperCase().trim();
+
+                if(!p.reference){
+                    return reject({ name: 'NOPRODUCT', message: 'Producto ' + p.name + ' sin referencia' }) ;
+                }
+
                 pro.reference = p.reference.toUpperCase().trim();
                 pro.description = p.description.toLowerCase().trim();
                 pro.descriptionShort = p.descriptionShort.toLowerCase().trim();
@@ -64,9 +69,12 @@ module.exports = {
                     pro.images = p.images;
                 }
 
-                pro.categories = await categorize(p.categories);
+                if(p.categories){
+                    pro.categories = await categorize(p.categories);
+                }
 
-                if (pro.categories.length > 0) {
+                if (pro.categories && pro.categories.length > 0) {
+                    //let category = await Category.findOne({parent : pro.categories[0], name : p.gender.toLowerCase()});
                     pro.mainCategory = pro.categories[0];
                 }
 
@@ -80,11 +88,7 @@ module.exports = {
                 }
 
                 if (p.mainColor) {
-                    Color.findOrCreate({ name: p.mainColor.toLowerCase().trim() }, { name: p.mainColor.toLowerCase(), active: true }).exec(async (err, record, wasCreated) => {
-                        if (err) { return console.log(err) }
-
-                        pro.mainColor = (await Color.findOne({ name: p.mainColor.toLowerCase() })).id
-                    });
+                    pro.mainColor = (await Color.findOne({ name: p.mainColor.toLowerCase() })).id
                 } else {
                     return reject({ name: 'NOCOLOR', message: 'Producto ' + p.name + ' sin color' }) ;
                 }
