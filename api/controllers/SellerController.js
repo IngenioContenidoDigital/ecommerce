@@ -458,8 +458,58 @@ module.exports = {
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
         return res.redirect('/sellers');
-      }      
+      }
     });
-  }
+  },
+  showmessages: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'mensajesmeli')){
+      throw 'forbidden';
+    }
+    let messages = await Question.find({status: 'UNANSWERED'}).populate('product').sort([{dateCreated: 'DESC'}]);
+    res.view('pages/sellers/messagesml',{layout:'layouts/admin', messages});
+  },
+  notificationmessage: async function(req, res){
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let moment = require('moment');
+    let resource = req.body.resource;
+    let user = req.body.application_id;
+    let topic = req.body.topic;
+    let integration = await Integrations.findOne({user: user, channel: 'mercadolibre'});
+    let question = await sails.helpers.channel.mercadolibre.findQuetion(integration.seller, integration.secret, resource);
+    let itemId = question.item_id;
+    let product = await Product.findOne({mlid: itemId});
+    try {
+      if (product && topic === 'questions') {
+        let answer = null;
+        if (question.answer !== null) {
+          answer = await Answer.create({
+            text: question.answer.text,
+            status: question.answer.status,
+            dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+          }).fetch();
+        }
+
+        let questi = {
+          idMl: question.id,
+          seller: integration.seller,
+          text: question.text,
+          status: question.status,
+          dateCreated: parseInt(moment(question.date_created).valueOf()),
+          product: product.id,
+          answer
+        };
+
+        await Question.findOrCreate({idMl: question.id}, questi);
+      }
+      let questions = await Question.find({status: 'UNANSWERED'});
+      sails.sockets.blast('notificationmessage', {questions: questions.length});
+      res.send('Ok');
+    } catch(err) {
+      console.log(err);
+    }
+  },
 };
 

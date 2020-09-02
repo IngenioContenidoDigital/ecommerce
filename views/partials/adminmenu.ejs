@@ -54,6 +54,7 @@
     </p>
     <ul class="menu-list">
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%><li><a href="/sellers">Sellers</a></li><%}%>
+      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('mensajesmeli')){%><li><a href="/messagesmeli">Preguntas Mercadolibre</a></li><%}%>
     </ul>
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcarriers')){%>
