@@ -1128,9 +1128,9 @@
                     </td>-->
                     <td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="<%=product.id%>"><%= product.name %></a></td>
                     <td class="align-middle"><%= product.reference %></td>
-                    <td class="align-middle is-capitalized"><%= product.manufacturer.name %></td>
+                    <td class="align-middle is-capitalized"><%= (product.manufacturer ? product.manufacturer.name : '') %></td>
                     <td class="align-middle">$ <%= parseInt(product.price*(1+(product.tax.value/100))).toLocaleString('es-CO') %></td>
-                    <td class="align-middle is-capitalized"><%= product.mainColor.name %></td>
+                    <td class="align-middle is-capitalized"><%= (product.mainColor ? product.mainColor.name : '') %></td>
                     <td class="align-middle">
                     <span class="action">
                     <% if(product.active===true) { %>

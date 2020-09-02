@@ -142,3 +142,6 @@ config/ssl.js
 config/ssl/*
 config/env/production.js
 config/datastores.js
+config/datastores.js/
+/config/datastores.js
+

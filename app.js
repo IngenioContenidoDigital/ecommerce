@@ -25,9 +25,6 @@
 // no matter where we actually lift from.
 // > Note: This is not required in order to lift, but it is a convenient default.
 process.chdir(__dirname);
-const Sentry = require('@sentry/node');
-Sentry.init({ dsn: 'https://371b6ce9af634741b53fe860c769a8e5@o427235.ingest.sentry.io/5371005' });
-
 // Attempt to import `sails` dependency, as well as `rc` (for loading `.sailsrc` files).
 var sails;
 var rc;
@@ -49,11 +46,6 @@ try {
   Sentry.captureException(err);
   return;
 }//-•
-
-process.on('uncaughtException', function(err) {
-  Sentry.captureException(err);
-});
-
 
 // Start server
 sails.lift(rc('sails'));
