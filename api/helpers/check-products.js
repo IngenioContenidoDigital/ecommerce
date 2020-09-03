@@ -88,7 +88,11 @@ module.exports = {
                 }
 
                 if (p.mainColor) {
-                    pro.mainColor = (await Color.findOne({ name: p.mainColor.toLowerCase() })).id
+                    let color = (await Color.findOne({ name: p.mainColor.toLowerCase() }));
+                    if(!color){
+                        console.log('no color');
+                    }
+                    pro.mainColor = color.id
                 } else {
                     return reject({ name: 'NOCOLOR', message: 'Producto ' + p.name + ' sin color' }) ;
                 }

@@ -5,15 +5,17 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 const constants = {
-  PRODUCT_TYPE: 'Product',
-  PRODUCT_VARIATION: 'ProductVariation',
-  IMAGE_TYPE: 'ProductImage',
-  STATUS_UPLOADED : true,
-  SHOPIFY_CHANNEL : 'shopify',
-  SHOPIFY_PAGESIZE : 50,
-  WOOCOMMERCE_PAGESIZE : 50,
-  WOOCOMMERCE_CHANEL : 'woocommerce'
+  PRODUCT_TYPE: sails.config.custom.PRODUCT_TYPE,
+  PRODUCT_VARIATION: sails.config.custom.PRODUCT_VARIATION,
+  IMAGE_TYPE: sails.config.custom.IMAGE_TYPE,
+  STATUS_UPLOADED : sails.config.custom.STATUS_UPLOADED,
+  SHOPIFY_CHANNEL : sails.config.custom.SHOPIFY_CHANNEL,
+  SHOPIFY_PAGESIZE : sails.config.custom.SHOPIFY_PAGESIZE,
+  WOOCOMMERCE_PAGESIZE : sails.config.custom.WOOCOMMERCE_PAGESIZE,
+  WOOCOMMERCE_CHANEL : sails.config.custom.WOOCOMMERCE_CHANEL
 }
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 module.exports = {
   showproducts: async function (req, res) {
@@ -397,7 +399,7 @@ module.exports = {
   },
 
   importexecute: async (req, res) => {
-    req.setTimeout(440000);
+    req.setTimeout(640000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -467,15 +469,15 @@ module.exports = {
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
             result = [...result, ...rs.result]
             errors = [...errors, ...rs.errors];
+            await sleep(2000);
           }else{
             break;
           }
 
-          page++;
+          console.log("PAGE NUM : ", page);
+          console.log("importedProducts : ", importedProducts);
 
-          if(pageSize === 1){
-            break;
-          }
+          page++;
 
         }while((!isEmpty));
         

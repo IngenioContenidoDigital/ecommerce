@@ -10,6 +10,16 @@
 
 module.exports.custom = {
 
+  IMPORT_MICROSERVICE  : 'https://import.1ecommerce.app:9000/graphql',
+  PRODUCT_TYPE: 'Product',
+  PRODUCT_VARIATION: 'ProductVariation',
+  IMAGE_TYPE: 'ProductImage',
+  STATUS_UPLOADED : true,
+  SHOPIFY_CHANNEL : 'shopify',
+  SHOPIFY_PAGESIZE : 50,
+  WOOCOMMERCE_PAGESIZE : 50,
+  WOOCOMMERCE_CHANEL : 'woocommerce'
+
   /***************************************************************************
   *                                                                          *
   * Any other custom config this Sails app should use during development.    *
