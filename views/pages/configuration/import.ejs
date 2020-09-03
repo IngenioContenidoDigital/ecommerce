@@ -54,7 +54,7 @@
                       </section>
                       <section class="tab-content">
                         <% provider = null; %>
-                        <%if(integrations.length>0){%>
+                        <%if(typeof integrations =='object' && integrations.length>0){%>
                             <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify')[0];%>
                             <% if(provider){%>
                               <form action="/import" method="POST" enctype="multipart/form-data">
@@ -128,7 +128,14 @@
                 <h6 class="title is-6">Resultados del Proceso</h6>
                 <hr>
                 <div class="notification is-primary">
-                    Se han procesado un total de <%=resultados.imageItems.length || resultados.items.length%> registros.
+                    Se han procesado un total de 
+                    <%if(resultados.imageItems!==undefined && resultados.imageItems.length>0){%>
+                      <%=resultados.imageItems.length %>
+                    <%}%>
+                    <%if(resultados.items!==undefined && resultados.items.length>0){%>
+                      <%=resultados.items.length %>
+                    <%}%>
+                    registros.
                 </div>
                 <%if(resultados.errors !== undefined && resultados.errors.length>0){%>
                     <div class="notification is-danger">
