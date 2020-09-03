@@ -167,6 +167,8 @@ module.exports.routes = {
   'PUT /menu' : {controller:'UserController',action:'menuvisible'},
   'GET /mlauth/:appid' : {controller:'IntegrationsController', action:'meliauth'},
   'GET /getcover/:productid' : {controller:'ProductController', action:'getcover'},
+  'GET /colorindex/:action':{controller:'ColorController',action:'colorindex'},
+  'GET /genderindex/:action':{controller:'ProductController',action:'genderindex'},
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

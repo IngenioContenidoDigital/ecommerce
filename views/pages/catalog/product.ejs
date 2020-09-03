@@ -770,6 +770,7 @@
             </tr>
           </thead>
           <tbody>
+            <%if(product!==undefined){%>
             <% sellers.forEach(function(seller){ %>
               <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'dafiti') ){ %>
                 <tr>
@@ -841,6 +842,7 @@
                 </tr>
               <% } %>              
             <%})%>
+            <%}%>
           </tbody>
         </table>
       </div>
