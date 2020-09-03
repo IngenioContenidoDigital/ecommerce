@@ -53,12 +53,12 @@ module.exports = {
               let address = await Address.findOrCreate({addressline1:order.AddressShipping.Address1.toLowerCase().trim()},{
                 name:order.AddressShipping.Address1.trim().toLowerCase(),
                 addressline1:order.AddressShipping.Address1.trim().toLowerCase(),
-                addressline2:order.AddressShipping.Address2.trim().toLowerCase(),
+                addressline2:order.AddressShipping.Address2 ? order.AddressShipping.Address2.trim().toLowerCase() : '',
                 country:city[0].region.country,
                 region:city[0].region.id,
                 city:city[0].id,
-                notes:order.DeliveryInfo,
-                zipcode:order.AddressShipping.PostCode,
+                notes:order.DeliveryInfo ? order.DeliveryInfo : '',
+                zipcode:order.AddressShipping.PostCode ? order.AddressShipping.PostCode : '',
                 user:user.id,
               });
               let payment = {
