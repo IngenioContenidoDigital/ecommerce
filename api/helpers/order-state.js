@@ -18,6 +18,9 @@ module.exports = {
       case 'Aceptada':
         name='aceptado';
         break;
+      case 'Aceptado':
+        name='aceptado';
+        break;
       case 'Rechazada':
         name='rechazado';
         break;

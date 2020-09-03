@@ -52,11 +52,11 @@ module.exports = {
                   let address = await Address.findOrCreate({addressline1:result['receiver_address']['address_line'].toLowerCase().trim()},{
                     name:result['receiver_address']['address_line'].trim().toLowerCase(),
                     addressline1:result['receiver_address']['address_line'].trim().toLowerCase(),
-                    addressline2:result['receiver_address']['comment'].trim().toLowerCase(),
+                    addressline2:result['receiver_address']['comment'] ? result['receiver_address']['comment'].trim().toLowerCase() : '',
                     country:city[0].region.country,
                     region:city[0].region.id,
                     city:city[0].id,
-                    notes:result['receiver_address']['comment'].trim().toLowerCase(),
+                    notes:result['receiver_address']['comment'] ? result['receiver_address']['comment'].trim().toLowerCase() : '',
                     zipcode:result['receiver_address']['zip_code'] ? result['receiver_address']['zip_code'] : '',
                     user:user.id,
                   });
