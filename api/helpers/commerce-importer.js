@@ -40,7 +40,7 @@ let getCatalog = async (data) => {
   return new Promise(async (resolve, reject) => {
     let request = signRequest(data);
 
-    let response = await axios.post(sails.config.constants.IMPORT_MICROSERVICE, { query: request.query, variables: { pagination : {page : data.pagination.page, pageSize : data.pagination.pageSize, next : data.pagination.next} } }, {
+    let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { pagination : {page : data.pagination.page, pageSize : data.pagination.pageSize, next : data.pagination.next} } }, {
     headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
