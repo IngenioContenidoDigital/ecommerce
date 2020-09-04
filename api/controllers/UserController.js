@@ -19,7 +19,9 @@ module.exports = {
     let https = require('https');
     let randomize = require('randomatic');
     const querystring = require('querystring');
-    let data = {secret:'6LfK2-kUAAAAAF6eGv3Ykl2hiz1nxw7FexjIrqOt',response:req.body.token};
+    let secret = null;
+    if(req.hostname==='1ecommerce.app'){secret = '6Leo7ccZAAAAAFZspurQhYQ8NGn58vZiNqovrSKf'}else{secret = '6LfK2-kUAAAAAF6eGv3Ykl2hiz1nxw7FexjIrqOt'}
+    let data = {secret:secret,response:req.body.token};
     let options = {
       hostname: 'www.google.com',
       port:443,
@@ -78,7 +80,9 @@ module.exports = {
     let https = require('https');
     let randomize = require('randomatic');
     const querystring = require('querystring');
-    let data = {secret:'6LfK2-kUAAAAAF6eGv3Ykl2hiz1nxw7FexjIrqOt',response:req.body.token};
+    let secret = null;
+    if(req.hostname==='1ecommerce.app'){secret = '6Leo7ccZAAAAAFZspurQhYQ8NGn58vZiNqovrSKf'}else{secret = '6LfK2-kUAAAAAF6eGv3Ykl2hiz1nxw7FexjIrqOt'}
+    let data = {secret:secret,response:req.body.token};
     let options = {
       hostname: 'www.google.com',
       port:443,
