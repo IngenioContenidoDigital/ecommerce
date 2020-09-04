@@ -15,7 +15,7 @@ module.exports = {
     let seller = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({id:req.session.user.seller});
     }else{
       sellers = await Seller.find();

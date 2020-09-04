@@ -29,7 +29,7 @@ module.exports = {
     const genders = await Gender.find();
     let sellers = null;
     let integrations = null;
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({id: req.session.user.seller});
       integrations = await Integrations.find({seller: req.session.user.seller});
     }else{
@@ -65,7 +65,7 @@ module.exports = {
 
     }
     if (action === null) {
-      if (rights.name !== 'superadmin') {
+      if(rights.name!=='superadmin' && rights.name!=='admin'){
         products = await Product.find({ seller: req.session.user.seller })
           .populate('images')
           .populate('tax')
@@ -405,7 +405,7 @@ module.exports = {
       throw 'forbidden';
     }
 
-    if (rights.name !== 'superadmin') {
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({ id: req.session.user.seller });
     } else {
       sellers = await Seller.find();
@@ -850,7 +850,7 @@ module.exports = {
     let sellers = null;
     let channelDafiti = false;
     let channelLinio = false;
-    if(rights.name==='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       let integrations = await Integrations.find({
         or : [
           { channel: 'dafiti' },
@@ -884,7 +884,7 @@ module.exports = {
     let result = [];
     let channelDafiti = false;
     let channelLinio = false;
-    if(rights.name==='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       let integrations = await Integrations.find({
         or : [
           { channel: 'dafiti' },

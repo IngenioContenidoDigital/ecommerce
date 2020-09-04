@@ -187,9 +187,7 @@ module.exports = {
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     let users = await User.find().populate('profile');
-    if(id){
-      user = await User.findOne({id:id});
-    }
+    if(id){user = await User.findOne({id:id});}
     let countries = await Country.find();
     let sellers = await Seller.find();
     let profiles = await Profile.find({name:{'nin':['superadmin','customer']}});
@@ -205,6 +203,7 @@ module.exports = {
     let isActive = (req.body.activo==='on') ? true : false;
     try{
       let country = await Country.findOne({id:req.body.country});
+      console.log(req.body);
       await User.create({
         emailAddress:req.body.email,
         emailStatus:'confirmed',
@@ -215,7 +214,7 @@ module.exports = {
         mobilecountry:country.id,
         mobile:req.body.mobile,
         mobileStatus:'confirmed',
-        seller:req.body.seller,
+        seller:req.body.seller ? req.body.seller : null,
         profile:req.body.profile,
         active:isActive
       });
@@ -245,7 +244,7 @@ module.exports = {
           password:await sails.helpers.passwords.hashPassword(req.body.password),
           mobilecountry:req.body.country,
           mobile:req.body.mobile,
-          seller:req.body.seller,
+          seller:req.body.seller ? req.body.seller : null,
           profile:req.body.profile,
           active:isActive
         });
@@ -381,7 +380,7 @@ module.exports = {
   },
   newpermission: async(req,res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       throw 'forbidden';
     }
     let error= req.param('error') ? req.param('error') : null;
@@ -390,7 +389,7 @@ module.exports = {
   },
   addpermission: async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name !== 'admin'){
       throw 'forbidden';
     }
     let error = null;
