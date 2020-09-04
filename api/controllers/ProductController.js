@@ -540,7 +540,6 @@ module.exports = {
     let checked = false;
     const https = require('https');
     let route = sails.config.views.locals.imgurl;
-    req.setTimeout(300000);
     let findFromReference = async (reference) => {
       return await Product.findOne({ reference: reference });
     };
@@ -670,6 +669,10 @@ module.exports = {
                     result[header[i]] = row[i];
                     break;
                 }
+              }
+              let check = await Product.findOne({reference:result.reference,seller:result.seller});
+              if(check){
+                throw { name: 'DUPLICADO', message: 'DUPLICADO: Ya existe un Producto con la referencia' + result.reference + ' para este comercio.' };
               }
             }
             if (result !== null) {
