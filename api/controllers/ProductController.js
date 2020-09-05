@@ -881,6 +881,7 @@ module.exports = {
     }
     let seller = null;
     let sellers = null;
+    let error = null;
     let channel = req.body.channel;
     let result = [];
     let channelDafiti = false;
@@ -915,7 +916,10 @@ module.exports = {
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
       }
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: sellers, resultados: response, channelDafiti, channelLinio});
+      if (result.Request.length<1){
+        error = 'No hay productos pendientes por procesar';
+      }
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: sellers, resultados: response, channelDafiti, channelLinio});
     }catch(err){
       console.log(err);
       response.errors=err;
