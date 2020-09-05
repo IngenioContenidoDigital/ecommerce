@@ -848,10 +848,11 @@ module.exports = {
       throw 'forbidden';
     }
     let sellers = null;
+    let integrations = null;
     let channelDafiti = false;
     let channelLinio = false;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-      let integrations = await Integrations.find({
+    if(rights.name==='superadmin' || rights.name==='admin'){
+      integrations = await Integrations.find({
         or : [
           { channel: 'dafiti' },
           { channel: 'linio' }
@@ -865,8 +866,8 @@ module.exports = {
         return s;
       });
     } else {
-      let seller = req.session.user.seller;
-      let integrations = await Integrations.find({seller: seller});
+      seller = req.session.user.seller;
+      integrations = await Integrations.find({seller: seller});
       channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
       channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
     }
