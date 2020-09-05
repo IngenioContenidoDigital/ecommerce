@@ -27,7 +27,11 @@ module.exports = {
     let productvariation = null;
     if(inputs.action==='ProductUpdate' || inputs.action==='Image'){linio = true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
-      products = await Product.find({seller: inputs.seller, linio: linio, active: true})
+      products = await Product.find({
+        where:{seller: inputs.seller, linio: linio, active: true},
+        limit:300,
+        sort: 'createdAt ASC'
+      })
       .populate('gender')
       .populate('mainColor')
       .populate('manufacturer')

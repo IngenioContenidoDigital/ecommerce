@@ -27,7 +27,11 @@ module.exports = {
     let productvariation = null; 
     if(inputs.action==='ProductUpdate' || inputs.action==='Image'){dafiti=true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
-      products = await Product.find({seller:inputs.seller,dafiti:dafiti, active:true})
+      products = await Product.find({
+        where:{seller:inputs.seller,dafiti:dafiti, active:true},
+        limit:300,
+        sort: 'createdAt ASC'
+      })
       .populate('gender')
       .populate('mainColor')
       .populate('manufacturer')
