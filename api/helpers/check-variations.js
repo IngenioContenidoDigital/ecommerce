@@ -60,6 +60,10 @@ module.exports = {
             limit: 1
           }).catch((e) => console.log(e));
 
+          if(!uniqueSize && uniqueSize.length == 0){
+             console.log(uniqueSize);
+          }
+
           (variation.variation = uniqueSize[0].id);
 
         } else if (pv.gender && !pv.talla) {
@@ -87,11 +91,7 @@ module.exports = {
             where: { name: pv.talla.trim().replace(/ /g,'').toLowerCase(), gender: product[0].gender, category: { 'in': categories } },
             limit: 1
           });
-
-          if(v.length == 0){
-            console.log("v")
-          }
-
+        
           (variation.variation = v[0].id);
         }
       

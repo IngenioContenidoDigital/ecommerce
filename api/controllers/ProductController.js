@@ -400,6 +400,7 @@ module.exports = {
 
   importexecute: async (req, res) => {
     req.setTimeout(640000);
+
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
