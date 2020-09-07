@@ -9,15 +9,15 @@
     <form action="/multiple" method="POST" enctype="multipart/form-data" id="multiple-form">
     <div class="columns is-gapless">
         <div class="column">
-            <div class="box">  
+            <div class="box">
                 <%if(sellers!==null){%>
                     <div class="field">
                         <label class="label is-size-7">Elegir Seller</label>
                         <div class="select is-fullwidth">
-                            <select class="is-capitalized" name="seller" required>
+                            <select class="is-capitalized" name="seller" id="selectSeller" required>
                                 <option class="is-capitalized" value="">-- Elegir Seller --</option>
                                 <% sellers.forEach(seller =>{ %>
-                                    <option class="is-capitalized" value="<%=seller.id%>"><%=seller.name%></option>
+                                    <option class="is-capitalized" value="<%=seller.id%>" channeldafiti="<%= seller.channelDafiti %>" channellinio="<%= seller.channelLinio %>"><%=seller.name%></option>
                                 <%})%>
                             </select>
                         </div>
@@ -36,14 +36,17 @@
                 </div>
                 <br>
                 <div class="columns is-marginless is-gapless">
-                    <div class="column"><img src="/images/dafiti.png" /></div>
-                    <div class="column">
-                        <div class="buttons is-right is-fixed-bottom">
-                            <br><br><br>
-                          <button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Procesar Productos</button>
-                        </div>
-                    </div>
-                </div>                                
+                    <div class="column"><img class="menu-title is-hidden" src="/images/dafiti.png" id="dafiti"/></div>
+                    <div class="column"><img class="menu-title is-hidden" src="/images/linio.png" id="linio"/></div>
+                </div>
+                <div class="columns is-marginless is-gapless">
+                    <input class="is-hidden" name="channel" required value="">
+                </div>
+                <br>
+                <div class="buttons is-right is-fixed-bottom">
+                    <br><br><br>
+                    <button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Procesar Productos</button>
+                </div>
             </div>
         </div>
         <div class="column">
@@ -69,6 +72,33 @@
     </form>
   </div>
   <script>
+
+    <%if(sellers === null){%>
+        let dafiti = document.querySelector('#dafiti');
+        let linio = document.querySelector('#linio');
+        <%- channelDafiti %> ? removeClass(dafiti, 'is-hidden') : addClass(dafiti, 'is-hidden');
+        <%- channelLinio %> ? removeClass(linio, 'is-hidden') : addClass(linio, 'is-hidden');
+    <%}else{%>
+        const selectSeller = document.querySelector('#selectSeller');
+        selectSeller.onchange = changeSelect;
+    <%}%>
+  
+    function changeSelect(){
+        let channel = document.querySelector('input[name="channel"]');
+        let images = document.querySelectorAll('.menu-title');
+        let selectSeller = document.querySelector('#selectSeller');
+        let dafiti = selectSeller.options[selectSeller.selectedIndex].getAttribute('channeldafiti');
+        let linio = selectSeller.options[selectSeller.selectedIndex].getAttribute('channellinio');
+        let imgDafiti = document.querySelector('#dafiti');
+        let imgLinio = document.querySelector('#linio');
+        channel.value = '';
+        images.forEach(img =>{
+            removeClass(img, 'img-multiple');
+        });
+        dafiti === 'true' ? removeClass(imgDafiti, 'is-hidden') : addClass(imgDafiti, 'is-hidden');
+        linio === 'true' ? removeClass(imgLinio, 'is-hidden') : addClass(imgLinio, 'is-hidden');
+    }
+
     live('#process','click',e=>{
         e.preventDefault();
         let form = document.querySelector('#multiple-form');
@@ -79,4 +109,16 @@
             form.submit();
         }
     });
+
+    live('.menu-title', 'click', e =>{
+        let channel = document.querySelector('input[name="channel"]');
+        let images = document.querySelectorAll('.menu-title');
+
+        channel.value = e.target.id;
+        images.forEach(img =>{
+            removeClass(img, 'img-multiple');
+        });
+        addClass(e.target,'img-multiple');
+    });
+
   </script>

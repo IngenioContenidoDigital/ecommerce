@@ -163,12 +163,17 @@ module.exports.routes = {
   'GET /integrations/:id' : {controller:'SellerController',action:'integrations'},
   'POST /integration/set/:seller/:channel' : {controller:'SellerController',action:'setintegration'},
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
+  'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
+  'POST /linio/add' : {controller:'ProductController',action:'linioadd'},
   'GET /token' : {action:'security/grant-csrf-token'},
   'PUT /menu' : {controller:'UserController',action:'menuvisible'},
   'GET /mlauth/:appid' : {controller:'IntegrationsController', action:'meliauth'},
   'GET /getcover/:productid' : {controller:'ProductController', action:'getcover'},
+  'GET /colorindex/:action':{controller:'ColorController',action:'colorindex'},
+  'GET /genderindex/:action':{controller:'ProductController',action:'genderindex'},
+  'GET /categoryindex/:action':{controller:'CategoryController',action:'categoryindex'},
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

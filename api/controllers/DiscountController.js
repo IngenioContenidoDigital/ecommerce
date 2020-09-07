@@ -22,7 +22,7 @@ module.exports = {
     }
     let discounts = null;
     let sellers = null;
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({id:req.session.user.seller});
       discounts = await CatalogDiscount.find({seller:req.session.user.seller}).sort([{createdAt: 'DESC'}]);
     }else{

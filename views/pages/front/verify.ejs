@@ -44,7 +44,7 @@
         </form>
     </div>
 </div>
-<script src="https://www.google.com/recaptcha/api.js?render=6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1"></script>
+<script src="https://www.google.com/recaptcha/api.js?render=<% if(req.hostname=='1ecommerce.app'){%>6Leo7ccZAAAAAEHubAmCnbprfGK-aYZR9eaVaXy-}else{%>6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1<%}%>"></script>
 <script>
     live('#submit-verify','click',e => {
         e.preventDefault();

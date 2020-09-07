@@ -19,6 +19,7 @@ module.exports = {
     },
     user:{
       type:'string',
+     /* required : true*/
     },
     key:{
       type:'string',

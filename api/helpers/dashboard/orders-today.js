@@ -26,7 +26,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let totalOrders = 0;
     let totalPrice = 0;
-    if(inputs.profile !== 'superadmin'){
+    if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
       totalOrders  =  await Order.count({
         seller: inputs.seller,
         createdAt: {

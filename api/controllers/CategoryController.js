@@ -47,11 +47,19 @@ module.exports = {
     if(req.body.activo==='on'){isActive=true;}
     let current = await Category.findOne({id:req.body.current});
     let dafiticat = '';
+    let liniocat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
       }else{
         dafiticat = req.body['dafiti[]'];
+      }
+    }
+    if(req.body['linio[]']!==undefined){
+      if(typeof req.body['linio[]']!=='string'){
+        liniocat = req.body['linio[]'].join(',');
+      }else{
+        liniocat = req.body['linio[]'];
       }
     }
     try{
@@ -61,6 +69,7 @@ module.exports = {
         logo:filename[0].filename,
         description:req.body.descripcion,
         dafiti:dafiticat,
+        linio: liniocat,
         parent:current.id,
         active:isActive,
         url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
@@ -74,6 +83,7 @@ module.exports = {
           description:req.body.descripcion,
           parent:current.id,
           dafiti:dafiticat,
+          linio: liniocat,
           active:isActive,
           url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
           level:current.level+1
@@ -100,11 +110,19 @@ module.exports = {
     let category = await Category.findOne({id:req.param('id')});
     let parent = await Category.findOne({id:req.body.current});
     let dafiticat = '';
+    let liniocat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
       }else{
         dafiticat = req.body['dafiti[]'];
+      }
+    }
+    if(req.body['linio[]']!==undefined){
+      if(typeof req.body['linio[]']!=='string'){
+        liniocat = req.body['linio[]'].join(',');
+      }else{
+        liniocat = req.body['linio[]'];
       }
     }
     if(req.body.activo==='on'){isActive=true;}
@@ -115,6 +133,7 @@ module.exports = {
         description:req.body.descripcion,
         parent:parent.id,
         dafiti:dafiticat,
+        linio: liniocat,
         logo:uploaded[0].filename,
         url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
         active:isActive,
@@ -128,6 +147,7 @@ module.exports = {
           parent:parent.id,
           url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
           dafiti:dafiticat,
+          linio: liniocat,
           active:isActive,
           level:parent.level+1});
       }
@@ -216,5 +236,62 @@ module.exports = {
     }catch(err){
       return res.serverError(err);
     }
-  }
+  },
+  liniocategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let keys = await Integrations.find({where:{channel:'linio'}, limit:1});
+      if(keys.length > 0){
+        let route = await sails.helpers.channel.linio.sign('GetCategoryTree', keys[0].seller);
+        let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'GET');
+        return res.ok(JSON.parse(response));
+      }else{
+        return res.serverError();
+      }
+    }catch(err){
+      return res.serverError(err);
+    }
+  },
+  categoryindex: async (req, res) => {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if ((rights.name !== 'superadmin') && !_.contains(rights.permissions,'updateindex')) {
+      throw 'forbidden';
+    }
+    let documents = [];
+    let categories = await Category.find({level:{'>=':4}});
+
+    categories.forEach(pr => {
+      let doc = {
+        type: req.param('action'), // add or delete
+        id: pr.id
+      };
+
+      if (req.param('action') === 'add') {
+        doc['fields'] = {
+          id: pr.id,
+          category: pr.name
+        };
+      }
+      documents.push(doc);
+    });
+    let AWS = require('aws-sdk');
+    AWS.config.loadFromPath('./config.json');
+    let endpoint = 'doc-predictor-1ecommerce-if3tuwyqkbztsy2a2j3voan7bu.us-east-1.cloudsearch.amazonaws.com';
+    var csd = new AWS.CloudSearchDomain({ endpoint: endpoint });
+    var params = {
+      contentType: 'application/json', // required
+      documents: JSON.stringify(documents) // required
+    };
+    csd.uploadDocuments(params, (err, data) => {
+      if (err) { console.log(err, err.stack); } // an error occurred
+      let index = new AWS.CloudSearch();
+      index.indexDocuments({ DomainName: 'predictor-1ecommerce' }, (err, data) => {
+        if (err) { console.log(err); }
+        console.log(data);
+        return res.redirect('/inicio');
+      });
+    });
+  },
 };

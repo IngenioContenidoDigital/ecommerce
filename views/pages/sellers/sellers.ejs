@@ -305,7 +305,7 @@
                                       <div class="field">
                                       <label class="label">Consumer key</label>
                                       <div class="control has-icons-left">
-                                          <input class="input" type="text" name="shopifyKey" placeholder="Consumer key" <%if(woocommerce!==null &&  woocommerce.length>0){%>value="<%=woocommerce[0].key%>"<%}%>/>
+                                          <input class="input" type="text" name="shopifyKey" placeholder="Consumer key" <%if(shopify!==null &&  shopify.length>0){%>value="<%=shopify[0].key%>"<%}%>/>
                                           <span class="icon is-small is-left">
                                           <i class='bx bx-key' ></i>
                                           </span>
@@ -314,7 +314,7 @@
                                       <div class="field">
                                       <label class="label">Consumer secret</label>
                                       <div class="control has-icons-left">
-                                          <input class="input" type="text" name="shopifySecret" placeholder="Consumer secret" required <%if(woocommerce!==null &&  woocommerce.length>0){%>value="<%=woocommerce[0].secret%>"<%}%>/>
+                                          <input class="input" type="text" name="shopifySecret" placeholder="Consumer secret" required <%if(shopify!==null &&  shopify.length>0){%>value="<%=shopify[0].secret%>"<%}%>/>
                                           <span class="icon is-small is-left">
                                           <i class='bx bx-key' ></i>
                                           </span>
@@ -323,7 +323,7 @@
                                       <div class="field">
                                           <label class="label">URL Petición</label>
                                           <div class="control has-icons-left">
-                                              <input class="input" type="text" name="shopifyApiUrl" placeholder="Url de Petición" required <%if(woocommerce!==null && woocommerce.length>0){%>value="<%=woocommerce[0].url%>"<%}%>/>
+                                              <input class="input" type="text" name="shopifyApiUrl" placeholder="Url de Petición" required <%if(shopify!==null && shopify.length>0){%>value="<%=shopify[0].url%>"<%}%>/>
                                               <span class="icon is-small is-left">
                                                   <i class='bx bx-world'></i>
                                               </span>
@@ -332,7 +332,7 @@
                                       <div class="field">
                                           <label class="label">Versión</label>
                                           <div class="control has-icons-left">
-                                              <input class="input" type="text" name="shopifyVersion" placeholder="Versión" <%if(woocommerce!==null && woocommerce.length>0){%>value="<%=woocommerce[0].version%>"<%}%>/>
+                                              <input class="input" type="text" name="shopifyVersion" placeholder="Versión" <%if(shopify!==null && shopify.length>0){%>value="<%=shopify[0].version%>"<%}%>/>
                                               <span class="icon is-small is-left">
                                                   <i class='bx bx-world'></i>
                                               </span>
@@ -468,10 +468,6 @@
                             </div>
                               <% } %>
                           </div>
-
-
-
-
                         </div>
                       </div>
                   </div>

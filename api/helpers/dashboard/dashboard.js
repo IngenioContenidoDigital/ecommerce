@@ -50,7 +50,7 @@ module.exports = {
     let hoursClient = [];
     let hoursCellar = [];
 
-    if(inputs.profile !== 'superadmin'){
+    if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
       orders  =  await Order.find({
         seller: inputs.seller,
         createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }

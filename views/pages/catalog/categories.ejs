@@ -16,7 +16,7 @@
     <% } %>
       <div class="box">
         <div class="columns">
-          <div class="column is-9">
+          <div class="column is-8">
             <div class="field is-pulled-right">
               <input type="hidden" value="<%= current.id %>" name="category" id="category" />
               <input type="hidden" value="<%= parent %>" name="parent" id="parent" />
@@ -122,13 +122,32 @@
               <% } %>
             </div>
           </div>
-          <div class="column is-3">
+          <div class="column is-4">
             <p class="has-text-centered title is-6">Equivalencia Marketplace</p>
             <hr>
-            <div class="equivalencias">
-              <progress class="progress is-small is-primary" max="100">15%</progress>
-              <h6 class="title is-6">Categoría en Dafiti</h6>
+            <progress class="progress is-small is-primary" max="100">15%</progress>
+            <div class="tabs is-toggle o-x-h">
+              <ul class="markeplace-categories">
+                <li>
+                  <a>
+                    <p class="has-text-centered" id="dafit"><img src="/images/dafiti.png" /></p>
+                  </a>
+                </li>
+                <li>
+                  <a>
+                    <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="setup dafit">
+              <h6 class="title is-6 title-markeplace">Categoría en Dafiti</h6>
               <ul class="cattree tree" id="dafiti">
+              </ul>
+            </div>
+            <div class="setup is-hidden lini">
+              <h6 class="title is-6 title-markeplace">Categoría en Linio</h6>
+              <ul class="cattree tree" id="linio">
               </ul>
             </div>
           </div>
@@ -137,27 +156,36 @@
     </form>
   <script>
     const fileInput = document.querySelector('#file-loader input[type=file]');
-    <%if(current.dafiti!==''){%>
-      let dafiti = '<%=current.dafiti %>'.split(',');
-    <%}else{%>
-      let dafiti = [];
-    <%}%>
+    let dafiti = '<%= current.dafiti %>' !== '' ? '<%= current.dafiti %>'.split(',') : [];
+    let linio = '<%= current.linio %>' !== '' ? '<%= current.linio %>'.split(',') : [];
+
     fileInput.onchange = () => {
       if (fileInput.files.length > 0) {
         const fileName = document.querySelector('#file-loader .file-name');
         fileName.textContent = fileInput.files[0].name;
       }
     };
-    let options = (elm,cat,level) =>{
+
+    let options = (marketplace, elm, cat, level) =>{
       for(let c of cat){
         let op = document.createElement('li');
         /*if(level<=2){
           op.innerHTML='<span><i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
         }else{*/
-          if(dafiti.includes(c['CategoryId'])){
-            op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-          }else{
-            op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+          if (marketplace === 'dafiti') {
+            if(dafiti.includes(c['CategoryId'])){
+              removeClass(elm,'is-hidden');
+              op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }else{
+              op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }
+          } else if (marketplace === 'linio') {
+            if(linio.includes(c['CategoryId'])){
+              removeClass(elm,'is-hidden');
+              op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }else{
+              op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }
           }
         //}
         elm.appendChild(op);
@@ -168,7 +196,7 @@
           addClass(ul,'is-hidden');
           ul.style.marginLeft='10px';
           op.parentNode.insertBefore(ul, op.nextSibling);
-          options(ul,c.Children.Category,level);
+          options(marketplace,ul,c.Children.Category,level);
           level-=1;
         }
       }
@@ -176,19 +204,41 @@
     }
     
     const dft = () =>{
-      let obj = document.querySelector('#dafiti');
+      let objDafiti = document.querySelector('#dafiti');
+      let objLinio = document.querySelector('#linio');
       io.socket.get('/integrations/dafiti/categories',(resData, res)=>{
-        if(res.statusCode==200){
+        if(res.statusCode == 200){
+          options('dafiti', objDafiti, resData.SuccessResponse.Body.Categories.Category, 1);
+        } else {
+          document.querySelector('.dafit').innerHTML='';
+        }
+      });
+
+      io.socket.get('/integrations/linio/categories',(resData, res)=>{
+        if(res.statusCode == 200){
           let progress = document.querySelector('progress');
           progress.parentNode.removeChild(progress);
-          options(obj,resData.SuccessResponse.Body.Categories.Category,1);
-        }else{
-          document.querySelector('.equivalencias').innerHTML='';
+          options('linio', objLinio, resData.SuccessResponse.Body.Categories.Category, 1);
+        } else {
+          document.querySelector('.lini').innerHTML='';
         }
       });
     }
 
     dft();
+
+    live('.markeplace-categories li','click',e=>{
+      let group = e.target.parentNode.id;
+      let blocks= document.querySelectorAll('.setup');
+
+      for(let b of blocks){
+        if(hasClass(b,group)){
+          removeClass(b,'is-hidden');
+        }else{
+          addClass(b,'is-hidden');
+        }
+      }
+    });
 
     live('.tree-toggler','click',e => {
       let group = e.target.parentNode.parentNode.nextSibling;
