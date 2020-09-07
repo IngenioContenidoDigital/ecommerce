@@ -69,6 +69,8 @@ module.exports.routes = {
   'DELETE /category/delete' :{controller:'CategoryController', action:'deletecategory'},
   'GET /sellers/:action?/:id?' : {controller:'SellerController',action:'showsellers'},
   'GET /messagesmeli/' : {controller:'SellerController',action:'showmessages'},
+  'POST /filter/questions' : {controller:'SellerController', action:'filtermessages'},
+  'POST /answerquestion' : {controller:'SellerController', action:'answerquestion'},
   'POST /notificationmessage/' : {controller:'SellerController',action:'notificationmessage'},
   'POST /seller/create' : {controller:'SellerController',action:'createseller'},
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},

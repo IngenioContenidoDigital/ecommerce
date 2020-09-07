@@ -1,6 +1,6 @@
 module.exports = {
   friendlyName: 'Find question',
-  description: 'Find quetion Mercadolibre',
+  description: 'Find question Mercadolibre',
   inputs: {
     seller: {
       type:'string',

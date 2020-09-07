@@ -186,7 +186,12 @@
 
     const socketNotification = io.socket.on('notificationmessage', function (data){
       let notification = document.querySelector('#notification-button')
-      notification.setAttribute('data-badge', data.questions);
+      let user = <%- JSON.stringify(session.user) %>;
+      if(user !== undefined && user.rights.name !== 'superadmin' && data.seller === user.seller){
+        notification.setAttribute('data-badge', data.questionsSeller);
+      } else if(user.rights.name === 'superadmin'){
+        notification.setAttribute('data-badge', data.questions);
+      }
     });
 
   </script>
