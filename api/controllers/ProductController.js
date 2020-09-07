@@ -1,3 +1,6 @@
+const { userInfo } = require('os');
+const { stringify } = require('querystring');
+
 /**
  * ProductController
  *
@@ -395,7 +398,7 @@ module.exports = {
     }
 
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers });
+    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers, rights:rights.name });
   },
 
   importexecute: async (req, res) => {
@@ -528,13 +531,13 @@ module.exports = {
           break;
       }
 
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors : imageErrors, imageItems : imageItems }, integrations: integrations, sellers : sellers});
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors : imageErrors, imageItems : imageItems }, integrations: integrations, sellers : sellers, rights:rights.name});
     }
 
     let header = null;
     let checkheader = {
-      product: ['name', 'reference', 'description', 'descriptionShort', 'active', 'price', 'tax', 'manufacturer', 'width', 'height', 'length', 'weight', 'gender', 'seller', 'mainColor', 'categories', 'mainCategory'],
-      productvariation: ['supplierreference', 'reference', 'ean13', 'upc', 'quantity', 'variation', 'seller'],
+      product: ['name', 'reference', 'description', 'descriptionShort', 'active', 'price', 'tax', 'manufacturer', 'width', 'height', 'length', 'weight', 'gender', 'mainColor', 'categories', 'mainCategory'],
+      productvariation: ['supplierreference', 'reference', 'ean13', 'upc', 'quantity', 'variation'],
       productimage: ['reference', 'seller', 'route', 'files']
     };
     let checked = false;
@@ -573,7 +576,7 @@ module.exports = {
                     result[header[i]] = row[i] ? parseInt(row[i]) : 0;
                     break;
                   case 'seller':
-                    result[header[i]] = (await Seller.findOne({ domain: row[i].trim().toLowerCase() })).id;
+                    result[header[i]] = (await Seller.findOne({ id: seller})).id;
                     break;
                   default:
                     result[header[i]] = row[i].toString();
@@ -657,7 +660,7 @@ module.exports = {
                     result[header[i]] = parseFloat(row[i].replace(',', '.'));
                     break;
                   case 'seller':
-                    result[header[i]] = (await Seller.findOne({ domain: row[i].trim().toLowerCase() })).id;
+                    result[header[i]] = (await Seller.findOne({ id: seller})).id;
                     break;
                   case 'price':
                     result[header[i]] = parseFloat(row[i].replace(',', '.'));
@@ -733,7 +736,7 @@ module.exports = {
           }
           fila++;
         }
-        return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: result });
+        return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: result, rights:rights.name });
       } else {
         let filename = await sails.helpers.fileUpload(req, 'file', 2000000, 'uploads');
         https.get(route + '/uploads/' + filename[0].filename, response => {
@@ -744,14 +747,20 @@ module.exports = {
             header = rows[0].split(';');
             if (req.body.entity === 'Product') {
               header.push('mainCategory');
-              if (JSON.stringify(header) === JSON.stringify(checkheader.product)) { checked = true; }
+              if (JSON.stringify(header) === JSON.stringify(checkheader.product)) { 
+                checked = true;
+                header.push('seller');
+              }
             }
             if (req.body.entity === 'ProductVariation') {
               for (let h in header) {
                 if (header[h] === 'reference') { header[h] = 'supplierreference'; }
                 if (header[h] === 'reference2') { header[h] = 'reference'; }
               }
-              if (JSON.stringify(header) === JSON.stringify(checkheader.productvariation)) { checked = true; }
+              if (JSON.stringify(header) === JSON.stringify(checkheader.productvariation)) { 
+                checked = true;
+                header.push('seller'); 
+              }
             }
             try {
               if (checked) {
@@ -764,7 +773,7 @@ module.exports = {
                   } catch (cerr) {
                     return res.redirect('/import?error=' + cerr.message);
                   }
-                  return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: result });
+                  return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: result, rights:rights.name });
                 }).catch(err => {
                   return res.redirect('/import?error=' + err.message);
                 });

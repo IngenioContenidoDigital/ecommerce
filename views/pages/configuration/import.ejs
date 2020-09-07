@@ -29,6 +29,19 @@
                                 </select>
                             </div>
                         </div>
+                        <%if( rights== 'superadmin'){%>
+                            <div class="field">
+                              <label class="label">Sellers</label>
+                              <div class="select is-fullwidth">
+                                  <select name="seller" required>
+                                    <% for(var i=0; i<sellers.length; i++) {%>
+                                      <option value="<%=sellers[i].id%>"><%=sellers[i].name%></option>
+                                    <% } %>
+                                  </select>
+                              </div>
+                            </div>
+                          <% } %>
+
                         <div class="field">
                             <div id="file-loader" class="file has-name is-fullwidth">
                             <label class="file-label">
