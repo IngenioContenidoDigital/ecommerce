@@ -87,7 +87,7 @@ module.exports = {
                     });
                 }
 
-                let color = await sails.helpers.tools.findColor(`${p.name}${p.description}${p.descriptionShort}${p.reference}`);
+                let color = await sails.helpers.tools.findColor(`${p.name} ${p.description} ${p.descriptionShort} ${p.reference}`);
                 
                 if(color && color.length > 0){
                     pro.mainColor = color[0];
@@ -96,7 +96,7 @@ module.exports = {
                 }
 
                 if (p.gender) {
-                    let gender = await sails.helpers.tools.findGender(`${p.name}${p.description}${p.descriptionShort}${p.reference}`);
+                    let gender = await sails.helpers.tools.findGender(`${p.name} ${p.description} ${p.descriptionShort} ${p.reference}`);
                     if (gender) {
                         pro.gender = gender[0];
                     } else {
