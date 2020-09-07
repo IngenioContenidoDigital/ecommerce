@@ -25,9 +25,13 @@ module.exports = {
     let products = null;
     let paffected = [];
     let productvariation = null;
-    if(inputs.action==='ProductUpdate' || inputs.action==='Image'){linio = true;}
+    if(inputs.action==='ProductUpdate'){linio = true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
-      products = await Product.find({seller: inputs.seller, linio: linio, active: true})
+      products = await Product.find({
+        where:{seller: inputs.seller, linio: linio, active: true},
+        limit:600,
+        sort: 'createdAt ASC'
+      })
       .populate('gender')
       .populate('mainColor')
       .populate('manufacturer')
@@ -108,7 +112,7 @@ module.exports = {
       }
     }
     if(inputs.action === 'Image'){
-      products = await Product.find({seller: inputs.seller, linio: linio, active: true});
+      products = await Product.find({seller:inputs.seller,linio:true,liniostatus:false,active:true});
       if(products.length > 0){
         for(let product of products){
           //Imagenes
@@ -137,16 +141,19 @@ module.exports = {
         }
       }
     }
-    try{
-      var xml = jsonxml(body, true);
-      let sign = await sails.helpers.channel.linio.sign(inputs.action, inputs.seller);
-      let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+ sign, 'POST', xml);
-      if(inputs.action === 'ProductCreate'){
-        await Product.update({id: paffected}).set({linio: true, liniostatus: true});
+    if(body.Request.length>0){
+      try{
+        var xml = jsonxml(body, true);
+        let sign = await sails.helpers.channel.linio.sign(inputs.action, inputs.seller);
+        let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+ sign, 'POST', xml);
+        if(inputs.action === 'ProductCreate'){await Product.update({id: paffected}).set({linio: true, liniostatus: false});}
+        if(inputs.action==='Image'){await Product.update({id:paffected}).set({linio:true,liniostatus:true});}
+        return exits.success(response);
+      }catch(err){
+        return exits.error(err);
       }
-      return exits.success(response);
-    }catch(err){
-      return exits.error(err);
+    }else{
+      return exits.success(body);
     }
   }
 };

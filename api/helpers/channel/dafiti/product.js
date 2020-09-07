@@ -28,7 +28,7 @@ module.exports = {
     .populate('mainColor')
     .populate('manufacturer')
     .populate('mainCategory')
-    .populate('categories')
+    .populate('categories',{level:{'>=':4}})
     .populate('discount',{
       where:{
         to:{'>=':moment().valueOf()},

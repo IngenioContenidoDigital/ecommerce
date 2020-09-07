@@ -29,7 +29,7 @@ module.exports = {
     const genders = await Gender.find();
     let sellers = null;
     let integrations = null;
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({id: req.session.user.seller});
       integrations = await Integrations.find({seller: req.session.user.seller});
     }else{
@@ -65,7 +65,7 @@ module.exports = {
 
     }
     if (action === null) {
-      if (rights.name !== 'superadmin') {
+      if(rights.name!=='superadmin' && rights.name!=='admin'){
         products = await Product.find({ seller: req.session.user.seller })
           .populate('images')
           .populate('tax')
@@ -406,7 +406,7 @@ module.exports = {
       throw 'forbidden';
     }
 
-    if (rights.name !== 'superadmin') {
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({ id: req.session.user.seller });
     } else {
       sellers = await Seller.find();
@@ -541,7 +541,6 @@ module.exports = {
     let checked = false;
     const https = require('https');
     let route = sails.config.views.locals.imgurl;
-    req.setTimeout(300000);
     let findFromReference = async (reference) => {
       return await Product.findOne({ reference: reference });
     };
@@ -671,6 +670,10 @@ module.exports = {
                     result[header[i]] = row[i];
                     break;
                 }
+              }
+              let check = await Product.findOne({reference:result.reference,seller:result.seller});
+              if(check){
+                throw { name: 'DUPLICADO', message: 'DUPLICADO: Ya existe un Producto con la referencia' + result.reference + ' para este comercio.' };
               }
             }
             if (result !== null) {
@@ -846,10 +849,11 @@ module.exports = {
       throw 'forbidden';
     }
     let sellers = null;
+    let integrations = null;
     let channelDafiti = false;
     let channelLinio = false;
-    if(rights.name==='superadmin'){
-      let integrations = await Integrations.find({
+    if(rights.name==='superadmin' || rights.name==='admin'){
+      integrations = await Integrations.find({
         or : [
           { channel: 'dafiti' },
           { channel: 'linio' }
@@ -863,8 +867,8 @@ module.exports = {
         return s;
       });
     } else {
-      let seller = req.session.user.seller;
-      let integrations = await Integrations.find({seller: seller});
+      seller = req.session.user.seller;
+      integrations = await Integrations.find({seller: seller});
       channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
       channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
     }
@@ -878,11 +882,12 @@ module.exports = {
     }
     let seller = null;
     let sellers = null;
+    let error = null;
     let channel = req.body.channel;
     let result = [];
     let channelDafiti = false;
     let channelLinio = false;
-    if(rights.name==='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       let integrations = await Integrations.find({
         or : [
           { channel: 'dafiti' },
@@ -912,7 +917,10 @@ module.exports = {
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
       }
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: sellers, resultados: response, channelDafiti, channelLinio});
+      if (result.Request.length<1){
+        error = 'No hay productos pendientes por procesar';
+      }
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: sellers, resultados: response, channelDafiti, channelLinio});
     }catch(err){
       console.log(err);
       response.errors=err;

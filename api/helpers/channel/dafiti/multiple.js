@@ -25,14 +25,18 @@ module.exports = {
     let products = null;
     let paffected = [];
     let productvariation = null; 
-    if(inputs.action==='ProductUpdate' || inputs.action==='Image'){dafiti=true;}
+    if(inputs.action==='ProductUpdate'){dafiti=true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
-      products = await Product.find({seller:inputs.seller,dafiti:dafiti, active:true})
+      products = await Product.find({
+        where:{seller:inputs.seller,dafiti:dafiti, active:true},
+        limit:600,
+        sort: 'createdAt ASC'
+      })
       .populate('gender')
       .populate('mainColor')
       .populate('manufacturer')
       .populate('mainCategory')
-      .populate('categories')
+      .populate('categories',{level:{'>=':4}})
       .populate('discount',{
         where:{
           to:{'>=':moment().valueOf()},
@@ -108,7 +112,7 @@ module.exports = {
       }
     }
     if(inputs.action==='Image'){
-      products = await Product.find({seller:inputs.seller,dafiti:dafiti,active:true});
+      products = await Product.find({seller:inputs.seller,dafiti:true,dafitistatus:false,active:true});
       if(products.length>0){
         for(let product of products){
           //Imagenes
@@ -137,17 +141,20 @@ module.exports = {
         };
       }
     }
-    try{
-      var xml = jsonxml(body,true);
-      let sign = await sails.helpers.channel.dafiti.sign(inputs.action,inputs.seller);
-      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
-      //let result = JSON.parse(response);
-      if(inputs.action==='ProductCreate'){
-        await Product.update({id:paffected}).set({dafiti:true,dafitistatus:true});
+    if(body.Request.length>0){
+      try{
+        var xml = jsonxml(body,true);
+        let sign = await sails.helpers.channel.dafiti.sign(inputs.action,inputs.seller);
+        let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
+        //let result = JSON.parse(response);
+        if(inputs.action==='ProductCreate'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:false});}
+        if(inputs.action==='Image'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:true});}
+        return exits.success(response);
+      }catch(err){
+        return exits.error(err);
       }
-      return exits.success(response);
-    }catch(err){
-      return exits.error(err);
+    }else{
+      return exits.success(body);
     }
   }
 

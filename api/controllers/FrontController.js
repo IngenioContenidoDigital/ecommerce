@@ -20,7 +20,7 @@ module.exports = {
     if(id){
       slide = await Slider.findOne({id:id});
     }
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       sliders = await Slider.find({seller:req.session.user.seller});
       sellers = await Seller.find({seller:req.session.user.seller});
     }else{

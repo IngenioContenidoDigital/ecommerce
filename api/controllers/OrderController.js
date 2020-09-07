@@ -301,7 +301,7 @@ module.exports = {
     }
 
     let orders = null;
-    if(rights.name!=='superadmin'){
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
       orders = await Order.find({where:{seller:req.session.user.seller}}).sort('createdAt DESC')
       .populate('customer')
       .populate('currentstatus');
