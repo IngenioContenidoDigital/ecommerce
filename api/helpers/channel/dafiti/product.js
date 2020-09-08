@@ -77,7 +77,7 @@ module.exports = {
           PrimaryCategory:product.mainCategory.dafiti.split(',')[0],
           Categories:categories.join(','),
           Description: jsonxml.cdata(product.descriptionShort+' '+product.description),
-          Brand:product.manufacturer.name,
+          Brand:product.manufacturer.name==='Adidas' ? 'Adidas Performance' : product.manufacturer.name,
           Condition:'new',
           Variation:pv.variation.col.replace(/\.5/,'½').toString(),
           Price:(pv.price*(1+inputs.dafitiprice)).toFixed(2),
