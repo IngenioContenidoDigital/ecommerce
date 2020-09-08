@@ -1,0 +1,90 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
+<section class="container">
+  <h4 class="title is-4">Preguntas y Respuestas MercadoLibre</h4>
+  <div class="box content">
+    <%if(sellers !== null){%>
+      <div class="field">
+        <label class="label is-size-7">Elegir Seller</label>
+        <div class="select is-fullwidth">
+          <select class="is-capitalized" name="seller" id="selectSeller" required>
+            <option class="is-capitalized" value="">-- Elegir Seller --</option>
+            <%sellers.forEach(seller =>{%>
+              <option class="is-capitalized" value="<%=seller.id%>"><%= seller.name %></option>
+            <%})%>
+          </select>
+        </div>
+      </div>
+    <%}%>
+    <div id="listQuestions"></div>
+  </div>
+</section>
+<script>
+  <%if(sellers === null){%>
+    filterQuestions()
+  <%}%>
+
+  live('select[name="seller"]','change', e =>{
+    let seller = e.target.value;
+    filterQuestions(seller);
+  });
+      
+  function clickAnswer(id) {
+    let select = document.querySelector("#selectSeller");
+    let text = document.getElementById(id).value;
+    let seller = select ? select.options[select.selectedIndex].value : null;
+
+    io.socket.post('/answerquestion', { text, id, seller }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        listHtml(resData)
+      }
+    });
+  }
+
+  function filterQuestions(seller) {
+    io.socket.post('/filter/questions', { seller }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        listHtml(resData)
+      }
+    });
+  }
+
+  function ocultQuestions(messageId) {
+    var elements = document.getElementsByClassName('media media' + messageId)
+    var icon = document.querySelector("#icon" + messageId)
+    var label = document.querySelector("#text" + messageId)
+    for (let i = 0; i < elements.length; i++) {
+      let element = elements[i]
+      let className = element.className
+
+      if (className.includes('is-hidden')) {
+        removeClass(element, 'is-hidden');
+        removeClass(icon, 'bxs-chevron-down');
+        addClass(icon, 'bxs-chevron-up');
+        label.text = 'Ocultar preguntas'
+      } else {
+        addClass(icon, 'bxs-chevron-down');
+        addClass(element, 'is-hidden');
+        removeClass(icon, 'bxs-chevron-up');
+        label.text = 'Preguntas anteriores' 
+      }
+    }
+  }
+
+  function listHtml(data, content) {
+    var listQuestions = document.querySelector("#listQuestions")
+    listQuestions.innerHTML = ''
+    data.messages.forEach(message => {
+      var listQuest = ''
+      message.questions.forEach(question => {
+        var classhidden = question.answer !== null ? ' media'+ message.id + ' is-hidden' : ''
+        var icon = question.answer === null ? '<i class="is-hidden"></i>' : '<i class="bx bxs-message-rounded-dots bx-flip-horizontal bx-sm"></i>'
+        var answer = question.answer !== null ? '<p class="message-content message-answer">'+ question.answer.text +'&nbsp;<span class="tag">Respuesta</span></p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small">Cancelar</a></p></div>'
+        var quest = '<div class="media'+ classhidden + '"><div class="media-left message-left"><i class="bx bxs-message-rounded-dots bx-sm"></i>' + icon +'</div><div class="media-content container-content"><div class="content"><p class="message-content">'+ question.text +' &nbsp;<span class="tag">Pregunta</span></p>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('day').fromNow() +'</span></div></div>'
+        listQuest += quest
+      });
+      var list = '<article class="post"><h4 class="title-product"><a href="/products/edit/'+ message.id +'">'+ message.name + '</a></h4><div class="tags has-addons title-product"><i class="tag bx bxs-chevron-down" id="icon'+ message.id +'"></i><a class="tag" id="text'+ message.id +'" onclick="ocultQuestions(\'' + message.id + '\')">Preguntas anteriores</a></div>'+ listQuest +'</article>';
+      listQuestions.innerHTML += list; 
+    });
+  }
+
+</script>

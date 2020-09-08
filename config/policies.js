@@ -40,7 +40,10 @@ module.exports.policies = {
     'findproductvariations' : true,
     '*': 'isLoggedIn'
   },
-  SellerController:{'*': 'isLoggedIn'},
+  SellerController:{
+    'notificationmessage': true,
+    '*': 'isLoggedIn'
+  },
   SupplierController:{'*': 'isLoggedIn'},
   TaxController:{'*': 'isLoggedIn'},
   UserController:{
