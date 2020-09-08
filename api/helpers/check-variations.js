@@ -55,8 +55,10 @@ module.exports = {
         variation.price = parseInt(product[0].price * (1 + product[0].tax.value / 100));
 
         if (!pv.gender && pv.talla) {
+          let gender = await Gender.find({ name : 'unisex'});
+
           let uniqueSize = await Variation.find({
-            where: { name: pv.talla.trim().toLowerCase() },
+            where: { name: pv.talla.trim().toLowerCase(), gender : gender.id },
             limit: 1
           }).catch((e) => console.log(e));
 
@@ -64,7 +66,13 @@ module.exports = {
              console.log(uniqueSize);
           }
 
-          (variation.variation = uniqueSize[0].id);
+          try {
+            (variation.variation = uniqueSize[0].id);
+            
+          } catch (error) {
+            console.log(error)
+          }
+
 
         } else if (pv.gender && !pv.talla) {
 

@@ -399,7 +399,7 @@ module.exports = {
   },
 
   importexecute: async (req, res) => {
-    req.setTimeout(640000);
+    req.setTimeout(3000000);
 
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
@@ -489,8 +489,11 @@ module.exports = {
 
           await each(imageTasks, async (source)=>{
             await each(source.images, async (s) => {
-              let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product);
+              
+              let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product).catch((e)=>console.log("Error subiendo imagen"));
               (s.filename = uploaded.filename);
+               await sleep(5000);
+
             }).catch(e=>imageErrors.push(e));
           
           }).catch(e=>errors.push(e));
