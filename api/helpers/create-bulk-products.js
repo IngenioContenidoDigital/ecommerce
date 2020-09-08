@@ -27,13 +27,13 @@ module.exports = {
 
                 each = async (array, callback) => {
                     for (let index = 0; index < array.length; index++) {
-                    await callback(array[index], index, array).catch((e) => errors.push(e));
+                    await callback(array[index], index, array).catch((e) => errors.push(e) && console.log(e));
                     }
                 }
                 
                 try {
                         await each(inputs.products, async (product) => {
-                            let pro = await sails.helpers.checkProducts({ seller: seller, ...product }).catch((e)=>errors.push(e));
+                            let pro = await sails.helpers.checkProducts({ seller: seller, ...product }).catch((e)=>errors.push(e)  && console.log(e));
                             
                             if (typeof (pro) === typeof ({})){
                               images.push({reference : pro.reference ,images : pro.images});
@@ -44,7 +44,7 @@ module.exports = {
                             }
 
                         }).catch((e) => errors.push(e));
-                        result = await Product.createEach(cols).fetch();
+                        result = await Product.createEach(cols).fetch().catch((e)=>console.log(e));
                         
                         await ImageUploadStatus.createEach(images.map((i)=>{
                             return {

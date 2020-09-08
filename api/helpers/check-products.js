@@ -87,25 +87,21 @@ module.exports = {
                     });
                 }
 
-                if (p.mainColor) {
-                    let color = (await Color.findOne({ name: p.mainColor.toLowerCase() }));
-                    if(!color){
-                        console.log('no color');
-                    }
-                    pro.mainColor = color.id
-                } else {
+                let color = await sails.helpers.tools.findColor(`${p.name} ${p.description} ${p.descriptionShort} ${p.reference}`);
+                
+                if(color && color.length > 0){
+                    pro.mainColor = color[0];
+                }else{
                     return reject({ name: 'NOCOLOR', message: 'Producto ' + p.name + ' sin color' }) ;
                 }
 
                 if (p.gender) {
-                    let gender = (await Gender.findOne({ name: p.gender.toLowerCase() }));
-
+                    let gender = await sails.helpers.tools.findGender(`${p.name} ${p.description} ${p.descriptionShort} ${p.reference}`);
                     if (gender) {
-                        pro.gender = gender.id;
+                        pro.gender = gender[0];
                     } else {
                         pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
                     }
-
                 }
 
                 if (p.tax) {
