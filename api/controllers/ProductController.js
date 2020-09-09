@@ -413,8 +413,6 @@ module.exports = {
       sellers = await Seller.find();
     }
 
-    let images = [];
-    let variations = [];
     let result = [];
     let errors = [];
     let imageErrors = [];
@@ -675,10 +673,6 @@ module.exports = {
                     break;
                 }
               }
-              let check = await Product.findOne({reference:result.reference,seller:result.seller});
-              if(check){
-                throw { name: 'DUPLICADO', message: 'DUPLICADO: Ya existe un Producto con la referencia' + result.reference + ' para este comercio.' };
-              }
             }
             if (result !== null) {
               body['items'].push(result);
@@ -770,8 +764,57 @@ module.exports = {
                 rowdata = rows;
                 checkdata(header, rowdata).then(async result => {
                   try {
-                    if (req.body.entity === 'Product') { await Product.createEach(result.items); }
-                    if (req.body.entity === 'ProductVariation') { await ProductVariation.createEach(result.items); }
+                    if (req.body.entity === 'Product') {
+                      result.items.forEach(element => {
+                        Product.findOrCreate({ reference: element.reference, seller: element.seller }, element)
+                        .exec(async(err, product, wasCreated)=> {
+                          if (err) { return res.serverError(err); }
+                          if(!wasCreated) {
+                            let updateProduct = {
+                              name: element.name,
+                              reference: element.reference,
+                              description: element.description,
+                              descriptionShort: element.descriptionShort,
+                              active: element.active,
+                              price: element.price,
+                              tax: element.tax,
+                              manufacturer: element.manufacturer,
+                              width: element.width,
+                              height: element.height,
+                              length: element.length,
+                              weight: element.weight,
+                              gender: element.gender,
+                              mainColor: element.mainColor,
+                              categories: element.categories,
+                              mainCategory: element.mainCategory,
+                              seller: element.seller
+                            };
+                            await Product.updateOne({id: product.id}).set(updateProduct);
+                          }
+                        });
+                      });
+                    }
+                    if (req.body.entity === 'ProductVariation') {
+                      result.items.forEach(element => {
+                        ProductVariation.findOrCreate({product: element.product, variation: element.variation}, element)
+                        .exec(async(err, productVariat, wasCreated)=> {
+                          if (err) { return res.serverError(err); }
+                          if(!wasCreated) {
+                            let updateVariation = {
+                              supplierreference: element.supplierreference,
+                              reference: element.reference,
+                              ean13: element.ean13,
+                              upc: element.upc,
+                              quantity: element.quantity,
+                              variation: element.variation,
+                              product: element.product,
+                              price: element.price
+                            };
+                            await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
+                          }
+                        });
+                      });
+                    }
                   } catch (cerr) {
                     return res.redirect('/import?error=' + cerr.message);
                   }
