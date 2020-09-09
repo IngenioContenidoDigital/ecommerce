@@ -13,7 +13,9 @@ const constants = {
   SHOPIFY_CHANNEL : sails.config.custom.SHOPIFY_CHANNEL,
   SHOPIFY_PAGESIZE : sails.config.custom.SHOPIFY_PAGESIZE,
   WOOCOMMERCE_PAGESIZE : sails.config.custom.WOOCOMMERCE_PAGESIZE,
-  WOOCOMMERCE_CHANNEL : sails.config.custom.WOOCOMMERCE_CHANNEL
+  WOOCOMMERCE_CHANNEL : sails.config.custom.WOOCOMMERCE_CHANNEL,
+  TIMEOUT_PRODUCT_TASK : 4000000,
+  TIMEOUT_IMAGE_TASK : 8000000,
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -400,8 +402,6 @@ module.exports = {
   },
 
   importexecute: async (req, res) => {
-    req.setTimeout(3000000);
-
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -433,7 +433,7 @@ module.exports = {
 
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
-
+        req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
         let page =  1;
         let pageSize;
         let next;
@@ -471,13 +471,17 @@ module.exports = {
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
             result = [...result, ...rs.result]
             errors = [...errors, ...rs.errors];
-            await sleep(2000);
+            await sleep(5000);
           }else{
             break;
           }
 
           console.log("PAGE NUM : ", page);
           console.log("importedProducts : ", importedProducts);
+
+          if(page === 2){
+            break;
+          }
           
           page++;
 
@@ -485,7 +489,7 @@ module.exports = {
         
           break;
         case constants.IMAGE_TYPE:
-
+          req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
           let imageTasks = await ImageUploadStatus.find({ uploaded : !constants.STATUS_UPLOADED});
 
           await each(imageTasks, async (source)=>{
