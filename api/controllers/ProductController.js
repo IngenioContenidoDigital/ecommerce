@@ -12,7 +12,7 @@ const constants = {
   SHOPIFY_CHANNEL : sails.config.custom.SHOPIFY_CHANNEL,
   SHOPIFY_PAGESIZE : sails.config.custom.SHOPIFY_PAGESIZE,
   WOOCOMMERCE_PAGESIZE : sails.config.custom.WOOCOMMERCE_PAGESIZE,
-  WOOCOMMERCE_CHANEL : sails.config.custom.WOOCOMMERCE_CHANEL
+  WOOCOMMERCE_CHANNEL : sails.config.custom.WOOCOMMERCE_CHANNEL
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -441,7 +441,7 @@ module.exports = {
           case constants.SHOPIFY_CHANNEL:
               pageSize =  constants.SHOPIFY_PAGESIZE;
             break;
-          case constants.WOOCOMMERCE_CHANEL:
+          case constants.WOOCOMMERCE_CHANNEL:
               pageSize = constants.WOOCOMMERCE_PAGESIZE;
             break;
         
@@ -477,7 +477,7 @@ module.exports = {
 
           console.log("PAGE NUM : ", page);
           console.log("importedProducts : ", importedProducts);
-
+          
           page++;
 
         }while((!isEmpty));
@@ -491,15 +491,17 @@ module.exports = {
             await each(source.images, async (s) => {
               
               let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product).catch((e)=>console.log("Error subiendo imagen"));
-              (s.filename = uploaded.filename);
-               await sleep(5000);
-
-            }).catch(e=>imageErrors.push(e));
+              
+              if(uploaded.filename)
+                (s.filename = uploaded.filename);
+                await sleep(3000);
+            
+              }).catch(e=>imageErrors.push(e));
           
           }).catch(e=>errors.push(e));
 
           await each(imageTasks, async (task)=>{
-            let coltemp = task.images.map((s) => {
+            let coltemp = task.images.filter(i=>i.filename).map((s) => {
               let img = {};
               img.file = s.filename;
               img.cover = s.cover || 0;
@@ -511,7 +513,7 @@ module.exports = {
               return img;
             });
 
-            let hasCover = (coltemp.filter((img)=>img.cover == 1).length > 0);
+            let hasCover = (coltemp.filter((img)=>img.cover === 1).length > 0);
             
             if(!hasCover){
                 coltemp[0].cover = 1;
@@ -520,7 +522,7 @@ module.exports = {
             let uploaded  = await ProductImage.createEach(coltemp).fetch();
 
             each(uploaded, async (image)=>{
-              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED});
+              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED}).fetch();
             });
             
             imageItems.push(task);
