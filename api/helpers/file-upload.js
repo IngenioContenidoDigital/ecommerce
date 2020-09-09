@@ -19,34 +19,43 @@ module.exports = {
     }
   },
   fn: async function (inputs,exits) {
+    let AWS = require('aws-sdk');
+    let fs = require('fs');
+    let uuid = require('node-uuid');
+    AWS.config.loadFromPath('./config.json');
+    let s3bucket = new AWS.S3();
+    let hash = uuid.v4();
     let files = [];
+
     inputs.req.file(inputs.field).upload({
-      adapter: require('skipper-s3'),
-      key: 'AKIATQT7MH3O4B4COYDV',
-      secret: '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',
-      bucket: 'iridio.co',
-      maxTimeToBuffer : 20000,
-      headers: {
-        'x-amz-acl': 'public-read',
-        'Cache-Control': 'max-age=63072000, public, must-revalidate',
-      },
+      maxTimeToBuffer: 20000,
       maxBytes: inputs.size,
       dirname: inputs.route
     },function whenDone(err, uploadedFiles) {
       if (err) {return exits.error(err);
-      }else if (uploadedFiles.length === 0){
+      } else if (uploadedFiles.length === 0){
         return exits.badRequest('No file was uploaded');
-      }else{
-        for(let i=0; i<uploadedFiles.length; i++){
-          let filename = uploadedFiles[i].fd.split('/').pop();
-          files.push({original:uploadedFiles[i].filename,filename:filename});
-        }
-        return exits.success(files);
+      } else {
+        let fileName = uploadedFiles[0].fd;
+        let ext = fileName.split('.').pop();
+        const key = hash + '.' + ext;
+        fs.readFile(fileName, (err, data) => {
+          if (err) {throw err;}
+          var params = {
+            Bucket: `iridio.co/${inputs.route}`,
+            Key: key,
+            Body: data,
+            ContentLength: data.length,
+            ACL: 'public-read'
+          };
+          s3bucket.putObject(params, (err, data) => {
+            if (err) {return exits.error(err);}
+            files.push({original: uploadedFiles[0].filename, filename: key});
+            return exits.success(files);
+          });
+        });
       }
-      //var baseUrl = sails.config.custom.baseUrl;
     });
   }
-
-
 };
 
