@@ -1111,6 +1111,9 @@
               <th scope="col">Color</th>
               <th scope="col">Activo</th>
               <th scope="col">Opciones</th>
+              <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+              <th scope="col">Seller</th>
+              <%}%>
               <th scope="col">Publicaciones</th>
           </tr>
           </thead>
@@ -1154,6 +1157,11 @@
                         </span>
                       </a>
                     </td>
+                    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                    <td class="align-middle">
+                      <span><%= product.seller.name %></span>
+                    </td>
+                    <%}%>
                     <td class="align-middle">
                       <ul>
                         <%if(product.dafiti){%><li><small>Dafiti</small></li><%}%>

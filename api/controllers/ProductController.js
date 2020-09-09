@@ -77,7 +77,8 @@ module.exports = {
           .populate('images')
           .populate('tax')
           .populate('mainColor')
-          .populate('manufacturer');
+          .populate('manufacturer')
+          .populate('seller');
       }
     }
     let moment = require('moment');
