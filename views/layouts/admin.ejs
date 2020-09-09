@@ -70,6 +70,7 @@
       <div class="navbar-end has-text-right">
         <div class="navbar-item is-inline-block">
             <div class="buttons">
+              <a href="/messagesmeli" class="button has-badge-rounded" id="notification-button" data-badge="<%if(session.questions !== undefined ){%><%=session.questions%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-bell-ring'></i></a>
               <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
               <div class="dropdown is-right is-hoverable">
                 <div class="dropdown-trigger">
@@ -181,6 +182,16 @@
     const socket = io.socket.on('addtocart', function (data){
         let cart = document.querySelector('#cart-button')
         cart.setAttribute('data-badge',data.items);
+    });
+
+    const socketNotification = io.socket.on('notificationmessage', function (data){
+      let notification = document.querySelector('#notification-button')
+      let user = <%- JSON.stringify(session.user) %>;
+      if(user !== undefined && user.rights.name !== 'superadmin' && data.seller === user.seller){
+        notification.setAttribute('data-badge', data.questionsSeller);
+      } else if(user.rights.name === 'superadmin'){
+        notification.setAttribute('data-badge', data.questions);
+      }
     });
 
   </script>

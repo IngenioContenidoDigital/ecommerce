@@ -458,8 +458,137 @@ module.exports = {
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
         return res.redirect('/sellers');
-      }      
+      }
     });
+  },
+  showmessages: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    let sellers = null;
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'mensajesmeli')){
+      throw 'forbidden';
+    }
+    if(rights.name === 'superadmin'){
+      let integrations = await Integrations.find({channel: 'mercadolibre'});
+      let slist = integrations.map(i => i.seller);
+      sellers = await Seller.find({where: {id: {in: slist}}, select: ['id', 'name']});
+      req.session.questions = await Question.count({status: 'UNANSWERED'});
+    } else {
+      req.session.questions = await Question.count({status: 'UNANSWERED', seller: req.session.user.seller});
+    }
+
+    res.view('pages/sellers/messagesml',{layout:'layouts/admin', sellers});
+  },
+  notificationmessage: async function(req, res){
+    let moment = require('moment');
+    let resource = req.body.resource;
+    let user = req.body.application_id;
+    let topic = req.body.topic;
+    let integration = await Integrations.findOne({user: user, channel: 'mercadolibre'});
+    let question = await sails.helpers.channel.mercadolibre.findQuestion(integration.seller, integration.secret, resource);
+    let itemId = question.item_id;
+    let product = await Product.findOne({mlid: itemId});
+    let seller = integration.seller;
+
+    try {
+      if (product && topic === 'questions') {
+        let answer = null;
+        if (question.answer !== null) {
+          answer = await Answer.create({
+            text: question.answer.text,
+            status: question.answer.status,
+            dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+          }).fetch();
+        }
+
+        let questi = {
+          idMl: question.id,
+          seller: integration.seller,
+          text: question.text,
+          status: question.status,
+          dateCreated: parseInt(moment(question.date_created).valueOf()),
+          product: product.id,
+          answer: answer ? answer.id : null
+        };
+
+        await Question.findOrCreate({idMl: question.id}, questi).exec(async (err, record, wasCreated)=>{
+          if(err){return res.send('error');}
+          if(!wasCreated){
+            await Question.updateOne({id: record.id}).set({answer: answer ? answer.id : null, status: question.status});
+          }
+        });
+      }
+      let questio = await Question.count({status: 'UNANSWERED'});
+      let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+      sails.sockets.blast('notificationmessage', {questions: questio + 1, questionsSeller: questionsSeller, seller});
+      return res.send('Ok');
+    } catch(err) {
+      return res.send(err);
+    }
+  },
+  filtermessages: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'mensajesmeli')){
+      throw 'forbidden';
+    }
+    let seller = req.body.seller || req.session.user.seller;
+    let messages = [];
+
+    let questions = await Question.find({seller: seller})
+      .populate('product')
+      .populate('answer');
+
+    questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
+    for(let q of questions){
+      if(!messages.some(m => m.id === q.product.id)){
+        questi = questions.filter(item => item.product.id === q.product.id);
+        messages.push({
+          id: q.product.id,
+          name: q.product.name.toUpperCase(),
+          questions: questi
+        });
+      }
+    }
+    return res.send({messages});
+  },
+  answerquestion: async function(req, res){
+    let moment = require('moment');
+    let questionId = req.body.id;
+    let text = req.body.text;
+    let seller = req.body.seller || req.session.user.seller;
+    let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
+
+    try {
+      await sails.helpers.channel.mercadolibre.answerQuestion(integration.seller, integration.secret, questionId, text);
+      let answer = await Answer.create({
+        text: text,
+        status: 'ACTIVE',
+        dateCreated: parseInt(moment().valueOf()),
+      }).fetch();
+      await Question.updateOne({idMl: questionId}).set({answer: answer.id, status: 'ANSWERED'});
+
+      let messages = [];
+      let questions = await Question.find({seller: seller})
+      .populate('product')
+      .populate('answer');
+
+      questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
+      for(let q of questions){
+        if(!messages.some(m => m.id === q.product.id)){
+          questi = questions.filter(item => item.product.id === q.product.id);
+          messages.push({
+            id: q.product.id,
+            name: q.product.name.toUpperCase(),
+            questions: questi
+          });
+        }
+      }
+      let question = await Question.count({status: 'UNANSWERED'});
+      let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+      sails.sockets.blast('notificationmessage', {questions: question, questionsSeller, seller});
+      return res.send({messages});
+    } catch (error) {
+      console.log(error);
+      return res.send(error);
+    }
   }
 };
-

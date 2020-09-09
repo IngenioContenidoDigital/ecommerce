@@ -27,7 +27,8 @@ module.exports = {
       bucket: 'iridio.co',
       maxTimeToBuffer : 20000,
       headers: {
-        'x-amz-acl': 'public-read'
+        'x-amz-acl': 'public-read',
+        'Cache-Control': 'max-age=63072000, public, must-revalidate',
       },
       maxBytes: inputs.size,
       dirname: inputs.route

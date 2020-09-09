@@ -44,6 +44,17 @@ module.exports = {
     return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(),viewed:viewed,brands:brands});
   },
   admin: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    let questions = [];
+    let questionsSeller = [];
+    let seller = req.session.user.seller || '';
+    let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
+    if(rights.name !== 'superadmin'){
+      questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+    } else {
+      questions = await Question.count({status: 'UNANSWERED'});
+    }
+    req.session.questions = integration ? questionsSeller : questions;
     return res.view('pages/homeadmin',{layout:'layouts/admin'});
   },
   filterDashboard:async (req, res) =>{
