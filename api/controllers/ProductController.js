@@ -1,5 +1,3 @@
-const { userInfo } = require('os');
-const { stringify } = require('querystring');
 
 /**
  * ProductController
