@@ -18,42 +18,31 @@ module.exports = {
       description: 'Error de Proceso'
     }
   },
-  fn: async function (inputs,exits) {
-    let AWS = require('aws-sdk');
-    let fs = require('fs');
-    let uuid = require('node-uuid');
-    AWS.config.loadFromPath('./config.json');
-    let s3bucket = new AWS.S3();
-    let hash = uuid.v4();
+  fn: async (inputs,exits) => {
     let files = [];
-
     inputs.req.file(inputs.field).upload({
       maxTimeToBuffer: 20000,
       maxBytes: inputs.size,
-      dirname: inputs.route
-    },function whenDone(err, uploadedFiles) {
-      if (err) {return exits.error(err);
-      } else if (uploadedFiles.length === 0){
+    },async function whenDone(err, uploadedFiles) {
+      let files = [];
+      if (err) {return exits.error(err);}
+      if (uploadedFiles.length === 0){
         return exits.badRequest('No file was uploaded');
       } else {
-        let fileName = uploadedFiles[0].fd;
-        let ext = fileName.split('.').pop();
-        const key = hash + '.' + ext;
-        fs.readFile(fileName, (err, data) => {
-          if (err) {throw err;}
-          var params = {
-            Bucket: `iridio.co/${inputs.route}`,
-            Key: key,
-            Body: data,
-            ContentLength: data.length,
-            ACL: 'public-read'
-          };
-          s3bucket.putObject(params, (err, data) => {
-            if (err) {return exits.error(err);}
-            files.push({original: uploadedFiles[0].filename, filename: key});
-            return exits.success(files);
-          });
-        });
+        var params = {
+          Bucket: 'iridio.co',
+          ACL: 'public-read'
+        };
+        for(let i=0; i<uploadedFiles.length; i++){
+          let filename = uploadedFiles[i].fd.split('/').pop();
+          let data = await sails.helpers.fileReader(uploadedFiles[i].fd);
+          params.Body=data;
+          params.Key= inputs.route+'/'+filename;
+          //params.ContentLength=uploadedFiles[i].size;
+          await sails.helpers.amazonUpload(params);
+          files.push({original:uploadedFiles[i].filename,filename:filename});
+        };
+        return exits.success(files);
       }
     });
   }
