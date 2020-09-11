@@ -29,32 +29,36 @@ module.exports = {
 
   fn: async function (inputs) {
     return new Promise(async (resolve, reject)=>{
-      const response = await axios.get(inputs.url,  { responseType: 'arraybuffer' });
-      const buffer = Buffer.from(response.data, "utf-8");
+      try {
+          let response = await axios.get(inputs.url,  { responseType: 'arraybuffer' }).catch((e)=>resolve());
+          if(!response || !response.data){
+            return resolve();
+          }
 
-      AWS.config.loadFromPath('./config.json');
-      let s3bucket = new AWS.S3();
-      
-
-      let hash = uuid.v4();
-      
-      s3bucket.putObject({
-          Bucket: `iridio.co/images/products/${inputs.product}`,
-          Key: hash,
-          Body: buffer,
-          ContentLength : buffer.length,
-          ACL: 'public-read'
-      }, (err, data)=>{
-        console.log("data", data);
-        console.log("filename", hash);
-        if(!err){
-            return resolve({ filename :  `${hash}`});
+          const buffer = Buffer.from(response.data, "utf-8");
+          AWS.config.loadFromPath('./config.json');
+          let s3bucket = new AWS.S3();
+          let hash = uuid.v4();
+          s3bucket.putObject({
+              Bucket: `iridio.co/images/products/${inputs.product}`,
+              Key: hash,
+              Body: buffer,
+              ContentLength : buffer.length,
+              ACL: 'public-read'
+          }, (err, data)=>{
+            if(!err){
+              console.log("Uploaded new image with key : ", `${hash}`);
+                return resolve({ filename :  `${hash}`});
+            }
+          });
+      } catch (error) {
+        if(error){
+          console.log(error);
         }
-
-        reject(err);
-      });
+        console.log(`ERROR GETTING IMAGE BINARI: ${error.message}`);
+        resolve();
+      }
     });
-
   }
 
 };

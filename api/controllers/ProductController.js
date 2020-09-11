@@ -13,7 +13,9 @@ const constants = {
   SHOPIFY_CHANNEL : sails.config.custom.SHOPIFY_CHANNEL,
   SHOPIFY_PAGESIZE : sails.config.custom.SHOPIFY_PAGESIZE,
   WOOCOMMERCE_PAGESIZE : sails.config.custom.WOOCOMMERCE_PAGESIZE,
-  WOOCOMMERCE_CHANEL : sails.config.custom.WOOCOMMERCE_CHANEL
+  WOOCOMMERCE_CHANNEL : sails.config.custom.WOOCOMMERCE_CHANNEL,
+  TIMEOUT_PRODUCT_TASK : 4000000,
+  TIMEOUT_IMAGE_TASK : 8000000,
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -401,8 +403,6 @@ module.exports = {
   },
 
   importexecute: async (req, res) => {
-    req.setTimeout(3000000);
-
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -432,7 +432,7 @@ module.exports = {
 
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
-
+        req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
         let page =  1;
         let pageSize;
         let next;
@@ -441,7 +441,7 @@ module.exports = {
           case constants.SHOPIFY_CHANNEL:
               pageSize =  constants.SHOPIFY_PAGESIZE;
             break;
-          case constants.WOOCOMMERCE_CHANEL:
+          case constants.WOOCOMMERCE_CHANNEL:
               pageSize = constants.WOOCOMMERCE_PAGESIZE;
             break;
         
@@ -470,36 +470,38 @@ module.exports = {
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
             result = [...result, ...rs.result]
             errors = [...errors, ...rs.errors];
-            await sleep(2000);
+            await sleep(5000);
           }else{
             break;
           }
 
           console.log("PAGE NUM : ", page);
           console.log("importedProducts : ", importedProducts);
-
+          
           page++;
 
         }while((!isEmpty));
         
           break;
         case constants.IMAGE_TYPE:
-
+          req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
           let imageTasks = await ImageUploadStatus.find({ uploaded : !constants.STATUS_UPLOADED});
 
           await each(imageTasks, async (source)=>{
             await each(source.images, async (s) => {
               
               let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product).catch((e)=>console.log("Error subiendo imagen"));
-              (s.filename = uploaded.filename);
-               await sleep(5000);
-
-            }).catch(e=>imageErrors.push(e));
+              
+              if(uploaded.filename)
+                (s.filename = uploaded.filename);
+                await sleep(3000);
+            
+              }).catch(e=>imageErrors.push(e));
           
           }).catch(e=>errors.push(e));
 
           await each(imageTasks, async (task)=>{
-            let coltemp = task.images.map((s) => {
+            let coltemp = task.images.filter(i=>i.filename).map((s) => {
               let img = {};
               img.file = s.filename;
               img.cover = s.cover || 0;
@@ -511,7 +513,7 @@ module.exports = {
               return img;
             });
 
-            let hasCover = (coltemp.filter((img)=>img.cover == 1).length > 0);
+            let hasCover = (coltemp.filter((img)=>img.cover === 1).length > 0);
             
             if(!hasCover){
                 coltemp[0].cover = 1;
@@ -520,7 +522,7 @@ module.exports = {
             let uploaded  = await ProductImage.createEach(coltemp).fetch();
 
             each(uploaded, async (image)=>{
-              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED});
+              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED}).fetch();
             });
             
             imageItems.push(task);

@@ -18,7 +18,7 @@ module.exports.custom = {
   SHOPIFY_CHANNEL : 'shopify',
   SHOPIFY_PAGESIZE : 50,
   WOOCOMMERCE_PAGESIZE : 50,
-  WOOCOMMERCE_CHANEL : 'woocommerce'
+  WOOCOMMERCE_CHANNEL : 'woocommerce'
 
   /***************************************************************************
   *                                                                          *
