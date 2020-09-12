@@ -12,6 +12,7 @@ module.exports = {
       throw 'forbidden';
     }
     let error= req.param('error') ? req.param('error') : null;
+    let success= req.param('success') ? req.param('success') : null;
     let seller = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
@@ -31,7 +32,7 @@ module.exports = {
       }
     }
     let countries = await Country.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,countries:countries, integrations : integrations});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries, integrations : integrations});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

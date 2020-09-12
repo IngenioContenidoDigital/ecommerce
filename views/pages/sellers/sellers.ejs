@@ -4,6 +4,11 @@
         <%= error %>
     </div>
   <% } %>
+  <% if (success != undefined || success != null) { %>
+    <div class="notification is-success is-light" id="success">
+        <%= success %>
+    </div>
+  <% } %>
   <% if(action=='create' || action=='edit'){ %>  
         <div class="container">
             <% if(action=='create') { %>
