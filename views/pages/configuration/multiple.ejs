@@ -17,7 +17,7 @@
                             <select class="is-capitalized" name="seller" id="selectSeller" required>
                                 <option class="is-capitalized" value="">-- Elegir Seller --</option>
                                 <% sellers.forEach(seller =>{ %>
-                                    <option class="is-capitalized" value="<%=seller.id%>" channeldafiti="<%= seller.channelDafiti %>" channellinio="<%= seller.channelLinio %>"><%=seller.name%></option>
+                                    <option class="is-capitalized" value="<%=seller.id%>" channeldafiti="<%= seller.channelDafiti %>" channellinio="<%= seller.channelLinio %>" channelmercadolibre="<%= seller.channelMercadolibre %>"><%=seller.name%></option>
                                 <%})%>
                             </select>
                         </div>
@@ -37,6 +37,7 @@
                 <br>
                 <div class="columns is-marginless is-gapless">
                     <div class="column"><img class="menu-title is-hidden" src="/images/dafiti.png" id="dafiti"/></div>
+                    <div class="column"><img class="menu-title is-hidden" src="/images/mercadolibre.png" id="mercadolibre"/></div>
                     <div class="column"><img class="menu-title is-hidden" src="/images/linio.png" id="linio"/></div>
                 </div>
                 <div class="columns is-marginless is-gapless">
@@ -57,11 +58,15 @@
                 <h6 class="title is-6">Resultado del Proceso</h6>
                 <hr>
                 <div class="notification is-primary">
-                    <%= JSON.stringify(resultados.items) %>
+                    Se han procesado un total de 
+                    <%if(resultados.items !== undefined){%>
+                      <%= resultados.items.Request.length %>
+                    <%}%>
+                    registros.
                 </div>
                 <%if(resultados.errors !== undefined){%>
                     <div class="notification is-danger">
-                        <%=JSON.stringify(resultados.errors)%>
+                        <p>Hemos identificado <%=resultados.errors.length %> error(es).</p>
                         <br>
                     </div>
                 <%}%>
@@ -70,14 +75,16 @@
         </div>
     </div>
     </form>
-  </div>
+</div>
   <script>
 
     <%if(sellers === null){%>
         let dafiti = document.querySelector('#dafiti');
         let linio = document.querySelector('#linio');
+        let mercadolibre = document.querySelector('#mercadolibre');
         <%- channelDafiti %> ? removeClass(dafiti, 'is-hidden') : addClass(dafiti, 'is-hidden');
         <%- channelLinio %> ? removeClass(linio, 'is-hidden') : addClass(linio, 'is-hidden');
+        <%- channelMercadolibre %> ? removeClass(mercadolibre, 'is-hidden') : addClass(mercadolibre, 'is-hidden');
     <%}else{%>
         const selectSeller = document.querySelector('#selectSeller');
         selectSeller.onchange = changeSelect;
@@ -89,14 +96,17 @@
         let selectSeller = document.querySelector('#selectSeller');
         let dafiti = selectSeller.options[selectSeller.selectedIndex].getAttribute('channeldafiti');
         let linio = selectSeller.options[selectSeller.selectedIndex].getAttribute('channellinio');
+        let mercadolibre = selectSeller.options[selectSeller.selectedIndex].getAttribute('channelmercadolibre');
         let imgDafiti = document.querySelector('#dafiti');
         let imgLinio = document.querySelector('#linio');
+        let imgMercadolibre = document.querySelector('#mercadolibre');
         channel.value = '';
         images.forEach(img =>{
             removeClass(img, 'img-multiple');
         });
         dafiti === 'true' ? removeClass(imgDafiti, 'is-hidden') : addClass(imgDafiti, 'is-hidden');
         linio === 'true' ? removeClass(imgLinio, 'is-hidden') : addClass(imgLinio, 'is-hidden');
+        mercadolibre === 'true' ? removeClass(imgMercadolibre, 'is-hidden') : addClass(imgMercadolibre, 'is-hidden');
     }
 
     live('#process','click',e=>{
