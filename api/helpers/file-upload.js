@@ -18,35 +18,33 @@ module.exports = {
       description: 'Error de Proceso'
     }
   },
-  fn: async function (inputs,exits) {
+  fn: async (inputs,exits) => {
     let files = [];
     inputs.req.file(inputs.field).upload({
-      adapter: require('skipper-s3'),
-      key: 'AKIATQT7MH3O4B4COYDV',
-      secret: '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',
-      bucket: 'iridio.co',
-      maxTimeToBuffer : 20000,
-      headers: {
-        'x-amz-acl': 'public-read',
-        'Cache-Control': 'max-age=63072000, public, must-revalidate',
-      },
+      maxTimeToBuffer: 20000,
       maxBytes: inputs.size,
-      dirname: inputs.route
-    },function whenDone(err, uploadedFiles) {
-      if (err) {return exits.error(err);
-      }else if (uploadedFiles.length === 0){
+    },async function whenDone(err, uploadedFiles) {
+      let files = [];
+      if (err) {return exits.error(err);}
+      if (uploadedFiles.length === 0){
         return exits.badRequest('No file was uploaded');
-      }else{
+      } else {
+        var params = {
+          Bucket: 'iridio.co',
+          ACL: 'public-read'
+        };
         for(let i=0; i<uploadedFiles.length; i++){
           let filename = uploadedFiles[i].fd.split('/').pop();
+          let data = await sails.helpers.fileReader(uploadedFiles[i].fd);
+          params.Body=data;
+          params.Key= inputs.route+'/'+filename;
+          //params.ContentLength=uploadedFiles[i].size;
+          await sails.helpers.amazonUpload(params);
           files.push({original:uploadedFiles[i].filename,filename:filename});
-        }
+        };
         return exits.success(files);
       }
-      //var baseUrl = sails.config.custom.baseUrl;
     });
   }
-
-
 };
 

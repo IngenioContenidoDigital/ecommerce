@@ -154,7 +154,7 @@ module.exports = {
         return exits.error(err);
       }
     }else{
-      return exits.success(body);
+      return exits.error(body);
     }
   }
 

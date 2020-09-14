@@ -13,7 +13,9 @@ const constants = {
   SHOPIFY_CHANNEL : sails.config.custom.SHOPIFY_CHANNEL,
   SHOPIFY_PAGESIZE : sails.config.custom.SHOPIFY_PAGESIZE,
   WOOCOMMERCE_PAGESIZE : sails.config.custom.WOOCOMMERCE_PAGESIZE,
-  WOOCOMMERCE_CHANEL : sails.config.custom.WOOCOMMERCE_CHANEL
+  WOOCOMMERCE_CHANNEL : sails.config.custom.WOOCOMMERCE_CHANNEL,
+  TIMEOUT_PRODUCT_TASK : 4000000,
+  TIMEOUT_IMAGE_TASK : 8000000,
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -77,7 +79,8 @@ module.exports = {
           .populate('images')
           .populate('tax')
           .populate('mainColor')
-          .populate('manufacturer');
+          .populate('manufacturer')
+          .populate('seller');
       }
     }
     let moment = require('moment');
@@ -400,8 +403,6 @@ module.exports = {
   },
 
   importexecute: async (req, res) => {
-    req.setTimeout(3000000);
-
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -413,8 +414,6 @@ module.exports = {
       sellers = await Seller.find();
     }
 
-    let images = [];
-    let variations = [];
     let result = [];
     let errors = [];
     let imageErrors = [];
@@ -433,7 +432,7 @@ module.exports = {
 
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
-
+        req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
         let page =  1;
         let pageSize;
         let next;
@@ -442,7 +441,7 @@ module.exports = {
           case constants.SHOPIFY_CHANNEL:
               pageSize =  constants.SHOPIFY_PAGESIZE;
             break;
-          case constants.WOOCOMMERCE_CHANEL:
+          case constants.WOOCOMMERCE_CHANNEL:
               pageSize = constants.WOOCOMMERCE_PAGESIZE;
             break;
         
@@ -471,36 +470,38 @@ module.exports = {
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
             result = [...result, ...rs.result]
             errors = [...errors, ...rs.errors];
-            await sleep(2000);
+            await sleep(5000);
           }else{
             break;
           }
 
           console.log("PAGE NUM : ", page);
           console.log("importedProducts : ", importedProducts);
-
+          
           page++;
 
         }while((!isEmpty));
         
           break;
         case constants.IMAGE_TYPE:
-
+          req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
           let imageTasks = await ImageUploadStatus.find({ uploaded : !constants.STATUS_UPLOADED});
 
           await each(imageTasks, async (source)=>{
             await each(source.images, async (s) => {
               
               let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product).catch((e)=>console.log("Error subiendo imagen"));
-              (s.filename = uploaded.filename);
-               await sleep(5000);
-
-            }).catch(e=>imageErrors.push(e));
+              
+              if(uploaded.filename)
+                (s.filename = uploaded.filename);
+                await sleep(3000);
+            
+              }).catch(e=>imageErrors.push(e));
           
           }).catch(e=>errors.push(e));
 
           await each(imageTasks, async (task)=>{
-            let coltemp = task.images.map((s) => {
+            let coltemp = task.images.filter(i=>i.filename).map((s) => {
               let img = {};
               img.file = s.filename;
               img.cover = s.cover || 0;
@@ -512,7 +513,7 @@ module.exports = {
               return img;
             });
 
-            let hasCover = (coltemp.filter((img)=>img.cover == 1).length > 0);
+            let hasCover = (coltemp.filter((img)=>img.cover === 1).length > 0);
             
             if(!hasCover){
                 coltemp[0].cover = 1;
@@ -521,7 +522,7 @@ module.exports = {
             let uploaded  = await ProductImage.createEach(coltemp).fetch();
 
             each(uploaded, async (image)=>{
-              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED});
+              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED}).fetch();
             });
             
             imageItems.push(task);
@@ -675,10 +676,6 @@ module.exports = {
                     break;
                 }
               }
-              let check = await Product.findOne({reference:result.reference,seller:result.seller});
-              if(check){
-                throw { name: 'DUPLICADO', message: 'DUPLICADO: Ya existe un Producto con la referencia' + result.reference + ' para este comercio.' };
-              }
             }
             if (result !== null) {
               body['items'].push(result);
@@ -770,8 +767,57 @@ module.exports = {
                 rowdata = rows;
                 checkdata(header, rowdata).then(async result => {
                   try {
-                    if (req.body.entity === 'Product') { await Product.createEach(result.items); }
-                    if (req.body.entity === 'ProductVariation') { await ProductVariation.createEach(result.items); }
+                    if (req.body.entity === 'Product') {
+                      result.items.forEach(element => {
+                        Product.findOrCreate({ reference: element.reference, seller: element.seller }, element)
+                        .exec(async(err, product, wasCreated)=> {
+                          if (err) { return res.serverError(err); }
+                          if(!wasCreated) {
+                            let updateProduct = {
+                              name: element.name,
+                              reference: element.reference,
+                              description: element.description,
+                              descriptionShort: element.descriptionShort,
+                              active: element.active,
+                              price: element.price,
+                              tax: element.tax,
+                              manufacturer: element.manufacturer,
+                              width: element.width,
+                              height: element.height,
+                              length: element.length,
+                              weight: element.weight,
+                              gender: element.gender,
+                              mainColor: element.mainColor,
+                              categories: element.categories,
+                              mainCategory: element.mainCategory,
+                              seller: element.seller
+                            };
+                            await Product.updateOne({id: product.id}).set(updateProduct);
+                          }
+                        });
+                      });
+                    }
+                    if (req.body.entity === 'ProductVariation') {
+                      result.items.forEach(element => {
+                        ProductVariation.findOrCreate({product: element.product, variation: element.variation}, element)
+                        .exec(async(err, productVariat, wasCreated)=> {
+                          if (err) { return res.serverError(err); }
+                          if(!wasCreated) {
+                            let updateVariation = {
+                              supplierreference: element.supplierreference,
+                              reference: element.reference,
+                              ean13: element.ean13,
+                              upc: element.upc,
+                              quantity: element.quantity,
+                              variation: element.variation,
+                              product: element.product,
+                              price: element.price
+                            };
+                            await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
+                          }
+                        });
+                      });
+                    }
                   } catch (cerr) {
                     return res.redirect('/import?error=' + cerr.message);
                   }

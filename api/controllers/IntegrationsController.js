@@ -13,8 +13,12 @@ module.exports = {
         let mercadolibre = new meli.Meli(integration.user, integration.key);
         mercadolibre.authorize(authcode, 'https://'+req.hostname+'/mlauth/'+integration.user, async (err, result) =>{
             if(err){ return res.redirect('/sellers?error='+err);}
-            await Integrations.updateOne({id:integration.id}).set({url:result['refresh_token'],secret:result['access_token']});
-            return res.redirect('/products');
+            let updated = await Integrations.updateOne({id:integration.id}).set({url:result['refresh_token'],secret:result['access_token']});
+            if(updated){
+                return res.redirect('/sellers?success=Integración Habilitada Exitosamente');
+            }else{
+                return res.redirect('/sellers?error=Error en el proceso, verifica los datos e intenta nuevamente.');
+            }
         });
     }
 };

@@ -4,6 +4,11 @@
         <%= error %>
     </div>
   <% } %>
+  <% if (success != undefined || success != null) { %>
+    <div class="notification is-success is-light" id="success">
+        <%= success %>
+    </div>
+  <% } %>
   <% if(action=='create' || action=='edit'){ %>  
         <div class="container">
             <% if(action=='create') { %>
@@ -108,365 +113,49 @@
                       <div class="card is-hidden" id="setup-panel">
                         <div class="card-content">
                           <div class="tabs is-toggle is-fullwidth o-x-h">
-                            <ul>
-                              <li id="woocommerce-cmd">
-                                <a>
-                                  <p class="has-text-centered" id="woocommerce"><img style="padding: 10px;" src="/images/wooCommerce.png" /></p>
-                                </a>
-                              </li>
-                              <li id="shopify-cmd">
-                                <a>
-                                  <p class="has-text-centered" id="shopify"><img style="padding: 10px;"  src="/images/shopify.png" /></p>
-                                </a>
-                              </li>
-                            </ul>
+                            <img src="/images/wooCommerce.png" /><input type="radio" name="channel" value="woocommerce" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='woocommerce'){%>checked<%}%>/>
+                            <img src="/images/shopify.png" /><input type="radio" name="channel" value="shopify" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='shopify'){%>checked<%}%>/>
                           </div>
-                          <div class="setup woocommerce is-hidden">
-                            <%if(action=='edit'){%>
-                              <% woocommerce = null; %>
-                              <%if(integrations.length>0){%>
-                                  <% woocommerce=integrations.filter(data => data.channel=='woocommerce');%>
-                                  <% if(woocommerce.length > 0) { %>
-                                    <div class="container">
-                                      <div class="field">
-                                      <label class="label">Consumer key</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="key" placeholder="Consumer key" <%if(woocommerce!==null &&  woocommerce.length>0){%>value="<%=woocommerce[0].key%>"<%}%>/>
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                      <label class="label">Consumer secret</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="secret" placeholder="Consumer secret" required <%if(woocommerce!==null &&  woocommerce.length>0){%>value="<%=woocommerce[0].secret%>"<%}%>/>
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">URL Petición</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="apiUrl" placeholder="Url de Petición" required <%if(woocommerce!==null && woocommerce.length>0){%>value="<%=woocommerce[0].url%>"<%}%>/>
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">Versión</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="version" placeholder="Versión" <%if(woocommerce!==null && woocommerce.length>0){%>value="<%=woocommerce[0].version%>"<%}%>/>
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <input type="hidden" name="woocommerceChannel" value="woocommerce" />
-                                      <br>
-                                </div>
-                                  <% }else{ %>
-                                    <div class="container">
-                                      <div class="field">
-                                      <label class="label">Consumer key</label>
-                                      <div class="control has-icons-left">
-                                            <input class="input" type="text" name="key" placeholder="Consumer key" />
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                      <label class="label">Consumer secret</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="secret" placeholder="Consumer secret" />
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">URL Petición</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="apiUrl" placeholder="Url de Petición" />
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">Versión</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="version" placeholder="Versión" />
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <input type="hidden" name="woocommerceChannel" value="woocommerce"/>
-                                      <br>
-                                </div>
-                                    <%}%>
-                              <%} else {%>
-                                <div class="container">
-                                  <div class="field">
-                                  <label class="label">Consumer key</label>
+                          <div class="setup">
+                            <div class="container">
+                              <div class="field">
+                              <label class="label">Consumer key</label>
+                              <div class="control has-icons-left">
+                                  <input class="input" type="text" name="key" placeholder="Consumer key" <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].key%>"<%}%>/>
+                                  <span class="icon is-small is-left">
+                                  <i class='bx bx-key' ></i>
+                                  </span>
+                              </div>
+                              </div>
+                              <div class="field">
+                              <label class="label">Consumer secret</label>
+                              <div class="control has-icons-left">
+                                  <input class="input" type="text" name="secret" placeholder="Consumer secret" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].secret%>"<%}%>/>
+                                  <span class="icon is-small is-left">
+                                  <i class='bx bx-key' ></i>
+                                  </span>
+                              </div>
+                              </div>
+                              <div class="field">
+                                  <label class="label">URL Petición</label>
                                   <div class="control has-icons-left">
-                                        <input class="input" type="text" name="woocommerceKey" placeholder="Consumer key" />
+                                      <input class="input" type="text" name="apiurl" placeholder="Url de Petición" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].url%>"<%}%>/>
                                       <span class="icon is-small is-left">
-                                      <i class='bx bx-key' ></i>
+                                          <i class='bx bx-world'></i>
                                       </span>
                                   </div>
-                                  </div>
-                                  <div class="field">
-                                  <label class="label">Consumer secret</label>
+                              </div>
+                              <div class="field">
+                                  <label class="label">Versión</label>
                                   <div class="control has-icons-left">
-                                      <input class="input" type="text" name="woocommerceSecret" placeholder="Consumer secret" />
+                                      <input class="input" type="text" name="version" placeholder="Versión" <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].version%>"<%}%>/>
                                       <span class="icon is-small is-left">
-                                      <i class='bx bx-key' ></i>
+                                          <i class='bx bx-world'></i>
                                       </span>
                                   </div>
-                                  </div>
-                                  <div class="field">
-                                      <label class="label">URL Petición</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="woocommerceApiUrl" placeholder="Url de Petición" />
-                                          <span class="icon is-small is-left">
-                                              <i class='bx bx-world'></i>
-                                          </span>
-                                      </div>
-                                  </div>
-                                  <div class="field">
-                                      <label class="label">Versión</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="wooCommerceVersion" placeholder="Versión" />
-                                          <span class="icon is-small is-left">
-                                              <i class='bx bx-world'></i>
-                                          </span>
-                                      </div>
-                                  </div>
-                                  <input type="hidden" name="woocommerceChannel" value="woocommerce"/>
-                                  <br>
-                                </div>
-                                <% } %>
-                            <% } else {  %>
-                              <div class="container">
-                                <div class="field">
-                                <label class="label">Consumer key</label>
-                                <div class="control has-icons-left">
-                                      <input class="input" type="text" name="woocommerceKey" placeholder="Consumer key" />
-                                    <span class="icon is-small is-left">
-                                    <i class='bx bx-key' ></i>
-                                    </span>
-                                </div>
-                                </div>
-                                <div class="field">
-                                <label class="label">Consumer secret</label>
-                                <div class="control has-icons-left">
-                                    <input class="input" type="text" name="woocommerceSecret" placeholder="Consumer secret" />
-                                    <span class="icon is-small is-left">
-                                    <i class='bx bx-key' ></i>
-                                    </span>
-                                </div>
-                                </div>
-                                <div class="field">
-                                    <label class="label">URL Petición</label>
-                                    <div class="control has-icons-left">
-                                        <input class="input" type="text" name="wooCommerceApiUrl" placeholder="Url de Petición" />
-                                        <span class="icon is-small is-left">
-                                            <i class='bx bx-world'></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="field">
-                                    <label class="label">Versión</label>
-                                    <div class="control has-icons-left">
-                                        <input class="input" type="text" name="woocommerceVersion" placeholder="Versión" />
-                                        <span class="icon is-small is-left">
-                                            <i class='bx bx-world'></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="woocommerceChannel" value="woocommerce"/>
-                                <br>
+                              </div>
+                              <br>
                             </div>
-                              <% } %>
-                          </div>
-
-                          <div class="setup shopify is-hidden">
-                            <%if(action=='edit'){%>
-                              <% shopify = null; %>
-                              <%if(integrations.length>0){%>
-                                  <% shopify=integrations.filter(data => data.channel=='shopify');%>
-                                  <% if(shopify.length > 0) { %>
-                                    <div class="container">
-                                      <div class="field">
-                                      <label class="label">Consumer key</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="shopifyKey" placeholder="Consumer key" <%if(shopify!==null &&  shopify.length>0){%>value="<%=shopify[0].key%>"<%}%>/>
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                      <label class="label">Consumer secret</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="shopifySecret" placeholder="Consumer secret" required <%if(shopify!==null &&  shopify.length>0){%>value="<%=shopify[0].secret%>"<%}%>/>
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">URL Petición</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="shopifyApiUrl" placeholder="Url de Petición" required <%if(shopify!==null && shopify.length>0){%>value="<%=shopify[0].url%>"<%}%>/>
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">Versión</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="shopifyVersion" placeholder="Versión" <%if(shopify!==null && shopify.length>0){%>value="<%=shopify[0].version%>"<%}%>/>
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <input type="hidden" name="shopifyChannel" value="shopify" />
-                                      <br>
-                                </div>
-                                  <% }else{ %>
-                                    <div class="container">
-                                      <div class="field">
-                                      <label class="label">Consumer key</label>
-                                      <div class="control has-icons-left">
-                                            <input class="input" type="text" name="shopifyKey" placeholder="Consumer key" />
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                      <label class="label">Consumer secret</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="shopifySecret" placeholder="Consumer secret" />
-                                          <span class="icon is-small is-left">
-                                          <i class='bx bx-key' ></i>
-                                          </span>
-                                      </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">URL Petición</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="shopifyApiUrl" placeholder="Url de Petición" />
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <div class="field">
-                                          <label class="label">Versión</label>
-                                          <div class="control has-icons-left">
-                                              <input class="input" type="text" name="shopifyVersion" placeholder="Versión" />
-                                              <span class="icon is-small is-left">
-                                                  <i class='bx bx-world'></i>
-                                              </span>
-                                          </div>
-                                      </div>
-                                      <input type="hidden" name="shopifyChannel" value="shopify"/>
-                                      <br>
-                                </div>
-                                    <%}%>
-                              <%} else {%>
-                                <div class="container">
-                                  <div class="field">
-                                  <label class="label">Consumer key</label>
-                                  <div class="control has-icons-left">
-                                        <input class="input" type="text" name="shopidyKey" placeholder="Consumer key" />
-                                      <span class="icon is-small is-left">
-                                      <i class='bx bx-key' ></i>
-                                      </span>
-                                  </div>
-                                  </div>
-                                  <div class="field">
-                                  <label class="label">Consumer secret</label>
-                                  <div class="control has-icons-left">
-                                      <input class="input" type="text" name="shopifySecret" placeholder="Consumer secret" />
-                                      <span class="icon is-small is-left">
-                                      <i class='bx bx-key' ></i>
-                                      </span>
-                                  </div>
-                                  </div>
-                                  <div class="field">
-                                      <label class="label">URL Petición</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="shopifyApiUrl" placeholder="Url de Petición" />
-                                          <span class="icon is-small is-left">
-                                              <i class='bx bx-world'></i>
-                                          </span>
-                                      </div>
-                                  </div>
-                                  <div class="field">
-                                      <label class="label">Versión</label>
-                                      <div class="control has-icons-left">
-                                          <input class="input" type="text" name="shopifyVersion" placeholder="Versión" />
-                                          <span class="icon is-small is-left">
-                                              <i class='bx bx-world'></i>
-                                          </span>
-                                      </div>
-                                  </div>
-                                  <input type="hidden" name="shopifyChannel" value="shopify"/>
-                                  <br>
-                                </div>
-                                <% } %>
-                            <% } else {  %>
-                              <div class="container">
-                                <div class="field">
-                                <label class="label">Consumer key</label>
-                                <div class="control has-icons-left">
-                                      <input class="input" type="text" name="shopifyKey" placeholder="Consumer key" />
-                                    <span class="icon is-small is-left">
-                                    <i class='bx bx-key' ></i>
-                                    </span>
-                                </div>
-                                </div>
-                                <div class="field">
-                                <label class="label">Consumer secret</label>
-                                <div class="control has-icons-left">
-                                    <input class="input" type="text" name="shopifySecret" placeholder="Consumer secret" />
-                                    <span class="icon is-small is-left">
-                                    <i class='bx bx-key' ></i>
-                                    </span>
-                                </div>
-                                </div>
-                                <div class="field">
-                                    <label class="label">URL Petición</label>
-                                    <div class="control has-icons-left">
-                                        <input class="input" type="text" name="shopifyApiUrl" placeholder="Url de Petición" />
-                                        <span class="icon is-small is-left">
-                                            <i class='bx bx-world'></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="field">
-                                    <label class="label">Versión</label>
-                                    <div class="control has-icons-left">
-                                        <input class="input" type="text" name="shopifyVersion" placeholder="Versión" />
-                                        <span class="icon is-small is-left">
-                                            <i class='bx bx-world'></i>
-                                        </span>
-                                    </div>
-                                </div>
-                                <input type="hidden" name="shopifyChannel" value="shopify"/>
-                                <br>
-                            </div>
-                              <% } %>
                           </div>
                         </div>
                       </div>
@@ -707,7 +396,6 @@
 
       live('#setup-import', 'click', function(e){
         e.preventDefault();
-        console.log("element", e);
 
         var elm = this;
         var pane = document.getElementById('setup-panel');
@@ -717,36 +405,6 @@
         }else{
             addClass(pane, 'is-hidden');
         }
-      });
-
-      live('#shopify-cmd', 'click', function(e){ 
-          e.preventDefault();
-
-          Array.from(document.getElementsByClassName('setup')).map(e=>{
-            addClass(e, 'is-hidden');
-          });
-
-          var isShopify = document.getElementsByClassName('shopify')[0];
-
-          if(hasClass(isShopify, 'is-hidden'))
-              removeClass(isShopify, 'is-hidden');
-            else
-              addClass(isShopify, 'is-hidden');
-      });
-
-      live('#woocommerce-cmd', 'click', function(e){ 
-          e.preventDefault();
-
-          Array.from(document.getElementsByClassName('setup')).map(e=>{
-            addClass(e, 'is-hidden');
-          });
-
-          var isWoocommerce = document.getElementsByClassName('woocommerce')[0];
-
-          if(hasClass(isWoocommerce, 'is-hidden'))
-              removeClass(isWoocommerce, 'is-hidden');
-            else
-              addClass(isWoocommerce, 'is-hidden');
       });
 
       live('.state', 'click', function(){ 
