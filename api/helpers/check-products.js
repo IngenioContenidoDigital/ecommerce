@@ -24,7 +24,7 @@ module.exports = {
             let images = [];
             let variations = [];
 
-            let categorize = async (categoryList) => {
+            /*let categorize = async (categoryList) => {
 
                 let clist = categoryList.map(c => c.name.toLowerCase().replace('amp;', ''));
                 clist.push('inicio');
@@ -53,7 +53,7 @@ module.exports = {
                 }
 
                 return rcatsids;
-            }
+            }*/
 
                 pro.name = p.name.toUpperCase().trim();
 
@@ -70,7 +70,7 @@ module.exports = {
                 }
 
                 if(p.categories){
-                    pro.categories = await categorize(p.categories);
+                    pro.categories = await sails.helpers.tools.findCategory(p.categories.join(' '));
                 }
 
                 if (pro.categories && pro.categories.length > 0) {
@@ -87,7 +87,7 @@ module.exports = {
                     });
                 }
 
-                let color = await sails.helpers.tools.findColor(`${p.name} ${p.description} ${p.descriptionShort} ${p.reference}`);
+                let color = await sails.helpers.tools.findColor(p.name+' '+p.reference);
                 
                 if(color && color.length > 0){
                     pro.mainColor = color[0];
@@ -96,7 +96,7 @@ module.exports = {
                 }
 
                 if (p.gender) {
-                    let gender = await sails.helpers.tools.findGender(`${p.name} ${p.description} ${p.descriptionShort} ${p.reference}`);
+                    let gender = await sails.helpers.tools.findGender(p.name+' '+p.reference);
                     if (gender) {
                         pro.gender = gender[0];
                     } else {

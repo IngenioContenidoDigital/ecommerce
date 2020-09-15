@@ -127,7 +127,6 @@ module.exports = {
     await sails.helpers.request('https://sellercenter-api.linio.com.co', '/?' + sign, 'POST' , xml)
     .then(async (response)=>{
       let result = JSON.parse(response);
-      console.log(response);
       if(result.SuccessResponse.Head.RequestId !== undefined && result.SuccessResponse.Head.RequestId !== null && result.SuccessResponse.Head.RequestId !== ''){
         let xmlimages = jsonxml(imagebody, true);
         setTimeout(async () => {

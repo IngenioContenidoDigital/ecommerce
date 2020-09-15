@@ -421,7 +421,6 @@ module.exports = {
 
     let seller = req.session.user.seller || req.body.seller;
     let integrations = await Integrations.find({ seller: seller });
-
     if (req.body.channel) {
       
       let each = async (array, callback) => {
