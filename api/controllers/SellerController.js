@@ -361,46 +361,49 @@ module.exports = {
     let user = req.body.application_id;
     let topic = req.body.topic;
     let integration = await Integrations.findOne({user: user, channel: 'mercadolibre'});
-    let question = await sails.helpers.channel.mercadolibre.findQuestion(integration.seller, integration.secret, resource);
-    let itemId = question.item_id;
-    let product = await Product.findOne({mlid: itemId});
-    let seller = integration.seller;
+    if (integration) {
+      let seller = integration.seller;
+      let question = await sails.helpers.channel.mercadolibre.findQuestion(seller, integration.secret, resource);
+      let itemId = question.item_id;
+      let product = await Product.findOne({mlid: itemId});
 
-    try {
-      if (product && topic === 'questions') {
-        let answer = null;
-        if (question.answer !== null) {
-          answer = await Answer.create({
-            text: question.answer.text,
-            status: question.answer.status,
-            dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-          }).fetch();
-        }
-
-        let questi = {
-          idMl: question.id,
-          seller: integration.seller,
-          text: question.text,
-          status: question.status,
-          dateCreated: parseInt(moment(question.date_created).valueOf()),
-          product: product.id,
-          answer: answer ? answer.id : null
-        };
-
-        await Question.findOrCreate({idMl: question.id}, questi).exec(async (err, record, wasCreated)=>{
-          if(err){return res.send('error');}
-          if(!wasCreated){
-            await Question.updateOne({id: record.id}).set({answer: answer ? answer.id : null, status: question.status});
+      try {
+        if (product && topic === 'questions') {
+          let answer = null;
+          if (question.answer !== null) {
+            answer = await Answer.create({
+              text: question.answer.text,
+              status: question.answer.status,
+              dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+            }).fetch();
           }
-        });
+
+          let questi = {
+            idMl: question.id,
+            seller: integration.seller,
+            text: question.text,
+            status: question.status,
+            dateCreated: parseInt(moment(question.date_created).valueOf()),
+            product: product.id,
+            answer: answer ? answer.id : null
+          };
+
+          await Question.findOrCreate({idMl: question.id}, questi).exec(async (err, record, wasCreated)=>{
+            if(err){return res.send('error');}
+            if(!wasCreated){
+              await Question.updateOne({id: record.id}).set({answer: answer ? answer.id : null, status: question.status});
+            }
+          });
+        }
+        let questio = await Question.count({status: 'UNANSWERED'});
+        let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+        sails.sockets.blast('notificationmessage', {questions: questio + 1, questionsSeller: questionsSeller, seller});
+        return res.ok();
+      } catch(err) {
+        return res.send(err);
       }
-      let questio = await Question.count({status: 'UNANSWERED'});
-      let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-      sails.sockets.blast('notificationmessage', {questions: questio + 1, questionsSeller: questionsSeller, seller});
-      return res.send('Ok');
-    } catch(err) {
-      return res.send(err);
     }
+    return res.send('No se encontró integracion para el seller');
   },
   filtermessages: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
