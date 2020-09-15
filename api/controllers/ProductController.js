@@ -812,7 +812,11 @@ module.exports = {
                               product: element.product,
                               price: element.price
                             };
-                            await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
+                            try{
+                              await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
+                            }catch(err){
+                              console.log(err);
+                            }
                           }
                         });
                       });
