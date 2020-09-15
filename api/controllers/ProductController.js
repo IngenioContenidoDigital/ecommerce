@@ -903,32 +903,10 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let sellers = null;
-    let integrations = null;
-    let channelDafiti = false;
-    let channelLinio = false;
-    if(rights.name==='superadmin' || rights.name==='admin'){
-      integrations = await Integrations.find({
-        or : [
-          { channel: 'dafiti' },
-          { channel: 'linio' }
-        ],
-      });
-      let slist = integrations.map(i => i.seller);
-      sellers = await Seller.find({where: {id: {in: slist}}, select: ['id', 'name']});
-      sellers = sellers.map(s => {
-        s.channelDafiti = integrations.some(i => i.seller === s.id && i.channel === 'dafiti') ? true : false;
-        s.channelLinio = integrations.some(i => i.seller === s.id && i.channel === 'linio') ? true : false;
-        return s;
-      });
-    } else {
-      seller = req.session.user.seller;
-      integrations = await Integrations.find({seller: seller});
-      channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
-      channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
-    }
+    let seller = req.session.user.seller ? req.session.user.seller : '';
+    let data = await sails.helpers.checkChannels(rights.name, seller);
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: sellers, channelDafiti, channelLinio});
+    return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
   },
   multipleexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -936,34 +914,13 @@ module.exports = {
       throw 'forbidden';
     }
     let seller = null;
-    let sellers = null;
     let error = null;
     let channel = req.body.channel;
     let result = [];
-    let channelDafiti = false;
-    let channelLinio = false;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-      let integrations = await Integrations.find({
-        or : [
-          { channel: 'dafiti' },
-          { channel: 'linio' }
-        ],
-      });
-      let slist = integrations.map(i => i.seller);
-      sellers = await Seller.find({where: {id: {in: slist}}, select: ['id', 'name']});
-      sellers = sellers.map(s => {
-        s.channelDafiti = integrations.some(i => i.seller === s.id && i.channel === 'dafiti') ? true : false;
-        s.channelLinio = integrations.some(i => i.seller === s.id && i.channel === 'linio') ? true : false;
-        return s;
-      });
-    } else {
-      let sell = req.session.user.seller;
-      let integrations = await Integrations.find({seller: sell});
-      channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
-      channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
-    }
-    if(req.body.seller === undefined){seller = req.session.user.seller}else{seller = req.body.seller;}
-    let response = {items:{}};
+    if(req.body.seller === undefined){seller = req.session.user.seller;}else{seller = req.body.seller;}
+    let data = await sails.helpers.checkChannels(rights.name, seller);
+
+    let response = {};
     try{
       if (channel === 'dafiti') {
         result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
@@ -971,15 +928,18 @@ module.exports = {
       } else if(channel === 'linio'){
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
+      } else if(channel === 'mercadolibre'){
+        result = await sails.helpers.channel.mercadolibre.multiple(seller, req.body.action);
+        response.items = result;
       }
-      if (result.Request.length<1){
+      if (result.Request.length < 1){
         error = 'No hay productos pendientes por procesar';
       }
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: sellers, resultados: response, channelDafiti, channelLinio});
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }catch(err){
       console.log(err);
-      response.errors=err;
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: sellers, resultados: response, channelDafiti, channelLinio});
+      response.errors = err;
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }
   },
   getcover: async (req,res) =>{
