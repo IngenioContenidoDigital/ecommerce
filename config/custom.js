@@ -7,9 +7,9 @@
  * For more information on custom configuration, visit:
  * https://sailsjs.com/config/custom
  */
-/*'https://import.1ecommerce.app:9000/graphql'*/
+
 module.exports.custom = {
-  IMPORT_MICROSERVICE  : 'http://localhost:9000/graphql',
+  IMPORT_MICROSERVICE  : 'https://import.1ecommerce.app:9000/graphql',
   PRODUCT_TYPE: 'Product',
   PRODUCT_VARIATION: 'ProductVariation',
   IMAGE_TYPE: 'ProductImage',

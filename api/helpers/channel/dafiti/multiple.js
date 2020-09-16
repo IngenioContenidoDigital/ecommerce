@@ -25,13 +25,11 @@ module.exports = {
     let products = null;
     let paffected = [];
     let productvariation = null; 
-    if(inputs.action==='ProductUpdate'){dafiti=true;}
+    if(inputs.action==='ProductUpdate'){
+      dafiti=true;
+    }
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
-      products = await Product.find({
-        where:{seller:inputs.seller,dafiti:dafiti, active:true},
-        limit:600,
-        sort: 'createdAt ASC'
-      })
+      products = await Product.find({seller:inputs.seller,dafiti:dafiti, active:true})
       .populate('gender')
       .populate('mainColor')
       .populate('manufacturer')
@@ -154,7 +152,7 @@ module.exports = {
         return exits.error(err);
       }
     }else{
-      return exits.success(body);
+      return exits.error(body);
     }
   }
 

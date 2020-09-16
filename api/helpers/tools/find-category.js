@@ -22,7 +22,7 @@ module.exports = {
       queryParser: 'simple',
       size:10,
       sort:'_score desc',
-      queryOptions: '{"defaultOperator":"and","fields":["category"]}',
+      queryOptions: '{"defaultOperator":"or","fields":["category"]}',
       /*cursor: 'STRING_VALUE',
       expr: 'STRING_VALUE',
       facet: 'STRING_VALUE',

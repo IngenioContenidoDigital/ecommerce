@@ -414,8 +414,6 @@ module.exports = {
       sellers = await Seller.find();
     }
 
-    let images = [];
-    let variations = [];
     let result = [];
     let errors = [];
     let imageErrors = [];
@@ -423,7 +421,6 @@ module.exports = {
 
     let seller = req.session.user.seller || req.body.seller;
     let integrations = await Integrations.find({ seller: seller });
-
     if (req.body.channel) {
       
       let each = async (array, callback) => {
@@ -678,10 +675,6 @@ module.exports = {
                     break;
                 }
               }
-              let check = await Product.findOne({reference:result.reference,seller:result.seller});
-              if(check){
-                throw { name: 'DUPLICADO', message: 'DUPLICADO: Ya existe un Producto con la referencia' + result.reference + ' para este comercio.' };
-              }
             }
             if (result !== null) {
               body['items'].push(result);
@@ -773,8 +766,61 @@ module.exports = {
                 rowdata = rows;
                 checkdata(header, rowdata).then(async result => {
                   try {
-                    if (req.body.entity === 'Product') { await Product.createEach(result.items); }
-                    if (req.body.entity === 'ProductVariation') { await ProductVariation.createEach(result.items); }
+                    if (req.body.entity === 'Product') {
+                      result.items.forEach(element => {
+                        Product.findOrCreate({ reference: element.reference, seller: element.seller }, element)
+                        .exec(async(err, product, wasCreated)=> {
+                          if (err) { return res.serverError(err); }
+                          if(!wasCreated) {
+                            let updateProduct = {
+                              name: element.name,
+                              reference: element.reference,
+                              description: element.description,
+                              descriptionShort: element.descriptionShort,
+                              active: element.active,
+                              price: element.price,
+                              tax: element.tax,
+                              manufacturer: element.manufacturer,
+                              width: element.width,
+                              height: element.height,
+                              length: element.length,
+                              weight: element.weight,
+                              gender: element.gender,
+                              mainColor: element.mainColor,
+                              categories: element.categories,
+                              mainCategory: element.mainCategory,
+                              seller: element.seller
+                            };
+                            await Product.updateOne({id: product.id}).set(updateProduct);
+                          }
+                        });
+                      });
+                    }
+                    if (req.body.entity === 'ProductVariation') {
+                      result.items.forEach(element => {
+                        ProductVariation.findOrCreate({product: element.product, variation: element.variation}, element)
+                        .exec(async(err, productVariat, wasCreated)=> {
+                          if (err) { return res.serverError(err); }
+                          if(!wasCreated) {
+                            let updateVariation = {
+                              supplierreference: element.supplierreference,
+                              reference: element.reference,
+                              ean13: element.ean13,
+                              upc: element.upc,
+                              quantity: element.quantity,
+                              variation: element.variation,
+                              product: element.product,
+                              price: element.price
+                            };
+                            try{
+                              await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
+                            }catch(err){
+                              console.log(err);
+                            }
+                          }
+                        });
+                      });
+                    }
                   } catch (cerr) {
                     return res.redirect('/import?error=' + cerr.message);
                   }
@@ -861,83 +907,45 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let sellers = null;
-    let integrations = null;
-    let channelDafiti = false;
-    let channelLinio = false;
-    if(rights.name==='superadmin' || rights.name==='admin'){
-      integrations = await Integrations.find({
-        or : [
-          { channel: 'dafiti' },
-          { channel: 'linio' }
-        ],
-      });
-      let slist = integrations.map(i => i.seller);
-      sellers = await Seller.find({where: {id: {in: slist}}, select: ['id', 'name']});
-      sellers = sellers.map(s => {
-        s.channelDafiti = integrations.some(i => i.seller === s.id && i.channel === 'dafiti') ? true : false;
-        s.channelLinio = integrations.some(i => i.seller === s.id && i.channel === 'linio') ? true : false;
-        return s;
-      });
-    } else {
-      seller = req.session.user.seller;
-      integrations = await Integrations.find({seller: seller});
-      channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
-      channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
-    }
+    let seller = req.session.user.seller ? req.session.user.seller : '';
+    let data = await sails.helpers.checkChannels(rights.name, seller);
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: sellers, channelDafiti, channelLinio});
+    return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
   },
   multipleexecute: async (req, res) => {
+    req.setTimeout(300000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
     let seller = null;
-    let sellers = null;
     let error = null;
     let channel = req.body.channel;
     let result = [];
-    let channelDafiti = false;
-    let channelLinio = false;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-      let integrations = await Integrations.find({
-        or : [
-          { channel: 'dafiti' },
-          { channel: 'linio' }
-        ],
-      });
-      let slist = integrations.map(i => i.seller);
-      sellers = await Seller.find({where: {id: {in: slist}}, select: ['id', 'name']});
-      sellers = sellers.map(s => {
-        s.channelDafiti = integrations.some(i => i.seller === s.id && i.channel === 'dafiti') ? true : false;
-        s.channelLinio = integrations.some(i => i.seller === s.id && i.channel === 'linio') ? true : false;
-        return s;
-      });
-    } else {
-      let sell = req.session.user.seller;
-      let integrations = await Integrations.find({seller: sell});
-      channelDafiti = integrations.some(i => i.channel === 'dafiti') ? true : false;
-      channelLinio = integrations.some(i => i.channel === 'linio') ? true : false;
-    }
-    if(req.body.seller === undefined){seller = req.session.user.seller}else{seller = req.body.seller;}
-    let response = {items:{}};
+    if(req.body.seller === undefined){seller = req.session.user.seller;}else{seller = req.body.seller;}
+    let data = await sails.helpers.checkChannels(rights.name, seller);
+
+    let response = {};
     try{
       if (channel === 'dafiti') {
-        result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
-        response.items = result;
+          result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
+          response.items = result;
       } else if(channel === 'linio'){
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
+      } else if(channel === 'mercadolibre'){
+        result = await sails.helpers.channel.mercadolibre.multiple(seller, req.body.action);
+        response.items = result;
       }
-      if (result.Request.length<1){
-        error = 'No hay productos pendientes por procesar';
+      result = JSON.parse(result);
+      if (result.ErrorResponse){
+        response.errors[0] = result.ErrorResponse.Head.ErrorMessage;
+        error = result.ErrorResponse.Head.ErrorMessage;
       }
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: sellers, resultados: response, channelDafiti, channelLinio});
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }catch(err){
-      console.log(err);
-      response.errors=err;
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: sellers, resultados: response, channelDafiti, channelLinio});
+      response.errors = err;
+      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }
   },
   getcover: async (req,res) =>{

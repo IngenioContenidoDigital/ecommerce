@@ -45,7 +45,7 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%><li><a class="navbar-item" href="/sliders">Sliders</a></li><%}%>
     </ul>
     <%}%>
-    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%>
+    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers') || req.session.user.rights.permissions.includes('mensajesmeli') ){%>
     <p class="menu-label is-size-7">
       <i class='bx bx-buildings'></i>&nbsp;Sellers
       <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
