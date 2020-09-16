@@ -9,7 +9,6 @@
  */
 
 module.exports.custom = {
-
   IMPORT_MICROSERVICE  : 'https://import.1ecommerce.app:9000/graphql',
   PRODUCT_TYPE: 'Product',
   PRODUCT_VARIATION: 'ProductVariation',
