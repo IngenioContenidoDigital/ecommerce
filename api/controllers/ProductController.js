@@ -913,6 +913,7 @@ module.exports = {
     return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
   },
   multipleexecute: async (req, res) => {
+    req.setTimeout(300000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -927,8 +928,8 @@ module.exports = {
     let response = {};
     try{
       if (channel === 'dafiti') {
-        result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
-        response.items = result;
+          result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
+          response.items = result;
       } else if(channel === 'linio'){
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
@@ -936,12 +937,13 @@ module.exports = {
         result = await sails.helpers.channel.mercadolibre.multiple(seller, req.body.action);
         response.items = result;
       }
-      if (result.Request.length < 1){
-        error = 'No hay productos pendientes por procesar';
+      result = JSON.parse(result);
+      if (result.ErrorResponse){
+        response.errors[0] = result.ErrorResponse.Head.ErrorMessage;
+        error = result.ErrorResponse.Head.ErrorMessage;
       }
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }catch(err){
-      console.log(err);
       response.errors = err;
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }

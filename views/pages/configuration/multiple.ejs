@@ -57,17 +57,24 @@
                 <br>
                 <h6 class="title is-6">Resultado del Proceso</h6>
                 <hr>
-                <div class="notification is-primary">
-                    Se han procesado un total de 
-                    <%if(resultados.items !== undefined){%>
-                      <%= resultados.items.Request.length %>
-                    <%}%>
-                    registros.
-                </div>
+                <%if(resultados.items !== undefined){%>
+                    <div class="notification is-primary">
+                        Se han procesado un total de 
+                        <%if(resultados.items.Request !== undefined){ %>
+                            <%= resultados.items.Request.length %> 
+                        <%}else{%>
+                            0
+                        <%}%>
+                        registros.
+                    </div>
+                <%}%>
                 <%if(resultados.errors !== undefined){%>
                     <div class="notification is-danger">
                         <p>Hemos identificado <%=resultados.errors.length %> error(es).</p>
                         <br>
+                        <% resultados.errors.forEach(err =>{ %>
+                            <p><%= err %></p>
+                        <% }) %>
                     </div>
                 <%}%>
             <%}%>
