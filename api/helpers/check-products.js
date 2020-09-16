@@ -110,7 +110,7 @@ module.exports = {
                         pro.tax = tax.id;
                 } else {
                     tax  = (await Tax.findOne({ value: 0 }));
-                    if(taxt)
+                    if(tax)
                         pro.tax = tax.id;
                 }
 
@@ -120,7 +120,7 @@ module.exports = {
                 pro.width = p.height;
                 pro.length = p.length;
                 pro.weight = p.weight;
-                pro.price =  parseInt(p.price / p.tax.rate);
+                pro.price =  parseInt(p.price / (1 + (tax.value / 100)));
 
                 if (p.variations && p.variations.length > 0) {
                     return resolve({...pro, variations : p.variations , images : pro.images});
