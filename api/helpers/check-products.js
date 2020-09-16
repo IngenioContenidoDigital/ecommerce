@@ -103,11 +103,15 @@ module.exports = {
                         pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
                     }
                 }
-
+                
                 if (p.tax) {
-                    pro.tax = (await Tax.findOne({ value: p.tax.rate })).id;
+                    tax = (await Tax.findOne({ value: p.tax.rate }));
+                    if(tax)
+                        pro.tax = tax.id;
                 } else {
-                    pro.tax = (await Tax.findOne({ value: 0 })).id;
+                    tax  = (await Tax.findOne({ value: 0 }));
+                    if(taxt)
+                        pro.tax = tax.id;
                 }
 
                 pro.seller = p.seller;
@@ -116,7 +120,7 @@ module.exports = {
                 pro.width = p.height;
                 pro.length = p.length;
                 pro.weight = p.weight;
-                pro.price = p.price;
+                pro.price =  parseInt(p.price / p.tax.rate);
 
                 if (p.variations && p.variations.length > 0) {
                     return resolve({...pro, variations : p.variations , images : pro.images});
