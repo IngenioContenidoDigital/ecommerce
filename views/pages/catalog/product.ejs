@@ -583,7 +583,7 @@
                 data.append(i,JSON.stringify(celldata));
             }
             request.addEventListener('load', () => {
-              window.location.href='/products';
+              window.location.href='/products/edit/'+id;
             });
             request.open('POST','/products/variations/'+id);
             request.send(data);
@@ -1222,7 +1222,7 @@
           }
         });
     });
-    live('.product-image','mouseover',(e)=>{
+    live('.product-image','click',(e)=>{
       let id = e.target.getAttribute('data-product');
       io.socket.get('/getcover/'+id,resData=>{
         if(resData){
