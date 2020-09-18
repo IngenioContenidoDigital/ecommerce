@@ -179,7 +179,7 @@
                     <option level="0">Categoría Principal</option>
                     <% if(action=='edit') {%> 
                       <% product.categories.forEach(function(cl){ %>
-                        <% if(cl.id == product.mainCategory.id ) { %>
+                        <% if(product.mainCategory !== null && cl.id == product.mainCategory.id ) { %>
                           <option selected level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>
                         <%}else{%>
                           <option level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>

@@ -9,6 +9,7 @@ module.exports = {
 
     inputs: {
         product: { type: 'ref' },
+        seller: { type: 'string' },
     },
 
     exits: {
@@ -17,95 +18,58 @@ module.exports = {
         },
     },
 
-    fn: function (inputs) {
-        return new Promise(async (resolve, reject) => {
+    fn: async (inputs, exits) => {
             let pro = {}
-            let p = inputs.product;
             let images = [];
             let variations = [];
 
-            /*let categorize = async (categoryList) => {
+                pro.name = inputs.product.name.toUpperCase().trim();
 
-                let clist = categoryList.map(c => c.name.toLowerCase().replace('amp;', ''));
-                clist.push('inicio');
-
-                //agregar categoria inicio
-                let categories = await Category.find({
-                    where: { name: clist },
-                    sort: 'level DESC'
-                });
-
-                let categoriesids = [];
-
-                for (let c in categories) {
-                    if (!categoriesids.includes(categories[c].id)) {
-                        categoriesids.push(categories[c].id);
-                    }
+                if(!inputs.product.reference){
+                    throw new Error('Producto ' + inputs.product.name + ' sin referencia');
                 }
 
-                let realcats = categories.filter(cat => categoriesids.includes(cat.parent));
-                let rcatsids = [];
+                pro.reference = inputs.product.reference.toUpperCase().trim();
+                pro.description = inputs.product.description.toLowerCase().trim();
+                pro.descriptionShort = inputs.product.descriptionShort.toLowerCase().trim();
 
-                for (let rc in realcats) {
-                    if (!rc.includes(realcats[rc].id)) {
-                        rcatsids.push(realcats[rc].id);
-                    }
+                if (inputs.product.images) {
+                    pro.images = inputs.product.images;
                 }
 
-                return rcatsids;
-            }*/
-
-                pro.name = p.name.toUpperCase().trim();
-
-                if(!p.reference){
-                    return reject({ name: 'NOPRODUCT', message: 'Producto ' + p.name + ' sin referencia' }) ;
+                let cats = await sails.helpers.tools.findCategory(inputs.product.name+' '+inputs.product.reference);
+                if(cats.length>0){
+                    pro.categories = cats;
+                    let main = await Category.find({id:cats}).sort('level DESC');
+                    pro.mainCategory = main[0].id;
                 }
 
-                pro.reference = p.reference.toUpperCase().trim();
-                pro.description = p.description.toLowerCase().trim();
-                pro.descriptionShort = p.descriptionShort.toLowerCase().trim();
-
-                if (p.images) {
-                    pro.images = p.images;
+                if(inputs.product.manufacturer){
+                    pro.manufacturer = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() })).id;
+                }else{
+                    throw new Error('La Marca seleccionada para el producto ' + inputs.product.name + ' no existe');
                 }
+                
 
-                if(p.categories){
-                    pro.categories = await sails.helpers.tools.findCategory(p.categories.join(' '));
-                }
-
-                if (pro.categories && pro.categories.length > 0) {
-                    //let category = await Category.findOne({parent : pro.categories[0], name : p.gender.toLowerCase()});
-                    pro.mainCategory = pro.categories[0];
-                }
-
-                if (p.manufacturer) {
-                    Manufacturer.findOrCreate({ name: p.manufacturer.toLowerCase() }, { name: p.manufacturer.toLowerCase(), active: true }).exec(async (err, record, wasCreated) => {
-                        if (err) { return console.log(err) }
-
-                        pro.manufacturer = (await Manufacturer.findOne({ name: p.manufacturer.toLowerCase() })).id;
-
-                    });
-                }
-
-                let color = await sails.helpers.tools.findColor(p.name+' '+p.reference);
+                let color = await sails.helpers.tools.findColor(inputs.product.name+' '+inputs.product.reference);
                 
                 if(color && color.length > 0){
                     pro.mainColor = color[0];
                 }else{
-                    return reject({ name: 'NOCOLOR', message: 'Producto ' + p.name + ' sin color' }) ;
+                    throw new Error('Producto ' + inputs.product.name + ' sin color');
                 }
 
-                if (p.gender) {
-                    let gender = await sails.helpers.tools.findGender(p.name+' '+p.reference);
-                    if (gender) {
+                if (inputs.product.gender) {
+                    let gender = await sails.helpers.tools.findGender(inputs.product.name+' '+inputs.product.reference);
+                    if (gender && gender.length>0) {
                         pro.gender = gender[0];
                     } else {
                         pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
                     }
                 }
                 
-                if (p.tax) {
-                    tax = (await Tax.findOne({ value: p.tax.rate }));
+                if (inputs.product.tax) {
+                    tax = (await Tax.findOne({ value: inputs.product.tax.rate }));
                     if(tax)
                         pro.tax = tax.id;
                 } else {
@@ -114,36 +78,19 @@ module.exports = {
                         pro.tax = tax.id;
                 }
 
-                pro.seller = p.seller;
-                pro.active = p.active;
-                pro.width = p.width;
-                pro.width = p.height;
-                pro.length = p.length;
-                pro.weight = p.weight;
-                pro.price =  parseInt(p.price / (1 + (tax.value / 100)));
+                pro.seller = inputs.seller;
+                pro.active = inputs.product.active;
+                pro.width = (inputs.product.width === undefined || inputs.product.width === null || inputs.product.width < 1) ? 15 : inputs.product.width;
+                pro.height = (inputs.product.height === undefined || inputs.product.height === null || inputs.product.height < 1) ? 15 : inputs.product.height;
+                pro.length = (inputs.product.length === undefined || inputs.product.length === null || inputs.product.length < 1) ? 32 : inputs.product.length;
+                pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : inputs.product.weight;
+                pro.price =  (inputs.product.price / (1 + (tax.value/100)));
 
-                if (p.variations && p.variations.length > 0) {
-                    return resolve({...pro, variations : p.variations , images : pro.images});
+                if (inputs.product.variations && inputs.product.variations.length > 0) {
+                    return exits.success(pro);
                 } else {
-                    return reject({ name: 'NOVARIATION', message: 'Variación ' + p.description + ' no disponible para este producto' }) ;
+                    throw new Error('Variación ' + inputs.product.name + ' no disponible para este producto');
                 }
-        });
     }
 
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

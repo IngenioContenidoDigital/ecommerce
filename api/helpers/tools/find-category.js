@@ -36,13 +36,22 @@ module.exports = {
       stats: 'STRING_VALUE'*/
     };
     let results = [];
+    let buildTree = async (ct) => {
+      let cat = await Category.findOne({id:ct});
+      if(!results.includes(cat.id)){
+        results.push(cat.id);
+        if(cat.level>1){
+          buildTree(cat.parent);
+        }else{
+          return;
+        }
+      }
+    }
     csd.search(params, async (err, data) => {
 
       if(err){return exits.error(err);}      
       if(data.hits.found>0){
-        data.hits.hit.forEach(h =>{
-          results.push(h.id);
-        });
+        await buildTree(data.hits.hit[0].id);
       }
       return exits.success(results);
     }); 

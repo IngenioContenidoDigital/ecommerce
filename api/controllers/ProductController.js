@@ -22,6 +22,7 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 module.exports = {
   showproducts: async function (req, res) {
+    req.setTimeout(240000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
       throw 'forbidden';
@@ -467,15 +468,15 @@ module.exports = {
           
           if(!isEmpty){
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
-            result = [...result, ...rs.result]
-            errors = [...errors, ...rs.errors];
-            await sleep(5000);
+            result = [rs.result]
+            errors = [rs.errors];
+            //await sleep(5000);
           }else{
             break;
           }
 
-          console.log("PAGE NUM : ", page);
-          console.log("importedProducts : ", importedProducts);
+          /*console.log("PAGE NUM : ", page);
+          console.log("importedProducts : ", importedProducts);*/
           
           page++;
 
@@ -493,7 +494,7 @@ module.exports = {
               
               if(uploaded.filename)
                 (s.filename = uploaded.filename);
-                await sleep(3000);
+                //await sleep(3000);
             
               }).catch(e=>imageErrors.push(e));
           
