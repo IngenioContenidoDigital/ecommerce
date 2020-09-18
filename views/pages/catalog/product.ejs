@@ -1,19 +1,20 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
 <div class="container">
-<% if (error != undefined || error != null) { %>
+  <% if (error != undefined || error != null) { %>
   <div class="notification is-danger is-light" id="error">
-      <%= error %>
+    <%= error %>
   </div>
-<% } %>
-<% if(action=='create' || action =='edit'){ %>
+  <% } %>
+  <% if(action=='create' || action =='edit'){ %>
   <br />
-    <div class="product-tab tabs">
-      <ul>
-        <li class="is-active"><a option="basics" >Información Básica</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="images">Imágenes</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="variations">Variaciones</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
+  <div class="product-tab tabs">
+    <ul>
+      <li class="is-active"><a option="basics">Información Básica</a></li>
+      <li <%if(action!='edit'){%>class="is-hidden" <%}%>><a option="images">Imágenes</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden" <%}%>><a option="variations">Variaciones</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden" <%}%>><a option="discounts">Descuentos</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"
+        <%}%>><a option="integrations">Integraciones</a></li>
       </ul>
     </div>
     <div id ="basics">
@@ -23,82 +24,92 @@
           <div class="column">
             <label class="label is-inline is-size" for="name">Nombre del Producto</label>&nbsp;
             <div class="field is-pulled-right">
-              <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <%if(action=='create' || product.active){%>checked="checked"<%}%> />
-              <label class="is-size-7-mobile" for="activo">Estado: <span id="state"><%if(action=='create' || product.active){%><b style="color:green;">activo</b><%}else{%><b style="color:red;">inactivo</b><%}%></span></label>
+              <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <%if(action=='create' || product.active){%>checked="checked"
+        <%}%> />
+              <label class="is-size-7-mobile" for="activo">Estado: <span id="state"><%if(action=='create' || product.active){%><b style="color:green;">activo</b><%}else{%><b
+          style="color:red;">inactivo</b><%}%></span></label>
             </div>
             <div class="control">
-              <input class="input is-uppercase" type="text" placeholder="Nombre del Producto" name="name" required <% if(action=='edit'){ %>value="<%= product.name %>"<% }%> />
-            </div>
-          </div>           
-        </div>
-        <div class="columns">
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="manufacturer">Marca</label>
-              <div class="select is-fullwidth is-size-7">
-                <select class="is-capitalized" name="manufacturer" id="manufacturer" required>
-                  <option value=""> -- Marca del Producto --</option>
-                  <% brands.forEach(function(brand){ %>
-                    <option <% if(action=='edit' && brand.id==product.manufacturer){ %> selected <% } %> value="<%= brand.id %>"><%= brand.name %></option>
-                  <%})%>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="mainColor">Color Principal</label>
-              <div class="select is-fullwidth is-size-7">
-                <select class="is-capitalized" name="mainColor" id="mainColor" required>
-                  <option value=""> -- Color Principal --</option>
-                  <% colors.forEach(function(color){ %>
-                    <option <% if(action=='edit' && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>"><%= color.name %></option>
-                  <%})%>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="gender">Género</label>
-              <div class="select is-fullwidth is-size-7">
-                <select class="is-capitalized" name="gender" id="gender" required>
-                   <option value="">-- Elegin Género --</option>
-                  <% genders.forEach(gender => { %>
-                    <option class="is-capitalized" <% if(action=='edit' && gender.id==product.gender ){ %> selected <% } %> value="<%= gender.id %>" ><%= gender.name %></option>
-                  <%})%>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="column">
-            <label class="label is-inline is-size-7" for="price_nt">Precio sin impuestos</label>
-            <div class="field">
-              <p class="control has-icons-left">
-                <input class="input is-size-7" name="price_nt" type="number" placeholder="Sin impuestos" <% if(action=='edit'){ %> value="<%= product.price.toFixed(2) %>" <% } else { %> value="0.00" <% } %>/>
-                <span class="icon is-small is-left is-size-7">
-                  <i class="bx bx-dollar"></i>
-                </span>
-              </p>
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="tax">Impuesto</label>
-              <div class="select is-fullwidth is-size-7">
-                <select name="tax" id="tax" required>
-                  <% taxes.forEach(function(tax){ %>
-                    <option class="is-capitalized" <% if(action=='edit' && tax.id==product.tax.id ){ %> selected <% } %> value="<%= tax.id %>" tax="<%= tax.value %>" ><%= tax.name %></option>
-                  <%})%>
-                </select>
-              </div>
-            </div>
-          </div>
-          <div class="column">
-            <label class="label is-inline is-size-7" for="price_wt">Precio IVA incluído</label>
-            <div class="field">
-              <p class="control has-icons-left">
-                <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
+              <input class="input is-uppercase" type="text" placeholder="Nombre del Producto" name="name" required <% if(action=='edit'){ %>value="<%= product.name %>"<% }%>
+        />
+  </div>
+</div>
+</div>
+<div class="columns">
+  <div class="column">
+    <div class="control">
+      <label class="label is-inline is-size-7" for="manufacturer">Marca</label>
+      <div class="select is-fullwidth is-size-7">
+        <select class="is-capitalized" name="manufacturer" id="manufacturer" required>
+          <option value=""> -- Marca del Producto --</option>
+          <% brands.forEach(function(brand){ %>
+          <option <% if(action=='edit' && brand.id==product.manufacturer){ %> selected <% } %> value="<%= brand.id %>">
+            <%= brand.name %></option>
+          <%})%>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="column">
+    <div class="control">
+      <label class="label is-inline is-size-7" for="mainColor">Color Principal</label>
+      <div class="select is-fullwidth is-size-7">
+        <select class="is-capitalized" name="mainColor" id="mainColor" required>
+          <option value=""> -- Color Principal --</option>
+          <% colors.forEach(function(color){ %>
+          <option <% if(action=='edit' && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>">
+            <%= color.name %></option>
+          <%})%>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="column">
+    <div class="control">
+      <label class="label is-inline is-size-7" for="gender">Género</label>
+      <div class="select is-fullwidth is-size-7">
+        <select class="is-capitalized" name="gender" id="gender" required>
+          <option value="">-- Elegin Género --</option>
+          <% genders.forEach(gender => { %>
+          <option class="is-capitalized" <% if(action=='edit' && gender.id==product.gender ){ %> selected <% } %>
+            value="<%= gender.id %>"><%= gender.name %></option>
+          <%})%>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="column">
+    <label class="label is-inline is-size-7" for="price_nt">Precio sin impuestos</label>
+    <div class="field">
+      <p class="control has-icons-left">
+        <input class="input is-size-7" name="price_nt" type="number" placeholder="Sin impuestos"
+          <% if(action=='edit'){ %> value="<%= product.price.toFixed(2) %>" <% } else { %> value="0.00" <% } %> />
+        <span class="icon is-small is-left is-size-7">
+          <i class="bx bx-dollar"></i>
+        </span>
+      </p>
+    </div>
+  </div>
+  <div class="column">
+    <div class="control">
+      <label class="label is-inline is-size-7" for="tax">Impuesto</label>
+      <div class="select is-fullwidth is-size-7">
+        <select name="tax" id="tax" required>
+          <% taxes.forEach(function(tax){ %>
+          <option class="is-capitalized" <% if(action=='edit' && tax.id==product.tax.id ){ %> selected <% } %>
+            value="<%= tax.id %>" tax="<%= tax.value %>"><%= tax.name %></option>
+          <%})%>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="column">
+    <label class="label is-inline is-size-7" for="price_wt">Precio IVA incluído</label>
+    <div class="field">
+      <p class="control has-icons-left">
+        <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos"
+          <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %>
+          value="0.00" <%}%>/>
                 <span class="icon is-small is-left is-size-7">
                   <i class="bx bx-dollar"></i>
                 </span>
@@ -113,110 +124,119 @@
               <div class="select is-fullwidth is-size-7">
                 <select class="is-capitalized" name="seller" id="seller" required>
                   <option value=""> -- Seller --</option>
-                  <% sellers.forEach(function(seller){ %>
-                    <option <% if(action=='edit' && seller.id==product.seller){ %> selected <% } %> value="<%= seller.id %>"><%= seller.name %></option>
-                  <%})%>
-                </select>                  
-              </div>
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="reference">Referencia</label>
-              <input class="input is-capitalized is-size-7" <%if(action=='edit'){%>readonly<%}%> type="text" placeholder="Referencia del Producto" name="reference" <% if(action=='edit'){ %> value="<%= product.reference %>" <% } %> />
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="reference">Ancho del empaque (cm)</label>
-              <input class="input is-size-7" type="number" placeholder="Ancho del Empaque" name="width" <% if(action=='edit'){ %> value="<%= product.width %>" <% } %> />
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="reference">Alto del empaque (cm)</label>
-              <input class="input is-size-7" type="number" placeholder="Alto del Empaque" name="height" <% if(action=='edit'){ %> value="<%= product.height %>" <% } %> />
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="reference">Largo del empaque (cm)</label>
-              <input class="input is-size-7" type="number" placeholder="Largo" name="length" <% if(action=='edit'){ %> value="<%= product.length %>" <% } %> />
-            </div>
-          </div>
-          <div class="column">
-            <div class="control">
-              <label class="label is-inline is-size-7" for="reference">Peso Empacado (kg)</label>
-              <input class="input is-size-7" type="number" placeholder="Peso" name="weight" <% if(action=='edit'){ %> value="<%= product.weight %>" <% } %> />
-            </div>
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column">
-            <div class="tabs">
-              <ul>
-                <li class="is-active"><a option="ctl-descriptionshort">Resumen</a></li>
-                <li><a option="ctl-description">Descripción</a></li>
-              </ul>
-            </div>
-            <div class="control" id="ctl-descriptionshort">
-              <textarea id="descriptionshort" class="textarea" name="descriptionshort" placeholder="Descripción corta del producto" maxlength="100" rows="2">
+                  <% sellers.forEach(function(seller){ %> <option
+          <% if(action=='edit' && seller.id==product.seller){ %> selected <% } %>
+          value="<%= seller.id %>"><%= seller.name %></option>
+        <%})%>
+        </select>
+    </div>
+  </div>
+</div>
+<div class="column">
+  <div class="control">
+    <label class="label is-inline is-size-7" for="reference">Referencia</label>
+    <input class="input is-capitalized is-size-7"
+      <%if(action=='edit'){%>readonly<%}%> type="text" placeholder="Referencia del Producto" name="reference" <% if(action=='edit'){ %>
+      value="<%= product.reference %>" <% } %> />
+  </div>
+</div>
+<div class="column">
+  <div class="control">
+    <label class="label is-inline is-size-7" for="reference">Ancho del empaque (cm)</label>
+    <input class="input is-size-7" type="number" placeholder="Ancho del Empaque" name="width" <% if(action=='edit'){ %>
+      value="<%= product.width %>" <% } %> />
+  </div>
+</div>
+<div class="column">
+  <div class="control">
+    <label class="label is-inline is-size-7" for="reference">Alto del empaque (cm)</label>
+    <input class="input is-size-7" type="number" placeholder="Alto del Empaque" name="height" <% if(action=='edit'){ %>
+      value="<%= product.height %>" <% } %> />
+  </div>
+</div>
+<div class="column">
+  <div class="control">
+    <label class="label is-inline is-size-7" for="reference">Largo del empaque (cm)</label>
+    <input class="input is-size-7" type="number" placeholder="Largo" name="length" <% if(action=='edit'){ %>
+      value="<%= product.length %>" <% } %> />
+  </div>
+</div>
+<div class="column">
+  <div class="control">
+    <label class="label is-inline is-size-7" for="reference">Peso Empacado (kg)</label>
+    <input class="input is-size-7" type="number" placeholder="Peso" name="weight" <% if(action=='edit'){ %>
+      value="<%= product.weight %>" <% } %> />
+  </div>
+</div>
+</div>
+<div class="columns">
+  <div class="column">
+    <div class="tabs">
+      <ul>
+        <li class="is-active"><a option="ctl-descriptionshort">Resumen</a></li>
+        <li><a option="ctl-description">Descripción</a></li>
+      </ul>
+    </div>
+    <div class="control" id="ctl-descriptionshort">
+      <textarea id="descriptionshort" class="textarea" name="descriptionshort"
+        placeholder="Descripción corta del producto" maxlength="100" rows="2">
                 <% if(action=='edit'){ %><%= product.descriptionShort %> <% } %>
               </textarea>
-            </div>
-            <div class="control is-hidden" id="ctl-description">
-              <textarea id="description" class="textarea" name="description" placeholder="Descripción del producto">
+    </div>
+    <div class="control is-hidden" id="ctl-description">
+      <textarea id="description" class="textarea" name="description" placeholder="Descripción del producto">
                 <% if(action=='edit'){ %> <%= product.description %><% } %>
               </textarea>
-            </div>
-          </div>
-          <div class="column">
-            <br><br>
-            <div style="margin: 5px 5px; " class="field is-pulled-right">
-              <div class="control">
-                <div class="select is-small is-danger">
-                  <select name="mainCategory" id="mainCategory">
-                    <option level="0">Categoría Principal</option>
-                    <% if(action=='edit') {%> 
-                      <% product.categories.forEach(function(cl){ %>
-                        <% if(cl.id == product.mainCategory.id ) { %>
-                          <option selected level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>
-                        <%}else{%>
-                          <option level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>
-                        <%}%>
+    </div>
+  </div>
+  <div class="column">
+    <br><br>
+    <div style="margin: 5px 5px; " class="field is-pulled-right">
+      <div class="control">
+        <div class="select is-small is-danger">
+          <select name="mainCategory" id="mainCategory">
+            <option level="0">Categoría Principal</option>
+            <% if(action=='edit') {%>
+            <% product.categories.forEach(function(cl){ %>
+            <% if(cl.id == product.mainCategory.id ) { %>
+            <option selected level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>
+            <%}else{%>
+            <option level="<%=cl.level%>" value="<%= cl.id %>"><%= cl.name %></option>
+            <%}%>
                       <% })%>
-                    <% } %>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <article class="panel is-primary is-size-7">
-              <p class="panel-heading">
-                Categorías
-              </p>
-                <ul>
-                  <li>
-                    <a style="display:none;" class="panel-block is-active" category="<%= root.id %>" level="<%= root.level %>">
-                      <input type="radio" name="root" id="root" value="<%= root.id %>" />&nbsp;
-                      <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
-                      <%= root.name %>
-                    </a>
-                  </li>
-                </ul>
-            </article>
-          </div>
+            <% } %>
+          </select>
         </div>
       </div>
-      <div class="buttons is-right">
-        <button id="save-product" class="button is-primary"><i class="bx bx-save"></i>&nbsp;Guardar y Continuar</button>
-      </div>
-      </form>
-    </div> 
-    <div class="is-hidden" id="images">
-      <div class="box">
-        <div class="columns">
-          <div class="column is-centered">
-            <input type="hidden" name="product-data" id="product-data" <%if(action=='edit') {%> value="<%=product.id%>" <%}else{%> value="" <%}%> />
+    </div>
+    <article class="panel is-primary is-size-7">
+      <p class="panel-heading">
+        Categorías
+      </p>
+      <ul>
+        <li>
+          <a style="display:none;" class="panel-block is-active" category="<%= root.id %>" level="<%= root.level %>">
+            <input type="radio" name="root" id="root" value="<%= root.id %>" />&nbsp;
+            <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+            <%= root.name %>
+          </a>
+        </li>
+      </ul>
+    </article>
+  </div>
+</div>
+</div>
+<div class="buttons is-right">
+  <button id="save-product" class="button is-primary"><i class="bx bx-save"></i>&nbsp;Guardar y Continuar</button>
+</div>
+</form>
+</div>
+<div class="is-hidden" id="images">
+  <div class="box">
+    <div class="columns">
+      <div class="column is-centered">
+        <input type="hidden" name="product-data" id="product-data" <%if(action=='edit') {%> value="<%=product.id%>"
+          <%}else{%> value="" <%}%> />
             <div class="field">
               <div class="file is-medium is-boxed is-light">
                 <label class="file-label">
@@ -236,16 +256,14 @@
           <div class="column is-two-thirds">
             <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
             <div class="preview">
-              <%if(action=='edit'){%>
-                <% product.images.forEach((i)=>{ %>
-                  <div style="display:inline;">
-                    <figure class="image is-128x128 image-ed <%if(i.cover==1){%>image-cover<%}%>" image-id="<%=i.id%>">
-                      <img src="<%=imgurl%>/images/products/<%=product.id%>/<%= i.file %>" />
-                    </figure>
-                    <a target="/images/remove/<%=i.id%>" class="delete"></a>
-                  </div>
-                <% })%>
-              <%}%>
+              <%if(action=='edit'){%> <% product.images.forEach((i)=>{ %> <div style="display:inline;">
+        <figure class="image is-128x128 image-ed <%if(i.cover==1){%>image-cover<%}%>" image-id="<%=i.id%>">
+          <img src="<%=imgurl%>/images/products/<%=product.id%>/<%= i.file %>" />
+        </figure>
+        <a target="/images/remove/<%=i.id%>" class="delete"></a>
+      </div>
+      <% })%>
+      <%}%>
             </div>
           </div>
         </div>
@@ -254,175 +272,192 @@
 
         let fmanager = document.querySelector('input[name="file"]');
         fmanager.onchange = sendFiles;
-  
-        function sendFiles(e){
+
+        function sendFiles(e) {
           e.preventDefault();
           var data = new FormData();
           let request = null;
           request = new XMLHttpRequest();
           data.append('id', document.querySelector('#product-data').value);
-          for(let i=0; i<this.files.length;i++){
+          for (let i = 0; i < this.files.length; i++) {
             data.append('file', this.files[i]);
           }
-          request.addEventListener('load', function(e) {
+          request.addEventListener('load', function (e) {
             let container = document.querySelector('.preview');
-            container.innerHTML='';
+            container.innerHTML = '';
             let productId = document.querySelector('#product-data').value;
-            let route = '/images/products/'+productId+'/';
+            let route = '/images/products/' + productId + '/';
             let images = JSON.parse(request.response);
-            for(let j=0; j<images.length; j++){
+            for (let j = 0; j < images.length; j++) {
               //let imgname = images[j].file.substring(0,images[j].file.length-4);
               let imgname = images[j].file;
               let div = document.createElement('div');
-              div.style.display='inline';
+              div.style.display = 'inline';
               let a = document.createElement('a');
-              addClass(a,'delete');
-              a.setAttribute('target','/images/remove/'+images[j].id);
+              addClass(a, 'delete');
+              a.setAttribute('target', '/images/remove/' + images[j].id);
               let figure = document.createElement('figure');
-              addClass(figure,'image');
-              addClass(figure,'is-128x128');
+              addClass(figure, 'image');
+              addClass(figure, 'is-128x128');
               addClass(figure, 'image-ed');
-              figure.setAttribute('image-id',images[j].id);
-              if(images[j].cover=='1'){addClass(figure, 'image-cover');}
-              let img = asyncImageLoader('<%=imgurl%>'+route+imgname);
-              img.then( res => {figure.appendChild(res);});
+              figure.setAttribute('image-id', images[j].id);
+              if (images[j].cover == '1') { addClass(figure, 'image-cover'); }
+              let img = asyncImageLoader('<%=imgurl%>' + route + imgname);
+              img.then(res => { figure.appendChild(res); });
               div.appendChild(figure);
               div.appendChild(a);
               container.appendChild(div);
             };
-            addClass(document.querySelector('.progress'),'is-hidden');
+            addClass(document.querySelector('.progress'), 'is-hidden');
           });
           request.open('POST', '/product/images');
           request.send(data);
-          removeClass(document.querySelector('.progress'),'is-hidden');
-          fmanager.value='';
+          removeClass(document.querySelector('.progress'), 'is-hidden');
+          fmanager.value = '';
         }
-  
-        live('figure','click',function(){
+
+        live('figure', 'click', function () {
           let elm = this;
           let im = this.getAttribute('image-id');
           let figures = document.querySelectorAll('figure');
-          figures.forEach((f)=>{
-            removeClass(f,'image-cover');
+          figures.forEach((f) => {
+            removeClass(f, 'image-cover');
           });
-          addClass(this,'image-cover');
-          io.socket.put('/image/'+im,function(data, Jwres){
+          addClass(this, 'image-cover');
+          io.socket.put('/image/' + im, function (data, Jwres) {
             return;
           })
         });
-  
-        live('.delete','click',function(e){
+
+        live('.delete', 'click', function (e) {
           let elm = this;
-          let parent=this.parentNode;
+          let parent = this.parentNode;
           let target = this.getAttribute('target');
-          io.socket.put(target,function(data, Jwres){
+          io.socket.put(target, function (data, Jwres) {
             parent.parentNode.removeChild(parent);
-            if(!isNaN(data)){
+            if (!isNaN(data)) {
               let figures = document.querySelectorAll('figure');
-              figures.forEach((f)=>{
+              figures.forEach((f) => {
                 let im = f.getAttribute('image-id');
-                if(im==data){
-                  addClass(f,'image-cover');
-                }else{
-                  removeClass(f,'image-cover');
+                if (im == data) {
+                  addClass(f, 'image-cover');
+                } else {
+                  removeClass(f, 'image-cover');
                 }
               });
             }
           });
         });
-  
+
       </script>
     </div>
     <div class="is-hidden" id="variations">
       <div class="box">
-          <p style="text-align: right;font-size: 15px; margin-right: 5px;">            
-            <a href="#" class="has-text-primary" id="add-row"><i class="is-size-4 bx bxs-plus-square"></i></a>
-          </p>
-          <form id="variations-form">
-            <table class="table is-striped is-hoverable is-fullwidth" id="variations-table">
-                <thead>
-                <tr class="theader">  
-                    <th scope="col" class="is-primary is-size-7">Tamaño/Talla</th>
-                    <th scope="col" class="is-primary is-size-7">Referencia</th>
-                    <th scope="col" class="is-primary is-size-7">Referencia Proveedor</th>
-                    <th scope="col" class="is-primary is-size-7">EAN13</th>
-                    <th scope="col" class="is-primary is-size-7">UPC</th>
-                    <th scope="col" class="is-primary is-size-7">Precio</th>
-                    <th scope="col" class="is-primary is-size-7">Cantidad</th>
-                    <th scope="col" class="is-primary is-size-7"></th>
-                </tr>
-                </thead>
-                <tbody>
-                  <% if(action=='edit' && product.variations!==undefined && product.variations.length>0){%>
-                    <% var rowcount=0; %>
-                    <% product.variations.forEach((pv)=>{%>
-                      <tr productv="<%= pv.id %>">
-                        <td scope="row" class="align-middle"><div class="field"><div class="dropdown is-small is-fullwidth">
-                          <input type="hidden" field="variation" name="variations[<%=rowcount%>][variation]" value="<%=pv.variation.id%>" />
-                          <div class="dropdown-trigger">
-                              <button style="border:solid 1px #00d1b2;" class="button is-small" aria-haspopup="true" aria-controls="dropdown-menu">
-                                  <span id="drop-selected" class="is-uppercase is-size-7" value="<%=pv.variation.id%>" ><%=pv.variation.name%></span>
-                                  <span class="icon is-small">
-                                      <i class='bx bx-chevron-down'></i>
-                                  </span>
-                              </button>
-                          </div>
-                          <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                              <!--<div class="dropdown-content">
+        <p style="text-align: right;font-size: 15px; margin-right: 5px;">
+          <a href="#" class="has-text-primary" id="add-row"><i class="is-size-4 bx bxs-plus-square"></i></a>
+        </p>
+        <form id="variations-form">
+          <table class="table is-striped is-hoverable is-fullwidth" id="variations-table">
+            <thead>
+              <tr class="theader">
+                <th scope="col" class="is-primary is-size-7">Tamaño/Talla</th>
+                <th scope="col" class="is-primary is-size-7">Referencia</th>
+                <th scope="col" class="is-primary is-size-7">Referencia Proveedor</th>
+                <th scope="col" class="is-primary is-size-7">EAN13</th>
+                <th scope="col" class="is-primary is-size-7">UPC</th>
+                <th scope="col" class="is-primary is-size-7">Precio</th>
+                <th scope="col" class="is-primary is-size-7">Cantidad</th>
+                <th scope="col" class="is-primary is-size-7"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if(action=='edit' && product.variations!==undefined && product.variations.length>0){%>
+              <% var rowcount=0; %>
+              <% product.variations.forEach((pv)=>{%>
+              <tr productv="<%= pv.id %>">
+                <td scope="row" class="align-middle">
+                  <div class="field">
+                    <div class="dropdown is-small is-fullwidth">
+                      <input type="hidden" field="variation" name="variations[<%=rowcount%>][variation]"
+                        value="<%=pv.variation.id%>" />
+                      <div class="dropdown-trigger">
+                        <button style="border:solid 1px #00d1b2;" class="button is-small" aria-haspopup="true"
+                          aria-controls="dropdown-menu">
+                          <span id="drop-selected" class="is-uppercase is-size-7"
+                            value="<%=pv.variation.id%>"><%=pv.variation.name%></span>
+                          <span class="icon is-small">
+                            <i class='bx bx-chevron-down'></i>
+                          </span>
+                        </button>
+                      </div>
+                      <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                        <!--<div class="dropdown-content">
                               </div>-->
-                          </div>
-                          </div></div>
-                        </td>
-                        <td scope="row" class="align-middle">
-                          <div class="field is-small">
-                            <div class="control">                          
-                              <input class="input is-primary is-small" type="text" field="reference" name="variations[<%=rowcount%>][reference]" value="<%= pv.reference %>" placeholder="Referencia"/>
-                            </div>
-                          </div>
-                        </td>
-                        <td scope="row" class="align-middle">
-                          <div class="field is-small">
-                            <div class="control">                          
-                              <input class="input is-primary is-small" type="text" readonly field="supplierreference" name="variations[<%=rowcount%>][supplierreference]" value="<%= pv.supplierreference %>" placeholder="Referencia Proveedor"/>
-                            </div>
-                          </div>
-                        </td>
-                        <td scope="row" class="align-middle">
-                          <div class="field is-small">
-                            <div class="control">                          
-                              <input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations[<%=rowcount%>][ean13]" value="<%=pv.ean13%>" placeholder="EAN13"/>
-                            </div>
-                          </div>
-                        </td>
-                        <td scope="row" class="align-middle">
-                          <div class="field is-small">
-                            <div class="control">                          
-                              <input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations[<%=rowcount%>][upc]" value="<%=pv.upc%>" placeholder="UPC"/>
-                            </div>
-                          </div>
-                        </td>
-                        <td scope="row" class="align-middle">
-                          <div class="field">
-                            <div class="control has-icons-left">                          
-                              <input class="input is-primary is-small has-text-right prices" required type="number" field="price" name="variations[<%=rowcount%>][price]" value="<%=pv.price.toFixed(2)%>" placeholder="Precio"/>
-                              <span class="icon is-small is-left">
-                                <i class="bx bx-dollar"></i>
-                              </span>
-                            </div>
-                          </div>
-                        </td>
-                        <td scope="row" class="align-middle">
-                          <div class="field is-small">
-                            <div class="control">                          
-                              <input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations[<%=rowcount%>][quantity]" value="<%=pv.quantity%>" placeholder="Cantidad"/>
-                            </div>
-                          </div>
-                        </td>
-                        <td scope="row" class="align-middle"></td>
-                      </tr>
-                      <% rowcount++%>
-                    <%})%>
-                  <%}%>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td scope="row" class="align-middle">
+                  <div class="field is-small">
+                    <div class="control">
+                      <input class="input is-primary is-small" type="text" field="reference"
+                        name="variations[<%=rowcount%>][reference]" value="<%= pv.reference %>"
+                        placeholder="Referencia" />
+                    </div>
+                  </div>
+                </td>
+                <td scope="row" class="align-middle">
+                  <div class="field is-small">
+                    <div class="control">
+                      <input class="input is-primary is-small" type="text" readonly field="supplierreference"
+                        name="variations[<%=rowcount%>][supplierreference]" value="<%= pv.supplierreference %>"
+                        placeholder="Referencia Proveedor" />
+                    </div>
+                  </div>
+                </td>
+                <td scope="row" class="align-middle">
+                  <div class="field is-small">
+                    <div class="control">
+                      <input class="input is-primary is-small has-text-right" type="number" min="1111111111111"
+                        max="9999999999999" field="ean13" name="variations[<%=rowcount%>][ean13]" value="<%=pv.ean13%>"
+                        placeholder="EAN13" />
+                    </div>
+                  </div>
+                </td>
+                <td scope="row" class="align-middle">
+                  <div class="field is-small">
+                    <div class="control">
+                      <input class="input is-primary is-small has-text-right" type="number" min="111111111111"
+                        max="999999999999" field="upc" name="variations[<%=rowcount%>][upc]" value="<%=pv.upc%>"
+                        placeholder="UPC" />
+                    </div>
+                  </div>
+                </td>
+                <td scope="row" class="align-middle">
+                  <div class="field">
+                    <div class="control has-icons-left">
+                      <input class="input is-primary is-small has-text-right prices" required type="number"
+                        field="price" name="variations[<%=rowcount%>][price]" value="<%=pv.price.toFixed(2)%>"
+                        placeholder="Precio" />
+                      <span class="icon is-small is-left">
+                        <i class="bx bx-dollar"></i>
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td scope="row" class="align-middle">
+                  <div class="field is-small">
+                    <div class="control">
+                      <input class="input is-primary is-small has-text-right" type="number" field="quantity"
+                        name="variations[<%=rowcount%>][quantity]" value="<%=pv.quantity%>" placeholder="Cantidad" />
+                    </div>
+                  </div>
+                </td>
+                <td scope="row" class="align-middle"></td>
+              </tr>
+              <% rowcount++%>
+              <%})%>
+              <%}%>
                 </tbody>
                 <tfoot>
                   <tr>
@@ -436,18 +471,18 @@
           </div>
       <script>
 
-      const variations = document.getElementById('variations-table');
+        const variations = document.getElementById('variations-table');
 
-      live('button','click',e=>{e.preventDefault()});
-      live('#add-row','click',function(e){
-        e.preventDefault();
-        let rowid = variations.tBodies[0].rows.length;
-        let pricep = document.querySelector('input[name="price_wt"]').value;
-        let referencep = document.querySelector('input[name="reference"]').value;
-        
-        let newrow=[
-          `<td scope="row" class="align-middle"><div class="dropdown is-small is-fullwidth is-hoverable">
-              <input type="hidden" field="variation" name="variations[`+rowid+`][variation]" value="0" />
+        live('button', 'click', e => { e.preventDefault() });
+        live('#add-row', 'click', function (e) {
+          e.preventDefault();
+          let rowid = variations.tBodies[0].rows.length;
+          let pricep = document.querySelector('input[name="price_wt"]').value;
+          let referencep = document.querySelector('input[name="reference"]').value;
+
+          let newrow = [
+            `<td scope="row" class="align-middle"><div class="dropdown is-small is-fullwidth is-hoverable">
+              <input type="hidden" field="variation" name="variations[`+ rowid + `][variation]" value="0" />
               <div class="dropdown-trigger">
                   <button style="border:solid 1px #00d1b2;" class="button is-small" aria-haspopup="true" aria-controls="dropdown-menu">
                       <span id="drop-selected" class="is-uppercase is-size-7" value="0" >-- Elegir Variación --</span>
@@ -462,142 +497,146 @@
               </div>
             </div>
           </td>`,
-          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="reference" name="variations['+rowid+'][reference]" value="" placeholder="Referencia"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
+            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="reference" name="variations[' + rowid + '][reference]" value="" placeholder="Referencia"/></div></div></td>',
+            '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations[' + rowid + '][supplierreference]" <% if(action=='edit'){ %>
+              value = "<%= product.reference %>"
+            <%}else {%> value="'+referencep+'" <%}%> placeholder="Referencia Proveedor" /></div ></div ></td > ',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations[' + rowid + '][ean13]" value="" placeholder="EAN13"/></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations[' + rowid + '][upc]" value="" placeholder="UPC"/></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations[' + rowid + '][price]" <% if(action=='edit'){ %>
+              value = "<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %>
+        value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio" /> <span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div ></div ></td > ',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations[' + rowid + '][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
           '<td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>'
         ];
         let row = variations.tBodies[0].insertRow(variations.tBodies[0].rows.length);
-        newrow.forEach((cell, index)=>{
-          row.insertCell(index).innerHTML=cell;
+        newrow.forEach((cell, index) => {
+          row.insertCell(index).innerHTML = cell;
         });
         //addfocus();
       });
 
-        live('.delete-row','click',function(e){
+        live('.delete-row', 'click', function (e) {
           e.preventDefault();
           let elm = this;
-          let row = elm.parentNode.parentNode;          
+          let row = elm.parentNode.parentNode;
           variations.deleteRow(row.rowIndex);
           let productvariation = row.getAttribute('productv');
-          if(productvariation>0){
-            io.socket.delete('/variations/remove/'+productvariation);
+          if (productvariation > 0) {
+            io.socket.delete('/variations/remove/' + productvariation);
           }
         });
 
-        live('.dropdown, .button, .button > span','click', e=>{
+        live('.dropdown, .button, .button > span', 'click', e => {
           e.preventDefault();
           let elm = e.target;
           let parent = elm.closest('.dropdown');
           elm = parent;
-          if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
-            removeClass(parent.querySelector('.dropdown-menu'),'is-invisible');
+          if (hasClass(parent.querySelector('.dropdown-menu'), 'is-invisible')) {
+            removeClass(parent.querySelector('.dropdown-menu'), 'is-invisible');
           }
           let node = elm.parentNode.parentNode;
           let id = document.querySelector('#product-data').value;
           let oplist = document.querySelectorAll('.dropdown input');
           let opcheck = [];
-          for(let ol of oplist){
-            if(!opcheck.includes(ol.value)){
+          for (let ol of oplist) {
+            if (!opcheck.includes(ol.value)) {
               opcheck.push(ol.value);
             }
           }
-          if(!hasClass(node,'is-active')){
-              let content = elm.parentNode.parentNode.querySelector('.dropdown-content');
-              let svalue = elm.parentNode.parentNode.querySelector('input');
-              if(content.children.length<1){
-                  io.socket.get('/findvariations/'+id,resData=>{
-                      let o = document.createElement('a');
-                      addClass(o,'dropdown-item');
-                      addClass(o,'is-uppercase');
-                      addClass(o,'is-size-7');
-                      o.setAttribute('value','0');
-                      o.text='-- Elegir Variación --';
-                      content.prepend(o);
-                      resData.forEach(op =>{
-                        if(!opcheck.includes(op.id)){
-                          o = document.createElement('a');
-                          addClass(o,'dropdown-item');
-                          addClass(o,'is-uppercase');
-                          addClass(o,'is-size-7');
-                          o.setAttribute('value',op.id);
-                          o.text=op.name;
-                          content.appendChild(o)
-                          }
-                      });
-                  });
-              }
-              addClass(node,'is-active');
-          }else{
-              removeClass(node,'is-active');
+          if (!hasClass(node, 'is-active')) {
+            let content = elm.parentNode.parentNode.querySelector('.dropdown-content');
+            let svalue = elm.parentNode.parentNode.querySelector('input');
+            if (content.children.length < 1) {
+              io.socket.get('/findvariations/' + id, resData => {
+                let o = document.createElement('a');
+                addClass(o, 'dropdown-item');
+                addClass(o, 'is-uppercase');
+                addClass(o, 'is-size-7');
+                o.setAttribute('value', '0');
+                o.text = '-- Elegir Variación --';
+                content.prepend(o);
+                resData.forEach(op => {
+                  if (!opcheck.includes(op.id)) {
+                    o = document.createElement('a');
+                    addClass(o, 'dropdown-item');
+                    addClass(o, 'is-uppercase');
+                    addClass(o, 'is-size-7');
+                    o.setAttribute('value', op.id);
+                    o.text = op.name;
+                    content.appendChild(o)
+                  }
+                });
+              });
+            }
+            addClass(node, 'is-active');
+          } else {
+            removeClass(node, 'is-active');
           }
-    });
-    live('.dropdown-item','click',e=>{
-        let option = e.target
-        let elm = e.target.parentNode.parentNode.parentNode;
-        let selected = elm.querySelector('#drop-selected');
-        let variation = elm.querySelector('input');
-        variation.value=option.getAttribute('value');
-        selected.setAttribute('value',option.getAttribute('value'))
-        selected.innerHTML=option.text;
-        addClass(e.target.parentNode.parentNode,'is-invisible');
-    });
-
-        live('.dropdown-content','mouseout',e=>{
-          let node = e.target.parentNode.parentNode;
-          removeClass(node,'is-active');
         });
-        live('#save-variations','click',(e)=>{
+        live('.dropdown-item', 'click', e => {
+          let option = e.target
+          let elm = e.target.parentNode.parentNode.parentNode;
+          let selected = elm.querySelector('#drop-selected');
+          let variation = elm.querySelector('input');
+          variation.value = option.getAttribute('value');
+          selected.setAttribute('value', option.getAttribute('value'))
+          selected.innerHTML = option.text;
+          addClass(e.target.parentNode.parentNode, 'is-invisible');
+        });
+
+        live('.dropdown-content', 'mouseout', e => {
+          let node = e.target.parentNode.parentNode;
+          removeClass(node, 'is-active');
+        });
+        live('#save-variations', 'click', (e) => {
           e.preventDefault();
-          if(validateForm(document.getElementById('variations-form'))){
+          if (validateForm(document.getElementById('variations-form'))) {
             let id = document.querySelector('#product-data').value;
             let table = document.getElementById('variations-table');
             request = new XMLHttpRequest();
             let data = new FormData();
             let rowdata = [];
-            for(let i=0;i<table.tBodies[0].rows.length;i++){
+            for (let i = 0; i < table.tBodies[0].rows.length; i++) {
               let celldata = {};
               let field = null;
               let value = null;
 
-                celldata['product'] = id;
-                productvariation = table.tBodies[0].rows[i].getAttribute('productv') ? table.tBodies[0].rows[i].getAttribute('productv') : 0;
-                celldata['productvariation'] = productvariation;
-                for(let j=0;j<table.tBodies[0].rows[i].cells.length-1;j++){
-                    field = table.tBodies[0].rows[i].cells[j].querySelector('input');
-                    value = field.value;
-                    if(field.getAttribute('type')=='number') {
-                      if(value===null || value===''){
-                        value=0;
-                      }else{
-                        value=parseFloat(value);
-                      }
-                    }
-                  
-                  let attr =field.getAttribute('field'); 
-                  celldata[attr] = value;
-                };
-                data.append(i,JSON.stringify(celldata));
+              celldata['product'] = id;
+              productvariation = table.tBodies[0].rows[i].getAttribute('productv') ? table.tBodies[0].rows[i].getAttribute('productv') : 0;
+              celldata['productvariation'] = productvariation;
+              for (let j = 0; j < table.tBodies[0].rows[i].cells.length - 1; j++) {
+                field = table.tBodies[0].rows[i].cells[j].querySelector('input');
+                value = field.value;
+                if (field.getAttribute('type') == 'number') {
+                  if (value === null || value === '') {
+                    value = 0;
+                  } else {
+                    value = parseFloat(value);
+                  }
+                }
+
+                let attr = field.getAttribute('field');
+                celldata[attr] = value;
+              };
+              data.append(i, JSON.stringify(celldata));
             }
             request.addEventListener('load', () => {
-              window.location.href='/products';
+              window.location.href = '/products';
             });
-            request.open('POST','/products/variations/'+id);
+            request.open('POST', '/products/variations/' + id);
             request.send(data);
           }
         });
 
-        live('select.variations','change',e =>{
+        live('select.variations', 'change', e => {
           let newval = e.target.value;
           let all = document.querySelectorAll('select.variations');
-          for(let s of all){
-            if(s!==e.target){
-              if(s.value==newval){
+          for (let s of all) {
+            if (s !== e.target) {
+              if (s.value == newval) {
                 alert('Este Valor ya ha sido Seleccionado');
-                e.target.value=valuebefore;
+                e.target.value = valuebefore;
               }
             }
           }
@@ -660,17 +699,17 @@
                   </thead>
                   <tbody>
                   <%if(product!==undefined && product.discount.length>0){%>
-                    <% product.discount.forEach(discount =>{ %>
-                      <tr>
-                        <td><%=discount.name%></td>
-                        <td><% if(discount.type==='P'){%>%&nbsp;<%}else{%>$&nbsp;<%}%></td>
+              <% product.discount.forEach(discount =>{ %>
+              <tr>
+                <td><%=discount.name%></td>
+                <td><% if(discount.type==='P'){%>%&nbsp;<%}else{%>$&nbsp;<%}%></td>
                         <td><%=discount.value%></td>
-                        <td><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss');%></td>
-                        <td><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss');%> </td>
-                        <td><a did="<%=discount.id%>" class="delete-discount"><i class="bx bx-trash"></i></a></td>
-                      </tr>
-                    <%})%>
-                  <%}%>
+                <td><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss');%></td>
+                <td><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss');%> </td>
+                <td><a did="<%=discount.id%>" class="delete-discount"><i class="bx bx-trash"></i></a></td>
+              </tr>
+              <%})%>
+              <%}%>
                 </tbody>
                 </table>
             </div>
@@ -680,78 +719,78 @@
       <script>
         // Initialize all input of date type.
         const calendars = bulmaCalendar.attach('[type="date"]', {
-            type:'datetime',
-            isRange: true,
-            allowSameDayRange: true,
-            dateFormat:'YYYY-MM-DD',
-            timeFormat:'HH:mm:ss',
-            displayMode:'dialog',
-            cancelLabel:'Cancelar',
-            clearLabel:'Limpiar',
-            todayLabel:'Hoy',
-            nowLabel:'Ahora',
-            validateLabel:'Seleccionar',
-            minDate: new Date()
+          type: 'datetime',
+          isRange: true,
+          allowSameDayRange: true,
+          dateFormat: 'YYYY-MM-DD',
+          timeFormat: 'HH:mm:ss',
+          displayMode: 'dialog',
+          cancelLabel: 'Cancelar',
+          clearLabel: 'Limpiar',
+          todayLabel: 'Hoy',
+          nowLabel: 'Ahora',
+          validateLabel: 'Seleccionar',
+          minDate: new Date()
         });
 
         // Loop on each calendar initialized
         calendars.forEach(calendar => {
-            // Add listener to date:selected event
-            calendar.on('date:selected', date => {
-                console.log(date);
-            });
+          // Add listener to date:selected event
+          calendar.on('date:selected', date => {
+            console.log(date);
+          });
         });
 
         // To access to bulmaCalendar instance of an element
         const element = document.querySelector('#my-element');
         if (element) {
-            // bulmaCalendar instance is available as element.bulmaCalendar
-            element.bulmaCalendar.on('select', datepicker => {
-                console.log(datepicker.data.value());
-            });
+          // bulmaCalendar instance is available as element.bulmaCalendar
+          element.bulmaCalendar.on('select', datepicker => {
+            console.log(datepicker.data.value());
+          });
         }
-        
-        live('#add-discount','click', e =>{
+
+        live('#add-discount', 'click', e => {
           let p = document.querySelector('#product-data').value;
           let range = document.querySelector('input[name="range"]').value;
-          let type= document.querySelector('select[name="type"]').value;
+          let type = document.querySelector('select[name="type"]').value;
           let dvalue = document.querySelector('input[name="value"]').value
           let table = document.getElementById('discount-container').querySelector('.table')
-          if(range!=='' && type!=='' && dvalue!==''){
-            io.socket.post('/productdiscount',{product:p, range:range,type:type,value:dvalue},resData =>{
+          if (range !== '' && type !== '' && dvalue !== '') {
+            io.socket.post('/productdiscount', { product: p, range: range, type: type, value: dvalue }, resData => {
               let sign = '';
-              if(resData.type=='P'){sign ='% ';}else{sign ='$ ';}
-              let newrow=[
-                '<td>'+resData.name+'</td>',
-                '<td>'+sign+'</td>',
-                '<td>'+resData.value+'</td>',
-                '<td>'+moment(resData.from).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
-                '<td>'+moment(resData.to).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
-                '<td><a did="'+resData.id+'" class="delete-discount"><i class="bx bx-trash"></i></a></td>'
+              if (resData.type == 'P') { sign = '% '; } else { sign = '$ '; }
+              let newrow = [
+                '<td>' + resData.name + '</td>',
+                '<td>' + sign + '</td>',
+                '<td>' + resData.value + '</td>',
+                '<td>' + moment(resData.from).locale('es').format('DD MMMM YYYY HH:mm:ss') + '</td>',
+                '<td>' + moment(resData.to).locale('es').format('DD MMMM YYYY HH:mm:ss') + '</td>',
+                '<td><a did="' + resData.id + '" class="delete-discount"><i class="bx bx-trash"></i></a></td>'
               ];
               let row = table.getElementsByTagName('tbody')[0].insertRow(-1);
-              newrow.forEach((cell, index)=>{
-                row.insertCell(index).innerHTML=cell;
+              newrow.forEach((cell, index) => {
+                row.insertCell(index).innerHTML = cell;
               });
-              
+
             });
-          }else{
+          } else {
             alert('Todos los campos son requeridos');
           }
         });
 
-        live('.delete-discount','click', e =>{
+        live('.delete-discount', 'click', e => {
           e.preventDefault();
           let elm = e.target;
-          if(e.target.tagName=='I'){
+          if (e.target.tagName == 'I') {
             elm = e.target.parentNode;
           }
           let id = elm.getAttribute('did');
           let p = document.querySelector('#product-data').value;
-          io.socket.put('/removepdiscount',{product:p,discount:id},resData =>{
-            if(resData=='ok'){
+          io.socket.put('/removepdiscount', { product: p, discount: id }, resData => {
+            if (resData == 'ok') {
               let row = elm.parentNode.parentNode;
-              let table = document.getElementById('discount-container').querySelector('.table')          
+              let table = document.getElementById('discount-container').querySelector('.table')
               table.deleteRow(row.rowIndex);
             }
           });
@@ -771,13 +810,13 @@
           </thead>
           <tbody>
             <%if(product!==undefined){%>
-            <% sellers.forEach(function(seller){ %>
+              <% sellers.forEach(function(seller){ %>
               <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'dafiti') ){ %>
-                <tr>
-                  <td><img src="/images/dafiti.png" width="100px"/></td>
-                  <td>
-                    <div class="select is-small">
-                      <select name="dafitiprice">
+              <tr>
+                <td><img src="/images/dafiti.png" width="100px" /></td>
+                <td>
+                  <div class="select is-small">
+                    <select name="dafitiprice">
                       <option value="0" <%if(typeof product=='object' &&  product.dafitiprice==0){%>selected<%}%>>+ 0%</option>
                         <option value="0.05" <%if(typeof product=='object' && product.dafitiprice==0.05){%>selected<%}%>>+ 5%</option>
                         <option value="0.1" <%if(typeof product=='object' && product.dafitiprice==0.1){%>selected<%}%>>+ 10%</option>
@@ -793,12 +832,12 @@
                     <label for="dafiti"></label>
                   </td>
                 </tr>
-              <% } %>
-              <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'mercadolibre') ){ %>
-                <tr>
-                  <td>
-                    <img src="/images/mercadolibre.png" width="100px"/>
-                    <input type="hidden" name="mlid" <%if(typeof product=='object' && product.mlid){%>value="<%=product.mlid%>"<%}%> />
+              <% } %> <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'mercadolibre') ){ %>
+                        <tr>
+                <td>
+                  <img src="/images/mercadolibre.png" width="100px" />
+                  <input type="hidden" name="mlid"
+                    <%if(typeof product=='object' && product.mlid){%>value="<%=product.mlid%>" <%}%> />
                   </td>
                   <td>
                     <div class="select is-small">
@@ -819,13 +858,13 @@
                   </td>
                 </tr>
               <% } %>
-              <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'linio') ){ %>
-                <tr>
-                  <td><img src="/images/linio.png" width="100px"/></td>
-                  <td>
-                    <div class="select is-small">
-                      <select name="pricelinio">
-                        <option value="0" <%if(typeof product=='object' &&  product.linioprice==0){%>selected<%}%>>+ 0%</option>
+                    <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'linio') ){ %>
+                    <tr>
+                <td><img src="/images/linio.png" width="100px" /></td>
+                <td>
+                  <div class="select is-small">
+                    <select name="pricelinio">
+                      <option value="0" <%if(typeof product=='object' &&  product.linioprice==0){%>selected<%}%>>+ 0%</option>
                         <option value="0.05" <%if(typeof product=='object' &&  product.linioprice==0.05){%>selected<%}%>>+ 5%</option>
                         <option value="0.1" <%if(typeof product=='object' &&  product.linioprice==0.1){%>selected<%}%>>+ 10%</option>
                         <option value="0.15" <%if(typeof product=='object' &&  product.linioprice==0.15){%>selected<%}%>>+ 15%</option>
@@ -840,287 +879,280 @@
                     <label for="linio"></label>
                   </td>
                 </tr>
-              <% } %>              
-            <%})%>
-            <%}%>
+              <% } %> <%})%> <%}%>
           </tbody>
         </table>
       </div>
     </div>
     <script>
-    
-      live('#dafiti','click',e=>{
+
+      live('#dafiti', 'click', e => {
         let p = document.querySelector('#product-data').value;
         let dafitiprice = document.querySelector('select[name="dafitiprice"]').value;
         //if(e.target.checked){
-          io.socket.post('/dafiti/add',{product:p, dafitiprice:dafitiprice, status:e.target.checked});
+        io.socket.post('/dafiti/add', { product: p, dafitiprice: dafitiprice, status: e.target.checked });
         //}
       });
 
-      live('#mercadolibre','click',e=>{
+      live('#mercadolibre', 'click', e => {
         let p = document.querySelector('#product-data').value;
         let pricemercadolibre = document.querySelector('select[name="pricemercadolibre"]').value;
         //if(e.target.checked){
-          io.socket.post('/mercadolibre/add',{product:p, pricemercadolibre:pricemercadolibre, status:e.target.checked});
+        io.socket.post('/mercadolibre/add', { product: p, pricemercadolibre: pricemercadolibre, status: e.target.checked });
         //}
       });
 
-      live('#linio','click',e=>{
+      live('#linio', 'click', e => {
         let p = document.querySelector('#product-data').value;
         let pricelinio = document.querySelector('select[name="pricelinio"]').value;
         //if(e.target.checked){
-          io.socket.post('/linio/add',{product: p, pricelinio: pricelinio, status: e.target.checked});
+        io.socket.post('/linio/add', { product: p, pricelinio: pricelinio, status: e.target.checked });
         //}
       });
 
-    const pricent = document.querySelector('input[name="price_nt"]');
-    const pricewt = document.querySelector('input[name="price_wt"]');
-    const taxl = document.querySelector('#tax');
-    pricent.onkeyup = price;
-    pricewt.onkeyup = price;
-    taxl.onchange = price;
-    
-    function price(e){
-      let tax = document.querySelector('#tax');
-      let range = tax.options[tax.selectedIndex].getAttribute('tax');
-      let name = this.getAttribute('name');
-      let target = this;
-      switch(name){
-        case 'tax':
-          target = pricewt;
-          target.value=(pricent.value*(1+(range/100))).toFixed(2);
-          break;
-        case 'price_nt':
-          target = pricewt;
-          target.value=(pricent.value*(1+(range/100))).toFixed(2);
-          break;
-        case 'price_wt':
-          target = pricent;
-          target.value=(pricewt.value/(1+(range/100))).toFixed(2);
-          break;
+      const pricent = document.querySelector('input[name="price_nt"]');
+      const pricewt = document.querySelector('input[name="price_wt"]');
+      const taxl = document.querySelector('#tax');
+      pricent.onkeyup = price;
+      pricewt.onkeyup = price;
+      taxl.onchange = price;
+
+      function price(e) {
+        let tax = document.querySelector('#tax');
+        let range = tax.options[tax.selectedIndex].getAttribute('tax');
+        let name = this.getAttribute('name');
+        let target = this;
+        switch (name) {
+          case 'tax':
+            target = pricewt;
+            target.value = (pricent.value * (1 + (range / 100))).toFixed(2);
+            break;
+          case 'price_nt':
+            target = pricewt;
+            target.value = (pricent.value * (1 + (range / 100))).toFixed(2);
+            break;
+          case 'price_wt':
+            target = pricent;
+            target.value = (pricewt.value / (1 + (range / 100))).toFixed(2);
+            break;
+        }
       }
-    }
-  
-    
-  
-    live('#activo','click',function(){
-      let elm = this;
-      let state = elm.checked;
-      var sp = document.querySelector('#state');
-      if(state){
-        sp.innerHTML='<b style="color:green;">activado</b>';
-      }else{
-        sp.innerHTML='<b style="color:red;">inactivo</b>';
-      }
-    });
-  
-    let catlist =[
-    <%if(action=='edit'){%>
-      <%product.categories.forEach(cat =>{%>
-        "<%=cat.id%>",
-      <%})%>
-    <%}%>
+
+
+
+      live('#activo', 'click', function () {
+        let elm = this;
+        let state = elm.checked;
+        var sp = document.querySelector('#state');
+        if (state) {
+          sp.innerHTML = '<b style="color:green;">activado</b>';
+        } else {
+          sp.innerHTML = '<b style="color:red;">inactivo</b>';
+        }
+      });
+
+      let catlist = [
+    <%if (action == 'edit') {%> <% product.categories.forEach(cat => {%> "<%=cat.id%>", <%}) %> <%}%>
     ];
 
-    let childTree = (elm) => {
-      elm.forEach((child) =>{
-        if(!hasClass(child,'visited')){
-          io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
+      let childTree = (elm) => {
+        elm.forEach((child) => {
+          if (!hasClass(child, 'visited')) {
+            io.socket.get('/categories/' + child.getAttribute('category'), function (resData) {
               var d = document.createElement('ul');
-              resData.forEach(function(son){
+              resData.forEach(function (son) {
                 let ca = document.createElement('li');
-                ca.style.paddingLeft = 5*son.level+'px';
-                if(son.id==document.querySelector('#root').value){
-                  ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                ca.style.paddingLeft = 5 * son.level + 'px';
+                if (son.id == document.querySelector('#root').value) {
+                  ca.innerHTML = '<a class="panel-block is-active" category="' + son.id + '" level="' + son.level + '"><input type="checkbox" name="categories[]" value="' + son.id + '" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">' + son.name + '</span></a>';
                 } else {
-                  if(catlist.includes(son.id)){
-                    ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
-                  }else{
-                    ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                  if (catlist.includes(son.id)) {
+                    ca.innerHTML = '<a class="panel-block is-active" category="' + son.id + '" level="' + son.level + '"><input type="checkbox" name="categories[]" value="' + son.id + '" checked />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">' + son.name + '</span></a>';
+                  } else {
+                    ca.innerHTML = '<a class="panel-block is-active" category="' + son.id + '" level="' + son.level + '"><input type="checkbox" name="categories[]" value="' + son.id + '" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">' + son.name + '</span></a>';
                   }
                 }
                 d.appendChild(ca);
               });
-              insertAfter(d,child);
-              addClass(child,'visited');
+              insertAfter(d, child);
+              addClass(child, 'visited');
               childTree(d.querySelectorAll('a.panel-block'));
-          });
-        }
-      })
-    };
-  
-    childTree(document.querySelectorAll('a.panel-block'));
-    
-
-    const descriptionshort = SUNEDITOR.create(document.querySelector('#descriptionshort'),{
-        showPathLabel : false,
-        charCounter : true,
-        maxCharCount : 4000,
-        width : 'auto',
-        maxWidth : '700px',
-        height : 'auto',
-        minHeight : '100px',
-        maxHeight: '250px',
-        buttonList : [
-          ['undo', 'redo', 'font', 'fontSize', 'formatBlock'],
-          ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'removeFormat'],
-          ['fontColor', 'hiliteColor', 'outdent', 'indent', 'align', 'horizontalRule', 'list', 'table'],
-          ['link', 'image', 'video', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print']
-        ]
-      });
-  
-    const description = SUNEDITOR.create(document.querySelector('#description'),{
-        showPathLabel : false,
-        charCounter : true,
-        maxCharCount : 10000,
-        width : 'auto',
-        maxWidth : '700px',
-        height : 'auto',
-        minHeight : '100px',
-        maxHeight: '250px',
-        buttonList : [
-          ['undo', 'redo', 'font', 'fontSize', 'formatBlock'],
-          ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'removeFormat'],
-          ['fontColor', 'hiliteColor', 'outdent', 'indent', 'align', 'horizontalRule', 'list', 'table'],
-          ['link', 'image', 'video', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print']
-        ]
-      });
-  
-    live('input[name="categories[]"]','click',function(){
-      let cat = this;
-      let catname = cat.parentElement.querySelector('.cat_name');
-      let select = document.querySelector('#mainCategory');
-      if (cat.checked){
-        let op = document.createElement('option');
-        op.value=cat.value;
-        op.innerHTML=catname.innerHTML;
-        op.setAttribute('level',cat.parentNode.getAttribute('level'));
-        select.appendChild(op);
-      }else{
-        let op = select.querySelector('option[value="'+cat.value+'"]');
-        select.removeChild(op);
-      }
-      let lowest = select.options[0];
-      for(let o=0; o<select.options.length; o++){
-        if(parseInt(lowest.getAttribute('level'))<=parseInt(select.options[o].getAttribute('level'))){
-          lowest = select.options[o];
-        }
-      }
-      for(let s=0; s<select.options.length; s++){
-        if(select.options[s].value==lowest.value){
-          select.options[s].selected=true;
-        }
-      }
-    });
-  
-    live('#save-product','click',function(e){
-      e.preventDefault();
-      
-      let textdescriptionshort = descriptionshort.getContents();
-      let textdescription = description.getContents();
-  
-      document.querySelector('#descriptionshort').innerHTML = textdescriptionshort;
-      document.querySelector('#description').innerHTML = textdescription; 
-  
-      let form = document.querySelector('#form-basics');
-      let validate = validateForm(form);
-      let categories = validateCategories(document.getElementsByName('categories[]'));
-      let lcat = CategoriesJSON(document.getElementsByName('categories[]'));
-      document.querySelector('#suneditor_descriptionshort .se-wrapper-wysiwyg').innerHTML=textdescriptionshort;
-      document.querySelector('#suneditor_description .se-wrapper-wysiwyg').innerHTML = textdescription;
-      
-      if(validate && categories){
-        io.socket.post(form.action, 
-        {
-          active:form.querySelector('input[name="activo"]').checked,
-          name:form.querySelector('input[name="name"]').value,
-          reference:form.querySelector('input[name="reference"]').value,
-          manufacturer:form.querySelector('select[name="manufacturer"]').value,
-          mainColor:form.querySelector('select[name="mainColor"]').value,
-          seller:form.querySelector('select[name="seller"]').value,
-          mainCategory:form.querySelector('select[name="mainCategory"]').value,
-          gender:form.querySelector('select[name="gender"]').value,
-          categories:lcat,
-          price:form.querySelector('input[name="price_nt"]').value,
-          tax:form.querySelector('select[name="tax"]').value,
-          width:form.querySelector('input[name="width"]').value,
-          height:form.querySelector('input[name="height"]').value,
-          length:form.querySelector('input[name="length"]').value,
-          weight:form.querySelector('input[name="weight"]').value,
-          descriptionshort:textdescriptionshort,
-          description:textdescription
-        }, 
-        function (resData, jwRes) {
-          if(jwRes.statusCode==200){
-            let productdata = document.querySelector('#product-data');
-            let pricep = document.querySelector('input[name="price_wt"]');
-            let referencep = document.querySelector('input[name="reference"]');
-            productdata.value=resData.id;
-
-            let prices = document.querySelectorAll('.prices');
-            for(let v in prices){
-              prices[v].value=parseFloat(resData.priceWt).toFixed(2);
-            }
-            let productabs = document.querySelectorAll('.product-tab ul li');
-            productabs.forEach((li)=>{
-              let option = li.querySelector('a').getAttribute('option');
-              removeClass(li,'is-active');
-              removeClass(li,'is-hidden');
-              addClass(document.querySelector('#'+option),'is-hidden');
-              if(option=='images'){
-                  addClass(li,'is-active');
-                  removeClass(document.querySelector('#'+option),'is-hidden');
-              }
             });
-          };
-        });
-      }
-    });
-  
-    live('.tabs ul li','click',(e)=>{
-      e = e || window.event;
-      let element = e.target || e.srcElement;
-      let option = element.getAttribute('option');
-      let list = element.parentNode.parentNode.querySelectorAll('li');
-      list.forEach((li)=>{
-        if(hasClass(li,'is-active')){
-          addClass(document.querySelector('#'+li.querySelector('a').getAttribute('option')),'is-hidden');
-        }
-        removeClass(li,'is-active');
+          }
+        })
+      };
+
+      childTree(document.querySelectorAll('a.panel-block'));
+
+
+      const descriptionshort = SUNEDITOR.create(document.querySelector('#descriptionshort'), {
+        showPathLabel: false,
+        charCounter: true,
+        maxCharCount: 4000,
+        width: 'auto',
+        maxWidth: '700px',
+        height: 'auto',
+        minHeight: '100px',
+        maxHeight: '250px',
+        buttonList: [
+          ['undo', 'redo', 'font', 'fontSize', 'formatBlock'],
+          ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'removeFormat'],
+          ['fontColor', 'hiliteColor', 'outdent', 'indent', 'align', 'horizontalRule', 'list', 'table'],
+          ['link', 'image', 'video', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print']
+        ]
       });
-      removeClass(document.querySelector('#'+option),'is-hidden');
-      addClass(element.parentNode,'is-active');
-    });
-  
-  </script>
-<% }else{ %>
-  <p style="text-align: right;font-size: 20px; margin-right: 5px;">
-    <a href="/products/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
-    <a href="/import" class="has-text-primary"><i class='bx bx-cloud-upload'></i></a>
-    <a href="/multiple" class="has-text-primary"><i class='bx bx-meteor'></i></a>
-  </p>
-  <div class="table-container">
-      <table class="table is-hoverable is-size-7" id="products-table">
-          <thead>
-          <tr>
-              <!--<th scope="col">Portada</th>-->
-              <th scope="col">Nombre</th>
-              <th scope="col">SKU</th>
-              <th scope="col">Marca</th>
-              <th scope="col">Precio</th>
-              <th scope="col">Color</th>
-              <th scope="col">Activo</th>
-              <th scope="col">Opciones</th>
-              <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-              <th scope="col">Seller</th>
-              <%}%>
+
+      const description = SUNEDITOR.create(document.querySelector('#description'), {
+        showPathLabel: false,
+        charCounter: true,
+        maxCharCount: 10000,
+        width: 'auto',
+        maxWidth: '700px',
+        height: 'auto',
+        minHeight: '100px',
+        maxHeight: '250px',
+        buttonList: [
+          ['undo', 'redo', 'font', 'fontSize', 'formatBlock'],
+          ['bold', 'underline', 'italic', 'strike', 'subscript', 'superscript', 'removeFormat'],
+          ['fontColor', 'hiliteColor', 'outdent', 'indent', 'align', 'horizontalRule', 'list', 'table'],
+          ['link', 'image', 'video', 'fullScreen', 'showBlocks', 'codeView', 'preview', 'print']
+        ]
+      });
+
+      live('input[name="categories[]"]', 'click', function () {
+        let cat = this;
+        let catname = cat.parentElement.querySelector('.cat_name');
+        let select = document.querySelector('#mainCategory');
+        if (cat.checked) {
+          let op = document.createElement('option');
+          op.value = cat.value;
+          op.innerHTML = catname.innerHTML;
+          op.setAttribute('level', cat.parentNode.getAttribute('level'));
+          select.appendChild(op);
+        } else {
+          let op = select.querySelector('option[value="' + cat.value + '"]');
+          select.removeChild(op);
+        }
+        let lowest = select.options[0];
+        for (let o = 0; o < select.options.length; o++) {
+          if (parseInt(lowest.getAttribute('level')) <= parseInt(select.options[o].getAttribute('level'))) {
+            lowest = select.options[o];
+          }
+        }
+        for (let s = 0; s < select.options.length; s++) {
+          if (select.options[s].value == lowest.value) {
+            select.options[s].selected = true;
+          }
+        }
+      });
+
+      live('#save-product', 'click', function (e) {
+        e.preventDefault();
+
+        let textdescriptionshort = descriptionshort.getContents();
+        let textdescription = description.getContents();
+
+        document.querySelector('#descriptionshort').innerHTML = textdescriptionshort;
+        document.querySelector('#description').innerHTML = textdescription;
+
+        let form = document.querySelector('#form-basics');
+        let validate = validateForm(form);
+        let categories = validateCategories(document.getElementsByName('categories[]'));
+        let lcat = CategoriesJSON(document.getElementsByName('categories[]'));
+        document.querySelector('#suneditor_descriptionshort .se-wrapper-wysiwyg').innerHTML = textdescriptionshort;
+        document.querySelector('#suneditor_description .se-wrapper-wysiwyg').innerHTML = textdescription;
+
+        if (validate && categories) {
+          io.socket.post(form.action,
+            {
+              active: form.querySelector('input[name="activo"]').checked,
+              name: form.querySelector('input[name="name"]').value,
+              reference: form.querySelector('input[name="reference"]').value,
+              manufacturer: form.querySelector('select[name="manufacturer"]').value,
+              mainColor: form.querySelector('select[name="mainColor"]').value,
+              seller: form.querySelector('select[name="seller"]').value,
+              mainCategory: form.querySelector('select[name="mainCategory"]').value,
+              gender: form.querySelector('select[name="gender"]').value,
+              categories: lcat,
+              price: form.querySelector('input[name="price_nt"]').value,
+              tax: form.querySelector('select[name="tax"]').value,
+              width: form.querySelector('input[name="width"]').value,
+              height: form.querySelector('input[name="height"]').value,
+              length: form.querySelector('input[name="length"]').value,
+              weight: form.querySelector('input[name="weight"]').value,
+              descriptionshort: textdescriptionshort,
+              description: textdescription
+            },
+            function (resData, jwRes) {
+              if (jwRes.statusCode == 200) {
+                let productdata = document.querySelector('#product-data');
+                let pricep = document.querySelector('input[name="price_wt"]');
+                let referencep = document.querySelector('input[name="reference"]');
+                productdata.value = resData.id;
+
+                let prices = document.querySelectorAll('.prices');
+                for (let v in prices) {
+                  prices[v].value = parseFloat(resData.priceWt).toFixed(2);
+                }
+                let productabs = document.querySelectorAll('.product-tab ul li');
+                productabs.forEach((li) => {
+                  let option = li.querySelector('a').getAttribute('option');
+                  removeClass(li, 'is-active');
+                  removeClass(li, 'is-hidden');
+                  addClass(document.querySelector('#' + option), 'is-hidden');
+                  if (option == 'images') {
+                    addClass(li, 'is-active');
+                    removeClass(document.querySelector('#' + option), 'is-hidden');
+                  }
+                });
+              };
+            });
+        }
+      });
+
+      live('.tabs ul li', 'click', (e) => {
+        e = e || window.event;
+        let element = e.target || e.srcElement;
+        let option = element.getAttribute('option');
+        let list = element.parentNode.parentNode.querySelectorAll('li');
+        list.forEach((li) => {
+          if (hasClass(li, 'is-active')) {
+            addClass(document.querySelector('#' + li.querySelector('a').getAttribute('option')), 'is-hidden');
+          }
+          removeClass(li, 'is-active');
+        });
+        removeClass(document.querySelector('#' + option), 'is-hidden');
+        addClass(element.parentNode, 'is-active');
+      });
+
+    </script>
+<% }else{ %> <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+                        <a href="/products/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+                        <a href="/import" class="has-text-primary"><i class='bx bx-cloud-upload'></i></a>
+                        <a href="/multiple" class="has-text-primary"><i class='bx bx-meteor'></i></a>
+                        </p>
+                        <div class="table-container">
+                          <table class="table is-hoverable is-size-7" id="products-table">
+                            <thead>
+                              <tr>
+                                <!--<th scope="col">Portada</th>-->
+                                <th scope="col">Nombre</th>
+                                <th scope="col">SKU</th>
+                                <th scope="col">Marca</th>
+                                <th scope="col">Precio</th>
+                                <th scope="col">Color</th>
+                                <th scope="col">Activo</th>
+                                <th scope="col">Opciones</th>
+                                <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                                <th scope="col">Seller</th>
+                                <%}%>
               <th scope="col">Publicaciones</th>
           </tr>
           </thead>
           <tbody>
               <% products.forEach(function(product){ %>
-                <tr>
-                    <!--<td scope="row" class="align-middle">
+                              <tr>
+                                <!--<td scope="row" class="align-middle">
                       <%# 
                       if(product.images.length>0){
                       product.images.forEach(function(image){
@@ -1131,37 +1163,43 @@
                       <%# }
                       })}#%>
                     </td>-->
-                    <td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="<%=product.id%>"><%= product.name %></a></td>
-                    <td class="align-middle"><%= product.reference %></td>
-                    <td class="align-middle is-capitalized"><%= (product.manufacturer ? product.manufacturer.name : '') %></td>
-                    <td class="align-middle">$ <%= parseInt(product.price*(1+(product.tax.value/100))).toLocaleString('es-CO') %></td>
-                    <td class="align-middle is-capitalized"><%= (product.mainColor ? product.mainColor.name : '') %></td>
-                    <td class="align-middle">
-                    <span class="action">
-                    <% if(product.active===true) { %>
-                        <i product="<%= product.id %>" class="state bx bx-check-circle is-size-5"></i>
-                    <% }else{ %>
-                        <i product="<%= product.id %>" class="state bx bx-x-circle is-size-5"></i>
-                    <%}%>
+                                <td class="align-middle is-uppercase"><a href="#" class="product-image"
+                                    data-product="<%=product.id%>"><%= product.name %></a></td>
+                                <td class="align-middle"><%= product.reference %></td>
+                                <td class="align-middle is-capitalized">
+                                  <%= (product.manufacturer ? product.manufacturer.name : '') %></td>
+                                <td class="align-middle">$
+                                  <%= parseInt(product.price*(1+(product.tax.value/100))).toLocaleString('es-CO') %>
+                                </td>
+                                <td class="align-middle is-capitalized">
+                                  <%= (product.mainColor ? product.mainColor.name : '') %></td>
+                                <td class="align-middle">
+                                  <span class="action">
+                                    <% if(product.active===true) { %>
+                                    <i product="<%= product.id %>" class="state bx bx-check-circle is-size-5"></i>
+                                    <% }else{ %>
+                                    <i product="<%= product.id %>" class="state bx bx-x-circle is-size-5"></i>
+                                    <%}%>
                     </span>
                     </td>
                     <td class="align-middle">
                       <a href="/products/edit/<%= product.id %>" class="button">
-                        <span class="icon">
-                          <i class="bx bx-edit"></i>
-                        </span>
-                      </a>
-                      <a href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>" class="button" target="_blank">
-                        <span class="icon">
-                          <i class='bx bx-link' ></i>
-                        </span>
-                      </a>
-                    </td>
-                    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-                    <td class="align-middle">
-                      <span><%= product.seller.name %></span>
-                    </td>
-                    <%}%>
+                                    <span class="icon">
+                                      <i class="bx bx-edit"></i>
+                                    </span>
+                                    </a>
+                                    <a href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"
+                                      class="button" target="_blank">
+                                      <span class="icon">
+                                        <i class='bx bx-link'></i>
+                                      </span>
+                                    </a>
+                                </td>
+                                <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                                <td class="align-middle">
+                                  <span><%= product.seller.name %></span>
+                                </td>
+                                <%}%>
                     <td class="align-middle">
                       <ul>
                         <%if(product.dafiti){%><li><small>Dafiti</small></li><%}%>
@@ -1171,73 +1209,81 @@
                     </td>
                 </tr>
               <% }); %>
-          </tbody>
-      </table>
-  </div>
-  <div class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-      <header class="modal-card-head">
-        <p class="modal-card-title is-size-7 has-text-weight-bold"></p>
-        <button class="delete" aria-label="close"></button>
-      </header>
-      <section class="modal-card-body">
-        <p class="modal-reference is-size-7 has-text-weight-bold"></p>
-        <p class="image is-square">
-          <img async src="" />
-        </p>
-      </section>
-    </div>
-  </div>
-  <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      let table = new simpleDatatables.DataTable('#products-table',{
-        searchable:true,
-        sortable:true,
-        paging:true,
-        perPageSelect:[5,10,20,30,50],
-        perPage:50,
-        labels: {
-          placeholder: "Buscar...",
-          perPage: "{select} registros por página",
-          noRows: "No se encontraron datos",
-          info: "Mostrando {start} a {end} de {rows} registros",
-        }
-      });  
-    });
+            </tbody>
+          </table>
+      </div>
+      <div class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title is-size-7 has-text-weight-bold"></p>
+            <button class="delete" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body">
+            <p class="modal-reference is-size-7 has-text-weight-bold"></p>
+            <p class="image is-square">
+              <img async src="" />
+            </p>
+          </section>
+        </div>
+      </div>
+      <script>
+        document.addEventListener('DOMContentLoaded', function () {
+          let table = new simpleDatatables.DataTable('#products-table', {
+            searchable: true,
+            sortable: true,
+            paging: true,
+            perPageSelect: [5, 10, 20, 30, 50],
+            perPage: 50,
+            labels: {
+              placeholder: "Buscar...",
+              perPage: "{select} registros por página",
+              noRows: "No se encontraron datos",
+              info: "Mostrando {start} a {end} de {rows} registros",
+            }
+          });
 
-    live('.state', 'click', function(){ 
-        var elm = this;
-        var id = this.getAttribute('product');
-        var status = null;
-        if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+          table.on('datatable.page', (page)=> {
+              io.socket.get(`/products-pagination/${page}/50`,  (response)=>{
+                table.destroy();
+              });
+          });
 
-        io.socket.put('/products/'+id,{active:status},function(resData, jwr){
-          if(resData.active===false){
-            removeClass(elm, 'bx-check-circle');
-            addClass(elm,'bx-x-circle');
-          }else{
-            removeClass(elm, 'bx-x-circle');
-            addClass(elm,'bx-check-circle');
-          }
         });
-    });
-    live('.product-image','mouseover',(e)=>{
-      let id = e.target.getAttribute('data-product');
-      io.socket.get('/getcover/'+id,resData=>{
-        if(resData){
+
+        live('.state', 'click', function () {
+          var elm = this;
+          var id = this.getAttribute('product');
+          var status = null;
+          if (hasClass(elm, 'bx-check-circle')) { status = false; } else { status = true; }
+
+          io.socket.put('/products/' + id, { active: status }, function (resData, jwr) {
+            if (resData.active === false) {
+              removeClass(elm, 'bx-check-circle');
+              addClass(elm, 'bx-x-circle');
+            } else {
+              removeClass(elm, 'bx-x-circle');
+              addClass(elm, 'bx-check-circle');
+            }
+          });
+        });
+        live('.product-image', 'mouseover', (e) => {
+          let id = e.target.getAttribute('data-product');
+          io.socket.get('/getcover/' + id, resData => {
+            if (resData) {
+              let modal = document.querySelector('.modal');
+              modal.querySelector('.modal-card-title').innerHTML = resData.name.toUpperCase();
+              modal.querySelector('.modal-reference').innerHTML = 'REF:&nbsp;' + resData.reference.toUpperCase();
+              modal.querySelector('.image > img').setAttribute('src', resData.image);
+              addClass(modal, 'is-active');
+            }
+          });
+        });
+        live('.modal-background, .delete', 'click', e => {
           let modal = document.querySelector('.modal');
-          modal.querySelector('.modal-card-title').innerHTML = resData.name.toUpperCase();
-          modal.querySelector('.modal-reference').innerHTML = 'REF:&nbsp;'+resData.reference.toUpperCase();
-          modal.querySelector('.image > img').setAttribute('src',resData.image);
-          addClass(modal,'is-active');
-        }
-      });
-    });
-    live('.modal-background, .delete','click',e=>{
-      let modal = document.querySelector('.modal');
-      removeClass(modal,'is-active');
-    });
-  </script>
-<% } %>
-</div>
+          removeClass(modal, 'is-active');
+        });
+      </script>
+      <% } %>
+
+    </div>

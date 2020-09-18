@@ -73,7 +73,7 @@ module.exports = {
           .populate('images')
           .populate('tax')
           .populate('mainColor')
-          .populate('manufacturer');
+          .populate('manufacturer')
       } else {
         products = await Product.find()
           .populate('images')
@@ -477,6 +477,10 @@ module.exports = {
           console.log("PAGE NUM : ", page);
           console.log("importedProducts : ", importedProducts);
           
+          if(page === 3){
+            break;
+          }
+
           page++;
 
         }while((!isEmpty));
@@ -1004,4 +1008,22 @@ module.exports = {
       });
     });
   },
+
+  paginate : async (req, res)=>{
+    if (!req.isSocket) {
+        return res.badRequest();
+    }
+
+    let page = parseInt(req.param('page')) || 1;
+    let pageSize = parseInt(req.param('pageSize')) || 50;
+
+    let count  = await Product.count();
+    let products = await Product.find({}).paginate(page, pageSize);
+    
+     res.status(200).json({
+        products: products,
+        current: page,
+        pages: Math.ceil(count / pageSize)
+    })
+  }
 };

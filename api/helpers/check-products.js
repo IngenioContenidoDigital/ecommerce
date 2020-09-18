@@ -79,12 +79,16 @@ module.exports = {
                 }
 
                 if (p.manufacturer) {
-                    Manufacturer.findOrCreate({ name: p.manufacturer.toLowerCase() }, { name: p.manufacturer.toLowerCase(), active: true }).exec(async (err, record, wasCreated) => {
+                    Manufacturer.findOrCreate({ name: p.manufacturer.toLowerCase() }, { name: p.manufacturer.toLowerCase()}).exec(async (err, record, wasCreated) => {
                         if (err) { return console.log(err) }
-
-                        pro.manufacturer = (await Manufacturer.findOne({ name: p.manufacturer.toLowerCase() })).id;
-
+                        
+                        if(wasCreated) 
+                            pro.manufacturer = (await Manufacturer.findOne({ name: record.name })).id;
+                          else 
+                            pro.manufacturer = (await Manufacturer.findOne({ name: record.name })).id;
                     });
+                }else{
+                    return reject({ name: 'NOBRANDS', message: 'Producto ' + p.name + ' sin marca' }) ;
                 }
 
                 let color = await sails.helpers.tools.findColor(p.name+' '+p.reference);
