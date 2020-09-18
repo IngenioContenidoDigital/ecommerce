@@ -478,7 +478,7 @@ module.exports = {
           /*console.log("PAGE NUM : ", page);
           console.log("importedProducts : ", importedProducts);*/
           
-          if(page === 3){
+          if(page === 1){
             break;
           }
 
