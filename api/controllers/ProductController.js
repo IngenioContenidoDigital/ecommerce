@@ -478,10 +478,6 @@ module.exports = {
           /*console.log("PAGE NUM : ", page);
           console.log("importedProducts : ", importedProducts);*/
           
-          if(page === 1){
-            break;
-          }
-
           page++;
 
         }while((!isEmpty));
