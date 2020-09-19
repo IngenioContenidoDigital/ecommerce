@@ -423,12 +423,6 @@ module.exports = {
     let seller = req.session.user.seller || req.body.seller;
     let integrations = await Integrations.find({ seller: seller });
     if (req.body.channel) {
-      
-      let each = async (array, callback) => {
-        for (let index = 0; index < array.length; index++) {
-          await callback(array[index], index, array).catch((e) => errors.push(e));
-        }
-      }
 
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
@@ -485,50 +479,33 @@ module.exports = {
           break;
         case constants.IMAGE_TYPE:
           req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
-          let imageTasks = await ImageUploadStatus.find({ uploaded : !constants.STATUS_UPLOADED});
+          let imageTasks = await ImageUploadStatus.find({uploaded : false});
+          for(let s of imageTasks){
+            for(let im of s.images){
+              try{
+                let url = (im.src.split('?'))[0]; 
+                let file = (im.file.split('?'))[0];
+                let uploaded =  await sails.helpers.uploadImageUrl(url, file, s.product);
+                if(uploaded){
+                  let cover = 1;
+                  let totalimg = await ProductImage.count({product:s.product});
+                  totalimg+=1;
+                  if(totalimg>1){cover = 0;}
+                  await ProductImage.create({
+                    file:file,
+                    position:totalimg,
+                    cover: cover,
+                    product:s.product
+                  });
 
-          await each(imageTasks, async (source)=>{
-            await each(source.images, async (s) => {
-              
-              let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product).catch((e)=>console.log("Error subiendo imagen"));
-              
-              if(uploaded.filename)
-                (s.filename = uploaded.filename);
-                //await sleep(3000);
-            
-              }).catch(e=>imageErrors.push(e));
-          
-          }).catch(e=>errors.push(e));
-
-          await each(imageTasks, async (task)=>{
-            let coltemp = task.images.filter(i=>i.filename).map((s) => {
-              let img = {};
-              img.file = s.filename;
-              img.cover = s.cover || 0;
-              img.product = task.product;
-
-              if (img.position)
-                (img.position = task.position);
-    
-              return img;
-            });
-
-            let hasCover = (coltemp.filter((img)=>img.cover === 1).length > 0);
-            
-            if(!hasCover){
-                coltemp[0].cover = 1;
+                  await ImageUploadStatus.update({ id : s.id}).set({ uploaded : true});
+                  imageItems.push(s);
+                }
+              }catch(err){
+                imageErrors.push({code:'NOTFOUND',message:err.message})
+              }
             }
-            
-            let uploaded  = await ProductImage.createEach(coltemp).fetch();
-
-            each(uploaded, async (image)=>{
-              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED}).fetch();
-            });
-            
-            imageItems.push(task);
-         
-          });
-
+          }
           break;
         default:
           break;
