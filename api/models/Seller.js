@@ -14,6 +14,7 @@ module.exports = {
     logo:{type:'string'},
     rut:{type:'string'},
     cc:{type:'string'},
+    auth1ecom:{type:'string'},
     ccr:{type:'string'},
     cbanco:{type:'string'},
     active:{type:'boolean', required:true},
