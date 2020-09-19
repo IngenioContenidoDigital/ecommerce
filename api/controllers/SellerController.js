@@ -523,7 +523,7 @@ module.exports = {
             email:decoded.email,
             phone:decoded.phone
           };
-          res.view('pages/sellers/sellers',{sellers:sellers,action:action,seller:seller,error:error,countries:countries, integrations : integrations,token:token});  
+          res.view('pages/sellers/sellers',{sellers:sellers,action:action,seller:seller,error:error,countries:countries, integrations : integrations,token:token, success:null});  
         }
       });
     }  
@@ -561,8 +561,9 @@ module.exports = {
         logo: filename[0].filename,
         rut: filename[1].filename,
         cc: filename[2].filename,
-        ccr: filename[3].filename,
-        cbanco: filename[4].filename,
+        auth1ecom:filename[3].filename,
+        ccr: filename[4].filename,
+        cbanco: filename[5].filename,
         mainAddress:address.id,
         active:isActive}).fetch();
 

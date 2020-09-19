@@ -296,6 +296,24 @@
                     </div>
                   </div>
                   <div class="field">
+                    <div id="file-loader-auth1ecom" class="file is-size-7 has-name is-fullwidth">
+                      <label class="file-label">
+                        <input class="file-input" accept=".pdf" type="file" id="auth1ecom" name="logo" />
+                        <span class="file-cta">
+                          <span class="file-icon">
+                            <i class="bx bx-upload"></i>
+                          </span>
+                          <span class="file-label">
+                            Autorización a 1Ecommerce
+                          </span>
+                        </span>
+                        <span class="file-name">
+                          No ha cargado ningún archivo.
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="field">
                     <div id="file-loader-ccrepresentate" class="file is-size-7 has-name is-fullwidth">
                       <label class="file-label">
                         <input class="file-input" accept=".pdf" type="file" id="ccr" name="logo" />
@@ -333,7 +351,7 @@
                   </div> 
                 <%}%>
                 <%if(action=='edit'){%>
-                  <%if(!(seller.rut===undefined)){%>
+                  <%if(!(seller.rut===undefined||seller.rut==='')){%>
                     <div class="field">
                       <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.rut%>" target="_blank">
                          <span class="icon">
@@ -343,7 +361,7 @@
                        </a>
                      </div>
                     <%}%>  
-                  <%if(!(seller.cc===undefined)){%>
+                  <%if(!(seller.cc===undefined||seller.cc==='')){%>
                     <div class="field">
                       <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cc%>" target="_blank">
                          <span class="icon">
@@ -353,7 +371,17 @@
                        </a>
                      </div>
                     <%}%>
-                    <%if(!(seller.ccr===undefined)){%>
+                    <%if(!(seller.auth1ecom===undefined||seller.auth1ecom==='')){%>
+                      <div class="field">
+                        <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.auth1ecom%>" target="_blank">
+                           <span class="icon">
+                             <i class='bx bxs-file-pdf'></i>
+                           </span>
+                           Cámara de comercio
+                         </a>
+                       </div>
+                      <%}%>
+                    <%if(!(seller.ccr===undefined||seller.ccr==='')){%>
                       <div class="field">
                         <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.ccr%>" target="_blank">
                            <span class="icon">
@@ -364,7 +392,7 @@
                        </div>
                       <%}%>     
 
-                      <%if(!(seller.cbanco===undefined)){%>
+                      <%if(!(seller.cbanco===undefined||seller.cbanco==='')){%>
                         <div class="field">
                           <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cbanco%>" target="_blank">
                              <span class="icon">
@@ -414,6 +442,15 @@
               if (fileInputCC.files.length > 0) {
                 const fileName = document.querySelector('#file-loader-camaracomercio .file-name');
                 fileName.textContent = fileInputCC.files[0].name;
+              }
+            };
+            }
+            if(!(document.querySelector('#file-loader-auth1ecom input[type=file]')==null)){
+              const fileInputAuth1ecom = document.querySelector('#file-loader-auth1ecom input[type=file]');
+              fileInputAuth1ecom.onchange = () => {
+              if (fileInputAuth1ecom.files.length > 0) {
+                const fileName = document.querySelector('#file-loader-auth1ecom .file-name');
+                fileName.textContent = fileInputAuth1ecom.files[0].name;
               }
             };
             }
