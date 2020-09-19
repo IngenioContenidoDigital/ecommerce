@@ -28,7 +28,11 @@ module.exports.policies = {
   CarrierController:{'*': 'isLoggedIn'},
   CategoryController:{'*': 'isLoggedIn'},
   ColorController:{'*': 'isLoggedIn'},
-  CountriesController:{'*': 'isLoggedIn'},
+  CountriesController:{
+    'countryregions':true,
+    'regioncities':true,
+    '*': 'isLoggedIn'
+  },
   DiscountController:{'*': 'isLoggedIn'},
   ManufacturersController:{'*': 'isLoggedIn'},
   OrderController:{
@@ -42,6 +46,10 @@ module.exports.policies = {
   },
   SellerController:{
     'notificationmessage': true,
+    'registerformseller':true,
+    'createsellerfromform':true,
+    'sellerform':true,
+    'createsellerfromtoken':true,
     '*': 'isLoggedIn'
   },
   SupplierController:{'*': 'isLoggedIn'},
