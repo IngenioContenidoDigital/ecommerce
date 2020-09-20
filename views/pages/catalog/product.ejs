@@ -582,7 +582,7 @@
                 data.append(i,JSON.stringify(celldata));
             }
             request.addEventListener('load', () => {
-              window.location.href='/products/edit/'+id;
+              window.location.href='/product/edit/'+id;
             });
             request.open('POST','/products/variations/'+id);
             request.send(data);
