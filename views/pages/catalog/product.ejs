@@ -607,8 +607,8 @@
     </div>
     <div class="is-hidden" id="discounts">
       <div class="box">
-        <h6 class="title is-7 is-uppercase"><%if(product!==undefined){%><%=product.name%><%}%></h6>
-        <h6 class="subtitle is-7 is-uppercase"><%if(product!==undefined){%>REF:&nbsp;<%=product.reference%><%}%></h6>
+        <h6 class="title is-7 is-uppercase"><%if(product!==undefined && product !== null){%><%=product.name%><%}%></h6>
+        <h6 class="subtitle is-7 is-uppercase"><%if(product!==undefined && product !== null){%>REF:&nbsp;<%=product.reference%><%}%></h6>
         <div class="columns">
           <div class="column">
               <div class="columns is-mobile">
@@ -658,7 +658,7 @@
                     <th>Eliminar</th>
                   </thead>
                   <tbody>
-                  <%if(product!==undefined && product.discount.length>0){%>
+                  <%if(product!==undefined && product!==null && product.discount.length>0){%>
                     <% product.discount.forEach(discount =>{ %>
                       <tr>
                         <td><%=discount.name%></td>
@@ -769,7 +769,7 @@
             </tr>
           </thead>
           <tbody>
-            <%if(product!==undefined){%>
+            <%if(product!==undefined && product !== null){%>
             <% sellers.forEach(function(seller){ %>
               <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'dafiti') ){ %>
                 <tr>
