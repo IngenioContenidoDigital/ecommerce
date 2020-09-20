@@ -1,10 +1,12 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-pageloader@2.2.0/dist/css/bulma-pageloader.min.css">
 <div class="container">
 <% if (error != undefined || error != null) { %>
   <div class="notification is-danger is-light" id="error">
       <%= error %>
   </div>
 <% } %>
+  <div class="pageloader is-active"><span class="title">Buscando Productos ...</span></div>
   <p style="text-align: right;font-size: 20px; margin-right: 5px;">
     <a href="/product/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
     <a href="/import" class="has-text-primary"><i class='bx bx-cloud-upload'></i></a>
@@ -19,6 +21,7 @@
               <th scope="col">Marca</th>
               <th scope="col">Precio</th>
               <th scope="col">Color</th>
+              <th scope="col">Inventario</th>
               <th scope="col">Activo</th>
               <th scope="col">Opciones</th>
               <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
@@ -28,48 +31,7 @@
           </tr>
           </thead>
           <tbody>
-              <% products.forEach(function(product){ %>
-                <tr>
-                    <td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="<%=product.id%>"><%= product.name %></a></td>
-                    <td class="align-middle"><%= product.reference %></td>
-                    <td class="align-middle is-capitalized"><%= (product.manufacturer ? product.manufacturer.name : '') %></td>
-                    <td class="align-middle">$ <%= parseInt(product.price*(1+(product.tax.value/100))).toLocaleString('es-CO') %></td>
-                    <td class="align-middle is-capitalized"><%= (product.mainColor ? product.mainColor.name : '') %></td>
-                    <td class="align-middle">
-                    <span class="action">
-                    <% if(product.active===true) { %>
-                        <i product="<%= product.id %>" class="state bx bx-check-circle is-size-5"></i>
-                    <% }else{ %>
-                        <i product="<%= product.id %>" class="state bx bx-x-circle is-size-5"></i>
-                    <%}%>
-                    </span>
-                    </td>
-                    <td class="align-middle">
-                      <a href="/product/edit/<%= product.id %>" class="button">
-                        <span class="icon">
-                          <i class="bx bx-edit"></i>
-                        </span>
-                      </a>
-                      <a href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>" class="button" target="_blank">
-                        <span class="icon">
-                          <i class='bx bx-link' ></i>
-                        </span>
-                      </a>
-                    </td>
-                    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-                    <td class="align-middle">
-                      <span><%= product.seller.name %></span>
-                    </td>
-                    <%}%>
-                    <td class="align-middle">
-                      <ul>
-                        <%if(product.dafiti){%><li><small>Dafiti</small></li><%}%>
-                        <%if(product.ml){%><li><small>Mercadolibre</small></li><%}%>
-                        <%if(product.linio){%><li><small>Linio</small></li><%}%>
-                      </ul>
-                    </td>
-                </tr>
-              <% }); %>
+              
           </tbody>
       </table>
   </div>
@@ -89,8 +51,8 @@
     </div>
   </div>
   <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      let table = new simpleDatatables.DataTable('#products-table',{
+
+      let datatable = new simpleDatatables.DataTable('#products-table',{
         searchable:true,
         sortable:true,
         paging:true,
@@ -103,7 +65,10 @@
           info: "Mostrando {start} a {end} de {rows} registros",
         }
       });  
-    });
+
+    /*document.addEventListener('DOMContentLoaded', function(){
+      
+    });*/
 
     live('.state', 'click', function(){ 
         var elm = this;
@@ -137,5 +102,20 @@
       let modal = document.querySelector('.modal');
       removeClass(modal,'is-active');
     });
+
+    io.socket.on('products',(p) =>{
+      let loader = document.querySelector('.pageloader');
+      if(hasClass(loader,'is-active')){
+        removeClass(loader,'is-active');
+      }
+      datatable.rows().add(p.products);
+    });
+
+    let catalogQuery = () => {
+      io.socket.post('/catalogquery');
+    }
+
+    catalogQuery();
+
   </script>
 </div>

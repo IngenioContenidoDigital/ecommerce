@@ -51,7 +51,7 @@
                 <select class="is-capitalized" name="mainColor" id="mainColor" required>
                   <option value=""> -- Color Principal --</option>
                   <% colors.forEach(function(color){ %>
-                    <option <% if(action=='edit' && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>"><%= color.name %></option>
+                    <option <% if(action=='edit' && product.mainColor !== null && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>"><%= color.name %></option>
                   <%})%>
                 </select>
               </div>
