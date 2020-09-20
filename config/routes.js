@@ -78,7 +78,8 @@ module.exports.routes = {
   'GET /colors/:action?/:id?' : {controller:'ColorController',action:'showcolors'},
   'POST /color/create' : {controller:'ColorController',action:'createcolor'},
   'POST /color/edit/:id' : {controller:'ColorController',action:'editcolor'},
-  'GET /products/:action?/:id?' : {controller:'ProductController',action:'showproducts'},
+  'GET /products' : {controller:'ProductController',action:'showproducts'},
+  'GET /product/:action?/:id?' : {controller:'ProductController',action:'productmgt'},
   'GET /import' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},
 

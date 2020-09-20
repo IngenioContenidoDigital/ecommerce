@@ -27,6 +27,40 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
       throw 'forbidden';
     }
+
+    let error = null;
+    let products = null;
+    
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
+      products = await Product.find({ seller: req.session.user.seller })
+        .sort('createdAt DESC')
+        .populate('images', {cover:1})
+        .populate('tax')
+        .populate('mainColor')
+        .populate('manufacturer');
+    } else {
+      products = await Product.find()
+        .sort('createdAt DESC')
+        .populate('images', {cover:1})
+        .populate('tax')
+        .populate('mainColor')
+        .populate('manufacturer')
+        .populate('seller');
+    }
+    
+    let moment = require('moment');
+    return res.view('pages/catalog/productlist',{layout:'layouts/admin',
+      products:products,
+      error:error,
+      moment:moment
+    });
+  },
+  productmgt: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
+      throw 'forbidden';
+    }
+
     const root = await Category.findOne({ name: 'inicio' });
     const brands = await Manufacturer.find();
     const colors = await Color.find();
@@ -44,11 +78,11 @@ module.exports = {
     const taxes = await Tax.find();
     let variations = null;
     let error = null;
-    let product; let products = null;
+    let product = null;
     let action = req.param('action') ? req.param('action') : null;
-    let id = (req.param('id') !== undefined) ? req.param('id') : null;
+    let id = req.param('id') ? req.param('id') : null;
 
-    if (id !== undefined && id !== null) {
+    if(id!==null){
       product = await Product.findOne({ id: id })
         .populate('images')
         .populate('tax')
@@ -66,27 +100,9 @@ module.exports = {
       }
       //return a.variation.name.localeCompare(b.variation.name)
       product.variations.sort((a, b) => { return parseFloat(a.variation.name) - parseFloat(b.variation.name); });
-
-    }
-    if (action === null) {
-      if(rights.name!=='superadmin' && rights.name!=='admin'){
-        products = await Product.find({ seller: req.session.user.seller })
-          .populate('images')
-          .populate('tax')
-          .populate('mainColor')
-          .populate('manufacturer');
-      } else {
-        products = await Product.find()
-          .populate('images')
-          .populate('tax')
-          .populate('mainColor')
-          .populate('manufacturer')
-          .populate('seller');
-      }
     }
     let moment = require('moment');
     return res.view('pages/catalog/product',{layout:'layouts/admin',
-      products:products,
       root:root,
       brands:brands,
       colors:colors,
