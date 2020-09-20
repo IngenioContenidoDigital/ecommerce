@@ -89,7 +89,7 @@ module.exports = {
           `<td class="align-middle is-capitalized">`+(p.mainColor ? p.mainColor.name : '')+`</td>`,
           `<td class="align-middle">`+p.stock+`</td>`,
           `<td class="align-middle"><span class="action"><i product="`+p.id+`" class="state bx `+cl+` is-size-5"></i></span></td>`,
-          `<td class="align-middle"><a href="/product/edit/`+p.id+`" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/`+encodeURIComponent((p.name).replace(/\./g, '%2E'))+`/`+encodeURIComponent(p.reference)+`" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
+          `<td class="align-middle"><a href="/product/edit/`+p.id+`" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/`+encodeURIComponent((p.name).replace(/\./g, '%2E'))+`/`+encodeURIComponent(p.reference)+`" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
           srow,  
           `<td class="align-middle"><ul>`+published+`</ul></td>`,
         ];
