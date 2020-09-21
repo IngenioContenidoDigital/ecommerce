@@ -353,7 +353,7 @@
                 <%if(action=='edit'){%>
                   <%if(!(seller.rut===undefined||seller.rut==='')){%>
                     <div class="field">
-                      <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.rut%>" target="_blank">
+                      <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.rut.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
                          <span class="icon">
                            <i class='bx bxs-file-pdf'></i>
                          </span>
@@ -363,7 +363,7 @@
                     <%}%>  
                   <%if(!(seller.cc===undefined||seller.cc==='')){%>
                     <div class="field">
-                      <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cc%>" target="_blank">
+                      <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cc.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
                          <span class="icon">
                            <i class='bx bxs-file-pdf'></i>
                          </span>
@@ -373,17 +373,17 @@
                     <%}%>
                     <%if(!(seller.auth1ecom===undefined||seller.auth1ecom==='')){%>
                       <div class="field">
-                        <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.auth1ecom%>" target="_blank">
+                        <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.auth1ecom.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
                            <span class="icon">
                              <i class='bx bxs-file-pdf'></i>
                            </span>
-                           Cámara de comercio
+                           Autorización a 1Ecommerce.
                          </a>
                        </div>
                       <%}%>
                     <%if(!(seller.ccr===undefined||seller.ccr==='')){%>
                       <div class="field">
-                        <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.ccr%>" target="_blank">
+                        <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.ccr.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
                            <span class="icon">
                              <i class='bx bxs-file-pdf'></i>
                            </span>
@@ -394,7 +394,7 @@
 
                       <%if(!(seller.cbanco===undefined||seller.cbanco==='')){%>
                         <div class="field">
-                          <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cbanco%>" target="_blank">
+                          <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cbanco.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
                              <span class="icon">
                                <i class='bx bxs-file-pdf'></i>
                              </span>
