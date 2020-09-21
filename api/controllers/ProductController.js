@@ -401,6 +401,7 @@ module.exports = {
       }
       let response = await sails.helpers.channel.mercadolibre.product(product.id,action,req.body.pricemercadolibre);
       if(response){
+        console.log(response);
         await Product.updateOne({id:req.param('product')}).set({
           ml:true,
           mlstatus:(req.body.status) ? true : false,
