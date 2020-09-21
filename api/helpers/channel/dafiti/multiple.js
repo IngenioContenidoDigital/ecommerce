@@ -29,7 +29,7 @@ module.exports = {
       dafiti=true;
     }
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
-      products = await Product.find({seller:inputs.seller,dafiti:dafiti, active:true})
+      products = await Product.find({seller:inputs.seller,dafiti:dafiti})
       .populate('gender')
       .populate('mainColor')
       .populate('manufacturer')
