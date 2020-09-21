@@ -4,17 +4,15 @@
   <div class="notification is-danger is-light" id="error">
     <%= error %>
   </div>
-  <% } %>
-  <% if(action=='create' || action =='edit'){ %>
-  <br />
-  <div class="product-tab tabs">
-    <ul>
-      <li class="is-active"><a option="basics">Información Básica</a></li>
-      <li <%if(action!='edit'){%>class="is-hidden" <%}%>><a option="images">Imágenes</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden" <%}%>><a option="variations">Variaciones</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden" <%}%>><a option="discounts">Descuentos</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden"
-        <%}%>><a option="integrations">Integraciones</a></li>
+<% } %>
+<br />
+    <div class="product-tab tabs">
+      <ul>
+        <li class="is-active"><a option="basics" >Información Básica</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="images">Imágenes</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="variations">Variaciones</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
       </ul>
     </div>
     <div id ="basics">
@@ -24,10 +22,63 @@
           <div class="column">
             <label class="label is-inline is-size" for="name">Nombre del Producto</label>&nbsp;
             <div class="field is-pulled-right">
-              <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <%if(action=='create' || product.active){%>checked="checked"
-        <%}%> />
-              <label class="is-size-7-mobile" for="activo">Estado: <span id="state"><%if(action=='create' || product.active){%><b style="color:green;">activo</b><%}else{%><b
-          style="color:red;">inactivo</b><%}%></span></label>
+              <input id="activo" type="checkbox" name="activo" class="switch is-rounded is-outlined" <%if(action=='create' || product.active){%>checked="checked"<%}%> />
+              <label class="is-size-7-mobile" for="activo">Estado: <span id="state"><%if(action=='create' || product.active){%><b style="color:green;">activo</b><%}else{%><b style="color:red;">inactivo</b><%}%></span></label>
+            </div>
+            <div class="control">
+              <input class="input is-uppercase" type="text" placeholder="Nombre del Producto" name="name" required <% if(action=='edit'){ %>value="<%= product.name %>"<% }%> />
+            </div>
+          </div>           
+        </div>
+        <div class="columns">
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="manufacturer">Marca</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="manufacturer" id="manufacturer" required>
+                  <option value=""> -- Marca del Producto --</option>
+                  <% brands.forEach(function(brand){ %>
+                    <option <% if(action=='edit' && brand.id==product.manufacturer){ %> selected <% } %> value="<%= brand.id %>"><%= brand.name %></option>
+                  <%})%>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="mainColor">Color Principal</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="mainColor" id="mainColor" required>
+                  <option value=""> -- Color Principal --</option>
+                  <% colors.forEach(function(color){ %>
+                    <option <% if(action=='edit' && product.mainColor !== null && color.id==product.mainColor.id){ %> selected <% } %> value="<%= color.id %>"><%= color.name %></option>
+                  <%})%>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="control">
+              <label class="label is-inline is-size-7" for="gender">Género</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="gender" id="gender" required>
+                   <option value="">-- Elegin Género --</option>
+                  <% genders.forEach(gender => { %>
+                    <option class="is-capitalized" <% if(action=='edit' && gender.id==product.gender ){ %> selected <% } %> value="<%= gender.id %>" ><%= gender.name %></option>
+                  <%})%>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <label class="label is-inline is-size-7" for="price_nt">Precio sin impuestos</label>
+            <div class="field">
+              <p class="control has-icons-left">
+                <input class="input is-size-7" name="price_nt" type="number" placeholder="Sin impuestos" <% if(action=='edit'){ %> value="<%= product.price.toFixed(2) %>" <% } else { %> value="0.00" <% } %>/>
+                <span class="icon is-small is-left is-size-7">
+                  <i class="bx bx-dollar"></i>
+                </span>
+              </p>
             </div>
             <div class="control">
               <input class="input is-uppercase" type="text" placeholder="Nombre del Producto" name="name" required <% if(action=='edit'){ %>value="<%= product.name %>"<% }%>
@@ -622,7 +673,11 @@
               data.append(i, JSON.stringify(celldata));
             }
             request.addEventListener('load', () => {
+<<<<<<< HEAD
               window.location.href = '/products';
+=======
+              window.location.href='/product/edit/'+id;
+>>>>>>> 8ebdfed6a8ae30d4440544e9563c1c762324241a
             });
             request.open('POST', '/products/variations/' + id);
             request.send(data);
@@ -647,8 +702,8 @@
     </div>
     <div class="is-hidden" id="discounts">
       <div class="box">
-        <h6 class="title is-7 is-uppercase"><%if(product!==undefined){%><%=product.name%><%}%></h6>
-        <h6 class="subtitle is-7 is-uppercase"><%if(product!==undefined){%>REF:&nbsp;<%=product.reference%><%}%></h6>
+        <h6 class="title is-7 is-uppercase"><%if(product!==undefined && product !== null){%><%=product.name%><%}%></h6>
+        <h6 class="subtitle is-7 is-uppercase"><%if(product!==undefined && product !== null){%>REF:&nbsp;<%=product.reference%><%}%></h6>
         <div class="columns">
           <div class="column">
               <div class="columns is-mobile">
@@ -698,11 +753,19 @@
                     <th>Eliminar</th>
                   </thead>
                   <tbody>
+<<<<<<< HEAD
                   <%if(product!==undefined && product.discount.length>0){%>
               <% product.discount.forEach(discount =>{ %>
               <tr>
                 <td><%=discount.name%></td>
                 <td><% if(discount.type==='P'){%>%&nbsp;<%}else{%>$&nbsp;<%}%></td>
+=======
+                  <%if(product!==undefined && product!==null && product.discount.length>0){%>
+                    <% product.discount.forEach(discount =>{ %>
+                      <tr>
+                        <td><%=discount.name%></td>
+                        <td><% if(discount.type==='P'){%>%&nbsp;<%}else{%>$&nbsp;<%}%></td>
+>>>>>>> 8ebdfed6a8ae30d4440544e9563c1c762324241a
                         <td><%=discount.value%></td>
                 <td><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss');%></td>
                 <td><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss');%> </td>
@@ -809,8 +872,13 @@
             </tr>
           </thead>
           <tbody>
+<<<<<<< HEAD
             <%if(product!==undefined){%>
               <% sellers.forEach(function(seller){ %>
+=======
+            <%if(product!==undefined && product !== null){%>
+            <% sellers.forEach(function(seller){ %>
+>>>>>>> 8ebdfed6a8ae30d4440544e9563c1c762324241a
               <% if(seller.id==product.seller && integrations.some(i => i.seller === seller.id && i.channel === 'dafiti') ){ %>
               <tr>
                 <td><img src="/images/dafiti.png" width="100px" /></td>
@@ -1109,181 +1177,9 @@
             });
         }
       });
-
-      live('.tabs ul li', 'click', (e) => {
-        e = e || window.event;
-        let element = e.target || e.srcElement;
-        let option = element.getAttribute('option');
-        let list = element.parentNode.parentNode.querySelectorAll('li');
-        list.forEach((li) => {
-          if (hasClass(li, 'is-active')) {
-            addClass(document.querySelector('#' + li.querySelector('a').getAttribute('option')), 'is-hidden');
-          }
-          removeClass(li, 'is-active');
-        });
-        removeClass(document.querySelector('#' + option), 'is-hidden');
-        addClass(element.parentNode, 'is-active');
-      });
-
-    </script>
-<% }else{ %> <p style="text-align: right;font-size: 20px; margin-right: 5px;">
-                        <a href="/products/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
-                        <a href="/import" class="has-text-primary"><i class='bx bx-cloud-upload'></i></a>
-                        <a href="/multiple" class="has-text-primary"><i class='bx bx-meteor'></i></a>
-                        </p>
-                        <div class="table-container">
-                          <table class="table is-hoverable is-size-7" id="products-table">
-                            <thead>
-                              <tr>
-                                <!--<th scope="col">Portada</th>-->
-                                <th scope="col">Nombre</th>
-                                <th scope="col">SKU</th>
-                                <th scope="col">Marca</th>
-                                <th scope="col">Precio</th>
-                                <th scope="col">Color</th>
-                                <th scope="col">Activo</th>
-                                <th scope="col">Opciones</th>
-                                <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-                                <th scope="col">Seller</th>
-                                <%}%>
-              <th scope="col">Publicaciones</th>
-          </tr>
-          </thead>
-          <tbody>
-              <% products.forEach(function(product){ %>
-                              <tr>
-                                <!--<td scope="row" class="align-middle">
-                      <%# 
-                      if(product.images.length>0){
-                      product.images.forEach(function(image){
-                        if(image.cover==1){ %>
-                          <figure class="image is-64x64">
-                            <img class="is-rounded" async src="<%#=imgurl%>/images/products/<%#= product.id+'/'+image.file %>" />
-                          </figure>
-                      <%# }
-                      })}#%>
-                    </td>-->
-                                <td class="align-middle is-uppercase"><a href="#" class="product-image"
-                                    data-product="<%=product.id%>"><%= product.name %></a></td>
-                                <td class="align-middle"><%= product.reference %></td>
-                                <td class="align-middle is-capitalized">
-                                  <%= (product.manufacturer ? product.manufacturer.name : '') %></td>
-                                <td class="align-middle">$
-                                  <%= parseInt(product.price*(1+(product.tax.value/100))).toLocaleString('es-CO') %>
-                                </td>
-                                <td class="align-middle is-capitalized">
-                                  <%= (product.mainColor ? product.mainColor.name : '') %></td>
-                                <td class="align-middle">
-                                  <span class="action">
-                                    <% if(product.active===true) { %>
-                                    <i product="<%= product.id %>" class="state bx bx-check-circle is-size-5"></i>
-                                    <% }else{ %>
-                                    <i product="<%= product.id %>" class="state bx bx-x-circle is-size-5"></i>
-                                    <%}%>
-                    </span>
-                    </td>
-                    <td class="align-middle">
-                      <a href="/products/edit/<%= product.id %>" class="button">
-                                    <span class="icon">
-                                      <i class="bx bx-edit"></i>
-                                    </span>
-                                    </a>
-                                    <a href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"
-                                      class="button" target="_blank">
-                                      <span class="icon">
-                                        <i class='bx bx-link'></i>
-                                      </span>
-                                    </a>
-                                </td>
-                                <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-                                <td class="align-middle">
-                                  <span><%= product.seller.name %></span>
-                                </td>
-                                <%}%>
-                    <td class="align-middle">
-                      <ul>
-                        <%if(product.dafiti){%><li><small>Dafiti</small></li><%}%>
-                        <%if(product.ml){%><li><small>Mercadolibre</small></li><%}%>
-                        <%if(product.linio){%><li><small>Linio</small></li><%}%>
-                      </ul>
-                    </td>
-                </tr>
-              <% }); %>
-            </tbody>
-          </table>
-      </div>
-      <div class="modal">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <p class="modal-card-title is-size-7 has-text-weight-bold"></p>
-            <button class="delete" aria-label="close"></button>
-          </header>
-          <section class="modal-card-body">
-            <p class="modal-reference is-size-7 has-text-weight-bold"></p>
-            <p class="image is-square">
-              <img async src="" />
-            </p>
-          </section>
-        </div>
-      </div>
-      <script>
-        document.addEventListener('DOMContentLoaded', function () {
-          let table = new simpleDatatables.DataTable('#products-table', {
-            searchable: true,
-            sortable: true,
-            paging: true,
-            perPageSelect: [5, 10, 20, 30, 50],
-            perPage: 50,
-            labels: {
-              placeholder: "Buscar...",
-              perPage: "{select} registros por página",
-              noRows: "No se encontraron datos",
-              info: "Mostrando {start} a {end} de {rows} registros",
-            }
-          });
-
-          table.on('datatable.page', (page)=> {
-              io.socket.get(`/products-pagination/${page}/50`,  (response)=>{
-                table.destroy();
-              });
-          });
-
-        });
-
-        live('.state', 'click', function () {
-          var elm = this;
-          var id = this.getAttribute('product');
-          var status = null;
-          if (hasClass(elm, 'bx-check-circle')) { status = false; } else { status = true; }
-
-          io.socket.put('/products/' + id, { active: status }, function (resData, jwr) {
-            if (resData.active === false) {
-              removeClass(elm, 'bx-check-circle');
-              addClass(elm, 'bx-x-circle');
-            } else {
-              removeClass(elm, 'bx-x-circle');
-              addClass(elm, 'bx-check-circle');
-            }
-          });
-        });
-        live('.product-image', 'mouseover', (e) => {
-          let id = e.target.getAttribute('data-product');
-          io.socket.get('/getcover/' + id, resData => {
-            if (resData) {
-              let modal = document.querySelector('.modal');
-              modal.querySelector('.modal-card-title').innerHTML = resData.name.toUpperCase();
-              modal.querySelector('.modal-reference').innerHTML = 'REF:&nbsp;' + resData.reference.toUpperCase();
-              modal.querySelector('.image > img').setAttribute('src', resData.image);
-              addClass(modal, 'is-active');
-            }
-          });
-        });
-        live('.modal-background, .delete', 'click', e => {
-          let modal = document.querySelector('.modal');
-          removeClass(modal, 'is-active');
-        });
-      </script>
-      <% } %>
-
-    </div>
+      removeClass(document.querySelector('#'+option),'is-hidden');
+      addClass(element.parentNode,'is-active');
+    });
+  
+  </script>
+  </div>

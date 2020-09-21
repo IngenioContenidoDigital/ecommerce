@@ -27,6 +27,85 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
       throw 'forbidden';
     }
+
+    let error = null;
+    let products = null;
+    let totalproducts = 0;
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
+      totalproducts = await Product.count({ seller: req.session.user.seller });
+    } else {
+      totalproducts = await Product.count();
+    }
+    
+    let moment = require('moment');
+    return res.view('pages/catalog/productlist',{layout:'layouts/admin',
+      products:products,
+      error:error,
+      moment:moment
+    });
+  },
+  findcatalog: async (req, res) => {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
+      throw 'forbidden';
+    }
+    if (!req.isSocket) { return res.badRequest();}
+    let totalproducts = 0;
+    let filter = {};
+    const perPage = 500;
+    if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
+    totalproducts = await Product.count(filter);
+    let pages = Math.ceil(totalproducts/perPage);
+    
+    for(let i = 1 ; i<=pages; i++){
+      let productdata = [];
+      products = await Product.find({
+        where: filter,
+        sort: 'createdAt DESC',
+        skip: ((i-1)*perPage),
+        limit: perPage,
+      })
+      .populate('images', {cover:1})
+      .populate('tax')
+      .populate('mainColor')
+      .populate('manufacturer')
+      .populate('seller');
+
+      for(let p of products){
+        p.stock = await ProductVariation.sum('quantity',{product:p.id});
+        let cl = 'bx-x-circle';
+        if(p.active){cl='bx-check-circle'}
+        let srow = '';
+        if(rights.name==='superadmin' || rights.name==='admin'){srow = '<td class="align-middle"><span>'+p.seller.name+'</span></td>';}
+        let published ='';
+        if(p.dafiti){published+='<li><small>Dafiti</small></li>';}
+        if(p.ml){published+='<li><small>Mercadolibre</small></li>';}
+        if(p.linio){published+='<li><small>Linio</small></li>';}
+        let row = [
+          `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="`+p.id+`">`+p.name+`</a></td>`,
+          `<td class="align-middle">`+p.reference+`</td>`,
+          `<td class="align-middle is-capitalized">`+(p.manufacturer ? p.manufacturer.name : '')+`</td>`,
+          `<td class="align-middle">$ `+parseInt(p.price*(1+(p.tax.value/100))).toLocaleString('es-CO')+`</td>`,
+          `<td class="align-middle is-capitalized">`+(p.mainColor ? p.mainColor.name : '')+`</td>`,
+          `<td class="align-middle">`+p.stock+`</td>`,
+          `<td class="align-middle"><span class="action"><i product="`+p.id+`" class="state bx `+cl+` is-size-5"></i></span></td>`,
+          `<td class="align-middle"><a href="/product/edit/`+p.id+`" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/`+encodeURIComponent((p.name).replace(/\./g, '%2E'))+`/`+encodeURIComponent(p.reference)+`" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
+          srow,  
+          `<td class="align-middle"><ul>`+published+`</ul></td>`,
+        ];
+        if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(8,1);}
+        productdata.push(row);
+      }
+      sails.sockets.blast('products',{products:productdata});
+    }
+    return res.ok();
+  },
+  productmgt: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
+      throw 'forbidden';
+    }
+
     const root = await Category.findOne({ name: 'inicio' });
     const brands = await Manufacturer.find();
     const colors = await Color.find();
@@ -44,11 +123,11 @@ module.exports = {
     const taxes = await Tax.find();
     let variations = null;
     let error = null;
-    let product; let products = null;
+    let product = null;
     let action = req.param('action') ? req.param('action') : null;
-    let id = (req.param('id') !== undefined) ? req.param('id') : null;
+    let id = req.param('id') ? req.param('id') : null;
 
-    if (id !== undefined && id !== null) {
+    if(id!==null){
       product = await Product.findOne({ id: id })
         .populate('images')
         .populate('tax')
@@ -66,27 +145,9 @@ module.exports = {
       }
       //return a.variation.name.localeCompare(b.variation.name)
       product.variations.sort((a, b) => { return parseFloat(a.variation.name) - parseFloat(b.variation.name); });
-
-    }
-    if (action === null) {
-      if(rights.name!=='superadmin' && rights.name!=='admin'){
-        products = await Product.find({ seller: req.session.user.seller })
-          .populate('images')
-          .populate('tax')
-          .populate('mainColor')
-          .populate('manufacturer')
-      } else {
-        products = await Product.find()
-          .populate('images')
-          .populate('tax')
-          .populate('mainColor')
-          .populate('manufacturer')
-          .populate('seller');
-      }
     }
     let moment = require('moment');
     return res.view('pages/catalog/product',{layout:'layouts/admin',
-      products:products,
       root:root,
       brands:brands,
       colors:colors,
@@ -340,6 +401,7 @@ module.exports = {
       }
       let response = await sails.helpers.channel.mercadolibre.product(product.id,action,req.body.pricemercadolibre);
       if(response){
+        console.log(response);
         await Product.updateOne({id:req.param('product')}).set({
           ml:true,
           mlstatus:(req.body.status) ? true : false,
@@ -423,12 +485,6 @@ module.exports = {
     let seller = req.session.user.seller || req.body.seller;
     let integrations = await Integrations.find({ seller: seller });
     if (req.body.channel) {
-      
-      let each = async (array, callback) => {
-        for (let index = 0; index < array.length; index++) {
-          await callback(array[index], index, array).catch((e) => errors.push(e));
-        }
-      }
 
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
@@ -485,50 +541,33 @@ module.exports = {
           break;
         case constants.IMAGE_TYPE:
           req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
-          let imageTasks = await ImageUploadStatus.find({ uploaded : !constants.STATUS_UPLOADED});
+          let imageTasks = await ImageUploadStatus.find({uploaded : false});
+          for(let s of imageTasks){
+            for(let im of s.images){
+              try{
+                let url = (im.src.split('?'))[0]; 
+                let file = (im.file.split('?'))[0];
+                let uploaded =  await sails.helpers.uploadImageUrl(url, file, s.product);
+                if(uploaded){
+                  let cover = 1;
+                  let totalimg = await ProductImage.count({product:s.product});
+                  totalimg+=1;
+                  if(totalimg>1){cover = 0;}
+                  await ProductImage.create({
+                    file:file,
+                    position:totalimg,
+                    cover: cover,
+                    product:s.product
+                  });
 
-          await each(imageTasks, async (source)=>{
-            await each(source.images, async (s) => {
-              
-              let uploaded =  await sails.helpers.uploadImageUrl(s.src, s.file, source.product).catch((e)=>console.log("Error subiendo imagen"));
-              
-              if(uploaded.filename)
-                (s.filename = uploaded.filename);
-                //await sleep(3000);
-            
-              }).catch(e=>imageErrors.push(e));
-          
-          }).catch(e=>errors.push(e));
-
-          await each(imageTasks, async (task)=>{
-            let coltemp = task.images.filter(i=>i.filename).map((s) => {
-              let img = {};
-              img.file = s.filename;
-              img.cover = s.cover || 0;
-              img.product = task.product;
-
-              if (img.position)
-                (img.position = task.position);
-    
-              return img;
-            });
-
-            let hasCover = (coltemp.filter((img)=>img.cover === 1).length > 0);
-            
-            if(!hasCover){
-                coltemp[0].cover = 1;
+                  await ImageUploadStatus.update({ id : s.id}).set({ uploaded : true});
+                  imageItems.push(s);
+                }
+              }catch(err){
+                imageErrors.push({code:'NOTFOUND',message:err.message})
+              }
             }
-            
-            let uploaded  = await ProductImage.createEach(coltemp).fetch();
-
-            each(uploaded, async (image)=>{
-              await ImageUploadStatus.update({ product : image.product}).set({ uploaded : constants.STATUS_UPLOADED}).fetch();
-            });
-            
-            imageItems.push(task);
-         
-          });
-
+          }
           break;
         default:
           break;

@@ -256,7 +256,7 @@ module.exports = {
           dni:req.body.dni,
           mobilecountry:req.body.country,
           mobile:req.body.mobile,
-          seller:req.body.seller,
+          seller:req.body.seller ? req.body.seller : null,
           profile:req.body.profile,
           active:isActive
         });

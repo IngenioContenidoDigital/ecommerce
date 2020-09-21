@@ -45,14 +45,7 @@ module.exports = {
                 }
 
                 if(inputs.product.manufacturer){
-                    Manufacturer.findOrCreate({ name: inputs.product.manufacturer.toLowerCase() },{ name: inputs.product.manufacturer.toLowerCase(), active : true}).exec(async(err, record, wasCreated)=> {
-                        if (err) { return console.log(err); }
-
-                        if(wasCreated) 
-                            pro.manufacturer = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() })).id;
-                        else 
-                            pro.manufacturer = record.id;
-                    });
+                    pro.manufacturer = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() })).id;
                 }else{
                     throw new Error('La Marca seleccionada para el producto ' + inputs.product.name + ' no existe');
                 }

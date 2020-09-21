@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const { log } = require('grunt');
+
 module.exports = {
   index: async function(req, res){
     let slider = await Slider.find({active:true}).populate('textColor');
@@ -67,57 +69,69 @@ module.exports = {
       throw 'forbidden';
     }
     let seller = req.session.user.seller || '';
-    let dateStart =new Date(req.param('dateStart')).valueOf();
+    let dateStart = new Date(req.param('dateStart')).valueOf();
     let dateEnd = new Date(req.param('dateEnd')).valueOf();
     let ordersByDay = [];
-    let dates = [];
-    const date1 = moment().subtract(6, 'days').format('YYYY/MM/DD');
-    const date2 = moment().subtract(5, 'days').format('YYYY/MM/DD');
-    const date3 = moment().subtract(4, 'days').format('YYYY/MM/DD');
-    const date4 = moment().subtract(3, 'days').format('YYYY/MM/DD');
-    const date5 = moment().subtract(2, 'days').format('YYYY/MM/DD');
-    const date6 = moment().subtract(1, 'days').format('YYYY/MM/DD');
-    const date7 = moment().format('YYYY/MM/DD');
-    const date8 = moment().add(1, 'days').format('YYYY/MM/DD');
-    dates = [
-      {day: date1, dateStart: new Date(date1).valueOf(), dateEnd: new Date(date2).valueOf()},
-      {day: date2, dateStart: new Date(date2).valueOf(), dateEnd: new Date(date3).valueOf()},
-      {day: date3, dateStart: new Date(date3).valueOf(), dateEnd: new Date(date4).valueOf()},
-      {day: date4, dateStart: new Date(date4).valueOf(), dateEnd: new Date(date5).valueOf()},
-      {day: date5, dateStart: new Date(date5).valueOf(), dateEnd: new Date(date6).valueOf()},
-      {day: date6, dateStart: new Date(date6).valueOf(), dateEnd: new Date(date7).valueOf()},
-      {day: date7, dateStart: new Date(date7).valueOf(), dateEnd: new Date(date8).valueOf()}
-    ];
 
-    for(let date of dates){
-      const count = await sails.helpers.dashboard.ordersToday(rights.name, seller, date.dateStart, date.dateEnd);
-      ordersByDay.push({day: date.day, total: count.totalOrders, totalPrice: count.totalPrice});
-    }
-    let data = await sails.helpers.dashboard.dashboard(rights.name, seller, dateStart, dateEnd);
-
-    return res.send({
-      totalOrdersCancel: data.totalOrdersCancel,
-      totalOrdersReturned: data.totalOrdersReturned,
-      totalOrders: data.totalOrders,
-      totalProducts: data.totalProducts,
-      totalSales: data.totalSales,
-      topProductsCant: data.topProductsCant,
-      topProductsPrice: data.topProductsPrice,
-      cities: data.cities,
-      channels: data.channels,
-      totalInventory: data.totalInventory,
-      lessProducts: data.lessProducts,
-      productsInventory: data.productsInventory,
-      productsUnd: data.productsUnd,
-      ordersByDay,
-      totalShippingCost: data.totalShippingCost,
-      averageHoursLogist: data.averageHoursLogist,
-      averageHoursClient: data.averageHoursClient,
-      averageHoursCellar: data.averageHoursCellar,
-      totalProductsReference: data.totalProductsReference,
-      totalProductsReferenceInactive: data.totalProductsReferenceInactive,
-      totalProductsReferenceActive: data.totalProductsReferenceActive,
+    let dataOrders = await sails.helpers.dashboard.orders(rights.name, seller, dateStart, dateEnd);
+    sails.sockets.blast('datadashboardorders', {
+      totalOrders: dataOrders.totalOrders,
+      totalProducts: dataOrders.totalProducts,
+      totalSales: dataOrders.totalSales,
+      cities: dataOrders.cities,
+      channels: dataOrders.channels,
+      lessProducts: dataOrders.lessProducts,
+      id: req.session.user.id
     });
+
+    let numberDays = moment(req.param('dateEnd'), 'YYYY/MM/DD').diff(moment(req.param('dateStart'), 'YYYY/MM/DD'), 'days');
+    for (let i = numberDays; i >= 0; i--) {
+      const date1 = moment(req.param('dateEnd')).subtract(i+1, 'days').format('YYYY/MM/DD');
+      const date2 = moment(req.param('dateEnd')).subtract(i, 'days').format('YYYY/MM/DD');
+      const day = date1;
+      const dateStart = new Date(date1).valueOf();
+      const dateEnd = new Date(date2).valueOf();
+      const count = await sails.helpers.dashboard.ordersToday(rights.name, seller, dateStart, dateEnd);
+      ordersByDay.push({day: day, total: count.totalOrders, totalPrice: count.totalPrice});
+    }
+    sails.sockets.blast('datadashboardgraphics', {
+      ordersByDay,
+      id: req.session.user.id
+    });
+
+    let dataTop = await sails.helpers.dashboard.top10(rights.name, seller, dateStart, dateEnd);
+    if(rights.name !== 'superadmin' && rights.name !== 'admin'){
+      sails.sockets.blast('datadashboardtop', {
+        topProductsCant: dataTop.topProductsCant,
+        topProductsPrice: dataTop.topProductsPrice,
+        id: req.session.user.id
+      });
+    }
+
+    let dataLogistics = await sails.helpers.dashboard.logistics(rights.name, seller, dateStart, dateEnd);
+    sails.sockets.blast('datadashboardlogistics', {
+      totalOrdersCancel: dataLogistics.totalOrdersCancel,
+      totalOrdersReturned: dataLogistics.totalOrdersReturned,
+      totalShippingCost: dataLogistics.totalShippingCost,
+      averageHoursLogist: dataLogistics.averageHoursLogist,
+      averageHoursClient: dataLogistics.averageHoursClient,
+      averageHoursCellar: dataLogistics.averageHoursCellar,
+      id: req.session.user.id
+    });
+
+    let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller, dateStart, dateEnd);
+    sails.sockets.blast('datadashboardinventory', {
+      totalInventory: dataInventory.totalInventory,
+      totalProductsReference: dataInventory.totalProductsReference,
+      totalProductsReferenceInactive: dataInventory.totalProductsReferenceInactive,
+      totalProductsReferenceActive: dataInventory.totalProductsReferenceActive,
+      productsInventory: dataInventory.productsInventory,
+      productsUnd: dataInventory.productsUnd,
+      lessProducts: dataTop.lessProducts,
+      id: req.session.user.id
+    });
+
+    return res.ok();
   },
   checkout: async function(req, res){
     if(req.session.cart===undefined || req.session.cart===null){

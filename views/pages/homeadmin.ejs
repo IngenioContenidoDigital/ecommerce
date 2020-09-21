@@ -7,16 +7,24 @@
         <span>Ventas</span>
       </a>
     </li>
-    <li class="tab" onclick="openTab(event,'Inventory')">
-      <a>
-        <span class="icon is-small"><i class="bx bxs-purchase-tag" aria-hidden="true"></i></span>
-        <span>Inventario</span>
-      </a>
-    </li>
+    <%if(session.user.rights.name !== 'superadmin'){%>
+      <li class="tab" onclick="openTab(event,'Top10')">
+        <a>
+          <span class="icon is-small"><i class="bx bx-award" aria-hidden="true"></i></span>
+          <span>Top 10 Productos</span>
+        </a>
+      </li>
+    <%}%>
     <li class="tab" onclick="openTab(event,'Logistics')">
       <a>
         <span class="icon is-small"><i class="bx bxs-package" aria-hidden="true"></i></span>
         <span>Logística</span>
+      </a>
+    </li>
+    <li class="tab" onclick="openTab(event,'Inventory')">
+      <a>
+        <span class="icon is-small"><i class="bx bxs-purchase-tag" aria-hidden="true"></i></span>
+        <span>Inventario</span>
       </a>
     </li>
     <!-- <li class="tab" onclick="openTab(event,'Account')">
@@ -150,42 +158,48 @@
           </div>
         </div>
       </div>
-      <div class="columns container-chart">
-        <div class="column">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
-                Top 10 Productos más vendidos (Precio)
-              </p>
-            </header>
-            <div class="card-content container-scroll">
-              <div class='list'>
-                <ul id="topProductsPrice">
-                </ul> 
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="column">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
-                Top 10 Productos más vendidos (Unidades)
-              </p>
-            </header>
-            <div class="card-content container-scroll">
-              <div class='list'>
-                <ul id="topProductsCant">
-                </ul> 
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
   </div>
+  <%if(session.user.rights.name !== 'superadmin'){%>
+    <div id="Top10" class="content-tab" style="display:none">
+      <section class="section-dashboard">
+        <div class="columns container-chart">
+          <div class="column">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">
+                  <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                  Top 10 Productos más vendidos (Precio)
+                </p>
+              </header>
+              <div class="card-content">
+                <div class='list'>
+                  <ul id="topProductsPrice">
+                  </ul> 
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">
+                  <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                  Top 10 Productos más vendidos (Unidades)
+                </p>
+              </header>
+              <div class="card-content">
+                <div class='list'>
+                  <ul id="topProductsCant">
+                  </ul> 
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  <%}%>
   <div id="Inventory" class="content-tab" style="display:none">
     <section class="section-dashboard">
       <div class="tile is-ancestor">
@@ -437,6 +451,7 @@
 </div>
 
 <script>
+  let imgurl = <%- JSON.stringify(imgurl) %>;
   var start = moment().startOf('month');
   var end = moment().endOf('month');
   var ctx1 = document.getElementById('pie-chart-und');
@@ -577,15 +592,18 @@
     return {dataLine1, dataLine2, labelsLine}
   }
 
-  function graphics(dataLine1, dataLine2, labelsLine, dataChannels, labelsChannels, dataCities, labelsCities) {
+  function graphics(dataLine1, dataLine2, labelsLine) {
     removeData(myChartLine);
+    addDataLine(myChartLine, labelsLine, dataLine1, dataLine2);
+  }
+  
+  function graphicsR(dataChannels, labelsChannels, dataCities, labelsCities) {
     removeData(myChartUnd);
     removeData(myChartPrice);
-    addDataLine(myChartLine, labelsLine, dataLine1, dataLine2);
     addData(myChartUnd, labelsChannels, dataChannels);
     addData(myChartPrice, labelsCities, dataCities);
   }
-  
+
   function addData(chart, labels, data) {
     chart.data.labels = labels;
     chart.data.datasets.forEach((dataset) => {
@@ -608,127 +626,172 @@
     });
     chart.update();
   }
-  
+
   function filterDate(start, end) {
     var dashboard = document.getElementById('containerDashboard');
     dashboard.style.display = 'none';
-    document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader bx-spin"></i></span></div>';
-    io.socket.post('/filter/dashboard', { dateStart: start, dateEnd: end }, (resData, jwRes) => {
-      if(jwRes.statusCode == 200) {
-        let imgurl = <%- JSON.stringify(imgurl) %>;
-        let dataCh = getChannels(resData.channels);
-        let dataCit = getCities(resData.cities);
-        let dataLin = orderDataLine(resData.ordersByDay);
-        var totalSales = document.querySelector('#totalSales');
-        var totalShippingCost = document.querySelector('#totalShippingCost');
-        var totalProducts = document.querySelector('#totalProducts');
-        var totalOrders = document.querySelector('#totalOrders');
-        var totalInventory = document.querySelector('#totalInventory');
-        var totalOrdersReturned = document.querySelector('#totalOrdersReturned');
-        var totalOrdersCancel = document.querySelector('#totalOrdersCancel');
-        var averageHoursLogist = document.querySelector('#averageHoursLogist');
-        var averageHoursClient = document.querySelector('#averageHoursClient');
-        var averageHoursCellar = document.querySelector('#averageHoursCellar');
-        var totalProductsReference = document.querySelector('#totalProductsReference');
-        var totalProductsActive = document.querySelector('#totalProductsActive');
-        var totalProductsInactive = document.querySelector('#totalProductsInactive');
-        totalSales.textContent = '$' + Math.round(resData.totalSales).toLocaleString('es-CO');
-        totalShippingCost.textContent = '$' + Math.round(resData.totalShippingCost).toLocaleString('es-CO');
-        totalProducts.textContent = resData.totalProducts;
-        totalOrders.textContent = resData.totalOrders;
-        totalInventory.textContent = resData.totalInventory;
-        totalOrdersReturned .textContent = resData.totalOrdersReturned;
-        totalOrdersCancel.textContent = resData.totalOrdersCancel;
-        totalProductsReference.textContent = resData.totalProductsReference;
-        totalProductsActive.textContent = resData.totalProductsReferenceActive;
-        totalProductsInactive.textContent = resData.totalProductsReferenceInactive;
-        averageHoursLogist.textContent = resData.averageHoursLogist + ' hrs';
-        averageHoursClient.textContent = resData.averageHoursClient + ' hrs';
-        averageHoursCellar.textContent = resData.averageHoursCellar + ' hrs';
+    document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader-circle bx-burst bx-rotate-90"></i></span></div>';
+    io.socket.post('/filter/dashboard', { dateStart: start, dateEnd: end });
+  }
 
-        var ulTopProductsPrice = document.querySelector("#topProductsPrice");
-        var ulTopProductsCant = document.querySelector("#topProductsCant");
-        var ulProductsUnd = document.querySelector("#productsUnd");
-        var ulProductsInventory = document.querySelector("#productsInventory");
-        var ullessProducts = document.querySelector("#lessProducts");
-        ulTopProductsPrice.innerHTML = ''
-        ulTopProductsCant.innerHTML = ''
-        ulProductsUnd.innerHTML = ''
-        ulProductsInventory.innerHTML = ''
-        ullessProducts.innerHTML = ''
+  function showInfoOrders(data) {
+    let dataCh = getChannels(data.channels);
+    let dataCit = getCities(data.cities);
+    var totalSales = document.querySelector('#totalSales');
+    var totalProducts = document.querySelector('#totalProducts');
+    var totalOrders = document.querySelector('#totalOrders');
+    totalSales.textContent = '$' + Math.round(data.totalSales).toLocaleString('es-CO');
+    totalProducts.textContent = data.totalProducts;
+    totalOrders.textContent = data.totalOrders;
+    
+    graphicsR(dataCh.dataChannels, dataCh.dataLabelsChannels, dataCit.dataCities, dataCit.dataLabels);
+    document.querySelector('.loading').innerHTML = '';
+    document.getElementById('containerDashboard').style.display = 'inline';
+  }
+  
+  function showInfoTop10(data) {
+    var ulTopProductsPrice = document.querySelector("#topProductsPrice");
+    var ulTopProductsCant = document.querySelector("#topProductsCant");
+    ulTopProductsPrice.innerHTML = '';
+    ulTopProductsCant.innerHTML = '';
 
-        resData.topProductsPrice.forEach(item => {
-          var imageProduct = "";
-          if (item.product.images && item.product.images.length > 0) {
-            item.product.images.forEach(image => {
-              if(image.cover == 1){
-                imageProduct = image.file;
-              }
-            })
+    data.topProductsPrice.forEach(item => {
+      var imageProduct = "";
+      if (item.product.images && item.product.images.length > 0) {
+        item.product.images.forEach(image => {
+          if(image.cover == 1){
+            imageProduct = image.file;
           }
-          var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-          ulTopProductsPrice.innerHTML += listItem;
-        });
-        resData.topProductsCant.forEach(item => {
-          var imageProduct = "";
-          if (item.product.images && item.product.images.length > 0) {
-            item.product.images.forEach(image => {
-              if(image.cover == 1){
-                imageProduct = image.file;
-              }
-            })
-          }
-          var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-          ulTopProductsCant.innerHTML += listItem;
-        });
-        resData.productsUnd.forEach(item => {
-          var imageProduct = "";
-          if (item.images && item.images.length > 0) {
-            item.images.forEach(image => {
-              if(image.cover == 1){
-                imageProduct = image.file;
-              }
-            })
-          }
-          var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
-          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
-          ulProductsUnd.innerHTML += listItem;
-        });
-        resData.productsInventory.forEach(item => {
-          var imageProduct = "";
-          if (item.images && item.images.length > 0) {
-            item.images.forEach(image => {
-              if(image.cover == 1){
-                imageProduct = image.file;
-              }
-            })
-          }
-          var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
-          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
-          ulProductsInventory.innerHTML += listItem;
-        });
-        resData.lessProducts.forEach(item => {
-          var imageProduct;
-          if (item.product.images && item.product.images.length > 0) {
-            item.product.images.forEach(image => {
-              if(image.cover == 1){
-                imageProduct = image.file;
-              }
-            })
-          }
-          var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-          var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-          ullessProducts.innerHTML += listItem;
-        });
-        
-        graphics(dataLin.dataLine1, dataLin.dataLine2, dataLin.labelsLine, dataCh.dataChannels, dataCh.dataLabelsChannels, dataCit.dataCities, dataCit.dataLabels);
-        document.querySelector('.loading').innerHTML = '';
-        dashboard.style.display = 'inline';
+        })
       }
+      var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
+      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
+      ulTopProductsPrice.innerHTML += listItem;
+    });
+    data.topProductsCant.forEach(item => {
+      var imageProduct = "";
+      if (item.product.images && item.product.images.length > 0) {
+        item.product.images.forEach(image => {
+          if(image.cover == 1){
+            imageProduct = image.file;
+          }
+        })
+      }
+      var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
+      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
+      ulTopProductsCant.innerHTML += listItem;
     });
   }
+
+  function showInfoInventory(data) {
+    var totalInventory = document.querySelector('#totalInventory');
+    var totalProductsReference = document.querySelector('#totalProductsReference');
+    var totalProductsActive = document.querySelector('#totalProductsActive');
+    var totalProductsInactive = document.querySelector('#totalProductsInactive');
+    var ulProductsUnd = document.querySelector("#productsUnd");
+    var ulProductsInventory = document.querySelector("#productsInventory");
+    var ullessProducts = document.querySelector("#lessProducts");
+
+    totalInventory.textContent = data.totalInventory;
+    totalProductsReference.textContent = data.totalProductsReference;
+    totalProductsActive.textContent = data.totalProductsReferenceActive;
+    totalProductsInactive.textContent = data.totalProductsReferenceInactive;
+    ulProductsUnd.innerHTML = '';
+    ulProductsInventory.innerHTML = '';
+    ullessProducts.innerHTML = '';
+    
+    data.productsUnd.forEach(item => {
+      var imageProduct = "";
+      if (item.images && item.images.length > 0) {
+        item.images.forEach(image => {
+          if(image.cover == 1){
+            imageProduct = image.file;
+          }
+        })
+      }
+      var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
+      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
+      ulProductsUnd.innerHTML += listItem;
+    });
+    data.productsInventory.forEach(item => {
+      var imageProduct = "";
+      if (item.images && item.images.length > 0) {
+        item.images.forEach(image => {
+          if(image.cover == 1){
+            imageProduct = image.file;
+          }
+        })
+      }
+      var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
+      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
+      ulProductsInventory.innerHTML += listItem;
+    });
+    data.lessProducts.forEach(item => {
+      var imageProduct;
+      if (item.product.images && item.product.images.length > 0) {
+        item.product.images.forEach(image => {
+          if(image.cover == 1){
+            imageProduct = image.file;
+          }
+        })
+      }
+      var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
+      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
+      ullessProducts.innerHTML += listItem;
+    });
+  }
+  
+  function showInfoLogistics(data) {
+    var totalShippingCost = document.querySelector('#totalShippingCost');
+    var totalOrdersReturned = document.querySelector('#totalOrdersReturned');
+    var totalOrdersCancel = document.querySelector('#totalOrdersCancel');
+    var averageHoursLogist = document.querySelector('#averageHoursLogist');
+    var averageHoursClient = document.querySelector('#averageHoursClient');
+    var averageHoursCellar = document.querySelector('#averageHoursCellar');
+    
+    totalShippingCost.textContent = '$' + Math.round(data.totalShippingCost).toLocaleString('es-CO');
+    totalOrdersReturned.textContent = data.totalOrdersReturned;
+    totalOrdersCancel.textContent = data.totalOrdersCancel;
+    averageHoursLogist.textContent = data.averageHoursLogist + ' hrs';
+    averageHoursClient.textContent = data.averageHoursClient + ' hrs';
+    averageHoursCellar.textContent = data.averageHoursCellar + ' hrs';
+  }
+  
+  io.socket.on('datadashboardorders', function (data){
+    let user = <%- JSON.stringify(session.user) %>;
+    if(user !== undefined && data.id === user.id){
+      showInfoOrders(data);
+    }
+  });
+
+  io.socket.on('datadashboardtop', function (data){
+    let user = <%- JSON.stringify(session.user) %>;
+    if(user !== undefined && data.id === user.id){
+      showInfoTop10(data);
+    }
+  });
+
+  io.socket.on('datadashboardgraphics', function (data){
+    let user = <%- JSON.stringify(session.user) %>;
+    if(user !== undefined && data.id === user.id){
+      let dataLin = orderDataLine(data.ordersByDay);
+      graphics(dataLin.dataLine1, dataLin.dataLine2, dataLin.labelsLine);
+    }
+  });
+
+  io.socket.on('datadashboardinventory', function (data){
+    let user = <%- JSON.stringify(session.user) %>;
+    if(user !== undefined && data.id === user.id){
+      showInfoInventory(data);
+    }
+  });
+
+  io.socket.on('datadashboardlogistics', function (data){
+    let user = <%- JSON.stringify(session.user) %>;
+    if(user !== undefined && data.id === user.id){
+      showInfoLogistics(data);
+    }
+  });
 
   // Initialize all input of date type.
   const calendars = bulmaCalendar.attach('[type="date"]', {
