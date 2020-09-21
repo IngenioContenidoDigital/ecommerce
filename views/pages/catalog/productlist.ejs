@@ -1,0 +1,121 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-pageloader@2.2.0/dist/css/bulma-pageloader.min.css">
+<div class="container">
+<% if (error != undefined || error != null) { %>
+  <div class="notification is-danger is-light" id="error">
+      <%= error %>
+  </div>
+<% } %>
+  <div class="pageloader is-active"><span class="title">Buscando Productos ...</span></div>
+  <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+    <a href="/product/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+    <a href="/import" class="has-text-primary"><i class='bx bx-cloud-upload'></i></a>
+    <a href="/multiple" class="has-text-primary"><i class='bx bx-meteor'></i></a>
+  </p>
+  <div class="table-container">
+      <table class="table is-hoverable is-size-7" id="products-table">
+          <thead>
+          <tr>
+              <th scope="col">Nombre</th>
+              <th scope="col">SKU</th>
+              <th scope="col">Marca</th>
+              <th scope="col">Precio</th>
+              <th scope="col">Color</th>
+              <th scope="col">Inventario</th>
+              <th scope="col">Activo</th>
+              <th scope="col">Opciones</th>
+              <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+              <th scope="col">Seller</th>
+              <%}%>
+              <th scope="col">Publicaciones</th>
+          </tr>
+          </thead>
+          <tbody>
+              
+          </tbody>
+      </table>
+  </div>
+  <div class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <header class="modal-card-head">
+        <p class="modal-card-title is-size-7 has-text-weight-bold"></p>
+        <button class="delete" aria-label="close"></button>
+      </header>
+      <section class="modal-card-body">
+        <p class="modal-reference is-size-7 has-text-weight-bold"></p>
+        <p class="image is-square">
+          <img async src="" />
+        </p>
+      </section>
+    </div>
+  </div>
+  <script>
+
+      let datatable = new simpleDatatables.DataTable('#products-table',{
+        searchable:true,
+        sortable:true,
+        paging:true,
+        perPageSelect:[5,10,20,30,50],
+        perPage:50,
+        labels: {
+          placeholder: "Buscar...",
+          perPage: "{select} registros por página",
+          noRows: "No se encontraron datos",
+          info: "Mostrando {start} a {end} de {rows} registros",
+        }
+      });  
+
+    /*document.addEventListener('DOMContentLoaded', function(){
+      
+    });*/
+
+    live('.state', 'click', function(){ 
+        var elm = this;
+        var id = this.getAttribute('product');
+        var status = null;
+        if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+        io.socket.put('/products/'+id,{active:status},function(resData, jwr){
+          if(resData.active===false){
+            removeClass(elm, 'bx-check-circle');
+            addClass(elm,'bx-x-circle');
+          }else{
+            removeClass(elm, 'bx-x-circle');
+            addClass(elm,'bx-check-circle');
+          }
+        });
+    });
+    live('.product-image','click',(e)=>{
+      let id = e.target.getAttribute('data-product');
+      io.socket.get('/getcover/'+id,resData=>{
+        if(resData){
+          let modal = document.querySelector('.modal');
+          modal.querySelector('.modal-card-title').innerHTML = resData.name.toUpperCase();
+          modal.querySelector('.modal-reference').innerHTML = 'REF:&nbsp;'+resData.reference.toUpperCase();
+          modal.querySelector('.image > img').setAttribute('src',resData.image);
+          addClass(modal,'is-active');
+        }
+      });
+    });
+    live('.modal-background, .delete','click',e=>{
+      let modal = document.querySelector('.modal');
+      removeClass(modal,'is-active');
+    });
+
+    io.socket.on('products',(p) =>{
+      let loader = document.querySelector('.pageloader');
+      if(hasClass(loader,'is-active')){
+        removeClass(loader,'is-active');
+      }
+      datatable.rows().add(p.products);
+    });
+
+    let catalogQuery = () => {
+      io.socket.post('/catalogquery');
+    }
+
+    catalogQuery();
+
+  </script>
+</div>

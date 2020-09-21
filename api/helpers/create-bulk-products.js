@@ -16,57 +16,72 @@ module.exports = {
         description: 'Error de Proceso'
       }
     },
-    fn: async function (inputs) {
-        return new Promise(async (resolve, reject)=>{
-                let cols = [];
+    fn: async function (inputs,exits) {
                 let errors = [];
                 let result = [];
                 let seller = inputs.seller;
                 let images = [];
-                let variations = [];
-
-                each = async (array, callback) => {
-                    for (let index = 0; index < array.length; index++) {
-                    await callback(array[index], index, array).catch((e) => errors.push(e) && console.log(e));
-                    }
-                }
                 
                 try {
-                        await each(inputs.products, async (product) => {
-                            let pro = await sails.helpers.checkProducts({ seller: seller, ...product }).catch((e)=>errors.push(e)  && console.log(e));
-                            
-                            if (typeof (pro) === typeof ({})){
-                              images.push({reference : pro.reference ,images : pro.images});
-                              variations.push({...pro});
-                              pro.images = [];
-                              pro.variations = [];
-                              cols.push(pro);
-                            }
-
-                        }).catch((e) => errors.push(e));
-                        result = await Product.createEach(cols).fetch().catch((e)=>console.log(e));
-                        
-                        await ImageUploadStatus.createEach(images.map((i)=>{
-                            return {
-                            images : i.images.map(i=>{
-                            return { src : i.src , file : i.file}
-                            }),
-                            cover : i.cover,
-                            position : i.position,
-                            product :result.filter((p)=>p.reference === i.reference)[0].id
-                            }
-                        })).catch((e)=>errors.push(e));
-
-                        await each(variations, async (v)=>{
-                            await sails.helpers.checkVariations( v ).catch(e => errors.push(e)); 
-                        });
-                        
-                        resolve({ errors, result });
+                  for(let product of inputs.products){
+                    let pro = await sails.helpers.checkProducts(product,seller)
+                            .catch((e)=> errors.push({name:'ERRDATA',message:e.message}));
+                    if (typeof pro === 'object'){
+                      images.push({reference : pro.reference,images : pro.images});
+                      let ct = await Category.find({id:pro.categories}).sort('level ASC');
+                      let tx = await Tax.findOne({id:pro.tax});
+                      let tmp = pro;
+                      delete tmp.variations;
+                      delete tmp.images;
+                      let pr = await Product.findOrCreate({reference:tmp.reference, seller:tmp.seller},tmp);
+                      if(pro.variations===undefined || pro.variations.length<1){
+                        let vr = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:'único', col:'único'},{gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
+                        await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
+                            product:pr.id,
+                            variation:vr.id,
+                            reference: '',
+                            supplierreference:pro.reference,
+                            ean13: 0,
+                            upc: 0,
+                            price: pro.price * (1+(tx.value/100)),
+                            quantity: 0
+                          });
+                      }else{
+                        for(let vr of pro.variations){
+                          let v = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:vr.name.trim().toLowerCase()},{gender:pro.gender,category:ct[0].id,name:vr.name.trim().toLowerCase()});
+                          await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
+                            product:pr.id,
+                            variation:v.id,
+                            reference: vr.reference ? vr.reference : '',
+                            supplierreference:pr.reference,
+                            ean13: vr.ean13 ? vr.ean13 : 0,
+                            upc: vr.upc ? vr.upc : 0,
+                            price: pr.price * (1+(tx.value/100)),
+                            quantity: vr.quantity ? vr.quantity : 0
+                          });
+                        }
+                      }
+                      delete pro.images;
+                      delete pro.variations;
+                      result.push(pr);
+                    }
+                  }
+                  
+                  await ImageUploadStatus.createEach(images.map((i)=>{
+                      return {
+                      images : i.images.map(i=>{
+                      return { src : i.src , file : i.file}
+                      }),
+                      cover : i.cover,
+                      position : i.position,
+                      product :result.filter((p)=>p.reference === i.reference)[0].id
+                      }
+                  })).catch((e)=>errors.push(e));
+                  
+                  return exits.success({ errors, result });
                 } catch (error) {
-                    reject(new Error("General error while procesing bulk products"));
+                    return exits.error(error.message);
                 }
-       
-        });
     }
   };
   

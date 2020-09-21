@@ -9,7 +9,7 @@ module.exports = {
     attributes: {
       uploaded:{type:'boolean', defaultsTo:false},
       cover : {type:'boolean', defaultsTo:false},
-      images : { type:'json' },
+      images : { type:'ref' },
       file : {type : 'string'},
       position  :  { type:'number' },
       product:{
