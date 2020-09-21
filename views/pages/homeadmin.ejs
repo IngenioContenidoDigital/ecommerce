@@ -655,32 +655,24 @@
     ulTopProductsPrice.innerHTML = '';
     ulTopProductsCant.innerHTML = '';
 
-    data.topProductsPrice.forEach(item => {
-      var imageProduct = "";
-      if (item.product.images && item.product.images.length > 0) {
-        item.product.images.forEach(image => {
-          if(image.cover == 1){
-            imageProduct = image.file;
-          }
-        })
-      }
-      var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-      ulTopProductsPrice.innerHTML += listItem;
-    });
-    data.topProductsCant.forEach(item => {
-      var imageProduct = "";
-      if (item.product.images && item.product.images.length > 0) {
-        item.product.images.forEach(image => {
-          if(image.cover == 1){
-            imageProduct = image.file;
-          }
-        })
-      }
-      var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-      ulTopProductsCant.innerHTML += listItem;
-    });
+    processDataProductsOrders(data.topProductsPrice, ulTopProductsPrice);
+    processDataProductsOrders(data.topProductsCant, ulTopProductsCant);
+  }
+
+  function showInfoLogistics(data) {
+    var totalShippingCost = document.querySelector('#totalShippingCost');
+    var totalOrdersReturned = document.querySelector('#totalOrdersReturned');
+    var totalOrdersCancel = document.querySelector('#totalOrdersCancel');
+    var averageHoursLogist = document.querySelector('#averageHoursLogist');
+    var averageHoursClient = document.querySelector('#averageHoursClient');
+    var averageHoursCellar = document.querySelector('#averageHoursCellar');
+    
+    totalShippingCost.textContent = '$' + Math.round(data.totalShippingCost).toLocaleString('es-CO');
+    totalOrdersReturned.textContent = data.totalOrdersReturned;
+    totalOrdersCancel.textContent = data.totalOrdersCancel;
+    averageHoursLogist.textContent = data.averageHoursLogist + ' hrs';
+    averageHoursClient.textContent = data.averageHoursClient + ' hrs';
+    averageHoursCellar.textContent = data.averageHoursCellar + ' hrs';
   }
 
   function showInfoInventory(data) {
@@ -700,7 +692,15 @@
     ulProductsInventory.innerHTML = '';
     ullessProducts.innerHTML = '';
     
-    data.productsUnd.forEach(item => {
+    processDataProducts(data.productsUnd, ulProductsUnd);
+    processDataProducts(data.productsInventory, ulProductsInventory);
+    processDataProductsOrders(data.lessProducts, ullessProducts);
+  }
+
+  function processDataProducts(products, ul) {
+    products.forEach(item => {
+      let div = document.createElement('div');
+      addClass(div,'list-item');
       var imageProduct = "";
       if (item.images && item.images.length > 0) {
         item.images.forEach(image => {
@@ -710,24 +710,17 @@
         })
       }
       var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
-      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
-      ulProductsUnd.innerHTML += listItem;
+      var listItem = '<figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div>';
+      div.innerHTML = listItem;
+      ul.appendChild(div);
     });
-    data.productsInventory.forEach(item => {
+  }
+
+  function processDataProductsOrders(products, ul) {
+    products.forEach(item => {
+      let div = document.createElement('div');
       var imageProduct = "";
-      if (item.images && item.images.length > 0) {
-        item.images.forEach(image => {
-          if(image.cover == 1){
-            imageProduct = image.file;
-          }
-        })
-      }
-      var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
-      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div></div>';
-      ulProductsInventory.innerHTML += listItem;
-    });
-    data.lessProducts.forEach(item => {
-      var imageProduct;
+      addClass(div,'list-item');
       if (item.product.images && item.product.images.length > 0) {
         item.product.images.forEach(image => {
           if(image.cover == 1){
@@ -737,24 +730,9 @@
       }
       var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
       var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
-      ullessProducts.innerHTML += listItem;
+      div.innerHTML = listItem;
+      ul.appendChild(div);
     });
-  }
-  
-  function showInfoLogistics(data) {
-    var totalShippingCost = document.querySelector('#totalShippingCost');
-    var totalOrdersReturned = document.querySelector('#totalOrdersReturned');
-    var totalOrdersCancel = document.querySelector('#totalOrdersCancel');
-    var averageHoursLogist = document.querySelector('#averageHoursLogist');
-    var averageHoursClient = document.querySelector('#averageHoursClient');
-    var averageHoursCellar = document.querySelector('#averageHoursCellar');
-    
-    totalShippingCost.textContent = '$' + Math.round(data.totalShippingCost).toLocaleString('es-CO');
-    totalOrdersReturned.textContent = data.totalOrdersReturned;
-    totalOrdersCancel.textContent = data.totalOrdersCancel;
-    averageHoursLogist.textContent = data.averageHoursLogist + ' hrs';
-    averageHoursClient.textContent = data.averageHoursClient + ' hrs';
-    averageHoursCellar.textContent = data.averageHoursCellar + ' hrs';
   }
   
   io.socket.on('datadashboardorders', function (data){
