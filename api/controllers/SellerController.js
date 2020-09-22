@@ -491,7 +491,7 @@ module.exports = {
     let referer = req.param('referer') ? req.param('referer') : '/';
 
     try{
-      await sails.helpers.sendEmail('email-createseller',{fullName:fullname,authlink},email,'Verifica tu Cuenta y Accede al Formulario');
+      await sails.helpers.sendEmail('email-createseller',{fullName:fullname,authlink},email,'Verifica tu Cuenta y Accede al Formulario','emailseller');
       return res.view('pages/front/registerseller',{referer:referer,countries:countries,error:null,notify:'Email Enviado! Revisa tu Bandeja de Entrada.'});
     }catch{
       return res.view('pages/front/registerseller',{referer:referer, countries:countries, error:'Algo salio mal, vuelve a intentar', notify:null});
