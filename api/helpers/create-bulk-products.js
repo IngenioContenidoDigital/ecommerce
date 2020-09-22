@@ -81,7 +81,6 @@ module.exports = {
                   
                   return exits.success({ errors, result });
                 } catch (error) {
-                  console.log(error)
                     return exits.error(error.message);
                 }
     }
