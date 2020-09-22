@@ -1,5 +1,3 @@
-const { log } = require('grunt');
-
 module.exports = {
   friendlyName: 'Dashboard inventory',
   description: 'Estadistica del dashboard pestaña inventario',
@@ -45,19 +43,21 @@ module.exports = {
     const data = await productsSeller.reduce(async (acc, product) => {
       const totalCant = await ProductVariation.sum('quantity').where({product: product.id});
       acc = await acc;
-      if (totalCant > 0 && totalCant < 5) {
-        acc.productsUnd.push(product);
+      if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
+        if (totalCant > 0 && totalCant < 5) {
+          acc.productsUnd.push(product);
+        }
+        if (totalCant === 0) {
+          acc.productsInventory.push(product);
+        }
       }
-      if (totalCant === 0) {
-        acc.productsInventory.push(product);
-      }
-      acc.totalInventory = acc.totalInventory + totalCant;
-      acc.totalProductsReference = acc.totalProductsReference + 1;
       if (product.active) {
         acc.totalProductsReferenceActive = acc.totalProductsReferenceActive + 1;
       } else {
         acc.totalProductsReferenceInactive = acc.totalProductsReferenceInactive + 1;
       }
+      acc.totalInventory = acc.totalInventory + totalCant;
+      acc.totalProductsReference = acc.totalProductsReference + 1;
       return acc;
     }, {
       totalInventory: 0,
@@ -65,7 +65,7 @@ module.exports = {
       totalProductsReferenceInactive: 0,
       totalProductsReferenceActive: 0,
       productsInventory: [],
-      productsUnd: [],
+      productsUnd: []
     });
 
     return exits.success(data);

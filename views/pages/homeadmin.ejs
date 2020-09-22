@@ -7,7 +7,7 @@
         <span>Ventas</span>
       </a>
     </li>
-    <%if(session.user.rights.name !== 'superadmin'){%>
+    <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
       <li class="tab" onclick="openTab(event,'Top10')">
         <a>
           <span class="icon is-small"><i class="bx bx-award" aria-hidden="true"></i></span>
@@ -160,7 +160,7 @@
       </div>
     </section>
   </div>
-  <%if(session.user.rights.name !== 'superadmin'){%>
+  <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
     <div id="Top10" class="content-tab" style="display:none">
       <section class="section-dashboard">
         <div class="columns container-chart">
@@ -253,58 +253,60 @@
           </div>
         </div>
       </div>
-      <div class="columns container-chart">
-        <div class="column">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
-                Productos con menos de 5 Unidades
-              </p>
-            </header>
-            <div class="card-content container-scroll">
-              <div class='list'>
-                <ul id="productsUnd">
-                </ul> 
+      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
+        <div class="columns container-chart">
+          <div class="column">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">
+                  <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                  Productos con menos de 5 Unidades
+                </p>
+              </header>
+              <div class="card-content container-scroll">
+                <div class='list'>
+                  <ul id="productsUnd">
+                  </ul> 
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">
+                  <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                  Productos sin Inventario
+                </p>
+              </header>
+              <div class="card-content container-scroll">
+                <div class='list'>
+                  <ul id="productsInventory">
+                  </ul> 
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="column">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
-                Productos sin Inventario
-              </p>
-            </header>
-            <div class="card-content container-scroll">
-              <div class='list'>
-                <ul id="productsInventory">
-                </ul> 
+        <div class="columns container-chart">
+          <div class="column">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">
+                  <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                  Productos menos Vendidos
+                </p>
+              </header>
+              <div class="card-content container-scroll">
+                <div class='list'>
+                  <ul id="lessProducts">
+                  </ul> 
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="columns container-chart">
-        <div class="column">
-          <div class="card">
-            <header class="card-header">
-              <p class="card-header-title">
-                <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
-                Productos menos Vendidos
-              </p>
-            </header>
-            <div class="card-content container-scroll">
-              <div class='list'>
-                <ul id="lessProducts">
-                </ul> 
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <%}%>
     </section>
   </div>
   <div id="Logistics" class="content-tab" style="display:none">
@@ -452,6 +454,7 @@
 
 <script>
   let imgurl = <%- JSON.stringify(imgurl) %>;
+  let user = <%- JSON.stringify(session.user) %>;
   var start = moment().startOf('month');
   var end = moment().endOf('month');
   var ctx1 = document.getElementById('pie-chart-und');
@@ -652,11 +655,14 @@
   function showInfoTop10(data) {
     var ulTopProductsPrice = document.querySelector("#topProductsPrice");
     var ulTopProductsCant = document.querySelector("#topProductsCant");
+    var ullessProducts = document.querySelector("#lessProducts");
     ulTopProductsPrice.innerHTML = '';
     ulTopProductsCant.innerHTML = '';
+    ullessProducts.innerHTML = '';
 
     processDataProductsOrders(data.topProductsPrice, ulTopProductsPrice);
     processDataProductsOrders(data.topProductsCant, ulTopProductsCant);
+    processDataProductsOrders(data.lessProducts, ullessProducts);
   }
 
   function showInfoLogistics(data) {
@@ -682,19 +688,17 @@
     var totalProductsInactive = document.querySelector('#totalProductsInactive');
     var ulProductsUnd = document.querySelector("#productsUnd");
     var ulProductsInventory = document.querySelector("#productsInventory");
-    var ullessProducts = document.querySelector("#lessProducts");
-
     totalInventory.textContent = data.totalInventory;
     totalProductsReference.textContent = data.totalProductsReference;
     totalProductsActive.textContent = data.totalProductsReferenceActive;
     totalProductsInactive.textContent = data.totalProductsReferenceInactive;
     ulProductsUnd.innerHTML = '';
     ulProductsInventory.innerHTML = '';
-    ullessProducts.innerHTML = '';
     
-    processDataProducts(data.productsUnd, ulProductsUnd);
-    processDataProducts(data.productsInventory, ulProductsInventory);
-    processDataProductsOrders(data.lessProducts, ullessProducts);
+    if(user.rights.name !== 'superadmin' && user.rights.name !== 'admin'){
+      processDataProducts(data.productsUnd, ulProductsUnd);
+      processDataProducts(data.productsInventory, ulProductsInventory);
+    }
   }
 
   function processDataProducts(products, ul) {
@@ -710,7 +714,7 @@
         })
       }
       var srcImg = imageProduct ? imgurl + '/images/products/' + item.id + '/' + imageProduct : "/images/not-available.png";
-      var listItem = '<figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/products/edit/' + item.id + '"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div>';
+      var listItem = '<figure class="image is-48x48 product-image"><img class="is-rounded" src='+ srcImg +' /></figure><div class="product-description is-uppercase"><a href="/product/edit/'+item.id+'" target="_blank"><h5>' + item.name + '</h5></a></div> <div class="product-sku">' + item.reference + '</div>';
       div.innerHTML = listItem;
       ul.appendChild(div);
     });
@@ -736,21 +740,18 @@
   }
   
   io.socket.on('datadashboardorders', function (data){
-    let user = <%- JSON.stringify(session.user) %>;
     if(user !== undefined && data.id === user.id){
       showInfoOrders(data);
     }
   });
 
   io.socket.on('datadashboardtop', function (data){
-    let user = <%- JSON.stringify(session.user) %>;
     if(user !== undefined && data.id === user.id){
       showInfoTop10(data);
     }
   });
 
   io.socket.on('datadashboardgraphics', function (data){
-    let user = <%- JSON.stringify(session.user) %>;
     if(user !== undefined && data.id === user.id){
       let dataLin = orderDataLine(data.ordersByDay);
       graphics(dataLin.dataLine1, dataLin.dataLine2, dataLin.labelsLine);
@@ -758,14 +759,12 @@
   });
 
   io.socket.on('datadashboardinventory', function (data){
-    let user = <%- JSON.stringify(session.user) %>;
     if(user !== undefined && data.id === user.id){
       showInfoInventory(data);
     }
   });
 
   io.socket.on('datadashboardlogistics', function (data){
-    let user = <%- JSON.stringify(session.user) %>;
     if(user !== undefined && data.id === user.id){
       showInfoLogistics(data);
     }
