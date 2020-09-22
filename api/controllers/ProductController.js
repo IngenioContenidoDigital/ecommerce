@@ -961,11 +961,13 @@ module.exports = {
     if(req.body.seller === undefined){seller = req.session.user.seller;}else{seller = req.body.seller;}
     let data = await sails.helpers.checkChannels(rights.name, seller);
 
-    let response = {};
+    let response = {
+      errors: []
+    };
     try{
       if (channel === 'dafiti') {
-          result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
-          response.items = result;
+        result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
+        response.items = result;
       } else if(channel === 'linio'){
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
@@ -975,12 +977,12 @@ module.exports = {
       }
       result = JSON.parse(result);
       if (result.ErrorResponse){
-        response.errors[0] = result.ErrorResponse.Head.ErrorMessage;
+        response['errors'].push(result.ErrorResponse.Head.ErrorMessage);
         error = result.ErrorResponse.Head.ErrorMessage;
       }
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }catch(err){
-      response.errors = err;
+      response['errors'].push(err.message);
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }
   },
