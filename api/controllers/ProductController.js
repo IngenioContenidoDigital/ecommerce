@@ -22,25 +22,22 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 module.exports = {
   showproducts: async function (req, res) {
-    req.setTimeout(240000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
       throw 'forbidden';
     }
-
+    let filter ={};
     let error = null;
     let products = null;
-    let totalproducts = 0;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-      totalproducts = await Product.count({ seller: req.session.user.seller });
-    } else {
-      totalproducts = await Product.count();
-    }
-    
+    const perPage = sails.config.custom.DEFAULTPAGE;
+    if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
+    totalproducts = await Product.count(filter);
+    let pages = Math.ceil(totalproducts/perPage);
     let moment = require('moment');
     return res.view('pages/catalog/productlist',{layout:'layouts/admin',
       products:products,
       error:error,
+      pages:pages,
       moment:moment
     });
   },
@@ -50,19 +47,18 @@ module.exports = {
       throw 'forbidden';
     }
     if (!req.isSocket) { return res.badRequest();}
-    let totalproducts = 0;
     let filter = {};
-    const perPage = 500;
+    let productdata = [];
+    let row = [];
+    let page = req.param('page') ? parseInt(req.param('page')) : 1;
+    const perPage = sails.config.custom.DEFAULTPAGE;
     if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
-    totalproducts = await Product.count(filter);
-    let pages = Math.ceil(totalproducts/perPage);
     
-    for(let i = 1 ; i<=pages; i++){
-      let productdata = [];
+      productdata = [];
       products = await Product.find({
         where: filter,
-        sort: 'id DESC',
-        skip: ((i-1)*perPage),
+        sort: 'createdAt DESC',
+        skip: ((page-1)*perPage),
         limit: perPage,
       })
       .populate('images', {cover:1})
@@ -70,18 +66,15 @@ module.exports = {
       .populate('mainColor')
       .populate('manufacturer')
       .populate('seller');
-
       for(let p of products){
         p.stock = await ProductVariation.sum('quantity',{product:p.id});
         let cl = 'bx-x-circle';
         if(p.active){cl='bx-check-circle'}
-        let srow = '';
-        if(rights.name==='superadmin' || rights.name==='admin'){srow = '<td class="align-middle"><span>'+p.seller.name+'</span></td>';}
         let published ='';
         if(p.dafiti){published+='<li><small>Dafiti</small></li>';}
         if(p.ml){published+='<li><small>Mercadolibre</small></li>';}
         if(p.linio){published+='<li><small>Linio</small></li>';}
-        let row = [
+        row = [
           `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="`+p.id+`">`+p.name+`</a></td>`,
           `<td class="align-middle">`+p.reference+`</td>`,
           `<td class="align-middle is-capitalized">`+(p.manufacturer ? p.manufacturer.name : '')+`</td>`,
@@ -90,15 +83,13 @@ module.exports = {
           `<td class="align-middle">`+p.stock+`</td>`,
           `<td class="align-middle"><span class="action"><i product="`+p.id+`" class="state bx `+cl+` is-size-5"></i></span></td>`,
           `<td class="align-middle"><a href="/product/edit/`+p.id+`" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/`+encodeURIComponent((p.name).replace(/\./g, '%2E'))+`/`+encodeURIComponent(p.reference)+`" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
-          srow,  
+          '<td class="align-middle"><span>'+p.seller.name+'</span></td>',
           `<td class="align-middle"><ul>`+published+`</ul></td>`,
         ];
         if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(8,1);}
         productdata.push(row);
       }
-      sails.sockets.blast('products',{products:productdata});
-    }
-    return res.ok();
+      return res.send(productdata);
   },
   productmgt: async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

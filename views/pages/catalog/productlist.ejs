@@ -103,19 +103,25 @@
       removeClass(modal,'is-active');
     });
 
-    io.socket.on('products',(p) =>{
-      let loader = document.querySelector('.pageloader');
-      if(hasClass(loader,'is-active')){
-        removeClass(loader,'is-active');
+    let pages = parseInt(<%= pages; %>);
+
+    let catalogQuery = (page) => {
+        io.socket.get('/catalogquery/'+page, p =>{
+          let loader = document.querySelector('.pageloader');
+          if(hasClass(loader,'is-active')){
+            removeClass(loader,'is-active');
+          }
+          datatable.rows().add(p);
+        });
+    };
+
+    let findCatalog = async (total) =>{
+      for(let page=1; page<=total;page++){
+        await catalogQuery(page);
       }
-      datatable.rows().add(p.products);
-    });
-
-    let catalogQuery = () => {
-      io.socket.post('/catalogquery');
     }
-
-    catalogQuery();
+    
+    findCatalog(pages);
 
   </script>
 </div>
