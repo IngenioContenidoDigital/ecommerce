@@ -6,6 +6,7 @@ module.exports = {
                 pagesCount
                 data{
                     name
+                    externalId
                     description
                     reference
                     descriptionShort
@@ -15,34 +16,6 @@ module.exports = {
                     tax{
                         name
                         rate
-                    }
-                    mainCategory {
-                        id
-                        name
-                        description
-                        parent
-                        active
-                        url
-                        level
-                        createdAt
-                        updateAt
-                        dafiti
-                        mercadolibre
-                        linio
-                    }
-                    categories{
-                        id
-                        name
-                        description
-                        parent
-                        active
-                        url
-                        level
-                        createdAt
-                        updateAt
-                        dafiti
-                        mercadolibre
-                        linio
                     }
                     gender
                     mainColor
