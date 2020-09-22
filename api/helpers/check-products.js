@@ -49,7 +49,6 @@ module.exports = {
                 }else{
                     throw new Error('La Marca seleccionada para el producto ' + inputs.product.name + ' no existe');
                 }
-                
 
                 let color = await sails.helpers.tools.findColor(inputs.product.name+' '+inputs.product.reference);
                 
@@ -79,6 +78,7 @@ module.exports = {
                 }
 
                 pro.seller = inputs.seller;
+                pro.externalId = inputs.product.externalId || '';
                 pro.active = inputs.product.active;
                 pro.width = (inputs.product.width === undefined || inputs.product.width === null || inputs.product.width < 1) ? 15 : inputs.product.width;
                 pro.height = (inputs.product.height === undefined || inputs.product.height === null || inputs.product.height < 1) ? 15 : inputs.product.height;
@@ -87,6 +87,8 @@ module.exports = {
                 pro.price =  (inputs.product.price / (1 + (tax.value/100)));
 
                 if (inputs.product.variations && inputs.product.variations.length > 0) {
+                    pro.variations = inputs.product.variations;
+
                     return exits.success(pro);
                 } else {
                     throw new Error('Variación ' + inputs.product.name + ' no disponible para este producto');

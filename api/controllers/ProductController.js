@@ -458,7 +458,7 @@ module.exports = {
     }
 
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers, rights:rights.name });
+    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers, rights:rights.name, seller : seller });
   },
 
   importexecute: async (req, res) => {
@@ -467,10 +467,13 @@ module.exports = {
       throw 'forbidden';
     }
 
+    let seller = null;
+    let sellers = Seller.find();
+
     if(rights.name!=='superadmin' && rights.name!=='admin'){
-      sellers = await Seller.find({ id: req.session.user.seller });
+       seller = await Seller.find({ id: req.session.user.seller });
     } else {
-      sellers = await Seller.find();
+       seller = req.body.seller;
     }
 
     let result = [];
@@ -478,8 +481,7 @@ module.exports = {
     let imageErrors = [];
     let imageItems = [];
 
-    let seller = req.session.user.seller || req.body.seller;
-    let integrations = await Integrations.find({ seller: seller });
+    let integrations = await Integrations.find({ seller: seller[0].id || seller});
     if (req.body.channel) {
 
       switch (req.body.importType) {
@@ -520,15 +522,12 @@ module.exports = {
           
           if(!isEmpty){
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
-            result = [rs.result]
-            errors = [rs.errors];
+            result = [rs.result || []]
+            errors = [rs.errors || []];
             //await sleep(5000);
           }else{
             break;
           }
-
-          /*console.log("PAGE NUM : ", page);
-          console.log("importedProducts : ", importedProducts);*/
           
           page++;
 
@@ -1042,4 +1041,22 @@ module.exports = {
       });
     });
   },
+
+  paginate : async (req, res)=>{
+    if (!req.isSocket) {
+        return res.badRequest();
+    }
+
+    let page = parseInt(req.param('page')) || 1;
+    let pageSize = parseInt(req.param('pageSize')) || 50;
+
+    let count  = await Product.count();
+    let products = await Product.find({}).paginate(page, pageSize);
+    
+     res.status(200).json({
+        products: products,
+        current: page,
+        pages: Math.ceil(count / pageSize)
+    })
+  }
 };
