@@ -61,7 +61,7 @@ module.exports = {
       let productdata = [];
       products = await Product.find({
         where: filter,
-        sort: 'createdAt DESC',
+        sort: 'id DESC',
         skip: ((i-1)*perPage),
         limit: perPage,
       })
@@ -297,19 +297,24 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productvariations')) {
       throw 'forbidden';
     }
-    let rows = [];
-    for (let row in req.body) {
-      rows.push(JSON.parse(req.body[row]));
+    if (!req.isSocket) {
+      return res.badRequest();
     }
-    for (let list in rows) {
-      ProductVariation.findOrCreate({ id: rows[list].productvariation }, { product: rows[list].product, variation: rows[list].variation, reference: rows[list].reference, supplierreference: rows[list].supplierreference, ean13: rows[list].ean13, upc: rows[list].upc, price: rows[list].price, quantity: rows[list].quantity })
+    let product = await Product.findOne({id:req.body[0].product});
+    for (let list of req.body) {
+      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity })
         .exec(async (err, record, wasCreated) => {
           if (err) { return res.send('error'); }
           if (!wasCreated) {
-            await ProductVariation.updateOne({ id: record.id }).set({ product: rows[list].product, variation: rows[list].variation, reference: rows[list].reference, supplierreference: rows[list].supplierreference, ean13: rows[list].ean13, upc: rows[list].upc, price: rows[list].price, quantity: rows[list].quantity });
+            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity });
           }
         });
     }
+    
+    if(product.dafiti){ await sails.helpers.channel.dafiti.product(product.id,'ProductUpdate',product.dafitiprice);}
+    if(product.ml){await sails.helpers.channel.mercadolibre.product(product.id,'Update',product.mlprice);}
+    if(product.linio){await sails.helpers.channel.linio.product(product.id,'Update',product.pricelinio);}
+    
     return res.send('ok');
   },
   findvariations: async (req, res) => {
