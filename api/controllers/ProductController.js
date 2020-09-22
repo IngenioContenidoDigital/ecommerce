@@ -477,10 +477,12 @@ module.exports = {
       throw 'forbidden';
     }
 
+    let seller = null;
+
     if(rights.name!=='superadmin' && rights.name!=='admin'){
-      sellers = await Seller.find({ id: req.session.user.seller });
+      seller = await Seller.find({ id: req.session.user.seller });
     } else {
-      sellers = await Seller.find();
+       seller = req.body.seller;
     }
 
     let result = [];
@@ -488,7 +490,6 @@ module.exports = {
     let imageErrors = [];
     let imageItems = [];
 
-    let seller = req.session.user.seller || req.body.seller;
     let integrations = await Integrations.find({ seller: seller });
     if (req.body.channel) {
 
