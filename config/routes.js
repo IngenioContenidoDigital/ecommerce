@@ -79,7 +79,7 @@ module.exports.routes = {
   'POST /color/create' : {controller:'ColorController',action:'createcolor'},
   'POST /color/edit/:id' : {controller:'ColorController',action:'editcolor'},
   'GET /products' : {controller:'ProductController',action:'showproducts'},
-  'POST /catalogquery' : {controller:'ProductController',action:'findcatalog'},
+  'GET /catalogquery/:page?' : {controller:'ProductController',action:'findcatalog'},
   'GET /product/:action?/:id?' : {controller:'ProductController',action:'productmgt'},
   'GET /import' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},

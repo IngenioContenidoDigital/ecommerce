@@ -10,7 +10,7 @@
 //IMPORT_MICROSERVICE  : 'https://import.1ecommerce.app:9000/graphql',
 
 module.exports.custom = {
-  IMPORT_MICROSERVICE  : process.env.IMPORT_MICROSERVICE || 'http://localhost:9000/graphql',
+  IMPORT_MICROSERVICE  : process.env.IMPORT_MICROSERVICE ? process.env.IMPORT_MICROSERVICE : 'https://import.1ecommerce.app:9000/graphql',
   PRODUCT_TYPE: 'Product',
   PRODUCT_VARIATION: 'ProductVariation',
   IMAGE_TYPE: 'ProductImage',
@@ -18,7 +18,8 @@ module.exports.custom = {
   SHOPIFY_CHANNEL : 'shopify',
   SHOPIFY_PAGESIZE : 50,
   WOOCOMMERCE_PAGESIZE : 50,
-  WOOCOMMERCE_CHANNEL : 'woocommerce'
+  WOOCOMMERCE_CHANNEL : 'woocommerce',
+  DEFAULTPAGE: 300,
 
   /***************************************************************************
   *                                                                          *

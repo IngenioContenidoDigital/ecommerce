@@ -68,7 +68,7 @@
                       <section class="tab-content">
                         <% provider = null; %>
                         <%if(typeof integrations =='object' && integrations.length>0){%>
-                            <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify')[0];%>
+                            <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify');%>
                             <% if(provider){%>
                               <form action="/import" method="POST" enctype="multipart/form-data">
                                 <%if(sellers && sellers.length>0){%>
@@ -95,14 +95,14 @@
                                   <div class="field">
                                       <div class="control">
                                         <label class="label">Proveedor</label>
-                                        <input type="text" disabled class="input is-primary" type="text"  placeholder="Primary input" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%> />
+                                        <input type="text" id="channelTxt" disabled class="input is-primary" type="text"  placeholder="Primary input" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%> />
                                         <input type="hidden" name="channel" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%>>
                                       </div>
                                   </div>
                                   <div class="field">
                                       <div class="control">
                                         <label class="label">Url</label>
-                                        <input type="text" disabled class="input is-primary"  type="text" placeholder="Primary input" <%if(provider!==null){%>value="<%=provider.url%>"<%}%> />
+                                        <input type="text" id="urlTxt" disabled class="input is-primary"  type="text" placeholder="Primary input" <%if(provider!==null){%>value="<%=provider.url%>"<%}%> />
                                         <input type="hidden" name="apiUrl" <%if(provider!==null){%>value="<%=provider.url%>"<%}%>>
                                       </div>
                                   </div>
@@ -173,6 +173,17 @@
     </div>
   </div>
   <script>
+    function setSellerInfo (){
+          var seller = <%- JSON.stringify(seller) %>;
+          var provider = <%- JSON.stringify(provider) %>;
+          document.getElementById("channelTxt").value = provider[0].channel;
+          document.getElementById("urlTxt").value = provider[0].url;
+          document.getElementsByName("pk")[0].value = provider[0].key;
+          document.getElementsByName("sk")[0].value = provider[0].secret;
+          document.getElementsByName("apiUrl")[0].value = provider[0].url;
+          document.getElementsByName("version")[0].value = provider[0].version;
+          document.getElementsByName("channel")[0].value = provider[0].channel;
+  }
     const fileInput = document.querySelector('#file-loader input[type=file]');
     fileInput.onchange = () => {
     if (fileInput.files.length > 0) {
@@ -206,6 +217,23 @@
             document.querySelector('.file-name').innerHTML='Cargar Archivo .csv a procesar'
         }
     })
+
+    live('select[name="seller"]','change',e=>{
+      var providers = <%- JSON.stringify(provider) %>;
+
+      let selected = providers.filter(function(p){
+        return p.seller === e.target.value;
+      })[0];
+      
+      document.getElementById("channelTxt").value = selected.channel;
+      document.getElementById("urlTxt").value = selected.url;
+
+      document.getElementsByName("pk")[0].value = selected.key;
+      document.getElementsByName("sk")[0].value = selected.secret;
+      document.getElementsByName("apiUrl")[0].value = selected.url;
+      document.getElementsByName("version")[0].value = selected.version;
+      document.getElementsByName("channel")[0].value = selected.channel;
+    });
 
     document.addEventListener("DOMContentLoaded", function(event) {
         let tabsWithContent = (function () {
@@ -243,5 +271,9 @@
 
   tabs[0].click();
 })();
-    });
+
+setSellerInfo();
+
+});
+
   </script>

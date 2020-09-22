@@ -109,20 +109,23 @@
       removeClass(modal,'is-active');
     });
 
-    io.socket.on('products',(p) =>{
-      let loader = document.querySelector('.pageloader');
-      if(hasClass(loader,'is-active')){
-        removeClass(loader,'is-active');
+    let pages = parseInt(<%= pages; %>);
+    
+    let catalogQuery = (page) => {
+      if(page>pages){
+        return;
+      }else{
+        io.socket.get('/catalogquery/'+page, p =>{
+          let loader = document.querySelector('.pageloader');
+          if(hasClass(loader,'is-active')){
+            removeClass(loader,'is-active');
+          }
+          datatable.rows().add(p);
+          catalogQuery(page+=1);
+        });
       }
-
-      datatable.rows().add(p.products);
-    });
-
-    let catalogQuery = () => {
-      io.socket.post('/catalogquery');
-    }
-
-    catalogQuery();
-
+    };
+    
+    catalogQuery(1);
   </script>
 </div>
