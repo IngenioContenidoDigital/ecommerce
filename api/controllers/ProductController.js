@@ -61,7 +61,7 @@ module.exports = {
       let productdata = [];
       products = await Product.find({
         where: filter,
-        sort: 'createdAt DESC',
+        sort: 'id DESC',
         skip: ((i-1)*perPage),
         limit: perPage,
       })
