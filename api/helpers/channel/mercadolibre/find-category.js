@@ -1,3 +1,5 @@
+const { log } = require("grunt");
+
 module.exports = {
   friendlyName: 'Find category',
   description: 'Find corresponding Mercadolibre Category',
@@ -22,7 +24,7 @@ module.exports = {
       if (response.length > 0) {
         return exits.success(response[0].category_id);
       } else {
-        return exits.error('Categoria no Localizada');
+        return exits.error(new Error('Categoria no Localizada'));
       }
     });
   }
