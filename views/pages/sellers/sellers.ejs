@@ -497,7 +497,6 @@
               let cities = document.querySelector('#ciudades')
               cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
               addClass(cities,'is-hidden');
-              console.log(country);
               io.socket.get('/find/regions/'+country,resdata =>{
                 if(resdata.regions.length>0){
                   for(let s of resdata.regions){
