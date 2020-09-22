@@ -86,6 +86,8 @@ module.exports = {
                 pro.price =  (inputs.product.price / (1 + (tax.value/100)));
 
                 if (inputs.product.variations && inputs.product.variations.length > 0) {
+                    pro.variations = inputs.product.variations;
+
                     return exits.success(pro);
                 } else {
                     throw new Error('Variación ' + inputs.product.name + ' no disponible para este producto');

@@ -524,15 +524,12 @@ module.exports = {
           
           if(!isEmpty){
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
-            result = [rs.result]
-            errors = [rs.errors];
+            result = [rs.result || []]
+            errors = [rs.errors || []];
             //await sleep(5000);
           }else{
             break;
           }
-
-          /*console.log("PAGE NUM : ", page);
-          console.log("importedProducts : ", importedProducts);*/
           
           page++;
 
