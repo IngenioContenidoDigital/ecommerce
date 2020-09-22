@@ -41,7 +41,8 @@ module.exports = {
     return res.view('pages/catalog/productlist',{layout:'layouts/admin',
       products:products,
       error:error,
-      moment:moment
+      moment:moment,
+      totalproducts : totalproducts
     });
   },
   findcatalog: async (req, res) => {
