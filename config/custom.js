@@ -19,7 +19,7 @@ module.exports.custom = {
   SHOPIFY_PAGESIZE : 50,
   WOOCOMMERCE_PAGESIZE : 50,
   WOOCOMMERCE_CHANNEL : 'woocommerce',
-  DEFAULTPAGE: 50,
+  DEFAULTPAGE: 300,
 
   /***************************************************************************
   *                                                                          *

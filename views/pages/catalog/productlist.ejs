@@ -104,24 +104,22 @@
     });
 
     let pages = parseInt(<%= pages; %>);
-
+    
     let catalogQuery = (page) => {
+      if(page>pages){
+        return;
+      }else{
         io.socket.get('/catalogquery/'+page, p =>{
           let loader = document.querySelector('.pageloader');
           if(hasClass(loader,'is-active')){
             removeClass(loader,'is-active');
           }
           datatable.rows().add(p);
+          catalogQuery(page+=1);
         });
-    };
-
-    let findCatalog = async (total) =>{
-      for(let page=1; page<=total;page++){
-        await catalogQuery(page);
       }
-    }
+    };
     
-    findCatalog(pages);
-
+    catalogQuery(1);
   </script>
 </div>
