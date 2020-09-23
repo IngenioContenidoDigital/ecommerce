@@ -1,54 +1,47 @@
-<% if (req.query.error !== undefined) { %>
-    <div class="notification is-danger is-light" id="error">
-      <button class="delete"></button>
-        <%= req.query.error %>
+<% if (req.query.error !== undefined || error !== null) { %>
+    <div class="notification is-danger is-light" style="width: 80%; margin: 0 auto;" id="error">
+      <button id="close" class="delete"></button>
+        <%= req.query.error || error %>
+    </div>
+  <% } %>
+<% if (notify !== null) { %>
+    <div class="notification is-success is-light" style="width: 80%; margin: 0 auto;">
+      <button id="close" class="delete"></button>
+        <%= notify %>
     </div>
   <% } %>
 <div class="container">
 <div class="box">
     <div class="columns">
         <div class="column">
-            <h4 class="title is-4">Creación de Cuenta Personal</h4>
+            <h4 class="title is-4">Creación de Cuenta Empresarial</h4>
         </div>
         <div class="column">
-            <a class="link is-pulled-right" href="/registerseller<%if(referer!=='/'){%>?referer=<%=referer%><%}%>">Crear una cuenta de empresa</a>
+            <a class="link is-pulled-right" href="/register<%if(referer!=='/' && typeof referer==='string'){%>?referer=<%=referer%><%}%>">Crear una cuenta personal</a>
         </div>
     </div>
     <hr>
-    <form id="register-form" method="POST" action="/register">
+    <form id="register-form" method="POST" action="/registerseller">
         <input type="hidden" name="token" />
         <input type="hidden" name="facebook" value="<%=req.query.facebook%>" />
-        <input type="hidden" name="referer" value="<%=referer%>"/>
+        <input type="hidden" value="<%=referer%>" name="referer" />
         <div class="columns">
             <div class="column">
                 <div class="field">
                     <p class="control has-icons-left">
-                        <input class="input" name="fullname" type="text" required placeholder="Nombre" value="<%=req.query.name%>" />
+                        <input class="input" name="dni" type="number" required placeholder="NIT" value="<%=req.query.nit%>" />
                         <span class="icon is-small is-left">
-                            <i class='bx bx-rename'></i>
+                            <i class='bx bx-id-card '></i>
                         </span>
                     </p>
                     </div>
             </div>
             <div class="column">
                 <div class="field has-addons">
-                    <p class="control">
-                      <span class="select">
-                        <select required name="dnitype">
-                         <option value="CC">CC</option>
-                         <option value="CE">CE</option>
-                         <option value="NIT">NIT</option>
-                         <!--<option value="PPN">PPN</option>
-                         <option value="SSN">SSN</option>
-                         <option value="LIC">LIC</option>
-                         <option value="DNI">DNI</option>-->
-                        </select>
-                      </span>
-                    </p>
                     <p class="control has-icons-left is-expanded">
-                        <input class="input" required name="dni" type="number" placeholder="Número de Identificación">
+                        <input class="input" required name="fullname" type="text" placeholder="Razón Social">
                         <span class="icon is-small is-left">
-                            <i class='bx bx-id-card' ></i>
+                            <i class='bx bx-rename' ></i>
                         </span>
                     </p>
                   </div>
@@ -70,6 +63,7 @@
                     <p class="control">
                       <span class="select">
                         <select required name="country">
+                            
                           <% countries.forEach((country) =>{ %>
                             <% if(country.active){ %>
                             <option class="is-uppercase" value="<%=country.id%>">+<%=country.prefix%></option>
@@ -87,19 +81,7 @@
                   </div>                  
             </div>
         </div>
-    <div class="field has-addons">
-        <p class="control has-icons-left is-expanded">
-        <input class="input pass" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
-        <span class="icon is-small is-left">
-            <i class='bx bxs-lock-alt'></i>
-        </span>
-        </p>
-        <p class="control" id="ojo">
-            <a class="button" id="eye">
-                <i class='bx bx-low-vision' ></i>
-            </a>
-            </p>
-    </div>
+
     <div class="field">
         <p class="control has-text-align-right">
         <button type="submit" id="submit-register" class="button is-info">
@@ -124,14 +106,17 @@
         }
     })
 
+    live('#close','click', e => {
+        document.querySelector("#close").parentNode.remove();
+        return false;
+
+    }); 
+
    live('#submit-register','click', e => {
         e.preventDefault();
         if(validateForm(document.querySelector('#register-form'))){
-            grecaptcha.execute('6LfK2-kUAAAAAHsiKw5JwC4Dd7AZYn3M9qmdJXY1', {action: 'register'}).then(token => {
-                document.querySelector('input[name="token"]').value=token;
-                let rform = document.querySelector('#register-form');
-                rform.submit();
-            });
+            let rform = document.querySelector('#register-form');
+            rform.submit();
         }
     });
 </script>

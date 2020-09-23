@@ -470,5 +470,150 @@ module.exports = {
       console.log(error);
       return res.send(error);
     }
+  },
+  registerformseller: async function(req, res){
+    let countries = await Country.find();
+    let referer = req.param('referer') ? req.param('referer') : '/';
+    return res.view('pages/front/registerseller',{referer:referer,countries:countries,error:null,notify:null});
+  },
+  createsellerfromform: async function(req, res){
+    
+    const jwt = require('jsonwebtoken');
+    let fullname = req.body.fullname;
+    let dni = req.body.dni;
+    let email = req.body.email;
+    let mobile = req.body.mobile;
+    let host = req.hostname;
+    let token = jwt.sign({ name:fullname, dni:dni, email: email, phone:mobile  }, 'secretiridioapp65', { expiresIn: '1h' });
+ 
+    let authlink='http://'+host+':'+req.port+'/'+'sellerform?token='+token;
+    let countries = await Country.find();
+    let referer = req.param('referer') ? req.param('referer') : '/';
+
+    try{
+      await sails.helpers.sendEmail('email-createseller',{fullName:fullname,authlink},email,'Verifica tu Cuenta y Accede al Formulario','emailseller');
+      return res.view('pages/front/registerseller',{referer:referer,countries:countries,error:null,notify:'Email Enviado! Revisa tu Bandeja de Entrada.'});
+    }catch{
+      return res.view('pages/front/registerseller',{referer:referer, countries:countries, error:'Algo salio mal, vuelve a intentar', notify:null});
+    }
+
+    
+  },
+  sellerform: async function(req, res){
+
+    const jwt = require('jsonwebtoken');
+    let countries = await Country.find();
+    let token = req.param('token') ? req.param('token') : null;
+
+    if(!token){
+      throw 'forbidden';
+    }else{
+      let action = 'createfromtoken';
+      let error=  null;
+      let sellers = null;
+      let integrations = null;
+  
+      jwt.verify(token, 'secretiridioapp65', function(err, decoded) {
+        if(err){
+          throw 'forbidden';
+        }else{
+          let seller = {
+            name:decoded.name,
+            dni:decoded.dni,
+            email:decoded.email,
+            phone:decoded.phone
+          };
+          res.view('pages/sellers/sellers',{sellers:sellers,action:action,seller:seller,error:error,countries:countries, integrations : integrations,token:token, success:null});  
+        }
+      });
+    }  
+  },
+  createsellerfromtoken: async function(req, res){
+    let referer = req.param('referer') ? req.param('referer') : '/';
+    let countries = await Country.find();
+    let error=null;
+    let isActive =false;
+
+    let address = await Address.create({
+      name:'Principal '+req.body.name.trim().toLowerCase(),
+      addressline1:req.body.addressline1,
+      addressline2:req.body.addressline2,
+      country:req.body.country,
+      region:req.body.region,
+      city:req.body.city,
+      zipcode:req.body.zipcode,
+      notes:req.body.notes
+    }).fetch();
+
+    
+    try{
+      
+      let filename = await sails.helpers.fileUpload(req,'logo',5000000,'images/sellers');
+
+      let seller = await Seller.create({
+        name:req.body.name.trim().toLowerCase(),
+        dni:req.body.dni,
+        contact:req.body.contact,
+        email:req.body.email,
+        tagManager: req.body.tagManager,
+        phone:req.body.phone,
+        domain:req.body.url,
+        logo: filename[0].filename,
+        rut: filename[1].filename,
+        cc: filename[2].filename,
+        auth1ecom:filename[3].filename,
+        ccr: filename[4].filename,
+        cbanco: filename[5].filename,
+        mainAddress:address.id,
+        active:isActive}).fetch();
+
+        let integration = {
+          channel:req.body.channel,
+          url:req.body.apiUrl,
+          key:req.body.key,
+          secret:req.body.secret ? req.body.secret : '',
+          seller:seller.id
+      };
+    
+      if(integration.channel && integration.url && integration.key && integration.secret){
+        if(req.body.user)
+          integration.user = req.body.user
+      
+      if(req.body.version)
+          integration.version = req.body.version
+    
+      Integrations.findOrCreate({ seller: seller.id, channel:integration.channel}, integration, async (err, record , created )=>{
+          if(err){
+            error = err;
+          }
+    
+          if(!created){
+            let updateIntegration = {
+                channel:req.body.channel,
+                url:req.body.url,
+                key:req.body.key,
+                secret:req.body.secret ? req.body.secret : '',
+                seller:seller.id
+            };
+    
+            if(req.body.user)
+              updateIntegration.user = req.body.user
+          
+            if(req.body.version)
+              updateIntegration.version = req.body.version
+          
+            await Integrations.updateOne({id:record.id}).set(updateIntegration);
+          }
+        });
+      }
+    }catch(err){
+      error=err;  
+    }
+    setTimeout(() => { return; }, 2000);
+    if (error===undefined || error===null){
+      return res.view('pages/front/registerseller',{referer:referer,countries:countries,error:error,notify:'Tus datos están siendo validados.'});
+    }else{
+      return res.view('pages/front/registerseller',{referer:referer, countries:countries, error:'Algo salio mal, vuelve a intentar dando click al link en tu correo, recuerda adjuntar tu logo y documentos.', notify:null});
+    }
   }
 };
