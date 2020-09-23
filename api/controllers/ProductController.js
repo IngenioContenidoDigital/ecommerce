@@ -981,21 +981,18 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let seller = null;
+    let seller = req.body.seller ? req.body.seller : req.session.user.seller;
     let error = null;
     let channel = req.body.channel;
     let result = [];
-    if(req.body.seller === undefined){seller = req.session.user.seller;}else{seller = req.body.seller;}
+    
     let data = await sails.helpers.checkChannels(rights.name, seller);
-
     let response = {
       errors: []
     };
     try{
       if (channel === 'dafiti') {
         result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
-        
-        result = JSON.parse(result);
         response.items = result;
         if (result.ErrorResponse){
           response['errors'].push({REF:'ERR',ERR:result.ErrorResponse.Head.ErrorMessage});
