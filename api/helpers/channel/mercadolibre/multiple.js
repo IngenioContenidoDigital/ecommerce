@@ -20,7 +20,7 @@ module.exports = {
     let moment = require('moment');
     let mercadolibre = false;
     let products = null;
-    let response = {Request:[]};
+    let response = {Request:[], Errors:[]};
     if(inputs.action==='ProductUpdate'){mercadolibre = true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate') {
       products = await Product.find({
@@ -145,7 +145,15 @@ module.exports = {
             }
             categories = categories.join(' ');
             let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
-            body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre, categories);
+            
+            try{
+              body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre, categories)
+            }catch(e){
+              console.log('interceptado');
+              console.log(e.message);
+              response.Errors.push({REF:'NOCTG',ERR:e.message});
+            }
+              
             let integration = await Integrations.findOne({channel: 'mercadolibre', seller: product.seller});
             let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
             if(storeid>0){body['official_store_id']=storeid;}
@@ -161,33 +169,37 @@ module.exports = {
                   delete body['description'];
                 }
                 mercadolibre.put('items/'+product.mlid, body,{'access_token': integration.secret},(error, result) =>{
-                  if(error){console.log(error); return exits.error(error);}
+                  if(error){response.Errors.push({REF:'NOCTG',ERR:error.message});return;}
                   itemMl = result;
                 });
                 break;
               case 'ProductCreate':
                 mercadolibre.post('items',body,{'access_token': integration.secret},async (error, result) =>{
-                  if(error){console.log(error); return exits.error(error);}
-                  await Product.updateOne({id: product.id}).set({
-                    ml: true,
-                    mlstatus: true,
-                    mlid: result.id
-                  });
+                  if(error){response.Errors.push({REF:'NOCTG',ERR:error.message});return;}
+                  if(result.id.length>0){
+                    await Product.updateOne({id: product.id}).set({
+                      ml: true,
+                      mlstatus: true,
+                      mlid: result.id
+                    });
+                  }
                   itemMl = result;
                 });
                 break;
               default:
                 mercadolibre.get('items/'+product.mlid,{'access_token': integration.secret},(error, result) =>{
-                  if(error){console.log(error); return exits.error(error);}
+                  if(error){response.Errors.push({REF:'NOCTG',ERR:error.message});return;}
                   itemMl = result;
                 });
                 break;
             }
             response.Request.push(itemMl);
           }
+        }else{
+          response.Errors.push({REF:'NODATA',ERR:'Sin productos para procesar'});
         }
       } catch(err) {
-        return exits.error(err);
+        response.Errors.push({REF:'ERR',ERR:err.message});
       }
     }
     return exits.success(response);

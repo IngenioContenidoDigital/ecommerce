@@ -6,7 +6,13 @@
       <%= error %>
   </div>
 <% } %>
-  <div class="pageloader is-active"><span class="title">Buscando Productos ...</span></div>
+<div class="pageloader is-active"><span class="title">Buscando Productos ...</span></div>
+<% if (!totalproducts  || totalproducts.length === 0) { %>
+  <script>
+    let loader = document.querySelector('.pageloader');
+    removeClass(loader,'is-active');
+  </script>
+<% }%>
   <p style="text-align: right;font-size: 20px; margin-right: 5px;">
     <a href="/product/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
     <a href="/import" class="has-text-primary"><i class='bx bx-cloud-upload'></i></a>
@@ -103,19 +109,23 @@
       removeClass(modal,'is-active');
     });
 
-    io.socket.on('products',(p) =>{
-      let loader = document.querySelector('.pageloader');
-      if(hasClass(loader,'is-active')){
-        removeClass(loader,'is-active');
+    let pages = parseInt(<%= pages; %>);
+    
+    let catalogQuery = (page) => {
+      if(page>pages){
+        return;
+      }else{
+        io.socket.get('/catalogquery/'+page, p =>{
+          let loader = document.querySelector('.pageloader');
+          if(hasClass(loader,'is-active')){
+            removeClass(loader,'is-active');
+          }
+          datatable.rows().add(p);
+          catalogQuery(page+=1);
+        });
       }
-      datatable.rows().add(p.products);
-    });
-
-    let catalogQuery = () => {
-      io.socket.post('/catalogquery');
-    }
-
-    catalogQuery();
-
+    };
+    
+    catalogQuery(1);
   </script>
 </div>

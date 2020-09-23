@@ -22,25 +22,22 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 module.exports = {
   showproducts: async function (req, res) {
-    req.setTimeout(240000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
       throw 'forbidden';
     }
-
+    let filter ={};
     let error = null;
     let products = null;
-    let totalproducts = 0;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-      totalproducts = await Product.count({ seller: req.session.user.seller });
-    } else {
-      totalproducts = await Product.count();
-    }
-    
+    const perPage = sails.config.custom.DEFAULTPAGE;
+    if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
+    totalproducts = await Product.count(filter);
+    let pages = Math.ceil(totalproducts/perPage);
     let moment = require('moment');
     return res.view('pages/catalog/productlist',{layout:'layouts/admin',
       products:products,
       error:error,
+      pages:pages,
       moment:moment
     });
   },
@@ -50,19 +47,18 @@ module.exports = {
       throw 'forbidden';
     }
     if (!req.isSocket) { return res.badRequest();}
-    let totalproducts = 0;
     let filter = {};
-    const perPage = 500;
+    let productdata = [];
+    let row = [];
+    let page = req.param('page') ? parseInt(req.param('page')) : 1;
+    const perPage = sails.config.custom.DEFAULTPAGE;
     if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
-    totalproducts = await Product.count(filter);
-    let pages = Math.ceil(totalproducts/perPage);
     
-    for(let i = 1 ; i<=pages; i++){
-      let productdata = [];
+      productdata = [];
       products = await Product.find({
         where: filter,
         sort: 'createdAt DESC',
-        skip: ((i-1)*perPage),
+        skip: ((page-1)*perPage),
         limit: perPage,
       })
       .populate('images', {cover:1})
@@ -70,18 +66,15 @@ module.exports = {
       .populate('mainColor')
       .populate('manufacturer')
       .populate('seller');
-
       for(let p of products){
         p.stock = await ProductVariation.sum('quantity',{product:p.id});
         let cl = 'bx-x-circle';
         if(p.active){cl='bx-check-circle'}
-        let srow = '';
-        if(rights.name==='superadmin' || rights.name==='admin'){srow = '<td class="align-middle"><span>'+p.seller.name+'</span></td>';}
         let published ='';
         if(p.dafiti){published+='<li><small>Dafiti</small></li>';}
         if(p.ml){published+='<li><small>Mercadolibre</small></li>';}
         if(p.linio){published+='<li><small>Linio</small></li>';}
-        let row = [
+        row = [
           `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="`+p.id+`">`+p.name+`</a></td>`,
           `<td class="align-middle">`+p.reference+`</td>`,
           `<td class="align-middle is-capitalized">`+(p.manufacturer ? p.manufacturer.name : '')+`</td>`,
@@ -90,15 +83,13 @@ module.exports = {
           `<td class="align-middle">`+p.stock+`</td>`,
           `<td class="align-middle"><span class="action"><i product="`+p.id+`" class="state bx `+cl+` is-size-5"></i></span></td>`,
           `<td class="align-middle"><a href="/product/edit/`+p.id+`" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/`+encodeURIComponent((p.name).replace(/\./g, '%2E'))+`/`+encodeURIComponent(p.reference)+`" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
-          srow,  
+          '<td class="align-middle"><span>'+p.seller.name+'</span></td>',
           `<td class="align-middle"><ul>`+published+`</ul></td>`,
         ];
         if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(8,1);}
         productdata.push(row);
       }
-      sails.sockets.blast('products',{products:productdata});
-    }
-    return res.ok();
+      return res.send(productdata);
   },
   productmgt: async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -297,19 +288,24 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productvariations')) {
       throw 'forbidden';
     }
-    let rows = [];
-    for (let row in req.body) {
-      rows.push(JSON.parse(req.body[row]));
+    if (!req.isSocket) {
+      return res.badRequest();
     }
-    for (let list in rows) {
-      ProductVariation.findOrCreate({ id: rows[list].productvariation }, { product: rows[list].product, variation: rows[list].variation, reference: rows[list].reference, supplierreference: rows[list].supplierreference, ean13: rows[list].ean13, upc: rows[list].upc, price: rows[list].price, quantity: rows[list].quantity })
+    let product = await Product.findOne({id:req.body[0].product});
+    for (let list of req.body) {
+      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity })
         .exec(async (err, record, wasCreated) => {
           if (err) { return res.send('error'); }
           if (!wasCreated) {
-            await ProductVariation.updateOne({ id: record.id }).set({ product: rows[list].product, variation: rows[list].variation, reference: rows[list].reference, supplierreference: rows[list].supplierreference, ean13: rows[list].ean13, upc: rows[list].upc, price: rows[list].price, quantity: rows[list].quantity });
+            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity });
           }
         });
     }
+    
+    if(product.dafiti){ await sails.helpers.channel.dafiti.product(product.id,'ProductUpdate',product.dafitiprice);}
+    if(product.ml){await sails.helpers.channel.mercadolibre.product(product.id,'Update',product.mlprice);}
+    if(product.linio){await sails.helpers.channel.linio.product(product.id,'Update',product.pricelinio);}
+    
     return res.send('ok');
   },
   findvariations: async (req, res) => {
@@ -462,7 +458,7 @@ module.exports = {
     }
 
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers, rights:rights.name });
+    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers, rights:rights.name, seller : seller });
   },
 
   importexecute: async (req, res) => {
@@ -471,10 +467,13 @@ module.exports = {
       throw 'forbidden';
     }
 
+    let seller = null;
+    let sellers = Seller.find();
+
     if(rights.name!=='superadmin' && rights.name!=='admin'){
-      sellers = await Seller.find({ id: req.session.user.seller });
+       seller = await Seller.find({ id: req.session.user.seller });
     } else {
-      sellers = await Seller.find();
+       seller = req.body.seller;
     }
 
     let result = [];
@@ -482,8 +481,7 @@ module.exports = {
     let imageErrors = [];
     let imageItems = [];
 
-    let seller = req.session.user.seller || req.body.seller;
-    let integrations = await Integrations.find({ seller: seller });
+    let integrations = await Integrations.find({ seller: seller[0].id || seller});
     if (req.body.channel) {
 
       switch (req.body.importType) {
@@ -524,15 +522,12 @@ module.exports = {
           
           if(!isEmpty){
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
-            result = [rs.result]
-            errors = [rs.errors];
+            result = [rs.result || []]
+            errors = [rs.errors || []];
             //await sleep(5000);
           }else{
             break;
           }
-
-          /*console.log("PAGE NUM : ", page);
-          console.log("importedProducts : ", importedProducts);*/
           
           page++;
 
@@ -965,26 +960,36 @@ module.exports = {
     if(req.body.seller === undefined){seller = req.session.user.seller;}else{seller = req.body.seller;}
     let data = await sails.helpers.checkChannels(rights.name, seller);
 
-    let response = {};
+    let response = {
+      errors: []
+    };
     try{
       if (channel === 'dafiti') {
-          result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
-          response.items = result;
+        result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
+        
+        result = JSON.parse(result);
+        response.items = result;
+        if (result.ErrorResponse){
+          response['errors'].push({REF:'ERR',ERR:result.ErrorResponse.Head.ErrorMessage});
+          error = result.ErrorResponse.Head.ErrorMessage;
+        }
       } else if(channel === 'linio'){
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
+        result = JSON.parse(result);
+        response.items = result;
+        if (result.ErrorResponse){
+          response['errors'].push({REF:'ERR',ERR:result.ErrorResponse.Head.ErrorMessage});
+          error = result.ErrorResponse.Head.ErrorMessage;
+        }
       } else if(channel === 'mercadolibre'){
         result = await sails.helpers.channel.mercadolibre.multiple(seller, req.body.action);
-        response.items = result;
-      }
-      result = JSON.parse(result);
-      if (result.ErrorResponse){
-        response.errors[0] = result.ErrorResponse.Head.ErrorMessage;
-        error = result.ErrorResponse.Head.ErrorMessage;
+        response.items = result.Request;
+        response.errors = result.Errors;
       }
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }catch(err){
-      response.errors = err;
+      response['errors'].push(err.message);
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }
   },
@@ -1044,4 +1049,22 @@ module.exports = {
       });
     });
   },
+
+  paginate : async (req, res)=>{
+    if (!req.isSocket) {
+        return res.badRequest();
+    }
+
+    let page = parseInt(req.param('page')) || 1;
+    let pageSize = parseInt(req.param('pageSize')) || 50;
+
+    let count  = await Product.count();
+    let products = await Product.find({}).paginate(page, pageSize);
+    
+     res.status(200).json({
+        products: products,
+        current: page,
+        pages: Math.ceil(count / pageSize)
+    })
+  }
 };

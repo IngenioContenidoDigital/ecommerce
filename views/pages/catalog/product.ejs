@@ -430,7 +430,7 @@
                 </tfoot>
             </table>
           </form>
-          <div class="buttons is-right">
+          <div id="bt-container" class="buttons is-right">
             <button id="save-variations" class="button is-primary"><i class="bx bx-save"></i>&nbsp;Guardar y Continuar</button>
           </div>
       <script>
@@ -554,38 +554,35 @@
           if(validateForm(document.getElementById('variations-form'))){
             let id = document.querySelector('#product-data').value;
             let table = document.getElementById('variations-table');
-            request = new XMLHttpRequest();
-            let data = new FormData();
-            let rowdata = [];
+            let data = [];
+
             for(let i=0;i<table.tBodies[0].rows.length;i++){
               let celldata = {};
               let field = null;
               let value = null;
 
-                celldata['product'] = id;
-                productvariation = table.tBodies[0].rows[i].getAttribute('productv') ? table.tBodies[0].rows[i].getAttribute('productv') : 0;
-                celldata['productvariation'] = productvariation;
-                for(let j=0;j<table.tBodies[0].rows[i].cells.length-1;j++){
-                    field = table.tBodies[0].rows[i].cells[j].querySelector('input');
-                    value = field.value;
-                    if(field.getAttribute('type')=='number') {
-                      if(value===null || value===''){
-                        value=0;
-                      }else{
-                        value=parseFloat(value);
-                      }
-                    }
+              celldata['product'] = id;
+              productvariation = table.tBodies[0].rows[i].getAttribute('productv') ? table.tBodies[0].rows[i].getAttribute('productv') : 0;
+              celldata['productvariation'] = productvariation;
+              for(let j=0;j<table.tBodies[0].rows[i].cells.length-1;j++){
+                field = table.tBodies[0].rows[i].cells[j].querySelector('input');
+                value = field.value;
+                if(field.getAttribute('type')=='number') {
+                  if(value===null || value===''){value=0;}else{value=parseFloat(value);}
+                }
                   
-                  let attr =field.getAttribute('field'); 
-                  celldata[attr] = value;
+                let attr =field.getAttribute('field'); 
+                celldata[attr] = value;
                 };
-                data.append(i,JSON.stringify(celldata));
+                data.push(celldata);
             }
-            request.addEventListener('load', () => {
-              window.location.href='/product/edit/'+id;
+            let button = document.querySelector('#bt-container');
+            button.innerHTML='<progress class="progress is-small is-primary" max="100">15%</progress>';
+            io.socket.post('/products/variations/'+id,data,(resData) => {
+              if(resData){
+                window.location.href='/product/edit/'+id;
+              }
             });
-            request.open('POST','/products/variations/'+id);
-            request.send(data);
           }
         });
 
