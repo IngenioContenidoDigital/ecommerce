@@ -308,7 +308,8 @@ module.exports = {
     }else{
       orders = await Order.find().sort('createdAt DESC')
       .populate('customer')
-      .populate('currentstatus');
+      .populate('currentstatus')
+      .populate('seller');
     }
 
     for(let st of orders){

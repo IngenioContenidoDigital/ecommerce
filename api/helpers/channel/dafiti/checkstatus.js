@@ -29,12 +29,12 @@ module.exports = {
     let sign = await sails.helpers.channel.dafiti.sign('GetQcStatus',product.seller,params);
     let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET');
     let result = JSON.parse(response);
-    if(result.SuccessResponse.Body.Status.State!==undefined){
+    if(result.SuccessResponse.Body.Status.State){
       await Product.updateOne({id:inputs.product}).set({dafiti:true,dafitiqc:true});
       return exits.success(result);
     }else{
       await Product.updateOne({id:inputs.product}).set({dafiti:false,dafitistatus:false,dafitiprice:0,dafitiqc:false});
-      return exits.notFound('notFound');
+      return exits.error({code:'NOTFOUND',message:'Producto no Localizado en Dafiti'});
     }
 
   }
