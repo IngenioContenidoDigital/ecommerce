@@ -409,7 +409,7 @@ module.exports = {
           }
       }
     }
-    return res.send(response);
+    return res.send(JSON.stringify(response));
   },
   mercadolibreadd: async (req, res) => {
     if (!req.isSocket) {
