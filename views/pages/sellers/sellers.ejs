@@ -18,7 +18,7 @@
               <form action="/seller/edit/<%= seller.id %>" method="POST" enctype="multipart/form-data" novalidate>
             <% } %>
             <% if(action=='createfromtoken') { %>
-              <form action="/seller/createfromtoken" method="POST" enctype="multipart/form-data" novalidate>
+              <form id="register-form-seller" action="/seller/createfromtoken" method="POST" enctype="multipart/form-data">
               <input type="hidden" name="token" value="<%=token%>" />
             <% } %>
               <div class="box">
@@ -134,7 +134,11 @@
                               <div class="field">
                               <label class="label">Consumer secret</label>
                               <div class="control has-icons-left">
-                                  <input class="input" type="text" name="secret" placeholder="Consumer secret" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].secret%>"<%}%>/>
+                                <%if(action=='createfromtoken'){%>
+                                  <input class="input" type="text" name="secret" placeholder="Consumer secret" <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].secret%>"<%}%>/>
+                                  <%}else{%>
+                                    <input class="input" type="text" name="secret" placeholder="Consumer secret" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].secret%>"<%}%>/>
+                                    <% } %>
                                   <span class="icon is-small is-left">
                                   <i class='bx bx-key' ></i>
                                   </span>
@@ -143,7 +147,11 @@
                               <div class="field">
                                   <label class="label">URL Petición</label>
                                   <div class="control has-icons-left">
-                                      <input class="input" type="text" name="apiurl" placeholder="Url de Petición" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].url%>"<%}%>/>
+                                    <%if(action=='createfromtoken'){%>
+                                      <input class="input" type="text" name="apiurl" placeholder="Url de Petición" <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].url%>"<%}%>/>
+                                      <%}else{%>
+                                        <input class="input" type="text" name="apiurl" placeholder="Url de Petición" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].url%>"<%}%>/>
+                                        <% } %>
                                       <span class="icon is-small is-left">
                                           <i class='bx bx-world'></i>
                                       </span>
@@ -243,7 +251,11 @@
                 <div class="field">
                   <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
                     <label class="file-label">
-                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                      <%if(action=='createfromtoken'){%>
+                        <input class="file-input" required accept="image/*" type="file" id="logo" name="logo" />
+                        <%}else{%>
+                          <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                          <% } %>
                       <span class="file-cta">
                         <span class="file-icon">
                           <i class="bx bx-upload"></i>
@@ -262,7 +274,7 @@
                   <div class="field">
                     <div id="file-loader-RUT" class="file is-size-7 has-name is-fullwidth">
                       <label class="file-label">
-                        <input class="file-input" accept=".pdf" type="file" id="rut" name="logo" />
+                        <input class="file-input" required accept=".pdf" type="file" id="rut" name="logo" />
                         <span class="file-cta">
                           <span class="file-icon">
                             <i class="bx bx-upload"></i>
@@ -280,7 +292,7 @@
                   <div class="field">
                     <div id="file-loader-camaracomercio" class="file is-size-7 has-name is-fullwidth">
                       <label class="file-label">
-                        <input class="file-input" accept=".pdf" type="file" id="cc" name="logo" />
+                        <input class="file-input" required accept=".pdf" type="file" id="cc" name="logo" />
                         <span class="file-cta">
                           <span class="file-icon">
                             <i class="bx bx-upload"></i>
@@ -298,7 +310,7 @@
                   <div class="field">
                     <div id="file-loader-auth1ecom" class="file is-size-7 has-name is-fullwidth">
                       <label class="file-label">
-                        <input class="file-input" accept=".pdf" type="file" id="auth1ecom" name="logo" />
+                        <input class="file-input" required accept=".pdf" type="file" id="auth1ecom" name="logo" />
                         <span class="file-cta">
                           <span class="file-icon">
                             <i class="bx bx-upload"></i>
@@ -316,7 +328,7 @@
                   <div class="field">
                     <div id="file-loader-ccrepresentate" class="file is-size-7 has-name is-fullwidth">
                       <label class="file-label">
-                        <input class="file-input" accept=".pdf" type="file" id="ccr" name="logo" />
+                        <input class="file-input" required accept=".pdf" type="file" id="ccr" name="logo" />
                         <span class="file-cta">
                           <span class="file-icon">
                             <i class="bx bx-upload"></i>
@@ -334,7 +346,7 @@
                   <div class="field">
                     <div id="file-loader-cbanco" class="file is-size-7 has-name is-fullwidth">
                       <label class="file-label">
-                        <input class="file-input" accept=".pdf" type="file" id="cbanco" name="logo" multiple/>
+                        <input class="file-input" required accept=".pdf" type="file" id="cbanco" name="logo" multiple/>
                         <span class="file-cta">
                           <span class="file-icon">
                             <i class="bx bx-upload"></i>
@@ -411,7 +423,7 @@
                   <% }else if (action=='create'){ %>
                     <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
                   <% }else if (action=='createfromtoken'){ %>
-                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
+                    <button id="submit-register-seller" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
                   <% } %>
                 </div>
               
@@ -625,5 +637,12 @@
           });
         }
       });
+      live('#submit-register-seller','click', e => {
+        e.preventDefault();
+        if(validateForm(document.querySelector('#register-form-seller'))){
+          let rform = document.querySelector('#register-form-seller');
+          rform.submit();
+        }
+    });
     </script>
 </div>
