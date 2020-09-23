@@ -101,6 +101,14 @@ module.exports = {
                 data.Product.SaleEndDate=moment(product.discount[0].to).format();
               }
               i++;
+              if(inputs.action==='ProductUpdate'){
+                delete data.Product.Name;
+                delete data.Product.PrimaryCategory,
+                delete data.Product.Categories,
+                delete data.Product.Description,
+                delete data.Product.Brand,
+                delete data.Product.Condition
+              }
               body.Request.push(data);
             }
           }
