@@ -75,8 +75,8 @@
                         <div class="container is-fluid">
                             <ol>
                             <% resultados.errors.forEach(error =>{%>
-                                <% if(error.message){ %>
-                                  <li><%=error.message%></li>
+                                <% if(typeof error ==='object'){ %>
+                                  <li><%=error.ERR%></li>
                                 <%} else {%>
                                   <li><%=error%></li>
                                 <% } %>

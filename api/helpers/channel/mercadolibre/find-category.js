@@ -17,6 +17,9 @@ module.exports = {
     success: {
       description: 'All done.',
     },
+    noCategory:{
+      description: 'No Category was found'
+    }
   },
   fn: async function (inputs,exits) {
     inputs.ml.get('sites/MCO/domain_discovery/search?limit=1&q='+encodeURIComponent(inputs.categories), (error,response) =>{
@@ -24,7 +27,7 @@ module.exports = {
       if (response.length > 0) {
         return exits.success(response[0].category_id);
       } else {
-        return exits.error(new Error('Categoria no Localizada'));
+        return exits.noCategory('Categoria no Localizada');
       }
     });
   }
