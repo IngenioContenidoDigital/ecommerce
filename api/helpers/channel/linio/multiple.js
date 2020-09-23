@@ -24,7 +24,7 @@ module.exports = {
     let body = {Request:[]};
     let products = null;
     let paffected = [];
-    let result = [];
+    let result = {Request:[], Errors:[]};
     let productvariation = null;
     if(inputs.action==='ProductUpdate'){linio = true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){

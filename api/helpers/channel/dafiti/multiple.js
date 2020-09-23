@@ -25,7 +25,7 @@ module.exports = {
     let products = null;
     let paffected = [];
     let productvariation = null;
-    let result = [];
+    let result = {Request:[], Errors:[]};
     if(inputs.action==='ProductUpdate'){
       dafiti=true;
     }

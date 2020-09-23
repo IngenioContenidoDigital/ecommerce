@@ -20,7 +20,7 @@ module.exports = {
     let moment = require('moment');
     let mercadolibre = false;
     let products = null;
-    let response = {Request:[]};
+    let response = {Request:[], Errors:[]};
     if(inputs.action==='ProductUpdate'){mercadolibre = true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate') {
       products = await Product.find({
