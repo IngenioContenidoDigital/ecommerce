@@ -145,7 +145,7 @@
                     <%if(resultados.imageItems!==undefined && resultados.imageItems.length>0){%>
                       <%=resultados.imageItems.length %>
                     <%}%>
-                    <%if(resultados.items!==undefined && resultados.items.length>0){%>
+                    <%if(resultados.items!==undefined && resultados.items.length >= 0){%>
                       <%=resultados.items.length %>
                     <%}%>
                     registros.
@@ -174,15 +174,14 @@
   </div>
   <script>
     function setSellerInfo (){
-          var seller = <%- JSON.stringify(seller) %>;
-          var provider = <%- JSON.stringify(provider) %>;
-          document.getElementById("channelTxt").value = provider[0].channel;
-          document.getElementById("urlTxt").value = provider[0].url;
-          document.getElementsByName("pk")[0].value = provider[0].key;
-          document.getElementsByName("sk")[0].value = provider[0].secret;
-          document.getElementsByName("apiUrl")[0].value = provider[0].url;
-          document.getElementsByName("version")[0].value = provider[0].version;
-          document.getElementsByName("channel")[0].value = provider[0].channel;
+      var provider = <%- JSON.stringify(provider) %>;
+      document.getElementById("channelTxt").value = provider[0].channel;
+      document.getElementById("urlTxt").value = provider[0].url;
+      document.getElementsByName("pk")[0].value = provider[0].key;
+      document.getElementsByName("sk")[0].value = provider[0].secret;
+      document.getElementsByName("apiUrl")[0].value = provider[0].url;
+      document.getElementsByName("version")[0].value = provider[0].version;
+      document.getElementsByName("channel")[0].value = provider[0].channel;
   }
     const fileInput = document.querySelector('#file-loader input[type=file]');
     fileInput.onchange = () => {
