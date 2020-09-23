@@ -1,18 +1,18 @@
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
   dafitiOrders: {
-    schedule: '03 15 * * * *',
+    schedule: '32 07 * * * *',
     onTick: async () => {
       console.log('Iniciando Captura de Ordenes Dafiti');
       let moment = require('moment');
       let integrations = await Integrations.find({channel:'dafiti'});
       integrations.forEach(async integration =>{
         try{
-          let statuses = ['pending'/*,'shipped','delivered','returned','canceled','failed'*/];
+          let statuses = ['pending','shipped','delivered','returned','canceled','failed'];
           let parameters=[];
           statuses.forEach(async state =>{
             if(state==='pending'){
-              parameters= ['CreatedBefore='+moment(/*'2020-09-06 21:29:00'*/).toISOString(true),'CreatedAfter='+moment(/*'2020-09-06 21:20:00'*/).subtract(127,'minutes').toISOString(true),'Status='+state,'SortDirection=ASC']
+              parameters= [/*'CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(127,'minutes').toISOString(true),*/'Status='+state,'SortDirection=ASC']
             }else{
               parameters= ['UpdatedBefore='+moment(/*'2020-07-14 23:59:59'*/).toISOString(true),'UpdatedAfter='+moment(/*'2020-07-14 00:00:00'*/).subtract(127,'minutes').toISOString(true),'Status='+state,'SortDirection=ASC']
             }
