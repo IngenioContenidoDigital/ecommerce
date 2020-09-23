@@ -47,8 +47,8 @@ module.exports = {
   },
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let questions = [];
-    let questionsSeller = [];
+    let questions = 0;
+    let questionsSeller = 0;
     let seller = req.session.user.seller || '';
     let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
     if(rights.name !== 'superadmin'){
@@ -119,7 +119,7 @@ module.exports = {
       id: req.session.user.id
     });
 
-    let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller, dateStart, dateEnd);
+    let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller);
     sails.sockets.blast('datadashboardinventory', {
       totalInventory: dataInventory.totalInventory,
       totalProductsReference: dataInventory.totalProductsReference,

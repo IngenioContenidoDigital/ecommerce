@@ -8,15 +8,7 @@ module.exports = {
     },
     seller: {
       type:'string',
-    },
-    dateStart: {
-      type: 'number',
-      required: true,
-    },
-    dateEnd: {
-      type:'number',
-      required: true,
-    },
+    }
   },
   exits: {
     success: {
@@ -24,49 +16,68 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let productsSeller = [];
+    let totalProductsReference = 0;
+    let totalProductsReferenceInactive = 0;
+    let totalProductsReferenceActive = 0;
+    let data = {};
 
     if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
-      productsSeller = await Product.find({
+      const productsSeller = await Product.find({
         where: {
-          createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd },
           seller: inputs.seller
         },
         select: ['name', 'reference', 'active']
       }).populate('images');
-    } else {
-      productsSeller = await Product.find({
-        where: {createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }},
-        select: ['name', 'reference', 'active']
-      }).populate('images');
-    }
-    const data = await productsSeller.reduce(async (acc, product) => {
-      const totalCant = await ProductVariation.sum('quantity').where({product: product.id});
-      acc = await acc;
-      if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
+      totalProductsReference = await Product.count({seller: inputs.seller});
+      totalProductsReferenceActive = await Product.count({seller: inputs.seller, active: true});
+      totalProductsReferenceInactive = await Product.count({seller: inputs.seller, active: false});
+      const dataVariations = await productsSeller.reduce(async (acc, product) => {
+        const totalCant = await ProductVariation.sum('quantity').where({product: product.id});
+        acc = await acc;
         if (totalCant > 0 && totalCant < 5) {
           acc.productsUnd.push(product);
         }
         if (totalCant === 0) {
           acc.productsInventory.push(product);
         }
-      }
-      if (product.active) {
-        acc.totalProductsReferenceActive = acc.totalProductsReferenceActive + 1;
-      } else {
-        acc.totalProductsReferenceInactive = acc.totalProductsReferenceInactive + 1;
-      }
-      acc.totalInventory = acc.totalInventory + totalCant;
-      acc.totalProductsReference = acc.totalProductsReference + 1;
-      return acc;
-    }, {
-      totalInventory: 0,
-      totalProductsReference: 0,
-      totalProductsReferenceInactive: 0,
-      totalProductsReferenceActive: 0,
-      productsInventory: [],
-      productsUnd: []
-    });
+        acc.totalInventory = acc.totalInventory + totalCant;
+        return acc;
+      }, {
+        totalInventory: 0,
+        productsInventory: [],
+        productsUnd: []
+      });
+      data = {
+        totalProductsReference,
+        totalProductsReferenceActive,
+        totalProductsReferenceInactive,
+        totalInventory: dataVariations.totalInventory,
+        productsInventory: dataVariations.productsInventory,
+        productsUnd: dataVariations.productsUnd
+      };
+    } else {
+      const productsSeller = await Product.find({
+        where: {},
+        select: ['name', 'reference', 'active']
+      }).populate('images');
+      totalProductsReference = await Product.count({});
+      totalProductsReferenceActive = await Product.count({active: true});
+      totalProductsReferenceInactive = await Product.count({active: false});
+      const dataVariations = await productsSeller.reduce(async (acc, product) => {
+        const totalCant = await ProductVariation.sum('quantity').where({product: product.id});
+        acc = await acc;
+        acc.totalInventory = acc.totalInventory + totalCant;
+        return acc;
+      }, {
+        totalInventory: 0
+      });
+      data = {
+        totalProductsReference,
+        totalProductsReferenceActive,
+        totalProductsReferenceInactive,
+        totalInventory: dataVariations.totalInventory
+      };
+    }
 
     return exits.success(data);
   }
