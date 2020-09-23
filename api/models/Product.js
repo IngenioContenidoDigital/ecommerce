@@ -29,6 +29,7 @@ module.exports = {
     seller: {model:'seller'},
     dafitiprice:{type:'number', defaultsTo:0},
     dafitistatus:{type:'boolean', defaultsTo:false},
+    dafitiqc:{type:'boolean', defaultsTo:false},
     dafiti:{type:'boolean', defaultsTo:false},
     linioprice:{type:'number', defaultsTo:0},
     liniostatus:{type:'boolean', defaultsTo:false},

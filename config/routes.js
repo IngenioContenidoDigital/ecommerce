@@ -83,6 +83,7 @@ module.exports.routes = {
   'GET /product/:action?/:id?' : {controller:'ProductController',action:'productmgt'},
   'GET /import' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},
+  'GET /dafiticheck' : {controller:'ProductController',action:'dafiticheck'},
 
   'GET /multiple' : {controller:'ProductController',action:'multiple'},
   'POST /multiple' : {controller:'ProductController',action:'multipleexecute'},

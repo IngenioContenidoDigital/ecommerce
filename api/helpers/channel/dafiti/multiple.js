@@ -146,8 +146,8 @@ module.exports = {
         let sign = await sails.helpers.channel.dafiti.sign(inputs.action,inputs.seller);
         let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
         result.Request = response;
-        if(inputs.action==='ProductCreate'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:false});}
-        if(inputs.action==='Image'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:true});}
+        if(inputs.action==='ProductCreate'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:false,dafitiqc:false});}
+        if(inputs.action==='Image'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:true,dafitiqc:false});}
       }catch(err){
         result.Errors.push({REF:'ERR',ERR:err.message});
       }

@@ -371,6 +371,7 @@ module.exports = {
           dafiti: true,
           dafitistatus: (product.dafitistatus) ? false : true,
           dafitiprice: req.body.dafitiprice,
+          dafitiqc: false,
         });
       }
       return res.send(response);
@@ -379,9 +380,36 @@ module.exports = {
         dafiti: false,
         dafitistatus: false,
         dafitiprice: 0,
+        dafitiqc: false,
       });
       return res.send(err);
     }
+  },
+  dafiticheck: async(req, res) =>{
+    req.setTimeout(900000);
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
+      throw 'forbidden';
+    }
+    let response = {
+      items:[],
+      errors:[]
+    }
+    let integrationSellers = await Integrations.find({channel:'dafiti'});
+    for(let s of integrationSellers){
+      let products = await Product.find({seller:s.seller,dafiti:true,dafitiqc:false})
+      for(let p of products){
+          let result = await sails.helpers.channel.dafiti.checkstatus(p.id)
+          .intercept('notFound', (e)=>{
+            response.errors.push({code:e.code,msg:p.reference});
+          });
+
+          if(result){
+            response.items.push({code:'OK',msg:p.reference});
+          }
+      }
+    }
+    return res.send(response);
   },
   mercadolibreadd: async (req, res) => {
     if (!req.isSocket) {
@@ -460,7 +488,6 @@ module.exports = {
     let error = req.param('error') ? req.param('error') : null;
     return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers, rights:rights.name, seller : seller });
   },
-
   importexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
@@ -1049,7 +1076,6 @@ module.exports = {
       });
     });
   },
-
   paginate : async (req, res)=>{
     if (!req.isSocket) {
         return res.badRequest();
