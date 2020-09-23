@@ -115,41 +115,43 @@
     live('.dropdown, .button, .button > span','click', e=>{
         let elm = e.target;
         let parent = elm.closest('.dropdown');
-        if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
-          removeClass(parent.querySelector('.dropdown-menu'),'is-invisible');
-        }
-        if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
-        if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
-        let node = elm.parentNode.parentNode;
-        if(!hasClass(node,'is-active')){
-            let id = elm.getAttribute('product');
-            let content = elm.parentNode.parentNode.querySelector('.dropdown-content')
-            if(content.children.length<1){
-                io.socket.get('/findproductvariations/'+id,resData=>{
-                    let o = document.createElement('a');
-                    addClass(o,'dropdown-item');
-                    addClass(o,'is-uppercase');
-                    addClass(o,'is-size-7');
-                    o.setAttribute('qty','0');
-                    o.setAttribute('value','0');
-                    o.text='Talla / Tamaño';
-                    content.prepend(o);
-                    resData.forEach(op =>{
-                        o = document.createElement('a');
-                        addClass(o,'dropdown-item');
-                        addClass(o,'is-uppercase');
-                        addClass(o,'is-size-7');
-                        o.setAttribute('qty',op.quantity);
-                        o.setAttribute('value',op.id);
-                        o.text=op.variation.name;
-                        content.appendChild(o)
-                    });
-                });
-            }
-            addClass(node,'is-active');
-        }else{
-            removeClass(node,'is-active');
-        }
+        if(!(e.target.id==='submit-register-seller')){
+          if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
+            removeClass(parent.querySelector('.dropdown-menu'),'is-invisible');
+          }  
+          if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
+          if(e.target.tagName==='SPAN'){elm = e.target.parentNode}
+          let node = elm.parentNode.parentNode;
+          if(!hasClass(node,'is-active')){
+              let id = elm.getAttribute('product');
+              let content = elm.parentNode.parentNode.querySelector('.dropdown-content')
+              if(content.children.length<1){
+                  io.socket.get('/findproductvariations/'+id,resData=>{
+                      let o = document.createElement('a');
+                      addClass(o,'dropdown-item');
+                      addClass(o,'is-uppercase');
+                      addClass(o,'is-size-7');
+                      o.setAttribute('qty','0');
+                      o.setAttribute('value','0');
+                      o.text='Talla / Tamaño';
+                      content.prepend(o);
+                      resData.forEach(op =>{
+                          o = document.createElement('a');
+                          addClass(o,'dropdown-item');
+                          addClass(o,'is-uppercase');
+                          addClass(o,'is-size-7');
+                          o.setAttribute('qty',op.quantity);
+                          o.setAttribute('value',op.id);
+                          o.text=op.variation.name;
+                          content.appendChild(o)
+                      });
+                  });
+              }
+              addClass(node,'is-active');
+          }else{
+              removeClass(node,'is-active');
+          }
+        }  
     });
 
     live('.dropdown-content','mouseout',e=>{

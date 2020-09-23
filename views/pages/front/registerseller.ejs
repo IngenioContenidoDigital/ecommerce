@@ -21,7 +21,7 @@
         </div>
     </div>
     <hr>
-    <form id="register-form" method="POST" action="/registerseller">
+    <form id="register-form-seller" method="POST" action="/registerseller">
         <input type="hidden" name="token" />
         <input type="hidden" name="facebook" value="<%=req.query.facebook%>" />
         <input type="hidden" value="<%=referer%>" name="referer" />
@@ -84,7 +84,7 @@
 
     <div class="field">
         <p class="control has-text-align-right">
-        <button type="submit" id="submit-register" class="button is-info">
+        <button type="submit" id="submit-register-seller" class="button is-info">
             Crear una Cuenta
         </button>
         </p>
@@ -112,10 +112,10 @@
 
     }); 
 
-   live('#submit-register','click', e => {
+   live('#submit-register-seller','click', e => {
         e.preventDefault();
-        if(validateForm(document.querySelector('#register-form'))){
-            let rform = document.querySelector('#register-form');
+        if(validateForm(document.querySelector('#register-form-seller'))){
+            let rform = document.querySelector('#register-form-seller');
             rform.submit();
         }
     });
