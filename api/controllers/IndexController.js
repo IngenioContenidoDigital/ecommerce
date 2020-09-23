@@ -80,7 +80,6 @@ module.exports = {
       totalSales: dataOrders.totalSales,
       cities: dataOrders.cities,
       channels: dataOrders.channels,
-      lessProducts: dataOrders.lessProducts,
       id: req.session.user.id
     });
 
@@ -99,11 +98,12 @@ module.exports = {
       id: req.session.user.id
     });
 
-    let dataTop = await sails.helpers.dashboard.top10(rights.name, seller, dateStart, dateEnd);
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
+      let dataTop = await sails.helpers.dashboard.top10(rights.name, seller, dateStart, dateEnd);
       sails.sockets.blast('datadashboardtop', {
         topProductsCant: dataTop.topProductsCant,
         topProductsPrice: dataTop.topProductsPrice,
+        lessProducts: dataTop.lessProducts,
         id: req.session.user.id
       });
     }
@@ -127,7 +127,6 @@ module.exports = {
       totalProductsReferenceActive: dataInventory.totalProductsReferenceActive,
       productsInventory: dataInventory.productsInventory,
       productsUnd: dataInventory.productsUnd,
-      lessProducts: dataTop.lessProducts,
       id: req.session.user.id
     });
 
