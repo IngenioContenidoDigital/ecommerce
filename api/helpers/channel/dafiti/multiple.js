@@ -24,7 +24,8 @@ module.exports = {
     let body={Request:[]};
     let products = null;
     let paffected = [];
-    let productvariation = null; 
+    let productvariation = null;
+    let result = [];
     if(inputs.action==='ProductUpdate'){
       dafiti=true;
     }
@@ -144,16 +145,16 @@ module.exports = {
         var xml = jsonxml(body,true);
         let sign = await sails.helpers.channel.dafiti.sign(inputs.action,inputs.seller);
         let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
-        //let result = JSON.parse(response);
+        result.Request = response;
         if(inputs.action==='ProductCreate'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:false});}
         if(inputs.action==='Image'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:true});}
-        return exits.success(response);
       }catch(err){
-        return exits.error(err);
+        result.Errors.push({REF:'ERR',ERR:err.message});
       }
     }else{
-      return exits.error(body);
+      result.Errors.push({REF:'NODATA',ERR:'Sin registros para procesar'});
     }
+    return exits.success(result);
   }
 
 

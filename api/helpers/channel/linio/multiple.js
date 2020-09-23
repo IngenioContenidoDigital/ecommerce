@@ -24,6 +24,7 @@ module.exports = {
     let body = {Request:[]};
     let products = null;
     let paffected = [];
+    let result = [];
     let productvariation = null;
     if(inputs.action==='ProductUpdate'){linio = true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate'){
@@ -146,14 +147,15 @@ module.exports = {
         var xml = jsonxml(body, true);
         let sign = await sails.helpers.channel.linio.sign(inputs.action, inputs.seller);
         let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+ sign, 'POST', xml);
+        result.Request = response;
         if(inputs.action === 'ProductCreate'){await Product.update({id: paffected}).set({linio: true, liniostatus: false});}
         if(inputs.action==='Image'){await Product.update({id:paffected}).set({linio:true,liniostatus:true});}
-        return exits.success(response);
       }catch(err){
-        return exits.error(err);
+        result.Errors.push({REF:'ERR',ERR:err.message});
       }
     }else{
-      return exits.error(body);
+      result.Errors.push({REF:'NODATA',ERR:'No hay registros para procesar'});
     }
+    return exits.success(result);
   }
 };

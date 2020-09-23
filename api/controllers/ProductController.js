@@ -966,18 +966,26 @@ module.exports = {
     try{
       if (channel === 'dafiti') {
         result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
+        
+        result = JSON.parse(result);
         response.items = result;
+        if (result.ErrorResponse){
+          response['errors'].push({REF:'ERR',ERR:result.ErrorResponse.Head.ErrorMessage});
+          error = result.ErrorResponse.Head.ErrorMessage;
+        }
       } else if(channel === 'linio'){
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
+        result = JSON.parse(result);
+        response.items = result;
+        if (result.ErrorResponse){
+          response['errors'].push({REF:'ERR',ERR:result.ErrorResponse.Head.ErrorMessage});
+          error = result.ErrorResponse.Head.ErrorMessage;
+        }
       } else if(channel === 'mercadolibre'){
         result = await sails.helpers.channel.mercadolibre.multiple(seller, req.body.action);
-        response.items = result;
-      }
-      result = JSON.parse(result);
-      if (result.ErrorResponse){
-        response['errors'].push(result.ErrorResponse.Head.ErrorMessage);
-        error = result.ErrorResponse.Head.ErrorMessage;
+        response.items = result.Request;
+        response.errors = result.Errors;
       }
       return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }catch(err){

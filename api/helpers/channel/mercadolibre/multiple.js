@@ -145,7 +145,9 @@ module.exports = {
             }
             categories = categories.join(' ');
             let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
-            body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre, categories);
+            body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre, categories)
+            .catch(e =>{ throw new Error(e.message) });
+            
             let integration = await Integrations.findOne({channel: 'mercadolibre', seller: product.seller});
             let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
             if(storeid>0){body['official_store_id']=storeid;}
@@ -161,13 +163,13 @@ module.exports = {
                   delete body['description'];
                 }
                 mercadolibre.put('items/'+product.mlid, body,{'access_token': integration.secret},(error, result) =>{
-                  if(error){console.log(error); return exits.error(error);}
+                  if(error){throw new Error(error.message)}
                   itemMl = result;
                 });
                 break;
               case 'ProductCreate':
                 mercadolibre.post('items',body,{'access_token': integration.secret},async (error, result) =>{
-                  if(error){console.log(error); return exits.error(error);}
+                  if(error){throw new Error(error.message);}
                   await Product.updateOne({id: product.id}).set({
                     ml: true,
                     mlstatus: true,
@@ -178,7 +180,7 @@ module.exports = {
                 break;
               default:
                 mercadolibre.get('items/'+product.mlid,{'access_token': integration.secret},(error, result) =>{
-                  if(error){console.log(error); return exits.error(error);}
+                  if(error){throw new Error(error.message);}
                   itemMl = result;
                 });
                 break;
@@ -187,7 +189,7 @@ module.exports = {
           }
         }
       } catch(err) {
-        return exits.error(err);
+        response.Errors.push({REF:product.reference,ERR:err.message});
       }
     }
     return exits.success(response);
