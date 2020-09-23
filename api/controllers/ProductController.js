@@ -522,8 +522,9 @@ module.exports = {
           
           if(!isEmpty){
             rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
-            result = [rs.result || []]
-            errors = [rs.errors || []];
+            result = [...result, ...rs.result];
+            errors = [...errors, ...rs.errors];	   
+            console.log(rs);
             //await sleep(5000);
           }else{
             break;
