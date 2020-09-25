@@ -17,7 +17,7 @@ module.exports = {
       required:true
     },
     prefix:{
-      type:'string'
+      type:'number'
     },
     regions:{
       collection:'region',
