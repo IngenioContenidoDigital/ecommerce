@@ -973,5 +973,20 @@ module.exports = {
         current: page,
         pages: Math.ceil(count / pageSize)
     })
+  },
+  pvseller: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin') {
+      throw 'forbidden';
+    }
+    req.setTimeout(600000);
+    let products = await Product.find({seller:req.param('seller')});
+    for(let p of products){
+      let pvariations = await ProductVariation.find({product:p.id});
+      for(let pv of pvariations){
+        await ProductVariation.updateOne({id:pv.id}).set({seller:p.seller});
+      }
+    }
+    return res.ok();
   }
 };
