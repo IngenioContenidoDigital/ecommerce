@@ -293,11 +293,11 @@ module.exports = {
     }
     let product = await Product.findOne({id:req.body[0].product});
     for (let list of req.body) {
-      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity })
+      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller:product.seller })
         .exec(async (err, record, wasCreated) => {
           if (err) { return res.send('error'); }
           if (!wasCreated) {
-            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity });
+            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller:product.seller });
           }
         });
     }

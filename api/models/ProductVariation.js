@@ -14,6 +14,9 @@ module.exports = {
     variation:{
       model:'variation'
     },
+    seller:{
+      model:'seller'
+    },
     reference:{type:'string'},
     supplierreference:{type:'string'},
     ean13:{type:'number', max:9999999999999, isInteger:true},
