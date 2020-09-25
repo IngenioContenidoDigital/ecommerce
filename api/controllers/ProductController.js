@@ -486,21 +486,25 @@ module.exports = {
     }
 
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, integrations: integrations, sellers: sellers, rights:rights.name, seller : seller });
+    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, resultados:null, integrations: integrations, sellers: sellers, rights:rights.name, seller : seller });
   },
   importexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-
+    let axios = require('axios');
     let seller = null;
-    let sellers = Seller.find();
+    let integrations = [];
+    let sellers = [];
 
     if(rights.name!=='superadmin' && rights.name!=='admin'){
-       seller = await Seller.find({ id: req.session.user.seller });
+       seller = req.session.user.seller;
+       integrations = await Integrations.find({ seller: seller });
     } else {
        seller = req.body.seller;
+       integrations = await Integrations.find();
+       sellers = await Seller.find();
     }
 
     let result = [];
@@ -508,7 +512,6 @@ module.exports = {
     let imageErrors = [];
     let imageItems = [];
 
-    let integrations = await Integrations.find({ seller: seller[0].id || seller});
     if (req.body.channel) {
 
       switch (req.body.importType) {
@@ -598,167 +601,50 @@ module.exports = {
 
       return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors : imageErrors, imageItems : imageItems }, integrations: integrations, sellers : sellers, rights:rights.name});
     }
-
-    let header = null;
-    let checkheader = {
-      product: ['name', 'reference', 'description', 'descriptionShort', 'active', 'price', 'tax', 'manufacturer', 'width', 'height', 'length', 'weight', 'gender', 'mainColor', 'categories', 'mainCategory'],
-      productvariation: ['supplierreference', 'reference', 'ean13', 'upc', 'quantity', 'variation'],
-      productimage: ['reference', 'seller', 'route', 'files']
-    };
-    let checked = false;
-    const https = require('https');
+    req.setTimeout(600000);
     let route = sails.config.views.locals.imgurl;
-    let findFromReference = async (reference) => {
-      return await Product.findOne({ reference: reference });
-    };
-    let checkdata = async (header, data) => {
-      let body = {
-        items: [],
-        errors: [],
-      };
-      try {
-        let fila = 2;
-        for (let d in data) {
-          let row = data[d].split(';');
-          let result = {};
-          try {
-            if (req.body.entity === 'ProductVariation') {
-              for (let i in header) {
-                switch (header[i]) {
-                  case 'reference':
-                    result[header[i]] = row[i] ? row[i].trim().toUpperCase() : '';
-                    break;
-                  case 'supplierreference':
-                    result[header[i]] = row[i].trim().toUpperCase();
-                    break;
-                  case 'ean13':
-                    result[header[i]] = row[i] ? parseInt(row[i]) : 0;
-                    break;
-                  case 'upc':
-                    result[header[i]] = row[i] ? parseInt(row[i]) : 0;
-                    break;
-                  case 'quantity':
-                    result[header[i]] = row[i] ? parseInt(row[i]) : 0;
-                    break;
-                  case 'seller':
-                    result[header[i]] = (await Seller.findOne({ id: seller})).id;
-                    break;
-                  default:
-                    result[header[i]] = row[i].toString();
-                    break;
-                }
-              }
-
-              let product = await Product.findOne({ reference: result['supplierreference'], seller: result['seller'] })
-                .populate('tax')
-                .populate('categories');
-              let categories = [];
-              if (product) {
-                product.categories.forEach(category => {
-                  if (!categories.includes(category.id)) {
-                    categories.push(category.id);
-                  }
-                });
-                result['product'] = product.id;
-                result['price'] = parseInt(product.price * (1 + product.tax.value / 100));
-                let variation = await Variation.find({
-                  where: { name: result['variation'].replace(',', '.').trim().toLowerCase(), gender: product.gender, category: { 'in': categories } },
-                  limit: 1
-                });
-                if (variation) {
-                  result['variation'] = (variation[0]).id;
-                  delete result['seller'];
-                } else {
-                  let v = result['variation'];
-                  delete result['variation'];
-                  result = null;
-                  throw { name: 'NOVARIATION', message: 'Variación ' + v + ' no disponible para este producto' };
-                }
-              } else {
-                let r = result['supplierreference'];
-                result = null;
-                throw { name: 'NOPRODUCT', message: 'Producto ' + r + ' no localizado' };
-              }
-            }
-            if (req.body.entity === 'Product') {
-              for (let i in header) {
-                switch (header[i]) {
-                  case 'reference':
-                    result[header[i]] = row[i].trim().toUpperCase();
-                    break;
-                  case 'name':
-                    result[header[i]] = row[i].trim().toLowerCase();
-                    break;
-                  case 'tax':
-                    result[header[i]] = (await Tax.findOne({ value: row[i] })).id;
-                    break;
-                  case 'categories':
-                    let categories = await sails.helpers.categorize(row[i]);
-                    result[header[i]] = categories.categories;
-                    result['mainCategory'] = categories.mainCategory;
-                    break;
-                  case 'mainCategory':
-                    break;
-                  case 'mainColor':
-                    result[header[i]] = (await sails.helpers.tools.findColor(row[i].trim().toLowerCase()))[0];
-                    break;
-                  case 'manufacturer':
-                    result[header[i]] = (await Manufacturer.findOne({ name: row[i].trim().toLowerCase() })).id;
-                    break;
-                  case 'gender':
-                    result[header[i]] = (await sails.helpers.tools.findGender(row[i].trim().toLowerCase()))[0];
-                    break;
-                  case 'active':
-                    let eval = row[i].toLowerCase().trim();
-                    result[header[i]] = (eval === 'true' || eval === '1' || eval === 'verdadero' || eval === 'si' || eval === 'sí') ? true : false;
-                    break;
-                  case 'width':
-                    result[header[i]] = parseFloat(row[i].replace(',', '.'));
-                    break;
-                  case 'height':
-                    result[header[i]] = parseFloat(row[i].replace(',', '.'));
-                    break;
-                  case 'length':
-                    result[header[i]] = parseFloat(row[i].replace(',', '.'));
-                    break;
-                  case 'weight':
-                    result[header[i]] = parseFloat(row[i].replace(',', '.'));
-                    break;
-                  case 'seller':
-                    result[header[i]] = (await Seller.findOne({ id: seller})).id;
-                    break;
-                  case 'price':
-                    result[header[i]] = parseFloat(row[i].replace(',', '.'));
-                    break;
-                  case 'variation':
-                    result[header[i]] = parseFloat(row[i].replace(',', '.'));
-                    break;
-                  default:
-                    result[header[i]] = row[i];
-                    break;
-                }
-              }
-            }
-            if (result !== null) {
-              body['items'].push(result);
-            }
-          } catch (err) {
-            body['errors'].push('Fila ' + fila + ': ' + err.message);
-          }
-          fila++;
-        }
-        return body;
-      } catch (err) {
-        return err;
-      }
-    };
+    const csv = require('csvtojson');
+    let json = [];
+    let type = req.body.entity ? req.body.entity : null;
     try {
       if (req.body.entity === 'ProductImage') {
-        let result = {
-          items: [],
-          errors: []
-        };
         let imageslist = await sails.helpers.fileUpload(req, 'file', 200000000, 'images/products/tmp');
+        json = imageslist;
+      } else {
+        let filename = await sails.helpers.fileUpload(req, 'file', 2000000, 'uploads')
+        let response = await axios.get(route + '/uploads/' + filename[0].filename, {responseType: 'arraybuffer'});
+        let buffer = Buffer.from(response.data, 'utf-8');
+        json = await csv({eol:'\n',delimiter:';'}).fromString(buffer.toString());
+      };
+      
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, sellers:sellers, seller:seller, integrations:integrations, resultados: json, rights:rights.name, type:type });
+    } catch (err) {
+      return res.redirect('/import?error=' + err.message);
+    }
+  },
+  checkdata: async(req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
+      throw 'forbidden';
+    }
+    if(!req.isSocket){
+      throw 'forbidden';
+    }
+    let result={
+      items:[],
+      errors:[],
+    }
+    let seller = null;
+    if(rights.name!=='superadmin' && rights.name!=='admin'){
+       seller = req.session.user.seller;
+    } else {
+       seller = req.body.seller;
+    }
+
+    let prod = {};
+    
+    try {
+      if(req.body.type === 'ProductImage'){
         let AWS = require('aws-sdk');
         AWS.config.loadFromPath('./config.json');
         var s3 = new AWS.S3();
@@ -766,143 +652,139 @@ module.exports = {
           Bucket: 'iridio.co',
           ContentType: 'image/jpeg'
         };
-        let fila = 1;
-        for (let r in imageslist) {
-          try {
-            let file = imageslist[r].original.split('.');
-            let info = file[0].split('_');
-            let reference = info[0].trim().toUpperCase();
-            let position = info[1];
-            let cover = (position === 1 || position === '1') ? 1 : 0;
-            let product = await findFromReference(reference);
-            let productimage = {
-              file: imageslist[r].filename,
-              position: parseInt(position),
-              cover: parseInt(cover),
-              product: product.id
-            };
+        
+        let file = req.body.product.original.split('.');
+        let info = file[0].split('_');
+        let reference = info[0].trim().toUpperCase();
+        let position = info[1];
+        let cover = (position === 1 || position === '1') ? 1 : 0;
+        let product = await Product.findOne({ reference: reference, seller: seller })
+        .catch(err=>{throw err});
+        if(product){
+        let productimage = {
+          file: req.body.product.filename,
+          position: parseInt(position),
+          cover: parseInt(cover),
+          product: product.id
+        };
 
-            params['Key'] = 'images/products/' + product.id + '/' + imageslist[r].filename;
-            params['CopySource'] = '/iridio.co/images/products/tmp/' + imageslist[r].filename;
+        params['Key'] = 'images/products/' + product.id + '/' + req.body.product.filename;
+        params['CopySource'] = '/iridio.co/images/products/tmp/' + req.body.product.filename;
 
-            s3.copyObject(params, async (err, data) => {
-              if (err) { result['errors'].push('Archivo ' + fila + ': ' + err.message); }
-              if (data) {
-                await ProductImage.create(productimage);
-              }
-            });
-            result['items'].push({ fila: fila, archivo: imageslist[r].original });
-          } catch (err) {
-            result['errors'].push('Archivo ' + imageslist[r].original + ': ' + err.message);
+        s3.copyObject(params, async (err, data) => {
+          if (err) { throw new Error(err.message); }
+          if (data) {
+            await ProductImage.create(productimage);
           }
-          fila++;
+        });
+        result['items'].push({archivo: req.body.product.original });
+        }else{
+          throw new Error('Ref:'+reference+' - Carga la imágen en la página de edición del producto.')
         }
-        return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: result, rights:rights.name });
-      } else {
-        let filename = await sails.helpers.fileUpload(req, 'file', 2000000, 'uploads');
-        https.get(route + '/uploads/' + filename[0].filename, response => {
-          let str = '';
-          response.on('data', chunk => { str += chunk.toString(); });
-          response.on('end', () => {
-            let rows = str.split('\n');
-            header = rows[0].split(';');
-            if (req.body.entity === 'Product') {
-              header.push('mainCategory');
-              if (JSON.stringify(header) === JSON.stringify(checkheader.product)) { 
-                checked = true;
-                header.push('seller');
-              }
-            }
-            if (req.body.entity === 'ProductVariation') {
-              for (let h in header) {
-                if (header[h] === 'reference') { header[h] = 'supplierreference'; }
-                if (header[h] === 'reference2') { header[h] = 'reference'; }
-              }
-              if (JSON.stringify(header) === JSON.stringify(checkheader.productvariation)) { 
-                checked = true;
-                header.push('seller'); 
-              }
-            }
-            try {
-              if (checked) {
-                rows.shift();
-                rowdata = rows;
-                checkdata(header, rowdata).then(async result => {
-                  try {
-                    if (req.body.entity === 'Product') {
-                      result.items.forEach(element => {
-                        Product.findOrCreate({ reference: element.reference, seller: element.seller }, element)
-                        .exec(async(err, product, wasCreated)=> {
-                          if (err) { return res.serverError(err); }
-                          if(!wasCreated) {
-                            let updateProduct = {
-                              name: element.name,
-                              reference: element.reference,
-                              description: element.description,
-                              descriptionShort: element.descriptionShort,
-                              active: element.active,
-                              price: element.price,
-                              tax: element.tax,
-                              manufacturer: element.manufacturer,
-                              width: element.width,
-                              height: element.height,
-                              length: element.length,
-                              weight: element.weight,
-                              gender: element.gender,
-                              mainColor: element.mainColor,
-                              categories: element.categories,
-                              mainCategory: element.mainCategory,
-                              seller: element.seller
-                            };
-                            await Product.updateOne({id: product.id}).set(updateProduct);
-                          }
-                        });
-                      });
-                    }
-                    if (req.body.entity === 'ProductVariation') {
-                      result.items.forEach(element => {
-                        ProductVariation.findOrCreate({product: element.product, variation: element.variation}, element)
-                        .exec(async(err, productVariat, wasCreated)=> {
-                          if (err) { return res.serverError(err); }
-                          if(!wasCreated) {
-                            let updateVariation = {
-                              supplierreference: element.supplierreference,
-                              reference: element.reference,
-                              ean13: element.ean13,
-                              upc: element.upc,
-                              quantity: element.quantity,
-                              variation: element.variation,
-                              product: element.product,
-                              price: element.price
-                            };
-                            try{
-                              await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
-                            }catch(err){
-                              console.log(err);
-                            }
-                          }
-                        });
-                      });
-                    }
-                  } catch (cerr) {
-                    return res.redirect('/import?error=' + cerr.message);
-                  }
-                  return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: result, rights:rights.name });
-                }).catch(err => {
-                  return res.redirect('/import?error=' + err.message);
-                });
-              } else {
-                throw { name: 'E_FORMATO', message: 'El Archivo no cumple con el formato requerido para ser procesado.' };
-              }
-            } catch (err) {
-              return res.redirect('/import?error=' + err.message);
+      }
+      if (req.body.type === 'ProductVariation') {
+        prod.reference = req.body.product.reference2 ? req.body.product.reference2.trim().toUpperCase() : '';
+        prod.supplierreference = req.body.product.reference.trim().toUpperCase();  
+        prod.ean13=req.body.product.ean13 ? parseInt(req.body.product.ean13) : 0;
+        prod.upc= req.body.product.upc ? parseInt(req.body.product.upc) : 0;
+        prod.quantity= req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
+        //prod.seller= seller;
+        
+        
+        let product = await Product.findOne({ reference: prod.supplierreference, seller: seller })
+          .populate('tax')
+          .populate('categories');
+        let categories = [];
+        
+        if (product) {
+          product.categories.forEach(category => {
+            if (!categories.includes(category.id)) {
+              categories.push(category.id);
             }
           });
+          prod.product = product.id;
+          prod.price = parseInt(product.price * (1 + product.tax.value / 100));
+          let variation = await Variation.find({
+            where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, category: { 'in': categories } },
+            limit: 1
+          });
+          if (variation) {
+            prod.variation = (variation[0]).id;                  
+
+            ProductVariation.findOrCreate({product: prod.product, variation: prod.variation}, prod)
+              .exec(async(err, productVariat, wasCreated)=> {
+                if (err) { throw err; }
+                if(!wasCreated) {
+                  let updateVariation = {
+                    supplierreference: prod.supplierreference,
+                    reference: prod.reference,
+                    ean13: prod.ean13,
+                    upc: prod.upc,
+                    quantity: prod.quantity,
+                    variation: prod.variation,
+                    product: prod.product,
+                    price: prod.price
+                  };
+                  await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
+                }
+              });
+              result['items'].push(prod);
+          } else {            
+            throw new Error('Variación ' + req.body.product.variation + ' no disponible para este producto');
+          }
+        } else {
+          throw new Error('Producto principal no localizado');
+        }
+      }
+      if (req.body.type === 'Product'){
+        
+        prod.reference=req.body.product.reference.trim().toUpperCase();
+        prod.name=req.body.product.name.trim().toLowerCase();
+        prod.tax=(await Tax.findOne({ value: req.body.product.tax })).id;
+
+        let mainColor = await sails.helpers.tools.findColor(req.body.product.mainColor.trim().toLowerCase());
+        if(mainColor.length>0){prod.mainColor=mainColor[0];}else{throw new Error('No logramos identificar el color.');}
+        let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.trim().toLowerCase() })
+        if(brand){prod.manufacturer=brand.id;}else{throw new Error('No logramos identificar la marca del producto.');}
+        let gender = await sails.helpers.tools.findGender(req.body.product.gender.trim().toLowerCase());
+        if(gender.length>0){prod.gender=gender[0];}else{throw new Error('No logramos identificar el género para este producto.');}
+        let eval = req.body.product.active.toLowerCase().trim();
+        prod.active=(eval === 'true' || eval === '1' || eval === 'verdadero' || eval === 'si' || eval === 'sí') ? true : false;;
+        prod.width=parseFloat(req.body.product.width.replace(',', '.'));
+        prod.height=parseFloat(req.body.product.height.replace(',', '.'));
+        prod.length=parseFloat(req.body.product.length.replace(',', '.'));
+        prod.weight=parseFloat(req.body.product.weight.replace(',', '.'));
+        prod.seller=seller;
+        prod.price=parseFloat(req.body.product.price.replace(',', '.'));
+        prod.description=req.body.product.description;
+        prod.descriptionShort=req.body.product.descriptionShort;
+
+        let categories = await sails.helpers.tools.findCategory(prod.name+' '+prod.gender);
+        if(categories.length>0){
+          prod.categories = categories;
+            let main = await Category.find({id:categories}).sort('level DESC');
+            prod.mainCategory = main[0].id;
+        }else{
+          throw new Error('Categoria No Localizada');
+        }
+        Product.findOrCreate({ reference: prod.reference, seller: seller }, prod)
+        .exec(async(err, record, wasCreated)=> {
+          if (err) { throw err; }
+          if(!wasCreated) {
+            await Product.updateOne({id: record.id}).set(prod)
+            .catch(err => {
+              throw err;
+            })
+          }
         });
+        result['items'].push(prod);
       }
     } catch (err) {
-      return res.redirect('/import?error=' + err.message);
+      if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: '+ req.body.product.variation + ' - '+err.message);}
+      if (req.body.type === 'Product') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }
+      if (req.body.type === 'ProductImage') { result['errors'].push('Archivo: ' + req.body.product.original + ': ' + err.message); }
     }
+    return res.send(result);
   },
   searchindex: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

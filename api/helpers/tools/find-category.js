@@ -38,13 +38,11 @@ module.exports = {
     let results = [];
     let buildTree = async (ct) => {
       let cat = await Category.findOne({id:ct});
-      if(!results.includes(cat.id)){
+      if(cat.level>1 && !results.includes(cat.id)){
         results.push(cat.id);
-        if(cat.level>1){
-          buildTree(cat.parent);
-        }else{
-          return;
-        }
+        await buildTree(cat.parent);
+      }else{
+        return;
       }
     }
     csd.search(params, async (err, data) => {
