@@ -178,7 +178,6 @@ module.exports.routes = {
   'GET /colorindex/:action':{controller:'ColorController',action:'colorindex'},
   'GET /genderindex/:action':{controller:'ProductController',action:'genderindex'},
   'GET /categoryindex/:action':{controller:'CategoryController',action:'categoryindex'},
-  'GET /efmmamjasond/:seller':{controller:'ProductController',action:'pvseller'},
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************
