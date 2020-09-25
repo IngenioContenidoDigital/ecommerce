@@ -688,7 +688,7 @@ module.exports = {
         prod.ean13=req.body.product.ean13 ? parseInt(req.body.product.ean13) : 0;
         prod.upc= req.body.product.upc ? parseInt(req.body.product.upc) : 0;
         prod.quantity= req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
-        //prod.seller= seller;
+        prod.seller= seller;
         
         
         let product = await Product.findOne({ reference: prod.supplierreference, seller: seller })
@@ -723,7 +723,8 @@ module.exports = {
                     quantity: prod.quantity,
                     variation: prod.variation,
                     product: prod.product,
-                    price: prod.price
+                    price: prod.price,
+                    seller: prod.seller
                   };
                   await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
                 }

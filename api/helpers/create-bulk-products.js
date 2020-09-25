@@ -45,7 +45,8 @@ module.exports = {
                             ean13: 0,
                             upc: 0,
                             price: pro.price * (1+(tx.value/100)),
-                            quantity: 0
+                            quantity: 0,
+                            seller:pr.seller
                           });
                       }else{
                         for(let vr of tmpVariations){
@@ -58,7 +59,8 @@ module.exports = {
                             ean13: vr.ean13 ? vr.ean13 : 0,
                             upc: vr.upc ? vr.upc : 0,
                             price: pr.price * (1+(tx.value/100)),
-                            quantity: vr.quantity ? vr.quantity : 0
+                            quantity: vr.quantity ? vr.quantity : 0,
+                            seller:pr.seller
                           }).catch((e)=>console.log(e));
                         }
                       }
