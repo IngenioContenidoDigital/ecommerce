@@ -358,31 +358,46 @@ module.exports = {
       return res.badRequest();
     }
     try {
+      var jsonxml = require('jsontoxml');
       let action = null;
-      let product = await Product.findOne({ id: req.param('product') });
-      if (!product.dafiti) {
+      let product = await Product.find({ id: req.param('product') });
+      if (!product[0].dafiti) {
         action = 'ProductCreate';
       } else {
         action = 'ProductUpdate';
       }
-      let response = await sails.helpers.channel.dafiti.product(req.param('product'), action, req.body.dafitiprice);
-      if (response) {
-        await Product.updateOne({ id: req.param('product') }).set({
-          dafiti: true,
-          dafitistatus: (product.dafitistatus) ? false : true,
-          dafitiprice: req.body.dafitiprice,
-          dafitiqc: false,
-        });
-      }
-      return res.send(response);
-    } catch (err) {
-      await Product.updateOne({ id: req.param('product') }).set({
-        dafiti: false,
-        dafitistatus: false,
-        dafitiprice: 0,
-        dafitiqc: false,
+      
+      let result = await sails.helpers.channel.dafiti.product(product, req.body.dafitiprice);      
+      var xml = jsonxml(result,true);
+      let sign = await sails.helpers.channel.dafiti.sign(action,product[0].seller);
+      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
+      .then(async (resData)=>{
+        resData = JSON.parse(resData);
+        if(resData.SuccessResponse){
+          await Product.updateOne({ id: req.param('product') }).set({
+            dafiti: true,
+            dafitistatus: (product[0].dafitistatus) ? false : true,
+            dafitiprice: req.body.dafitiprice,
+            dafitiqc: false,
+          });
+          return res.send(resData.SuccessResponse.Head.RequestId);
+        }else{
+          await Product.updateOne({ id: req.param('product') }).set({
+            dafiti: false,
+            dafitistatus: false,
+            dafitiprice: 0,
+            dafitiqc: false,
+          });
+          return res.send(resData.ErrorResponse.Head.ErrorMessage);
+        }
+      })
+      .catch(err =>{
+        console.log(err);
+        throw new Error (err.message);
       });
-      return res.send(err);
+    } catch (err) {
+      console.log(err);
+      return res.send(err.message);
     }
   },
   dafiticheck: async(req, res) =>{
@@ -859,29 +874,75 @@ module.exports = {
     return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
   },
   multipleexecute: async (req, res) => {
-    req.setTimeout(800000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let seller = req.body.seller ? req.body.seller : req.session.user.seller;
-    let error = null;
+    var jsonxml = require('jsontoxml');
+    let seller = (req.body.seller && req.body.seller!== null || req.body.seller!== '' || req.body.seller!== undefined) ? req.body.seller : req.session.user.seller;
     let channel = req.body.channel;
-    let result = [];
-    
-    let data = await sails.helpers.checkChannels(rights.name, seller);
-    let response = {
-      errors: []
-    };
+    let result = null;
+    let params={seller:seller};
+    let response = {items:[],errors:[]};
+    let productlist = [];
     try{
       if (channel === 'dafiti') {
-        result = await sails.helpers.channel.dafiti.multiple(seller, req.body.action);
-        response.items = result;
-        if (result.ErrorResponse){
-          response['errors'].push({REF:'ERR',ERR:result.ErrorResponse.Head.ErrorMessage});
-          error = result.ErrorResponse.Head.ErrorMessage;
+        switch(req.body.action){
+          case 'ProductCreate':
+            params.dafiti=false;
+            params.active=true;
+            params.dafitiqc=false;
+            break;
+          case 'ProductUpdate':
+            params.dafiti=true;
+            params.dafitistatus=true;
+            params.active=true;
+            break;
+          case 'Image':
+            params.dafiti=true;
+            params.dafitistatus=false;
+            params.dafitiqc=false;
+            params.active=true;
+            break;
         }
-      } else if(channel === 'linio'){
+
+        let products = await Product.find(params);
+        for(let pl of products){
+          if(!productlist.includes(pl.id)){productlist.push(pl.id);}
+        }
+        if(products.length>0){
+          if(req.body.action==='Image'){
+            result = await sails.helpers.channel.dafiti.images(products)
+            .catch(err =>{
+              throw new Error(err.message);
+            })
+          }else{
+            result = await sails.helpers.channel.dafiti.product(products)
+            .catch(err =>{
+              throw new Error(err.message);
+            })
+          }
+          var xml = jsonxml(result,true);
+          let sign = await sails.helpers.channel.dafiti.sign(req.body.action,seller);
+          await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
+          .then(async (resData)=>{
+            resData = JSON.parse(resData);
+            if(resData.SuccessResponse){
+              response.items.push(resData.SuccessResponse.Head.RequestId);
+              if(req.body.action==='ProductCreate'){await Product.updateOne({id:productlist}).set({dafiti:true,dafitistatus:false,dafitiqc:false});}
+              if(req.body.action==='ProductUpdate'){await Product.updateOne({id:productlist}).set({dafitistatus:true});}
+            }else{
+              throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+            }
+          })
+          .catch(err =>{
+            throw new Error (err.message);
+          });
+        }else{
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
+      if(channel === 'linio'){
         result = await sails.helpers.channel.linio.multiple(seller, req.body.action);
         response.items = result;
         result = JSON.parse(result);
@@ -890,16 +951,16 @@ module.exports = {
           response['errors'].push({REF:'ERR',ERR:result.ErrorResponse.Head.ErrorMessage});
           error = result.ErrorResponse.Head.ErrorMessage;
         }
-      } else if(channel === 'mercadolibre'){
+      }
+      if(channel === 'mercadolibre'){
         result = await sails.helpers.channel.mercadolibre.multiple(seller, req.body.action);
         response.items = result.Request;
         response.errors = result.Errors;
       }
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: error, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
     }catch(err){
-      response['errors'].push(err.message);
-      return res.view('pages/configuration/multiple',{layout:'layouts/admin', error: null, sellers: data.sellers, resultados: response, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
+      response.errors.push(err.message);
     }
+    return res.send(response);
   },
   getcover: async (req,res) =>{
     if (!req.isSocket) {

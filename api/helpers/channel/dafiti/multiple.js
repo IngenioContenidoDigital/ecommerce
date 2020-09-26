@@ -125,36 +125,6 @@ module.exports = {
         };
       }
     }
-    if(inputs.action==='Image'){
-      products = await Product.find({seller:inputs.seller,dafiti:true,dafitistatus:false,active:true});
-      if(products.length>0){
-        for(let product of products){
-          //Imagenes
-          let ilist = {Images:[]};
-          let images = await ProductImage.find({product:product.id}).sort('position ASC');
-          if(images.length>0){
-            for(let i of images){
-              ilist.Images.push({Image:await sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+i.file});
-            }
-            let productvariation = await ProductVariation.find({product:product.id});
-            if(productvariation.length>0){
-              for(let pv of productvariation){
-                let img = {
-                  ProductImage:{
-                    SellerSku:pv.id,
-                    Images:ilist.Images
-                  }
-                };
-                body.Request.push(img);
-              };
-            }
-          }
-          if(!paffected.includes(product.id)){
-            paffected.push(product.id);
-          }
-        };
-      }
-    }
     if(body.Request.length>0){
       try{
         var xml = jsonxml(body,true);
@@ -162,7 +132,6 @@ module.exports = {
         let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
         result.Request = JSON.parse(response);
         if(inputs.action==='ProductCreate'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:false,dafitiqc:false});}
-        if(inputs.action==='Image'){await Product.update({id:paffected}).set({dafiti:true,dafitistatus:true,dafitiqc:false});}
       }catch(err){
         result.Errors.push({REF:'ERR',ERR:err.message});
       }

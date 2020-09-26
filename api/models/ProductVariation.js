@@ -20,7 +20,7 @@ module.exports = {
     reference:{type:'string'},
     supplierreference:{type:'string'},
     ean13:{type:'number', max:9999999999999, isInteger:true},
-    upc:{type:'number', max:999999999999, isInteger:true},
+    upc:{type:'number', max:9999999999999, isInteger:true},
     price:{type:'number'},
     quantity:{type:'number', /*min:0,*/isInteger:true, defaultsTo:0}
 
