@@ -9,6 +9,8 @@
         <%= success %>
     </div>
   <% } %>
+  <div class="loading">
+  </div>
   <% if(action=='create' || action=='edit' || action=='createfromtoken'){ %>  
         <div class="container">
             <% if(action=='create') { %>
@@ -92,12 +94,21 @@
                         </div>
                       </div>
                     </div>
+                    <%if(action == 'createfromtoken'){%>
+                      <div class="field">
+                        <label class="label">URL</label>
+                        <div class="control">
+                          <input class="input is-size-7" type="text" name="url" placeholder="URL del comercio" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
+                        </div>
+                      </div>
+                      <%}else{%>
                     <div class="field">
                       <label class="label">URL</label>
                       <div class="control">
                         <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
                       </div>
                     </div>
+                    <%}%>
                     <%if(action == 'edit'){%>
                       <a href="/integrations/<%=seller.id%>">
                         <span class="icon">
@@ -639,9 +650,16 @@
       });
       live('#submit-register-seller','click', e => {
         e.preventDefault();
+        let dir=document.querySelector('[name ="addressline1"]');
+        let country=document.querySelector('[name ="country"]');
+        if(country.value==="0"){console.log('hola'); country.value=""}
+        dir.value=dir.value.trim();
         if(validateForm(document.querySelector('#register-form-seller'))){
           let rform = document.querySelector('#register-form-seller');
           rform.submit();
+          var divbox = document.querySelector('.box');
+          divbox.style.display = 'none';
+          document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader-circle bx-burst bx-rotate-90"></i></span></div>';
         }
     });
     </script>

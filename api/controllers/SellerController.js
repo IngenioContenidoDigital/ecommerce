@@ -515,7 +515,7 @@ module.exports = {
   
       jwt.verify(token, 'secretiridioapp65', function(err, decoded) {
         if(err){
-          throw 'forbidden';
+          throw 'El token ha expirado';
         }else{
           let seller = {
             name:decoded.name,
@@ -607,13 +607,19 @@ module.exports = {
         });
       }
     }catch(err){
-      error=err;  
+      if(err.code=="E_UNIQUE"){
+        error="El NIT especificado ya se encuentra registrado.";
+      }else if(err.code=="E_EXCEEDS_UPLOAD_LIMIT"){
+        error='El tamaño de los documentos a enviar exceden el máximo permitido.';
+      } else{
+        error=err.code;
+      } 
     }
     setTimeout(() => { return; }, 2000);
     if (error===undefined || error===null){
-      return res.view('pages/front/registerseller',{referer:referer,countries:countries,error:error,notify:'Tus datos están siendo validados.'});
+      return res.view('pages/front/registerseller',{referer:referer,countries:countries,error:error,notify:'Tus datos han sido enviados correctamente y están siendo validados.'});
     }else{
-      return res.view('pages/front/registerseller',{referer:referer, countries:countries, error:'Algo salio mal, vuelve a intentar dando click al link en tu correo, recuerda adjuntar tu logo y documentos.', notify:null});
+      return res.view('pages/front/registerseller',{referer:referer, countries:countries, error:error, notify:null});
     }
   }
 };
