@@ -29,6 +29,7 @@ module.exports = {
           .populate('mainColor')
           .populate('manufacturer')
           .populate('mainCategory')
+          .populate('tax')
           .populate('categories',{level:{'>=':4}})
           .populate('discount',{
             where:{

@@ -1,8 +1,6 @@
-const { logAndExitProcess } = require('@sentry/node/dist/handlers');
-
 module.exports = {
-  friendlyName: 'Dafiti Images',
-  description: 'Images dafiti.',
+  friendlyName: 'Linio Images',
+  description: 'Images linio.',
   inputs: {
     products:{
       type:'ref',
@@ -40,7 +38,7 @@ module.exports = {
             throw new Error('Producto sin Variaciones');
           }
         }else{
-          await Product.updateOne({id:pp.id}).set({dafiti:true,dafitistatus:false,dafitiqc:false});
+          await Product.updateOne({id:pp.id}).set({linio:true,liniostatus:false});
           throw new Error('Producto sin Imágenes');
         }
       }catch(err){
