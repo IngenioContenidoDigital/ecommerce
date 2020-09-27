@@ -64,7 +64,7 @@ module.exports = {
                 Name:product.name,
                 PrimaryCategory:product.mainCategory.dafiti.split(',')[0],
                 Categories:categories.join(','),
-                Description: jsonxml.cdata(product.descriptionShort+' '+product.description),
+                Description: jsonxml.cdata((product.descriptionShort+' '+product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
                 Brand:product.manufacturer.name==='Adidas' ? 'Adidas Performance' : product.manufacturer.name,
                 Condition:'new',
                 Variation:pv.variation.col.replace(/\.5/,'½').toString(),

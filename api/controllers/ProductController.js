@@ -1016,9 +1016,49 @@ module.exports = {
         }
       }
       if(channel === 'mercadolibre'){
-        result = await sails.helpers.channel.mercadolibre.multiple(seller, req.body.action);
-        response.items = result.Request;
-        response.errors = result.Errors;
+        let action = '';
+        switch(req.body.action){
+          case 'ProductCreate':
+            action ='Post';
+            params.ml=false;
+            params.active=true;
+            break;
+          case 'ProductUpdate':
+            action = 'Update';
+            params.ml=true;
+            params.mlstatus=true;
+            params.active=true;
+            break;
+          case 'Image':
+            action = 'Update';
+            params.ml=true;
+            params.mlstatus=true;
+            params.active=true;
+            break;
+        }
+        let products = await Product.find(params);
+        if(products.length>0){
+          for(let pl of products){
+            await sails.helpers.channel.mercadolibre.product(seller, action)
+            .then(async result =>{
+              response.items.push(result);
+              await Product.updateOne({id:pl.id}).set({
+                ml:true,
+                mlstatus:true,
+                mlid:result.id
+              });
+            })
+            .catch(async err =>{
+              response.errors.push(err.message);
+              await Product.updateOne({id:pl.id}).set({
+                ml:true,
+                mlstatus:false
+              });
+            });
+          }
+        }else{
+          throw new Error('Sin Productos para Procesar');
+        }
       }
     }catch(err){
       response.errors.push(err.message);
