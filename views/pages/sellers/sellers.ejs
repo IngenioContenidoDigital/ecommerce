@@ -652,7 +652,7 @@
         e.preventDefault();
         let dir=document.querySelector('[name ="addressline1"]');
         let country=document.querySelector('[name ="country"]');
-        if(country.value==="0"){console.log('hola'); country.value=""}
+        if(country.value==="0"){country.value=""}
         dir.value=dir.value.trim();
         if(validateForm(document.querySelector('#register-form-seller'))){
           let rform = document.querySelector('#register-form-seller');
