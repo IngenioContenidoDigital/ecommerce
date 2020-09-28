@@ -8,6 +8,8 @@
 module.exports = {
   viewcart: async function(req, res){
     let cart = null;
+    let seller = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     if(req.session.cart!==undefined){
       cart = await CartProduct.find({cart:req.session.cart.id}).sort('createdAt ASC')
       .populate('product')
@@ -23,7 +25,7 @@ module.exports = {
         cartproduct.productvariation.variation = await Variation.findOne({id:cartproduct.productvariation.variation});
       }
     }
-    return res.view('pages/front/cart',{cart:cart,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/cart',{cart:cart,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined), seller:seller});
   },
   addtocart: async function(req, res){
     if (!req.isSocket) {

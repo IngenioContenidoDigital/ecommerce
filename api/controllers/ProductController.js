@@ -858,6 +858,7 @@ module.exports = {
           brand: pr.manufacturer.name,
           color: pr.mainColor.name,
           gender: pr.gender.name,
+          seller: pr.seller.id,
           categories: categories
         };
       }
