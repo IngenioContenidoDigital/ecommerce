@@ -364,8 +364,8 @@ module.exports = {
       } else {
         action = 'ProductUpdate';
       }
-      
-      let result = await sails.helpers.channel.dafiti.product(product, req.body.dafitiprice);      
+      let status = req.body.status ? 'active' : 'inactive';
+      let result = await sails.helpers.channel.dafiti.product(product, req.body.dafitiprice, status);      
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.dafiti.sign(action,product[0].seller);
       await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
@@ -466,8 +466,8 @@ module.exports = {
       } else {
         action = 'ProductUpdate';
       }
-      
-      let result = await sails.helpers.channel.linio.product(product, req.body.linioprice);      
+      let status = req.body.status ? 'active' : 'inactive';
+      let result = await sails.helpers.channel.linio.product(product, req.body.linioprice,status);      
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.linio.sign(action,product[0].seller);
       await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml)

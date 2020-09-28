@@ -9,6 +9,10 @@ module.exports = {
     dafitiprice:{
       type:'number',
       defaultsTo:0
+    },
+    status:{
+      type:'string',
+      defaultsTo:'active'
     }
   },
   exits: {
@@ -39,8 +43,7 @@ module.exports = {
             sort: 'createdAt DESC',
             limit: 1
           });
-          let status='active';
-          if(product.dafitistatus){status='inactive';}
+          let status= inputs.status ? inputs.status : active;
 
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
