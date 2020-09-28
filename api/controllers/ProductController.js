@@ -826,8 +826,9 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'updateindex')) {
       throw 'forbidden';
     }
+    req.setTimeout(600000);
     let documents = [];
-    let products = await Product.find()
+    let products = await Product.find({active:true})
       .populate('tax')
       .populate('manufacturer')
       .populate('mainColor')

@@ -14,7 +14,7 @@ module.exports = {
   fn: async function (inputs,exits) {
     let seller = null;
     let menu = null;
-    if(inputs.hostname === undefined || inputs.hostname === '' || req.hostname==='iridio.co' || req.hostname==='localhost' || inputs.hostname==='1ecommerce.app'){
+    if(inputs.hostname === undefined || inputs.hostname === '' || inputs.hostname==='iridio.co' || inputs.hostname==='localhost' || inputs.hostname==='1ecommerce.app'){
       menu = await Category.findOne({name:'inicio'})
       .populate('children',{active:true});
       for(let c in menu.children){
