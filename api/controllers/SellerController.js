@@ -485,8 +485,12 @@ module.exports = {
     let mobile = req.body.mobile;
     let host = req.hostname;
     let token = jwt.sign({ name:fullname, dni:dni, email: email, phone:mobile  }, 'secretiridioapp65', { expiresIn: '1h' });
- 
-    let authlink='http://'+host+':'+req.port+'/'+'sellerform?token='+token;
+    let authlink;
+    if(host==='localhost'){
+      authlink='http://'+host+':'+req.port+'/'+'sellerform?token='+token;
+    }else{
+      authlink='https://'+host+'/'+'sellerform?token='+token;
+    }
     let countries = await Country.find();
     let referer = req.param('referer') ? req.param('referer') : '/';
 
