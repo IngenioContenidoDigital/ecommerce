@@ -69,7 +69,8 @@ module.exports = {
     return res.send(updatedState);
   },
   createorder:async function(req, res){
-
+    let seller = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let order = [];
     let payment = null;
     let address = await Address.findOne({id:req.body.deliveryAddress})
@@ -257,7 +258,7 @@ module.exports = {
     }
     delete req.session.cart;
     await sails.helpers.sendEmail('email-order',{fullName:req.session.user.fullName,order:order,payment:payment},req.session.user.emailAddress,'Confirmación de Pedido');
-    return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
   listorders: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -308,7 +309,8 @@ module.exports = {
     }else{
       orders = await Order.find().sort('createdAt DESC')
       .populate('customer')
-      .populate('currentstatus');
+      .populate('currentstatus')
+      .populate('seller');
     }
 
     for(let st of orders){
@@ -369,6 +371,8 @@ module.exports = {
     return res.ok();
   },
   response: async(req, res)=>{
+    let seller = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let order = await Order.find({cart:req.param('tx')})
     .populate('currentstatus')
     .populate('seller');
@@ -389,7 +393,7 @@ module.exports = {
         pin:'',
       }
     };
-    return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   }
 
 };

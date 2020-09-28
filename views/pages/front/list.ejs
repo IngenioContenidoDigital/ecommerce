@@ -59,20 +59,22 @@
             <%if(object.logo!== undefined && object.logo!== null && object.logo!==''){%>
                 <p class="has-text-centered"><img async src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
             <%}%>
-            <%if(typeof object.children == 'object' && object.children.length>0){%>
+            <!--            
+            <%#if(typeof object.children == 'object' && object.children.length>0){%>
                 <div class="container">
                     <div class="columns is-centered is-gapless">
-                    <% object.children.forEach(children=>{ %>
-                        <%if(children.active){%>
+                    <%# object.children.forEach(children=>{ %>
+                        <%#if(children.active){%>
                           <div class="column has-text-centered subcat">
-                            <a href="/ver/categoria/<%=children.url%>"><span style="min-width:100%;" class="tag is-dark is-small is-uppercase"><%=children.name%></span></a>
+                            <a href="/ver/categoria/<%#=children.url%>"><span style="min-width:100%;" class="tag is-dark is-small is-uppercase"><%#=children.name%></span></a>
                           </div>
-                        <%}%>
-                    <%});%>
+                        <%#}%>
+                    <%#});%>
                     </div>
                 </div>
                 <br>
-            <%}%>
+            <%#}%>
+            -->
             <% let count = 0 %>
             <div class="container" itemscope itemtype="https://schema.org/ItemList">
             <% object.products.forEach((product)=>{ %>

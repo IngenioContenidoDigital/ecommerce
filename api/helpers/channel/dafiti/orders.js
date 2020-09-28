@@ -36,7 +36,6 @@ module.exports = {
           let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId,seller:inputs.seller});
           if(order.Statuses.Status==='pending'){
             let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');
-
             if(city.length>0 && oexists===undefined){
               let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
                 emailAddress:order.AddressBilling.CustomerEmail,
@@ -46,7 +45,7 @@ module.exports = {
                 dniType:'CC',
                 dni:order.NationalRegistrationNumber,
                 mobilecountry:city[0].region.country,
-                mobile:parseInt(order.AddressShipping.Phone2),
+                mobile:order.AddressShipping.Phone2 ? parseInt(order.AddressShipping.Phone2) : 0,
                 mobileStatus:'unconfirmed',
                 profile:profile.id
               });
@@ -83,7 +82,10 @@ module.exports = {
                   items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
                 }
                 for(let item of items.OrderItem){
-                  let productvariation = await ProductVariation.findOne({id:item.Sku});
+                  let productvariation = await ProductVariation.findOne({id:item.Sku})
+                  .catch(err=>{
+                    console.log(err.message);
+                  });
                   //let productvariation = await ProductVariation.findOne({id:'5ef0c5ae4283b925e44c2c4f'});
                   if(productvariation){
                     await CartProduct.create({

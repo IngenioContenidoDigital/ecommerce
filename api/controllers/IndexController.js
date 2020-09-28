@@ -5,12 +5,20 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
-const { log } = require('grunt');
-
 module.exports = {
   index: async function(req, res){
-    let slider = await Slider.find({active:true}).populate('textColor');
+    let seller = null;
+    let slider = null;
+    if(req.hostname==='1ecommerce.app'){
+      return res.redirect('/login');
+    }else if(req.hostname==='iridio.co' || req.hostname==='localhost'){
+      slider = await Slider.find({active:true}).populate('textColor');
+    }else{
+      seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
+      slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
+    }
     let viewed=[];
+    let brands = null;
     if(req.session.viewed!==undefined){
       for(let s in req.session.viewed){
         if(req.session.viewed[s]===null || req.session.viewed[s].viewedAt===undefined){
@@ -42,13 +50,15 @@ module.exports = {
         }
       }
     }
-    let brands = await Manufacturer.find({active:true}).sort('name ASC');
-    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(),viewed:viewed,brands:brands});
+    if(req.hostname==='iridio.co' || req.hostname==='localhost'){
+      brands = await Manufacturer.find({active:true}).sort('name ASC');
+    }
+    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),viewed:viewed,brands:brands, seller:seller});
   },
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let questions = [];
-    let questionsSeller = [];
+    let questions = 0;
+    let questionsSeller = 0;
     let seller = req.session.user.seller || '';
     let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
     if(rights.name !== 'superadmin'){
@@ -80,7 +90,6 @@ module.exports = {
       totalSales: dataOrders.totalSales,
       cities: dataOrders.cities,
       channels: dataOrders.channels,
-      lessProducts: dataOrders.lessProducts,
       id: req.session.user.id
     });
 
@@ -99,11 +108,12 @@ module.exports = {
       id: req.session.user.id
     });
 
-    let dataTop = await sails.helpers.dashboard.top10(rights.name, seller, dateStart, dateEnd);
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
+      let dataTop = await sails.helpers.dashboard.top10(rights.name, seller, dateStart, dateEnd);
       sails.sockets.blast('datadashboardtop', {
         topProductsCant: dataTop.topProductsCant,
         topProductsPrice: dataTop.topProductsPrice,
+        lessProducts: dataTop.lessProducts,
         id: req.session.user.id
       });
     }
@@ -119,7 +129,7 @@ module.exports = {
       id: req.session.user.id
     });
 
-    let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller, dateStart, dateEnd);
+    let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller);
     sails.sockets.blast('datadashboardinventory', {
       totalInventory: dataInventory.totalInventory,
       totalProductsReference: dataInventory.totalProductsReference,
@@ -127,7 +137,6 @@ module.exports = {
       totalProductsReferenceActive: dataInventory.totalProductsReferenceActive,
       productsInventory: dataInventory.productsInventory,
       productsUnd: dataInventory.productsUnd,
-      lessProducts: dataTop.lessProducts,
       id: req.session.user.id
     });
 
@@ -137,6 +146,10 @@ module.exports = {
     if(req.session.cart===undefined || req.session.cart===null){
       return res.redirect('/cart');
     }
+    
+    let seller = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+
     let addresses = null;
     addresses = await Address.find({user:req.session.user.id})
     .populate('country')
@@ -163,12 +176,14 @@ module.exports = {
 
     let tokens = await Token.find({user:req.session.user.id});
 
-    return res.view('pages/front/checkout', {addresses:addresses, cart:cart, error:error, tokens:tokens,tag:await sails.helpers.getTag(req.hostname)});
+    return res.view('pages/front/checkout', {addresses:addresses, cart:cart, error:error, tokens:tokens,tag:await sails.helpers.getTag(req.hostname),seller:seller});
   },
   list: async function(req, res){
     let entity = req.param('entity');
     let ename = req.param('name');
+    let seller = null;
     let object = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let exists = async (element,compare) =>{
       for(let c of element){
         if(c.id === compare.id){return true;}
@@ -179,9 +194,15 @@ module.exports = {
       case 'categoria':
         try{
           //let parent = await Category.findOne({url:req.param('parent')});
-          object = await Category.findOne({url:ename/*, parent:parent.id*/})
-          .populate('products',{where:{active:true},sort: 'updatedAt DESC'})
-          .populate('children');
+          if(seller===null){
+            object = await Category.findOne({url:ename/*, parent:parent.id*/})
+            .populate('products',{where:{active:true},sort: 'updatedAt DESC'})
+            .populate('children');
+          }else{
+            object = await Category.findOne({url:ename/*, parent:parent.id*/})
+            .populate('products',{where:{active:true, seller:seller.id},sort: 'updatedAt DESC'})
+            .populate('children');
+          }
           object.route = '/images/categories/';
           for(let c of object.children){
             c.parent = await Category.findOne({id:c.parent});
@@ -192,7 +213,11 @@ module.exports = {
         break;
       case 'marca':
         try{
-          object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true},sort: 'updatedAt DESC'});
+          if(seller===null){
+            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true},sort: 'updatedAt DESC'});
+          }else{
+            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true, seller:seller.id},sort: 'updatedAt DESC'});
+          }
           object.route = '/images/brands/';
         }catch(err){
           return res.notFound(err);
@@ -220,10 +245,11 @@ module.exports = {
       if(!await exists(genders, p.gender)){genders.push(p.gender);}
 
     });
-    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
   search: async(req, res) =>{
-
+    let seller = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let AWS = require('aws-sdk');
     AWS.config.loadFromPath('./config.json');
     let csd = new AWS.CloudSearchDomain({endpoint: 'search-iridio-kqxoxbqunm62wui765a5ms5nca.us-east-1.cloudsearch.amazonaws.com'});
@@ -246,6 +272,9 @@ module.exports = {
       start: 'NUMBER_VALUE',
       stats: 'STRING_VALUE'*/
     };
+    if(seller!==null){
+      params.filterQuery = "seller:'"+seller.id+"'";
+    }
 
     let exists = async (element,compare) =>{
       for(let c of element){
@@ -283,10 +312,12 @@ module.exports = {
         }
         response['products'] = set;
       }
-      return res.view('pages/front/list',{object:response,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+      return res.view('pages/front/list',{object:response,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
     });
   },
   listproduct: async function(req, res){
+    let seller = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let moment = require('moment');
     let product = await Product.findOne({name:decodeURIComponent(req.param('name')),reference:decodeURIComponent(req.param('reference'))})
       .populate('manufacturer')
@@ -328,9 +359,11 @@ module.exports = {
       description:description,
       keywords:keywords,
       tag:await sails.helpers.getTag(req.hostname),
-      menu:await sails.helpers.callMenu()});
+      menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
   cms: async (req,res)=>{
+    let seller = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let content = '';
     switch(req.param('tipo')){
       case 'terminos-y-condiciones':
@@ -937,7 +970,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         `;
         break;
     }
-    return res.view('pages/front/cms',{content:content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu()});
+    return res.view('pages/front/cms',{content:content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   }
 };
 

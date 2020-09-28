@@ -76,9 +76,9 @@
                                     <label class="label">Seller</label>
                                     <div class="select is-fullwidth">
                                         <select name="seller" required>
-                                          <% for(var i=0; i<sellers.length; i++) {%>
-                                            <option value="<%=sellers[i].id%>"><%=sellers[i].name%></option>
-                                           <% } %>
+                                          <% sellers.forEach(s=>{%> {%>
+                                            <option value="<%=s.id%>"><%=s.name%></option>
+                                           <% }) %>
                                         </select>
                                     </div>
                                   </div>
@@ -134,45 +134,61 @@
             </div>
         </div>
         <div class="column">
-            <div class="container is-fluid">
-                <div class="loading"></div>
-            <%if(typeof resultados === 'object'){%>
+            <div class="loading"></div>
+            <div id="report" class="container is-fluid is-hidden">
                 <br>
-                <h6 class="title is-6">Resultados del Proceso</h6>
+                <h6 class="title is-6">Espera un momento....</h6>
                 <hr>
                 <div class="notification is-primary">
-                    Se han procesado un total de 
-                    <%if(resultados.imageItems!==undefined && resultados.imageItems.length>0){%>
-                      <%=resultados.imageItems.length %>
-                    <%}%>
-                    <%if(resultados.items!==undefined && resultados.items.length >= 0){%>
-                      <%=resultados.items.length %>
-                    <%}%>
-                    registros.
+                    Se han procesado un total <span id="items">0</span> de registros.
                 </div>
-                <%if(resultados.errors !== undefined && resultados.errors.length>0){%>
-                    <div class="notification is-danger">
-                        <p>Hemos identificado <%=resultados.errors.length%> error(es).</p>
-                        <br>
-                        <div class="container is-fluid">
-                            <ol>
-                            <% resultados.errors.forEach(error =>{%>
-                                <% if(error.message){ %>
-                                  <li><%=error.message%></li>
-                                <%} else {%>
-                                  <li><%=error%></li>
-                                <% } %>
-                            <%})%>
-                            </ol>
-                        </div>
+                <div class="notification is-danger">
+                    <p>Hemos identificado <span id="errors">0</span> error(es).</p>
+                    <br>
+                    <div class="container is-fluid">
+                        <ol id="error-list">
+
+                        </ol>
                     </div>
-                <%}%>
-            <%}%>
+                </div>
             </div>
         </div>
     </div>
   </div>
   <script>
+    <% if(resultados!==null){ %>
+      let records = <%- JSON.stringify(resultados)%>;
+      let type = '<%= type %>';
+      let seller = '<%= seller %>';
+      let totalrecords = records.length;
+      let processed = 1;
+      let report = document.querySelector('#report');
+      if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+      for(let p of records){  
+        io.socket.post('/productcheck',{type:type,product:p,seller:seller},resData =>{
+            if(resData.items.length>=1){
+              let items = document.querySelector('#items');
+              items.innerHTML=parseInt(items.innerHTML)+1;
+            }
+            if(resData.errors.length>=1){
+              let errors = document.querySelector('#errors')
+              errors.innerHTML=parseInt(errors.innerHTML)+1;
+              let errorlist = document.querySelector('#error-list');
+              let err = document.createElement('li');
+              err.innerHTML=resData.errors[0];
+              errorlist.appendChild(err);
+            }
+            if(processed>=totalrecords){
+              let mensaje = document.querySelector('#report > .title');
+              mensaje.innerHTML='Proceso Finalizado';
+            }else{
+              processed+=1;
+            }
+        });
+      }
+      document.querySelector('.loading').innerHTML='';
+    <%}%>
+
     function setSellerInfo (){
       var provider = <%- JSON.stringify(provider) %>;
       document.getElementById("channelTxt").value = provider[0].channel;

@@ -65,7 +65,7 @@ module.exports = {
         email:req.body.email,
         tagManager: req.body.tagManager,
         phone:req.body.phone,
-        domain:req.body.url,
+        domain:req.body.url ? req.body.url : '',
         logo: filename[0].filename,
         mainAddress:address.id,
         active:isActive}).fetch();
@@ -93,7 +93,7 @@ module.exports = {
           if(!created){
             let updateIntegration = {
                 channel:req.body.channel,
-                url:req.body.url,
+                url:req.body.url ? req.body.url : '',
                 key:req.body.key,
                 secret:req.body.secret ? req.body.secret : '',
                 seller:seller.id
@@ -119,7 +119,7 @@ module.exports = {
           email:req.body.email,
           tagManager: req.body.tagManager,
           phone:req.body.phone,
-          domain:req.body.url,
+          domain:req.body.url ? req.body.url : '',
           mainAddress:address.id,
           active:isActive}).fetch();
 
@@ -146,7 +146,7 @@ module.exports = {
             if(!created){
               let updateIntegration = {
                   channel:req.body.channel,
-                  url:req.body.url,
+                  url:req.body.url ? req.body.url : '',
                   key:req.body.key,
                   secret:req.body.secret ? req.body.secret : '',
                   seller:seller.id
@@ -164,7 +164,7 @@ module.exports = {
         }
       }
     }
-    setTimeout(() => { return; }, 2000);
+
     if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/sellers');
     }else{

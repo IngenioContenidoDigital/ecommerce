@@ -76,8 +76,10 @@
           <ul class="is-size-7 has-background-grey-lighter is-flex-mobile is-fluid-tablet is-fluid-desktop is-centered has-text-centered">
             <li class="is-inline">&nbsp;<i class='bx bxs-truck'></i>&nbsp;Envíos a Toda Colombia&nbsp;</li>
             <li class="is-inline">&nbsp;<i class='bx bxs-credit-card' ></i>&nbsp;Todos los medios de pago&nbsp;</li>
+            <%if(req.hostname==='iridio.co' || req.hostname==='localhost'){%>
             <li class="is-inline">&nbsp;<i class='bx bxl-whatsapp' ></i> +57 3153177477&nbsp;</li>
             <li class="is-inline">&nbsp;<i class='bx bxs-envelope'></i> contacto@iridio.co&nbsp;</li>
+            <%}%>
           </ul>
         <%- partial('../partials/navbar.ejs') %>
       </div>
@@ -268,7 +270,7 @@
               <span style="display:inline-block; vertical-align: middle; line-height: 58px;" class="is-x-small has-text-centered">Sitio protegido con criptografia SSL</span>
             </p>
             <br>
-            <p class="is-size-7 has-text-centered"><span><strong>Iridio</strong> 2020 - 2021. Es una marca registrada de Ingenio Contenido Digital SAS - NIT 900.521.885-1 CRA 15 No. 91 - 30 PISO 4 Bogotá - Colombia - Tel: +57 315 3177477 | +57 1 742 4498</span></p>
+            <% if(req.hostname==='iridio.co' || req.hostname==='localhost'){%><p class="is-size-7 has-text-centered"><span><strong>Iridio</strong> 2020 - 2021. Es una marca registrada de Ingenio Contenido Digital SAS - NIT 900.521.885-1 CRA 15 No. 91 - 30 PISO 4 Bogotá - Colombia - Tel: +57 315 3177477 | +57 1 742 4498</span></p><%}%>
             <p class="is-size-7 has-text-centered"><a href="/contenido/terminos-y-condiciones" target="_blank">Términos y Condiciones</a>&nbsp;-&nbsp;<a href="/contenido/politica-de-datos" target="_blank">Política de Privacidad</a></p>
           </footer>
   </body>
