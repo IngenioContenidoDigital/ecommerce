@@ -8,7 +8,6 @@
  * https://sailsjs.com/config/custom
  */
 //IMPORT_MICROSERVICE  : 'https://import.1ecommerce.app:9000/graphql',
-
 module.exports.custom = {
   IMPORT_MICROSERVICE  : process.env.IMPORT_MICROSERVICE ? process.env.IMPORT_MICROSERVICE : 'https://import.1ecommerce.app:9000/graphql',
   PRODUCT_TYPE: 'Product',
