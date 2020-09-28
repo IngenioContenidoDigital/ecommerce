@@ -950,8 +950,8 @@ module.exports = {
             resData = JSON.parse(resData);
             if(resData.SuccessResponse){
               response.items.push(resData.SuccessResponse.Head.RequestId);
-              if(req.body.action==='ProductCreate'){await Product.updateOne({id:productlist}).set({dafiti:true,dafitistatus:false,dafitiqc:false});}
-              if(req.body.action==='ProductUpdate'){await Product.updateOne({id:productlist}).set({dafitistatus:true});}
+              if(req.body.action==='ProductCreate'){await Product.update({id:productlist}).set({dafiti:true,dafitistatus:false,dafitiqc:false});}
+              if(req.body.action==='ProductUpdate'){await Product.update({id:productlist}).set({dafitistatus:true});}
             }else{
               throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
             }
@@ -1004,8 +1004,8 @@ module.exports = {
             resData = JSON.parse(resData);
             if(resData.SuccessResponse){
               response.items.push(resData.SuccessResponse.Head.RequestId);
-              if(req.body.action==='ProductCreate'){await Product.updateOne({id:productlist}).set({linio:true,liniostatus:false});}
-              if(req.body.action==='ProductUpdate'){await Product.updateOne({id:productlist}).set({liniostatus:true});}
+              if(req.body.action==='ProductCreate'){await Product.update({id:productlist}).set({linio:true,liniostatus:false});}
+              if(req.body.action==='ProductUpdate'){await Product.update({id:productlist}).set({liniostatus:true});}
             }else{
               throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
             }
