@@ -265,14 +265,76 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'listorders')){
       throw 'forbidden';
     }
+    let moment = require('moment');
+    let filter ={};
+    let orders = [];
+    const perPage = sails.config.custom.DEFAULTPAGE;
+    if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
+    totalorders = await Order.count(filter);
+    let pages = Math.ceil(totalorders/perPage);
+    for(let st of orders){
+      st.currentstatus = await OrderState.findOne({id:st.currentstatus.id})
+      .populate('color');
+    }
+
+    return res.view('pages/orders/orders',{layout:'layouts/admin',
+      orders:orders,
+      pages:pages,
+      moment:moment,
+    });
+  },
+  findorders: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'listorders')){
+      throw 'forbidden';
+    }
+    if (!req.isSocket) { return res.badRequest();}
+    let filter = {};
+    let ordersdata = [];
+    let row = [];
+    let moment = require('moment');
+    let page = req.param('page') ? parseInt(req.param('page')) : 1;
+    const perPage = sails.config.custom.DEFAULTPAGE;
+    if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
+    ordersdata = [];
+    let orders = null;
+    orders = await Order.find({
+        where: filter,
+        sort: 'createdAt DESC',
+        skip: ((page-1)*perPage),
+        limit: perPage,
+      })
+      .populate('customer')
+      .populate('seller');
+
+      for(let o of orders){
+        let track = '';
+        o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
+        if(o.tracking!==''){track ='<a href="/guia/'+o.tracking+'" target="_blank" class="button is-small"><span class="icon"><i class="bx bxs-truck"></i></span></a>';}
+        
+        row = [
+          '<td scope="row" class="align-middle">'+o.reference+'</td>',
+          '<td class="align-middle is-uppercase">'+o.paymentMethod+'</td>',
+          '<td class="align-middle">'+o.customer.fullName+'</td>',
+          '<td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:'+o.currentstatus.color.code+'"><span class="is-size-7 has-text-black has-background-white">'+o.currentstatus.name+'</span></p></td>',
+          '<td class="align-middle is-capitalized has-text-right">$&nbsp;'+Math.round(o.totalOrder).toLocaleString('es-CO')+'</td>',
+          '<td class="align-middle">'+moment(o.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
+          '<td class="align-middle"><span>'+o.seller.name+'</span></td>',
+          '<td class="align-middle"><a href="/order/edit/'+o.id+'" target="_blank" class="button is-small"><span class="icon"><i class="bx bx-dots-horizontal"></i></span></a>'+track+'</td>',
+        ];
+        if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(6,1);}
+        ordersdata.push(row);
+      }
+    return res.send(ordersdata);
+  },
+  ordermgt: async (req, res) =>{
+    let id = req.param('id') ? req.param('id') : null;
     let error = req.param('error') ? req.param('error') : null;
     let action = req.param('action') ? req.param('action') : null;
-    let id = req.param('id') ? req.param('id') : null;
     let moment = require('moment');
-    let items = null;
     let order = null;
     let ostates = null;
-
+    let items = null;
     if(id){
       order = await Order.findOne({id:id})
       .populate('addressDelivery')
@@ -287,39 +349,20 @@ module.exports = {
 
       ostates = await OrderState.find().populate('color');
 
-      items = await OrderItem.find({order:order.id})
-      .populate('product')
-      .populate('productvariation');
+      items = await OrderItem.find({order:order.id});
 
-      items.forEach(async item =>{
-        item.product = await Product.findOne({id:item.product.id})
-        .populate('images')
+      for(let item of items){
+        item.product = await Product.findOne({id:item.product})
+        .populate('images',{cover:1})
         .populate('manufacturer')
         .populate('mainColor');
 
-        item.productvariation = await ProductVariation.findOne({id:item.productvariation.id}).populate('variation');
-      });
+        item.productvariation = await ProductVariation.findOne({id:item.productvariation}).populate('variation');
+      }
+
     }
 
-    let orders = null;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-      orders = await Order.find({where:{seller:req.session.user.seller}}).sort('createdAt DESC')
-      .populate('customer')
-      .populate('currentstatus');
-    }else{
-      orders = await Order.find().sort('createdAt DESC')
-      .populate('customer')
-      .populate('currentstatus')
-      .populate('seller');
-    }
-
-    for(let st of orders){
-      st.currentstatus = await OrderState.findOne({id:st.currentstatus.id})
-      .populate('color');
-    }
-
-    return res.view('pages/orders/orders',{layout:'layouts/admin',
-      orders:orders,
+    return res.view('pages/orders/order',{layout:'layouts/admin',
       error:error,
       moment:moment,
       action:action,
