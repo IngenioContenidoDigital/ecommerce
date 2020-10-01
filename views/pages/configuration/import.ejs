@@ -157,8 +157,8 @@
     </div>
   </div>
   <script>
-    <% if(pagination && pagination!== null ){ %>
-        let args = <%- JSON.stringify(credentials)%>;
+    <% if(typeof pagination === 'object' && pagination!== null ){ %>
+        let args = <%- JSON.stringify(credentials) %>;
         let seller = '<%= seller %>';
         let importType = '<%= importType %>';
 
