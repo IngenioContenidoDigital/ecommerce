@@ -366,41 +366,6 @@ module.exports = {
       } else {
         action = 'ProductUpdate';
       }
-<<<<<<< HEAD
-
-      let result = await sails.helpers.channel.dafiti.product(product, req.body.dafitiprice);
-      var xml = jsonxml(result, true);
-      let sign = await sails.helpers.channel.dafiti.sign(action, product[0].seller);
-      await sails.helpers.request('https://sellercenter-api.dafiti.com.co', '/?' + sign, 'POST', xml)
-        .then(async (resData) => {
-          resData = JSON.parse(resData);
-          if (resData.SuccessResponse) {
-            await Product.updateOne({ id: req.param('product') }).set({
-              dafiti: true,
-              dafitistatus: (product[0].dafitistatus) ? false : true,
-              dafitiprice: req.body.dafitiprice,
-              dafitiqc: false,
-            });
-            let imgresult = await sails.helpers.channel.dafiti.images(product);
-            var imgxml = jsonxml(imgresult, true);
-            let imgsign = await sails.helpers.channel.dafiti.sign('Image', product[0].seller);
-            setTimeout(async () => { await sails.helpers.request('https://sellercenter-api.dafiti.com.co', '/?' + imgsign, 'POST', imgxml); }, 5000);
-            return res.send(resData.SuccessResponse.Head.RequestId);
-          } else {
-            await Product.updateOne({ id: req.param('product') }).set({
-              dafiti: false,
-              dafitistatus: false,
-              dafitiprice: 0,
-              dafitiqc: false,
-            });
-            return res.send(resData.ErrorResponse.Head.ErrorMessage);
-          }
-        })
-        .catch(err => {
-          console.log(err);
-          throw new Error(err.message);
-        });
-=======
       let status = req.body.status ? 'active' : 'inactive';
       let result = await sails.helpers.channel.dafiti.product(product, req.body.dafitiprice, status);      
       var xml = jsonxml(result,true);
@@ -434,7 +399,6 @@ module.exports = {
         console.log(err);
         throw new Error (err.message);
       });
->>>>>>> 8ef7a621fa58c6f0b7332a2201509cc835a3dee1
     } catch (err) {
       console.log(err);
       return res.send(err.message);
@@ -504,39 +468,6 @@ module.exports = {
       } else {
         action = 'ProductUpdate';
       }
-<<<<<<< HEAD
-
-      let result = await sails.helpers.channel.linio.product(product, req.body.linioprice);
-      var xml = jsonxml(result, true);
-      let sign = await sails.helpers.channel.linio.sign(action, product[0].seller);
-      await sails.helpers.request('https://sellercenter-api.linio.com.co', '/?' + sign, 'POST', xml)
-        .then(async (resData) => {
-          resData = JSON.parse(resData);
-          if (resData.SuccessResponse) {
-            await Product.updateOne({ id: req.param('product') }).set({
-              linio: true,
-              liniostatus: (product[0].liniostatus) ? false : true,
-              linioprice: req.body.dafitiprice,
-            });
-            let imgresult = await sails.helpers.channel.linio.images(product);
-            var imgxml = jsonxml(imgresult, true);
-            let imgsign = await sails.helpers.channel.linio.sign('Image', product[0].seller);
-            setTimeout(async () => { await sails.helpers.request('https://sellercenter-api.linio.com.co', '/?' + imgsign, 'POST', imgxml); }, 5000);
-            return res.send(resData.SuccessResponse.Head.RequestId);
-          } else {
-            await Product.updateOne({ id: req.param('product') }).set({
-              linio: false,
-              liniostatus: false,
-              linioprice: 0
-            });
-            return res.send(resData.ErrorResponse.Head.ErrorMessage);
-          }
-        })
-        .catch(err => {
-          console.log(err);
-          throw new Error(err.message);
-        });
-=======
       let status = req.body.status ? 'active' : 'inactive';
       let result = await sails.helpers.channel.linio.product(product, req.body.linioprice,status);      
       var xml = jsonxml(result,true);
@@ -568,7 +499,6 @@ module.exports = {
         console.log(err);
         throw new Error (err.message);
       });
->>>>>>> 8ef7a621fa58c6f0b7332a2201509cc835a3dee1
     } catch (err) {
       console.log(err);
       return res.send(err.message);
@@ -1156,25 +1086,6 @@ module.exports = {
                 throw new Error(err.message);
               })
           }
-<<<<<<< HEAD
-          var xml = jsonxml(result, true);
-          let sign = await sails.helpers.channel.dafiti.sign(req.body.action, seller);
-          await sails.helpers.request('https://sellercenter-api.dafiti.com.co', '/?' + sign, 'POST', xml)
-            .then(async (resData) => {
-              resData = JSON.parse(resData);
-              if (resData.SuccessResponse) {
-                response.items.push(resData.SuccessResponse.Head.RequestId);
-                if (req.body.action === 'ProductCreate') { await Product.updateOne({ id: productlist }).set({ dafiti: true, dafitistatus: false, dafitiqc: false }); }
-                if (req.body.action === 'ProductUpdate') { await Product.updateOne({ id: productlist }).set({ dafitistatus: true }); }
-              } else {
-                throw new Error(resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
-              }
-            })
-            .catch(err => {
-              throw new Error(err.message);
-            });
-        } else {
-=======
           var xml = jsonxml(result,true);
           let sign = await sails.helpers.channel.dafiti.sign(req.body.action,seller);
           await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
@@ -1192,7 +1103,6 @@ module.exports = {
             throw new Error (err.message);
           });
         }else{
->>>>>>> 8ef7a621fa58c6f0b7332a2201509cc835a3dee1
           throw new Error('Sin Productos para Procesar');
         }
       }
@@ -1230,25 +1140,6 @@ module.exports = {
                 throw new Error(err.message);
               })
           }
-<<<<<<< HEAD
-          var xml = jsonxml(result, true);
-          let sign = await sails.helpers.channel.linio.sign(req.body.action, seller);
-          await sails.helpers.request('https://sellercenter-api.linio.com.co', '/?' + sign, 'POST', xml)
-            .then(async (resData) => {
-              resData = JSON.parse(resData);
-              if (resData.SuccessResponse) {
-                response.items.push(resData.SuccessResponse.Head.RequestId);
-                if (req.body.action === 'ProductCreate') { await Product.updateOne({ id: productlist }).set({ linio: true, liniostatus: false }); }
-                if (req.body.action === 'ProductUpdate') { await Product.updateOne({ id: productlist }).set({ liniostatus: true }); }
-              } else {
-                throw new Error(resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
-              }
-            })
-            .catch(err => {
-              throw new Error(err.message);
-            });
-        } else {
-=======
           var xml = jsonxml(result,true);
           let sign = await sails.helpers.channel.linio.sign(req.body.action,seller);
           await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml)
@@ -1266,7 +1157,6 @@ module.exports = {
             throw new Error (err.message);
           });
         }else{
->>>>>>> 8ef7a621fa58c6f0b7332a2201509cc835a3dee1
           throw new Error('Sin Productos para Procesar');
         }
       }
