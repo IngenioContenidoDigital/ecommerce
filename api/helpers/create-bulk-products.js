@@ -17,16 +17,24 @@ module.exports = {
       }
     },
     fn: async function (inputs,exits) {
-                let errors = [];
-                let result = [];
+
                 let seller = inputs.seller;
                 let images = [];
                 
                 try {
                   for(let product of inputs.products){
-                    let pro = await sails.helpers.checkProducts(product,seller)
-                            .catch((e)=> errors.push({name:'ERRDATA',message:e.message}));
-                    if (typeof pro === 'object'){
+                    let errors = [];
+                    let result = [];
+                    let pro = await sails.helpers.checkProducts(product, seller).catch((e)=> errors.push({ name:'ERRDATA',message:e.message }));
+                    
+                    if(typeof(pro) === 'object'){
+                        let pr = await Product.findOrCreate({reference:pro.reference, seller:pro.seller}, pro);
+                        result.push(pr);
+                    }
+                    
+                    sails.sockets.blast('product_processed',  { errors, result });
+
+                  /*  if (typeof pro === 'object'){
                       images.push({reference : pro.reference,images : pro.images});
                       let ct = await Category.find({id:pro.categories}).sort('level ASC');
                       let tx = await Tax.findOne({id:pro.tax});
@@ -67,10 +75,10 @@ module.exports = {
                       delete pro.images;
                       delete pro.variations;
                       result.push(pr);
-                    }
+                    }*/
                   }
                   
-                  await ImageUploadStatus.createEach(images.map((i)=>{
+                  /*await ImageUploadStatus.createEach(images.map((i)=>{
                       return {
                       images : i.images.map(i=>{
                       return { src : i.src , file : i.file}
@@ -79,9 +87,9 @@ module.exports = {
                       position : i.position,
                       product :result.filter((p)=>p.reference === i.reference)[0].id
                       }
-                  })).catch((e)=>errors.push(e));
+                  })).catch((e)=>errors.push(e));*/
                   
-                  return exits.success({ errors, result });
+                  return exits.success(true);
                 } catch (error) {
                     return exits.error(error.message);
                 }
