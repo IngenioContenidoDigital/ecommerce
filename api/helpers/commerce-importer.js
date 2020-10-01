@@ -3,7 +3,7 @@ const axios = require('axios');
 let shopify = require('../graphql/shopify')
 let woocommerce = require('../graphql/woocommerce');
 
-let signRequest = (data) => {
+let signRequest = (data, query) => {
   let rootQuery;
 
   switch (data.channel) {
@@ -20,7 +20,7 @@ let signRequest = (data) => {
       }
 
     case 'woocommerce':
-      rootQuery = woocommerce.CATALOG
+      rootQuery = woocommerce[query]
       return {
         token: jwt.sign({
           url: data.apiUrl,
@@ -36,9 +36,9 @@ let signRequest = (data) => {
   }
 };
 
-let getCatalog = async (data) => {
+let fetch = async (data) => {
   return new Promise(async (resolve, reject) => {
-    let request = signRequest(data);
+    let request = signRequest(data, data.resource);
     let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { pagination : {page : data.pagination.page, pageSize : data.pagination.pageSize, next : data.pagination.next} } }, {
     headers: {
         'ips-api-token': `Bearer ${request.token}`
@@ -74,6 +74,7 @@ module.exports = {
     version: {
       type: 'string'
     },
+    resource: { type: 'string' },
     pagination : {
       type : 'ref'
     }
@@ -88,7 +89,7 @@ module.exports = {
   },
 
   fn: function (inputs) {
-    return getCatalog(inputs);
+    return fetch(inputs);
   }
 
 };

@@ -20,22 +20,15 @@ module.exports = {
 
     fn: async (inputs, exits) => {
             let pro = {}
-            let images = [];
-            let variations = [];
-
                 pro.name = inputs.product.name.toUpperCase().trim();
 
                 if(!inputs.product.reference){
-                    throw new Error('Producto ' + inputs.product.name + ' sin referencia');
+                    throw new Error(`${pro.name} sin referencia`);
                 }
 
                 pro.reference = inputs.product.reference.toUpperCase().trim();
                 pro.description = inputs.product.description.toLowerCase().trim();
                 pro.descriptionShort = inputs.product.descriptionShort.toLowerCase().trim();
-
-                if (inputs.product.images) {
-                    pro.images = inputs.product.images;
-                }
 
                 let cats = await sails.helpers.tools.findCategory(inputs.product.name+' '+inputs.product.reference);
                 if(cats.length>0){
@@ -47,7 +40,7 @@ module.exports = {
                 if(inputs.product.manufacturer){
                     pro.manufacturer = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() })).id;
                 }else{
-                    throw new Error('La Marca seleccionada para el producto ' + inputs.product.name + ' no existe');
+                    throw new Error(`Ref: ${pro.reference} : ${pro.name} sin marca`);
                 }
 
                 let color = await sails.helpers.tools.findColor(inputs.product.name+' '+inputs.product.reference);
@@ -55,7 +48,7 @@ module.exports = {
                 if(color && color.length > 0){
                     pro.mainColor = color[0];
                 }else{
-                    throw new Error('Producto ' + inputs.product.name + ' sin color');
+                    throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);
                 }
 
                 if (inputs.product.gender) {
@@ -86,13 +79,8 @@ module.exports = {
                 pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : inputs.product.weight;
                 pro.price =  (inputs.product.price / (1 + (tax.value/100)));
 
-                if (inputs.product.variations && inputs.product.variations.length > 0) {
-                    pro.variations = inputs.product.variations;
-
-                    return exits.success(pro);
-                } else {
-                    throw new Error('Variación ' + inputs.product.name + ' no disponible para este producto');
-                }
+                return exits.success(pro);
+          
     }
 
 };

@@ -9,13 +9,13 @@ const constants = {
   PRODUCT_TYPE: sails.config.custom.PRODUCT_TYPE,
   PRODUCT_VARIATION: sails.config.custom.PRODUCT_VARIATION,
   IMAGE_TYPE: sails.config.custom.IMAGE_TYPE,
-  STATUS_UPLOADED : sails.config.custom.STATUS_UPLOADED,
-  SHOPIFY_CHANNEL : sails.config.custom.SHOPIFY_CHANNEL,
-  SHOPIFY_PAGESIZE : sails.config.custom.SHOPIFY_PAGESIZE,
-  WOOCOMMERCE_PAGESIZE : sails.config.custom.WOOCOMMERCE_PAGESIZE,
-  WOOCOMMERCE_CHANNEL : sails.config.custom.WOOCOMMERCE_CHANNEL,
-  TIMEOUT_PRODUCT_TASK : 4000000,
-  TIMEOUT_IMAGE_TASK : 8000000,
+  STATUS_UPLOADED: sails.config.custom.STATUS_UPLOADED,
+  SHOPIFY_CHANNEL: sails.config.custom.SHOPIFY_CHANNEL,
+  SHOPIFY_PAGESIZE: sails.config.custom.SHOPIFY_PAGESIZE,
+  WOOCOMMERCE_PAGESIZE: sails.config.custom.WOOCOMMERCE_PAGESIZE,
+  WOOCOMMERCE_CHANNEL: sails.config.custom.WOOCOMMERCE_CHANNEL,
+  TIMEOUT_PRODUCT_TASK: 4000000,
+  TIMEOUT_IMAGE_TASK: 8000000,
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -26,19 +26,20 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
       throw 'forbidden';
     }
-    let filter ={};
+    let filter = {};
     let error = null;
     let products = null;
     const perPage = sails.config.custom.DEFAULTPAGE;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') { filter.seller = req.session.user.seller; }
     totalproducts = await Product.count(filter);
-    let pages = Math.ceil(totalproducts/perPage);
+    let pages = Math.ceil(totalproducts / perPage);
     let moment = require('moment');
-    return res.view('pages/catalog/productlist',{layout:'layouts/admin',
-      products:products,
-      error:error,
-      pages:pages,
-      moment:moment
+    return res.view('pages/catalog/productlist', {
+      layout: 'layouts/admin',
+      products: products,
+      error: error,
+      pages: pages,
+      moment: moment
     });
   },
   findcatalog: async (req, res) => {
@@ -46,52 +47,52 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
       throw 'forbidden';
     }
-    if (!req.isSocket) { return res.badRequest();}
+    if (!req.isSocket) { return res.badRequest(); }
     let filter = {};
     let productdata = [];
     let row = [];
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
     const perPage = sails.config.custom.DEFAULTPAGE;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){ filter.seller = req.session.user.seller;}
-    
-      productdata = [];
-      products = await Product.find({
-        where: filter,
-        sort: 'createdAt DESC',
-        skip: ((page-1)*perPage),
-        limit: perPage,
-      })
-      .populate('images', {cover:1})
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') { filter.seller = req.session.user.seller; }
+
+    productdata = [];
+    products = await Product.find({
+      where: filter,
+      sort: 'createdAt DESC',
+      skip: ((page - 1) * perPage),
+      limit: perPage,
+    })
+      .populate('images', { cover: 1 })
       .populate('tax')
       .populate('mainColor')
       .populate('manufacturer')
       .populate('seller');
-      for(let p of products){
-        p.stock = await ProductVariation.sum('quantity',{product:p.id});
-        let cl = 'bx-x-circle';
-        if(p.active){cl='bx-check-circle'}
-        let published ='';
-        if(p.dafiti){published+='<li><small>Dafiti</small></li>';}
-        if(p.ml){published+='<li><small>Mercadolibre</small></li>';}
-        if(p.linio){published+='<li><small>Linio</small></li>';}
-        row = [
-          `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="`+p.id+`">`+p.name+`</a></td>`,
-          `<td class="align-middle">`+p.reference+`</td>`,
-          `<td class="align-middle is-capitalized">`+(p.manufacturer ? p.manufacturer.name : '')+`</td>`,
-          `<td class="align-middle">$ `+parseInt(p.price*(1+(p.tax.value/100))).toLocaleString('es-CO')+`</td>`,
-          `<td class="align-middle is-capitalized">`+(p.mainColor ? p.mainColor.name : '')+`</td>`,
-          `<td class="align-middle">`+p.stock+`</td>`,
-          `<td class="align-middle"><span class="action"><i product="`+p.id+`" class="state bx `+cl+` is-size-5"></i></span></td>`,
-          `<td class="align-middle"><a href="/product/edit/`+p.id+`" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/`+encodeURIComponent((p.name).replace(/\./g, '%2E'))+`/`+encodeURIComponent(p.reference)+`" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
-          '<td class="align-middle"><span>'+p.seller.name+'</span></td>',
-          `<td class="align-middle"><ul>`+published+`</ul></td>`,
-        ];
-        if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(8,1);}
-        productdata.push(row);
-      }
-      return res.send(productdata);
+    for (let p of products) {
+      p.stock = await ProductVariation.sum('quantity', { product: p.id });
+      let cl = 'bx-x-circle';
+      if (p.active) { cl = 'bx-check-circle' }
+      let published = '';
+      if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
+      if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
+      if (p.linio) { published += '<li><small>Linio</small></li>'; }
+      row = [
+        `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="` + p.id + `">` + p.name + `</a></td>`,
+        `<td class="align-middle">` + p.reference + `</td>`,
+        `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
+        `<td class="align-middle">$ ` + parseInt(p.price * (1 + (p.tax.value / 100))).toLocaleString('es-CO') + `</td>`,
+        `<td class="align-middle is-capitalized">` + (p.mainColor ? p.mainColor.name : '') + `</td>`,
+        `<td class="align-middle">` + p.stock + `</td>`,
+        `<td class="align-middle"><span class="action"><i product="` + p.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
+        `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
+        '<td class="align-middle"><span>' + p.seller.name + '</span></td>',
+        `<td class="align-middle"><ul>` + published + `</ul></td>`,
+      ];
+      if (rights.name !== 'superadmin' && rights.name !== 'admin') { row.splice(8, 1); }
+      productdata.push(row);
+    }
+    return res.send(productdata);
   },
-  productmgt: async (req, res) =>{
+  productmgt: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -103,10 +104,10 @@ module.exports = {
     const genders = await Gender.find();
     let sellers = null;
     let integrations = null;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-      sellers = await Seller.find({id: req.session.user.seller});
-      integrations = await Integrations.find({seller: req.session.user.seller});
-    }else{
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      sellers = await Seller.find({ id: req.session.user.seller });
+      integrations = await Integrations.find({ seller: req.session.user.seller });
+    } else {
       sellers = await Seller.find();
       integrations = await Integrations.find();
     }
@@ -118,7 +119,7 @@ module.exports = {
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
 
-    if(id!==null){
+    if (id !== null) {
       product = await Product.findOne({ id: id })
         .populate('images')
         .populate('tax')
@@ -138,19 +139,20 @@ module.exports = {
       product.variations.sort((a, b) => { return parseFloat(a.variation.name) - parseFloat(b.variation.name); });
     }
     let moment = require('moment');
-    return res.view('pages/catalog/product',{layout:'layouts/admin',
-      root:root,
-      brands:brands,
-      colors:colors,
-      genders:genders,
-      sellers:sellers,
-      integrations:integrations,
-      taxes:taxes,
-      variations:variations,
-      action:action,
-      product:product,
-      error:error,
-      moment:moment
+    return res.view('pages/catalog/product', {
+      layout: 'layouts/admin',
+      root: root,
+      brands: brands,
+      colors: colors,
+      genders: genders,
+      sellers: sellers,
+      integrations: integrations,
+      taxes: taxes,
+      variations: variations,
+      action: action,
+      product: product,
+      error: error,
+      moment: moment
     });
   },
   createproduct: async function (req, res) {
@@ -291,21 +293,21 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let product = await Product.findOne({id:req.body[0].product});
+    let product = await Product.findOne({ id: req.body[0].product });
     for (let list of req.body) {
-      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller:product.seller })
+      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller })
         .exec(async (err, record, wasCreated) => {
           if (err) { return res.send('error'); }
           if (!wasCreated) {
-            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller:product.seller });
+            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller });
           }
         });
     }
-    
-    if(product.dafiti){ await sails.helpers.channel.dafiti.product(product.id,'ProductUpdate',product.dafitiprice);}
-    if(product.ml){await sails.helpers.channel.mercadolibre.product(product.id,'Update',product.mlprice);}
-    if(product.linio){await sails.helpers.channel.linio.product(product.id,'Update',product.pricelinio);}
-    
+
+    if (product.dafiti) { await sails.helpers.channel.dafiti.product(product.id, 'ProductUpdate', product.dafitiprice); }
+    if (product.ml) { await sails.helpers.channel.mercadolibre.product(product.id, 'Update', product.mlprice); }
+    if (product.linio) { await sails.helpers.channel.linio.product(product.id, 'Update', product.pricelinio); }
+
     return res.send('ok');
   },
   findvariations: async (req, res) => {
@@ -354,7 +356,7 @@ module.exports = {
     return res.send(updatedProduct);
   },
   dafitiadd: async (req, res) => {
-    if (!req.isSocket) {return res.badRequest();}
+    if (!req.isSocket) { return res.badRequest(); }
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
@@ -402,28 +404,28 @@ module.exports = {
       return res.send(err.message);
     }
   },
-  dafiticheck: async(req, res) =>{
+  dafiticheck: async (req, res) => {
     req.setTimeout(900000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
       throw 'forbidden';
     }
     let response = {
-      items:[],
-      errors:[]
+      items: [],
+      errors: []
     }
-    let integrationSellers = await Integrations.find({channel:'dafiti'});
-    for(let s of integrationSellers){
-      let products = await Product.find({seller:s.seller,dafiti:true,dafitiqc:false})
-      for(let p of products){
-          let result = await sails.helpers.channel.dafiti.checkstatus(p.id)
-          .catch(e =>{
-            response.errors.push({code:e.raw.code,message:p.reference});
+    let integrationSellers = await Integrations.find({ channel: 'dafiti' });
+    for (let s of integrationSellers) {
+      let products = await Product.find({ seller: s.seller, dafiti: true, dafitiqc: false })
+      for (let p of products) {
+        let result = await sails.helpers.channel.dafiti.checkstatus(p.id)
+          .catch(e => {
+            response.errors.push({ code: e.raw.code, message: p.reference });
           });
 
-          if(result){
-            response.items.push({code:'OK',message:p.reference});
-          }
+        if (result) {
+          response.items.push({ code: 'OK', message: p.reference });
+        }
       }
     }
     return res.send(JSON.stringify(response));
@@ -440,14 +442,14 @@ module.exports = {
       } else {
         action = 'Post';
       }
-      let response = await sails.helpers.channel.mercadolibre.product(product.id,action,req.body.pricemercadolibre);
-      if(response){
+      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre);
+      if (response) {
         console.log(response);
-        await Product.updateOne({id:req.param('product')}).set({
-          ml:true,
-          mlstatus:(req.body.status) ? true : false,
-          mlid:response.id,
-          mlprice:req.body.pricemercadolibre,
+        await Product.updateOne({ id: req.param('product') }).set({
+          ml: true,
+          mlstatus: (req.body.status) ? true : false,
+          mlid: response.id,
+          mlprice: req.body.pricemercadolibre,
         });
       }
       return res.send(response);
@@ -455,8 +457,8 @@ module.exports = {
       return res.send(err);
     }
   },
-  linioadd:async (req, res) =>{
-    if (!req.isSocket) {return res.badRequest();}
+  linioadd: async (req, res) => {
+    if (!req.isSocket) { return res.badRequest(); }
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
@@ -502,7 +504,7 @@ module.exports = {
       return res.send(err.message);
     }
   },
-  import: async (req, res)=>{
+  import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -520,7 +522,7 @@ module.exports = {
     }
 
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, resultados:null, integrations: integrations, sellers: sellers, rights:rights.name, seller : seller });
+    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, seller: seller, pagination: null });
   },
   importexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -531,14 +533,15 @@ module.exports = {
     let seller = null;
     let integrations = [];
     let sellers = [];
+    let importType = req.body.importType;
 
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-       seller = req.session.user.seller;
-       integrations = await Integrations.find({ seller: seller });
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      seller = req.session.user.seller;
+      integrations = await Integrations.find({ seller: seller });
     } else {
-       seller = req.body.seller;
-       integrations = await Integrations.find();
-       sellers = await Seller.find();
+      seller = req.body.seller;
+      integrations = await Integrations.find();
+      sellers = await Seller.find();
     }
 
     let result = [];
@@ -550,90 +553,115 @@ module.exports = {
 
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
-        req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
-        let page =  1;
-        let pageSize;
-        let next;
+          req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
+          let page = 1;
+          let pageSize;
+          let next;
 
-        switch (req.body.channel) {
-          case constants.SHOPIFY_CHANNEL:
-              pageSize =  constants.SHOPIFY_PAGESIZE;
-            break;
-          case constants.WOOCOMMERCE_CHANNEL:
+          switch (req.body.channel) {
+            case constants.SHOPIFY_CHANNEL:
+              pageSize = constants.SHOPIFY_PAGESIZE;
+              break;
+            case constants.WOOCOMMERCE_CHANNEL:
               pageSize = constants.WOOCOMMERCE_PAGESIZE;
-            break;
-        
-          default:
-            break;
-        }
+              break;
 
+            default:
+              break;
+          }
 
-        do{
+          do {
 
-          let importedProducts = await sails.helpers.commerceImporter(
-            req.body.channel,
-            req.body.pk,
-            req.body.sk,
-            req.body.apiUrl,
-            req.body.version,
-            {page : page, pageSize  : pageSize, next : next || null}
-          ).catch((e) => console.log(e));
+            let importedProducts = await sails.helpers.commerceImporter(
+              req.body.channel,
+              req.body.pk,
+              req.body.sk,
+              req.body.apiUrl,
+              req.body.version,
+              'CATALOG',
+              { page: page, pageSize: pageSize, next: next || null }
+            ).catch((e) => console.log(e));
 
-          if(importedProducts && importedProducts.pagination)
+            if (importedProducts && importedProducts.pagination)
               next = importedProducts.pagination;
 
-          isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
-          
-          if(!isEmpty){
-            rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
-            result = [...result, ...rs.result];
-            errors = [...errors, ...rs.errors];	   
-            console.log(rs);
-            //await sleep(5000);
-          }else{
-            break;
-          }
-          
-          page++;
+              isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
 
-        }while((!isEmpty));
-        
+            if (!isEmpty) {
+              return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProducts, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+
+            } else {
+              break;
+            }
+
+            page++;
+
+          } while ((!isEmpty));
+
+          break;
+
+        case constants.PRODUCT_VARIATION:
+          do {
+
+            let importedProductsVariations = await sails.helpers.commerceImporter(
+              req.body.channel,
+              req.body.pk,
+              req.body.sk,
+              req.body.apiUrl,
+              req.body.version,
+              'VARIATIONS',
+              { page: req.body.page, pageSize: req.body.pageSize, next: req.body.next || null }
+            ).catch((e) => console.log(e));
+
+            if (importedProductsVariations && importedProductsVariations.pagination)
+              next = importedProductsVariations.pagination;
+
+            isEmpty = (!importedProductsVariations || !importedProductsVariations.data || importedProductsVariations.data.length == 0) ? true : false;
+
+            if (!isEmpty) {
+              return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsVariations, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            } else {
+              break;
+            }
+
+            page++;
+
+          } while ((!isEmpty));
           break;
         case constants.IMAGE_TYPE:
           req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
-          let imageTasks = await ImageUploadStatus.find({uploaded : false});
-          for(let s of imageTasks){
-            for(let im of s.images){
-              try{
-                let url = (im.src.split('?'))[0]; 
-                let file = (im.file.split('?'))[0];
-                let uploaded =  await sails.helpers.uploadImageUrl(url, file, s.product);
-                if(uploaded){
-                  let cover = 1;
-                  let totalimg = await ProductImage.count({product:s.product});
-                  totalimg+=1;
-                  if(totalimg>1){cover = 0;}
-                  await ProductImage.create({
-                    file:file,
-                    position:totalimg,
-                    cover: cover,
-                    product:s.product
-                  });
+          do {
 
-                  await ImageUploadStatus.update({ id : s.id}).set({ uploaded : true});
-                  imageItems.push(s);
-                }
-              }catch(err){
-                imageErrors.push({code:'NOTFOUND',message:err.message})
-              }
+            let importedProductsImages = await sails.helpers.commerceImporter(
+              req.body.channel,
+              req.body.pk,
+              req.body.sk,
+              req.body.apiUrl,
+              req.body.version,
+              'IMAGES',
+              { page: req.body.page, pageSize: req.body.pageSize, next: req.body.next || null }
+            ).catch((e) => console.log(e));
+
+            if (importedProductsImages && importedProductsImages.pagination)
+              next = importedProductsImages.pagination;
+
+            isEmpty = (!importedProductsImages || !importedProductsImages.data || importedProductsImages.data.length == 0) ? true : false;
+
+            if (!isEmpty) {
+              return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsImages, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            } else {
+              break;
             }
-          }
+
+            page++;
+
+          } while ((!isEmpty));
           break;
         default:
           break;
       }
 
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors : imageErrors, imageItems : imageItems }, integrations: integrations, sellers : sellers, rights:rights.name});
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, sellers: sellers, rights: rights.name });
     }
     req.setTimeout(600000);
     let route = sails.config.views.locals.imgurl;
@@ -646,39 +674,39 @@ module.exports = {
         json = imageslist;
       } else {
         let filename = await sails.helpers.fileUpload(req, 'file', 2000000, 'uploads')
-        let response = await axios.get(route + '/uploads/' + filename[0].filename, {responseType: 'arraybuffer'});
+        let response = await axios.get(route + '/uploads/' + filename[0].filename, { responseType: 'arraybuffer' });
         let buffer = Buffer.from(response.data, 'utf-8');
-        json = await csv({eol:'\n',delimiter:';'}).fromString(buffer.toString());
+        json = await csv({ eol: '\n', delimiter: ';' }).fromString(buffer.toString());
       };
-      
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, sellers:sellers, seller:seller, integrations:integrations, resultados: json, rights:rights.name, type:type });
+
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, sellers: sellers, seller: seller, integrations: integrations, resultados: json, rights: rights.name, type: type });
     } catch (err) {
       return res.redirect('/import?error=' + err.message);
     }
   },
-  checkdata: async(req, res) =>{
+  checkdata: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    if(!req.isSocket){
+    if (!req.isSocket) {
       throw 'forbidden';
     }
-    let result={
-      items:[],
-      errors:[],
+    let result = {
+      items: [],
+      errors: [],
     }
     let seller = null;
-    if(rights.name!=='superadmin' && rights.name!=='admin'){
-       seller = req.session.user.seller;
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      seller = req.session.user.seller;
     } else {
-       seller = req.body.seller;
+      seller = req.body.seller;
     }
 
     let prod = {};
-    
+
     try {
-      if(req.body.type === 'ProductImage'){
+      if (req.body.type === 'ProductImage') {
         let AWS = require('aws-sdk');
         AWS.config.loadFromPath('./config.json');
         var s3 = new AWS.S3();
@@ -686,50 +714,50 @@ module.exports = {
           Bucket: 'iridio.co',
           ContentType: 'image/jpeg'
         };
-        
+
         let file = req.body.product.original.split('.');
         let info = file[0].split('_');
         let reference = info[0].trim().toUpperCase();
         let position = info[1];
         let cover = (position === 1 || position === '1') ? 1 : 0;
         let product = await Product.findOne({ reference: reference, seller: seller })
-        .catch(err=>{throw err});
-        if(product){
-        let productimage = {
-          file: req.body.product.filename,
-          position: parseInt(position),
-          cover: parseInt(cover),
-          product: product.id
-        };
+          .catch(err => { throw err });
+        if (product) {
+          let productimage = {
+            file: req.body.product.filename,
+            position: parseInt(position),
+            cover: parseInt(cover),
+            product: product.id
+          };
 
-        params['Key'] = 'images/products/' + product.id + '/' + req.body.product.filename;
-        params['CopySource'] = '/iridio.co/images/products/tmp/' + req.body.product.filename;
+          params['Key'] = 'images/products/' + product.id + '/' + req.body.product.filename;
+          params['CopySource'] = '/iridio.co/images/products/tmp/' + req.body.product.filename;
 
-        s3.copyObject(params, async (err, data) => {
-          if (err) { throw new Error(err.message); }
-          if (data) {
-            await ProductImage.create(productimage);
-          }
-        });
-        result['items'].push({archivo: req.body.product.original });
-        }else{
-          throw new Error('Ref:'+reference+' - Carga la imágen en la página de edición del producto.')
+          s3.copyObject(params, async (err, data) => {
+            if (err) { throw new Error(err.message); }
+            if (data) {
+              await ProductImage.create(productimage);
+            }
+          });
+          result['items'].push({ archivo: req.body.product.original });
+        } else {
+          throw new Error('Ref:' + reference + ' - Carga la imágen en la página de edición del producto.')
         }
       }
       if (req.body.type === 'ProductVariation') {
         prod.reference = req.body.product.reference2 ? req.body.product.reference2.trim().toUpperCase() : '';
-        prod.supplierreference = req.body.product.reference.trim().toUpperCase();  
-        prod.ean13=req.body.product.ean13 ? parseInt(req.body.product.ean13) : 0;
-        prod.upc= req.body.product.upc ? parseInt(req.body.product.upc) : 0;
-        prod.quantity= req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
-        prod.seller= seller;
-        
-        
+        prod.supplierreference = req.body.product.reference.trim().toUpperCase();
+        prod.ean13 = req.body.product.ean13 ? parseInt(req.body.product.ean13) : 0;
+        prod.upc = req.body.product.upc ? parseInt(req.body.product.upc) : 0;
+        prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
+        prod.seller = seller;
+
+
         let product = await Product.findOne({ reference: prod.supplierreference, seller: seller })
           .populate('tax')
           .populate('categories');
         let categories = [];
-        
+
         if (product) {
           product.categories.forEach(category => {
             if (!categories.includes(category.id)) {
@@ -743,12 +771,12 @@ module.exports = {
             limit: 1
           });
           if (variation) {
-            prod.variation = (variation[0]).id;                  
+            prod.variation = (variation[0]).id;
 
-            ProductVariation.findOrCreate({product: prod.product, variation: prod.variation}, prod)
-              .exec(async(err, productVariat, wasCreated)=> {
+            ProductVariation.findOrCreate({ product: prod.product, variation: prod.variation }, prod)
+              .exec(async (err, productVariat, wasCreated) => {
                 if (err) { throw err; }
-                if(!wasCreated) {
+                if (!wasCreated) {
                   let updateVariation = {
                     supplierreference: prod.supplierreference,
                     reference: prod.reference,
@@ -760,67 +788,182 @@ module.exports = {
                     price: prod.price,
                     seller: prod.seller
                   };
-                  await ProductVariation.updateOne({id: productVariat.id}).set(updateVariation);
+                  await ProductVariation.updateOne({ id: productVariat.id }).set(updateVariation);
                 }
               });
-              result['items'].push(prod);
-          } else {            
+            result['items'].push(prod);
+          } else {
             throw new Error('Variación ' + req.body.product.variation + ' no disponible para este producto');
           }
         } else {
           throw new Error('Producto principal no localizado');
         }
       }
-      if (req.body.type === 'Product'){
-        
-        prod.reference=req.body.product.reference.trim().toUpperCase();
-        prod.name=req.body.product.name.trim().toLowerCase();
-        prod.tax=(await Tax.findOne({ value: req.body.product.tax })).id;
+      if (req.body.type === 'Product') {
+
+        prod.reference = req.body.product.reference.trim().toUpperCase();
+        prod.name = req.body.product.name.trim().toLowerCase();
+        prod.tax = (await Tax.findOne({ value: req.body.product.tax })).id;
 
         let mainColor = await sails.helpers.tools.findColor(req.body.product.mainColor.trim().toLowerCase());
-        if(mainColor.length>0){prod.mainColor=mainColor[0];}else{throw new Error('No logramos identificar el color.');}
+        if (mainColor.length > 0) { prod.mainColor = mainColor[0]; } else { throw new Error('No logramos identificar el color.'); }
         let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.trim().toLowerCase() })
-        if(brand){prod.manufacturer=brand.id;}else{throw new Error('No logramos identificar la marca del producto.');}
+        if (brand) { prod.manufacturer = brand.id; } else { throw new Error('No logramos identificar la marca del producto.'); }
         let gender = await sails.helpers.tools.findGender(req.body.product.gender.trim().toLowerCase());
-        if(gender.length>0){prod.gender=gender[0];}else{throw new Error('No logramos identificar el género para este producto.');}
+        if (gender.length > 0) { prod.gender = gender[0]; } else { throw new Error('No logramos identificar el género para este producto.'); }
         let eval = req.body.product.active.toLowerCase().trim();
-        prod.active=(eval === 'true' || eval === '1' || eval === 'verdadero' || eval === 'si' || eval === 'sí') ? true : false;;
-        prod.width=parseFloat(req.body.product.width.replace(',', '.'));
-        prod.height=parseFloat(req.body.product.height.replace(',', '.'));
-        prod.length=parseFloat(req.body.product.length.replace(',', '.'));
-        prod.weight=parseFloat(req.body.product.weight.replace(',', '.'));
-        prod.seller=seller;
-        prod.price=parseFloat(req.body.product.price.replace(',', '.'));
-        prod.description=req.body.product.description;
-        prod.descriptionShort=req.body.product.descriptionShort;
+        prod.active = (eval === 'true' || eval === '1' || eval === 'verdadero' || eval === 'si' || eval === 'sí') ? true : false;;
+        prod.width = parseFloat(req.body.product.width.replace(',', '.'));
+        prod.height = parseFloat(req.body.product.height.replace(',', '.'));
+        prod.length = parseFloat(req.body.product.length.replace(',', '.'));
+        prod.weight = parseFloat(req.body.product.weight.replace(',', '.'));
+        prod.seller = seller;
+        prod.price = parseFloat(req.body.product.price.replace(',', '.'));
+        prod.description = req.body.product.description;
+        prod.descriptionShort = req.body.product.descriptionShort;
 
-        let categories = await sails.helpers.tools.findCategory(prod.name+' '+prod.gender);
-        if(categories.length>0){
+        let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.gender);
+        if (categories.length > 0) {
           prod.categories = categories;
-            let main = await Category.find({id:categories}).sort('level DESC');
-            prod.mainCategory = main[0].id;
-        }else{
+          let main = await Category.find({ id: categories }).sort('level DESC');
+          prod.mainCategory = main[0].id;
+        } else {
           throw new Error('Categoria No Localizada');
         }
         Product.findOrCreate({ reference: prod.reference, seller: seller }, prod)
-        .exec(async(err, record, wasCreated)=> {
-          if (err) { throw err; }
-          if(!wasCreated) {
-            await Product.updateOne({id: record.id}).set(prod)
-            .catch(err => {
-              throw err;
-            })
-          }
-        });
+          .exec(async (err, record, wasCreated) => {
+            if (err) { throw err; }
+            if (!wasCreated) {
+              await Product.updateOne({ id: record.id }).set(prod)
+                .catch(err => {
+                  throw err;
+                })
+            }
+          });
         result['items'].push(prod);
       }
     } catch (err) {
-      if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: '+ req.body.product.variation + ' - '+err.message);}
+      if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: ' + req.body.product.variation + ' - ' + err.message); }
       if (req.body.type === 'Product') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }
       if (req.body.type === 'ProductImage') { result['errors'].push('Archivo: ' + req.body.product.original + ': ' + err.message); }
     }
     return res.send(result);
   },
+
+  checkProductFromProvider: async (req, res) => {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
+      throw 'forbidden';
+    }
+
+    if (!req.isSocket) {
+      throw 'forbidden';
+    }
+
+    let result = {
+      items: [],
+      errors: [],
+    }
+
+    let seller = null;
+
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      seller = req.session.user.seller;
+    } else {
+      seller = req.body.seller;
+    }
+
+    let prod = {};
+
+    try {
+      prod.name = req.body.product.name.toUpperCase().trim();
+
+      if(!req.body.product.reference){
+          throw new Error('Producto ' + inputs.product.name + ' sin referencia');
+      }
+
+      prod.reference = req.body.product.reference.toUpperCase().trim();
+      prod.description = req.body.product.description.toLowerCase().trim();
+      prod.descriptionShort = req.body.product.descriptionShort.toLowerCase().trim();
+      let cats = await sails.helpers.tools.findCategory(req.body.product.name+' '+req.body.product.reference);
+      if(cats.length>0){
+          prod.categories = cats;
+          let main = await Category.find({id:cats}).sort('level DESC');
+          prod.mainCategory = main[0].id;
+      }
+
+      if(req.body.product.manufacturer){
+          prod.manufacturer = (await Manufacturer.findOne({ name: req.body.product.manufacturer.toLowerCase() })).id;
+      }else{
+          throw new Error('La Marca seleccionada para el producto ' + req.body.product.name + ' no existe');
+      }
+
+      let color = await sails.helpers.tools.findColor(req.body.product.name+' '+req.body.product.reference);
+      
+      if(color && color.length > 0){
+          prod.mainColor = color[0];
+      }else{
+          throw new Error('Producto ' + req.body.product.name + ' sin color');
+      }
+
+      if (req.body.product.gender) {
+          let gender = await sails.helpers.tools.findGender(req.body.product.name+' '+req.body.product.reference);
+          if (gender && gender.length>0) {
+              prod.gender = gender[0];
+          } else {
+              prod.gender = (await Gender.findOne({ name: 'unisex' })).id;
+          }
+      }
+      
+      if (req.body.product.tax) {
+          tax = (await Tax.findOne({ value: req.body.product.tax.rate }));
+          if(tax)
+              prod.tax = tax.id;
+      } else {
+          tax  = (await Tax.findOne({ value: 0 }));
+          if(tax)
+              prod.tax = tax.id;
+      }
+      prod.active = req.body.product.active || false;
+      prod.externalId = req.body.product.externalId || '';
+      prod.active = req.body.product.active;
+      prod.width = (req.body.product.width === undefined || req.body.product.width === null || req.body.product.width < 1) ? 15 : req.body.product.width;
+      prod.height = (req.body.product.height === undefined || req.body.product.height === null || req.body.product.height < 1) ? 15 : req.body.product.height;
+      prod.length = (req.body.product.length === undefined || req.body.product.length === null || req.body.product.length < 1) ? 32 : req.body.product.length;
+      prod.weight = (req.body.product.weight === undefined || req.body.product.weight === null || req.body.product.weight === 0) ? 1 : req.body.product.weight;
+      prod.price =  (req.body.product.price / (1 + (req.body.product.tax.rate/100)));
+      prod.description = req.body.product.description;
+      prod.descriptionShort = req.body.product.descriptionShort;
+      prod.seller = seller;
+
+      let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.gender);
+      if (categories.length > 0) {
+        prod.categories = categories;
+        let main = await Category.find({ id: categories }).sort('level DESC');
+        prod.mainCategory = main[0].id;
+      } else {
+        throw new Error('Categoria No Localizada');
+      }
+      Product.findOrCreate({ reference: prod.reference, seller: seller }, prod)
+        .exec(async (err, record, wasCreated) => {
+          if (err) { throw err; }
+          if (!wasCreated) {
+            await Product.updateOne({ id: record.id }).set(prod)
+              .catch(err => {
+                throw err;
+              })
+          }
+        });
+      result['items'].push(prod);
+    } catch (err) {
+      result['errors'].push('Ref: ' + prod.reference + ': ' + err.message);
+    }
+
+    return res.send(result);
+
+  },
+
   searchindex: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'updateindex')) {
@@ -828,7 +971,7 @@ module.exports = {
     }
     req.setTimeout(600000);
     let documents = [];
-    let products = await Product.find({active:true})
+    let products = await Product.find({ active: true })
       .populate('tax')
       .populate('manufacturer')
       .populate('mainColor')
@@ -892,7 +1035,7 @@ module.exports = {
     let seller = req.session.user.seller ? req.session.user.seller : '';
     let data = await sails.helpers.checkChannels(rights.name, seller);
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/multiple',{layout: 'layouts/admin',error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre});
+    return res.view('pages/configuration/multiple', { layout: 'layouts/admin', error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre });
   },
   multipleexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -900,48 +1043,48 @@ module.exports = {
       throw 'forbidden';
     }
     var jsonxml = require('jsontoxml');
-    let seller = (req.body.seller && req.body.seller!== null || req.body.seller!== '' || req.body.seller!== undefined) ? req.body.seller : req.session.user.seller;
+    let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
     let channel = req.body.channel;
     let result = null;
-    let params={seller:seller};
-    let response = {items:[],errors:[]};
+    let params = { seller: seller };
+    let response = { items: [], errors: [] };
     let productlist = [];
-    try{
+    try {
       if (channel === 'dafiti') {
-        switch(req.body.action){
+        switch (req.body.action) {
           case 'ProductCreate':
-            params.dafiti=false;
-            params.active=true;
-            params.dafitiqc=false;
+            params.dafiti = false;
+            params.active = true;
+            params.dafitiqc = false;
             break;
           case 'ProductUpdate':
-            params.dafiti=true;
-            params.dafitistatus=true;
-            params.active=true;
+            params.dafiti = true;
+            params.dafitistatus = true;
+            params.active = true;
             break;
           case 'Image':
-            params.dafiti=true;
-            params.dafitistatus=false;
-            params.dafitiqc=false;
-            params.active=true;
+            params.dafiti = true;
+            params.dafitistatus = false;
+            params.dafitiqc = false;
+            params.active = true;
             break;
         }
 
         let products = await Product.find(params);
-        for(let pl of products){
-          if(!productlist.includes(pl.id)){productlist.push(pl.id);}
+        for (let pl of products) {
+          if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
         }
-        if(products.length>0){
-          if(req.body.action==='Image'){
+        if (products.length > 0) {
+          if (req.body.action === 'Image') {
             result = await sails.helpers.channel.dafiti.images(products)
-            .catch(err =>{
-              throw new Error(err.message);
-            })
-          }else{
+              .catch(err => {
+                throw new Error(err.message);
+              })
+          } else {
             result = await sails.helpers.channel.dafiti.product(products)
-            .catch(err =>{
-              throw new Error(err.message);
-            })
+              .catch(err => {
+                throw new Error(err.message);
+              })
           }
           var xml = jsonxml(result,true);
           let sign = await sails.helpers.channel.dafiti.sign(req.body.action,seller);
@@ -963,39 +1106,39 @@ module.exports = {
           throw new Error('Sin Productos para Procesar');
         }
       }
-      if(channel === 'linio'){
-        switch(req.body.action){
+      if (channel === 'linio') {
+        switch (req.body.action) {
           case 'ProductCreate':
-            params.linio=false;
-            params.active=true;
+            params.linio = false;
+            params.active = true;
             break;
           case 'ProductUpdate':
-            params.linio=true;
-            params.liniostatus=true;
-            params.active=true;
+            params.linio = true;
+            params.liniostatus = true;
+            params.active = true;
             break;
           case 'Image':
-            params.linio=true;
-            params.liniostatus=false;
-            params.active=true;
+            params.linio = true;
+            params.liniostatus = false;
+            params.active = true;
             break;
         }
 
         let products = await Product.find(params);
-        for(let pl of products){
-          if(!productlist.includes(pl.id)){productlist.push(pl.id);}
+        for (let pl of products) {
+          if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
         }
-        if(products.length>0){
-          if(req.body.action==='Image'){
+        if (products.length > 0) {
+          if (req.body.action === 'Image') {
             result = await sails.helpers.channel.linio.images(products)
-            .catch(err =>{
-              throw new Error(err.message);
-            })
-          }else{
+              .catch(err => {
+                throw new Error(err.message);
+              })
+          } else {
             result = await sails.helpers.channel.linio.product(products)
-            .catch(err =>{
-              throw new Error(err.message);
-            })
+              .catch(err => {
+                throw new Error(err.message);
+              })
           }
           var xml = jsonxml(result,true);
           let sign = await sails.helpers.channel.linio.sign(req.body.action,seller);
@@ -1017,74 +1160,74 @@ module.exports = {
           throw new Error('Sin Productos para Procesar');
         }
       }
-      if(channel === 'mercadolibre'){
+      if (channel === 'mercadolibre') {
         let action = '';
-        switch(req.body.action){
+        switch (req.body.action) {
           case 'ProductCreate':
-            action ='Post';
-            params.ml=false;
-            params.active=true;
+            action = 'Post';
+            params.ml = false;
+            params.active = true;
             break;
           case 'ProductUpdate':
             action = 'Update';
-            params.ml=true;
-            params.mlstatus=true;
-            params.active=true;
+            params.ml = true;
+            params.mlstatus = true;
+            params.active = true;
             break;
           case 'Image':
             action = 'Update';
-            params.ml=true;
-            params.mlstatus=true;
-            params.active=true;
+            params.ml = true;
+            params.mlstatus = true;
+            params.active = true;
             break;
         }
         let products = await Product.find(params);
-        if(products.length>0){
-          for(let pl of products){
+        if (products.length > 0) {
+          for (let pl of products) {
             await sails.helpers.channel.mercadolibre.product(seller, action)
-            .then(async result =>{
-              response.items.push(result);
-              await Product.updateOne({id:pl.id}).set({
-                ml:true,
-                mlstatus:true,
-                mlid:result.id
+              .then(async result => {
+                response.items.push(result);
+                await Product.updateOne({ id: pl.id }).set({
+                  ml: true,
+                  mlstatus: true,
+                  mlid: result.id
+                });
+              })
+              .catch(async err => {
+                response.errors.push(err.message);
+                await Product.updateOne({ id: pl.id }).set({
+                  ml: true,
+                  mlstatus: false
+                });
               });
-            })
-            .catch(async err =>{
-              response.errors.push(err.message);
-              await Product.updateOne({id:pl.id}).set({
-                ml:true,
-                mlstatus:false
-              });
-            });
           }
-        }else{
+        } else {
           throw new Error('Sin Productos para Procesar');
         }
       }
-    }catch(err){
+    } catch (err) {
       response.errors.push(err.message);
     }
     return res.send(response);
   },
-  getcover: async (req,res) =>{
+  getcover: async (req, res) => {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let product = await Product.findOne({id:req.param('productid')});
-    let cover = await ProductImage.findOne({product:req.param('productid'),cover:1});
+    let product = await Product.findOne({ id: req.param('productid') });
+    let cover = await ProductImage.findOne({ product: req.param('productid'), cover: 1 });
     let response = {};
-    response.name=product.name;
-    response.reference=product.reference;
-    if(cover){
-      let image = sails.config.views.locals.imgurl+'/images/products/'+req.param('productid')+'/'+cover.file;
-      response.image=image;
+    response.name = product.name;
+    response.reference = product.reference;
+    if (cover) {
+      let image = sails.config.views.locals.imgurl + '/images/products/' + req.param('productid') + '/' + cover.file;
+      response.image = image;
     }
     return res.send(response);
   },
   genderindex: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if ((rights.name !== 'superadmin') && !_.contains(rights.permissions,'updateindex')) {
+    if ((rights.name !== 'superadmin') && !_.contains(rights.permissions, 'updateindex')) {
       throw 'forbidden';
     }
     let documents = [];
@@ -1123,21 +1266,224 @@ module.exports = {
       });
     });
   },
-  paginate : async (req, res)=>{
+  importProducts: async (req, res) => {
     if (!req.isSocket) {
-        return res.badRequest();
+      return res.badRequest();
+    }
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
+      throw 'forbidden';
     }
 
-    let page = parseInt(req.param('page')) || 1;
-    let pageSize = parseInt(req.param('pageSize')) || 50;
+    let seller = null; 
+    let page = req.body.page;
+    let pageSize = req.body.pageSize;
 
-    let count  = await Product.count();
-    let products = await Product.find({}).paginate(page, pageSize);
-    
-     res.status(200).json({
-        products: products,
-        current: page,
-        pages: Math.ceil(count / pageSize)
-    })
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      seller = req.session.user.seller;
+    } else {
+      seller = req.body.seller;
+    }
+
+    do {
+
+      let importedProducts = await sails.helpers.commerceImporter(
+        req.body.channel,
+        req.body.pk,
+        req.body.sk,
+        req.body.apiUrl,
+        req.body.version,
+        'CATALOG',
+        { page: page, pageSize: pageSize, next: req.body.next || null }
+      ).catch((e) => console.log(e));
+
+      if (importedProducts && importedProducts.pagination)
+        next = importedProducts.pagination;
+
+      isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
+
+      if (!isEmpty) {
+         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
+      } else {
+        break;
+      }
+
+      page++;
+
+    } while ((!isEmpty));
+  },
+
+  importImages: async (req, res) => {
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
+      throw 'forbidden';
+    }
+
+    let seller = null; 
+    let page = req.body.page;
+    let pageSize = req.body.pageSize;
+
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      seller = req.session.user.seller;
+    } else {
+      seller = req.body.seller;
+    }
+
+    do {
+
+      let importedProductsImages = await sails.helpers.commerceImporter(
+        req.body.channel,
+        req.body.pk,
+        req.body.sk,
+        req.body.apiUrl,
+        req.body.version,
+        'IMAGES',
+        { page: page, pageSize: pageSize, next: req.body.next || null }
+      ).catch((e) => console.log(e));
+
+      if (importedProductsImages && importedProductsImages.pagination)
+        next = importedProductsImages.pagination;
+
+      isEmpty = (!importedProductsImages || !importedProductsImages.data || importedProductsImages.data.length == 0) ? true : false;
+
+      if (!isEmpty) {
+        for(p of importedProductsImages.data){
+          let errors = [];
+          let result = [];
+
+          for (let im of p.images) {
+            try {
+              let url = (im.src.split('?'))[0];
+              let file = (im.file.split('?'))[0];
+              
+              let product = await Product.findOne({ externalId : p.externalId});
+              if(product){
+                let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                  throw new Error(`Ref: ${pro.reference} : ${pro.name} ocurrio un error obteniendo la imagen`);
+                });
+                if (uploaded) {
+                  let cover = 1;
+                  let totalimg = await ProductImage.count({ product: product.id});
+                  totalimg += 1;
+                  if (totalimg > 1) { cover = 0; }
+                  
+                  let rs = await ProductImage.create({
+                    file: file,
+                    position: totalimg,
+                    cover: cover,
+                    product: product.id
+                  }).fetch();
+  
+                  if(typeof(rs) === 'object'){
+                      result.push(rs);
+                  }
+  
+                  sails.sockets.blast('product_images_processed',  {result});
+  
+                }
+              }
+
+            } catch (err) {
+                errors.push(err)
+                sails.sockets.blast('product_images_processed',  {errors});
+            }
+          }
+
+        }
+      } else {
+        break;
+      }
+
+      page++;
+
+    } while ((!isEmpty));
+  },
+
+  importVariations: async (req, res) => {
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
+      throw 'forbidden';
+    }
+
+    let seller = null; 
+    let page = req.body.page;
+    let pageSize = req.body.pageSize;
+
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      seller = req.session.user.seller;
+    } else {
+      seller = req.body.seller;
+    }
+
+    do {
+
+      let importedProductsVariations= await sails.helpers.commerceImporter(
+        req.body.channel,
+        req.body.pk,
+        req.body.sk,
+        req.body.apiUrl,
+        req.body.version,
+        'VARIATIONS',
+        { page: page, pageSize: pageSize, next: req.body.next || null }
+      ).catch((e) => console.log(e));
+
+      if (importedProductsVariations && importedProductsVariations.pagination)
+        next = importedProductsVariations.pagination;
+
+      isEmpty = (!importedProductsVariations || !importedProductsVariations.data || importedProductsVariations.data.length == 0) ? true : false;
+
+      if (!isEmpty) {
+        for(let p of importedProductsVariations.data){
+          let pro = await Product.findOne({ externalId : p.externalId});
+          let ct = await Category.find({id:pro.categories}).sort('level ASC');
+          let tx = await Tax.findOne({id:pro.tax});
+          let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+
+          if(p.variations ===undefined || p.variations.length<1){
+            let vr = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:'único', col:'único'},{gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
+            await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
+                product:pr.id,
+                variation:vr.id,
+                reference: '',
+                supplierreference:pro.reference,
+                ean13: 0,
+                upc: 0,
+                price: pro.price * (1+(tx.value/100)),
+                quantity: 0,
+                seller:pr.seller
+              });
+          }else{
+            for(let vr of p.variations){
+              let v = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()},{gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()}).catch((e)=>console.log(e));
+              await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
+                product:pr.id,
+                variation:v.id,
+                reference: vr.reference ? vr.reference : '',
+                supplierreference:pr.reference,
+                ean13: vr.ean13 ? vr.ean13 : 0,
+                upc: vr.upc ? vr.upc : 0,
+                price: pr.price * (1+(tx.value/100)),
+                quantity: vr.quantity ? vr.quantity : 0,
+                seller:pr.seller
+              }).catch((e)=>console.log(e));
+            }
+          }
+        }
+      } else {
+        break;
+      }
+
+      page++;
+
+    } while ((!isEmpty));
   }
 };

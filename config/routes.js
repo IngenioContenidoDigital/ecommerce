@@ -89,6 +89,7 @@ module.exports.routes = {
   'POST /import' : {controller:'ProductController',action:'importexecute'},
   'GET /dafiticheck' : {controller:'ProductController',action:'dafiticheck'},
   'POST /productcheck' : {controller:'ProductController',action:'checkdata'},
+  'POST /check-product-provider' : {controller:'ProductController',action:'checkProductFromProvider'},
 
   'GET /multiple' : {controller:'ProductController',action:'multiple'},
   'POST /multiple' : {controller:'ProductController',action:'multipleexecute'},
@@ -102,6 +103,9 @@ module.exports.routes = {
   'DELETE /variations/remove/:id' : {controller:'ProductController',action:'deletevariations'},
   'GET /findvariations/:id' : {controller:'ProductController',action:'findvariations'},
   'GET /findproductvariations/:id' : {controller:'ProductController',action:'findproductvariations'},
+  'POST /import-products' : {controller:'ProductController',action:'importProducts'},
+  'POST /import-images' : {controller:'ProductController',action:'importImages'},
+  'POST /import-variations' : {controller:'ProductController',action:'importVariations'},
   'GET /taxes/:action?/:id?' : {controller:'TaxController',action:'showtaxes'},
   'POST /tax/create' : {controller:'TaxController',action:'createtax'},
   'POST /tax/edit/:id' : {controller:'TaxController',action:'edittax'},

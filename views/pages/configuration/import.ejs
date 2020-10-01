@@ -88,6 +88,7 @@
                                     <div class="select is-fullwidth">
                                         <select name="importType" required>
                                             <option value="Product">Productos</option>
+                                            <option value="Variations">Variaciones</option>
                                             <option value="ProductImage">Imagenes de Producto</option>
                                         </select>
                                     </div>
@@ -156,6 +157,90 @@
     </div>
   </div>
   <script>
+    <% if(pagination && pagination!== null ){ %>
+        let args = <%- JSON.stringify(credentials)%>;
+        let seller = '<%= seller %>';
+        let importType = '<%= importType %>';
+
+        let processed = 1;
+        args.page = 1;
+        args.pageSize  = 50;
+        args.seller = seller
+        
+        let paginationData =<%- JSON.stringify(pagination)%>;
+        let pages = paginationData.pagesCount;
+        let totalItemsData =  paginationData.data.length;
+        let total = paginationData.totalRecords;
+
+        let report = document.querySelector('#report');
+        if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+
+        io.socket.on("product_processed", (resData)=>{
+          if(resData.result.length>=1){
+              let items = document.querySelector('#items');
+              items.innerHTML=parseInt(items.innerHTML)+1;
+            }
+            if(resData.errors.length>=1){
+              console.log("ERROR", resData.errors[0].message);
+              let errors = document.querySelector('#errors')
+              errors.innerHTML=parseInt(errors.innerHTML)+1;
+              let errorlist = document.querySelector('#error-list');
+              let err = document.createElement('li');
+              err.innerHTML=resData.errors[0].message;
+              errorlist.appendChild(err);
+            }
+            if(processed>=total){
+              let mensaje = document.querySelector('#report > .title');
+              mensaje.innerHTML='Proceso Finalizado';
+            }else{
+              processed+=1;
+            }
+        });
+
+        io.socket.on("product_images_processed", (resData)=>{
+          if(resData.result && resData.result.length>=1){
+              let items = document.querySelector('#items');
+              items.innerHTML=parseInt(items.innerHTML)+1;
+            }
+            if(resData.errors && resData.errors.length>=1){
+              console.log("ERROR", resData.errors[0].message);
+              let errors = document.querySelector('#errors')
+              errors.innerHTML=parseInt(errors.innerHTML)+1;
+              let errorlist = document.querySelector('#error-list');
+              let err = document.createElement('li');
+              err.innerHTML=resData.errors[0].message;
+              errorlist.appendChild(err);
+            }
+            if(processed>=total){
+              let mensaje = document.querySelector('#report > .title');
+              mensaje.innerHTML='Proceso Finalizado';
+            }else{
+              processed+=1;
+            }
+        });
+
+        switch (importType) {
+          case 'Product':
+                io.socket.post('/import-products', args, (response)=>{
+                  console.log("response", response);
+                });
+            break;
+            case 'ProductImage':
+                io.socket.post('/import-images', args, (response)=>{
+                  console.log("response", response);
+                });
+            break;
+            case 'Variations':
+                io.socket.post('/import-variations', args, (response)=>{
+                  console.log("response", response);
+                });
+            break;
+          default:
+            break;
+        }
+
+    <% } %>
+
     <% if(resultados!==null){ %>
       let records = <%- JSON.stringify(resultados)%>;
       let type = '<%= type %>';

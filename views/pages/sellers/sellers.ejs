@@ -127,9 +127,10 @@
                       <br/>
                       <div class="card is-hidden" id="setup-panel">
                         <div class="card-content">
-                          <div class="tabs is-toggle is-fullwidth o-x-h flex-centered">
+                          <div class="tabs is-toggle is-fullwidth o-x-h provider-items">
                             <img src="/images/wooCommerce.png" /><input type="radio" name="channel" value="woocommerce" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='woocommerce'){%>checked<%}%>/>
                             <img src="/images/shopify.png" /><input type="radio" name="channel" value="shopify" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='shopify'){%>checked<%}%>/>
+                            <img src="/images/vtex.png" /><input type="radio" name="channel" value="vtex" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='vtex'){%>checked<%}%>/>
                           </div>
                           <div class="setup">
                             <div class="container">

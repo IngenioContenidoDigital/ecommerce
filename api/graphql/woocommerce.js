@@ -17,30 +17,47 @@ module.exports = {
                         name
                         rate
                     }
-                    gender
-                    mainColor
                     width
                     weight
                     height
                     length
-                    images{
-                        file
-                        position
-                        product
-                        cover
-                        src
                     }
+                }
+            }
+                
+`,
+
+IMAGES : `
+        query WooCommerceProductListQuery($pagination: PaginationInput) {
+                WooCommerceProduct(listing: { pagination: $pagination}) {
+                totalRecords
+                pagesCount
+                data{
+                        externalId
+                        images{
+                            file
+                            src
+                        }
+                    }
+            }
+        }
+`,
+
+VARIATIONS : `
+        query WooCommerceProductListQuery($pagination: PaginationInput) {
+                WooCommerceProduct(listing: { pagination: $pagination}) {
+                totalRecords
+                pagesCount
+                data{
+                        externalId
                         variations{
                             quantity
                             reference
                             talla
-                            gender
-                            upc
                             price
-                            ean13
                         }
                     }
-                }
-                }
+            }
+        }
 `
 }
