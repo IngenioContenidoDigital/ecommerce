@@ -197,6 +197,28 @@
             }
         });
 
+        io.socket.on("variation_processed", (resData)=>{
+          if(resData.result.length>=1){
+              let items = document.querySelector('#items');
+              items.innerHTML=parseInt(items.innerHTML)+1;
+            }
+            if(resData.errors.length>=1){
+              console.log("ERROR", resData.errors[0].message);
+              let errors = document.querySelector('#errors')
+              errors.innerHTML=parseInt(errors.innerHTML)+1;
+              let errorlist = document.querySelector('#error-list');
+              let err = document.createElement('li');
+              err.innerHTML=resData.errors[0].message;
+              errorlist.appendChild(err);
+            }
+            if(processed>=total){
+              let mensaje = document.querySelector('#report > .title');
+              mensaje.innerHTML='Proceso Finalizado';
+            }else{
+              processed+=1;
+            }
+        });
+
         io.socket.on("product_images_processed", (resData)=>{
           if(resData.result && resData.result.length>=1){
               let items = document.querySelector('#items');
