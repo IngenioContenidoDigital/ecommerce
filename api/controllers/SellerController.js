@@ -42,134 +42,65 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'createseller')){
       throw 'forbidden';
     }
-    let error=null;
-    let isActive = (req.body.activo==='on') ? true : false;
 
-    let address = await Address.create({
-      name:'Principal '+req.body.name.trim().toLowerCase(),
-      addressline1:req.body.addressline1,
-      addressline2:req.body.addressline2,
-      country:req.body.country,
-      region:req.body.region,
-      city:req.body.city,
-      zipcode:req.body.zipcode,
-      notes:req.body.notes
-    }).fetch();
+    let filename = null;
+    let isActive = (req.body.activo==='on') ? true : false;
+    
     try{
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      
-      let seller = await Seller.create({
+
+      let addData = {
+        name:'Principal '+req.body.name.trim().toLowerCase(),
+        addressline1:req.body.addressline1,
+        addressline2:req.body.addressline2,
+        country:req.body.country,
+        region:req.body.region,
+        city:req.body.city,
+        zipcode:req.body.zipcode,
+        notes:req.body.notes
+      }
+
+      let sellerData = {
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
         contact:req.body.contact,
         email:req.body.email,
-        tagManager: req.body.tagManager,
+        tagManager: req.body.tagManager ? req.body.tagManager : '',
         phone:req.body.phone,
         domain:req.body.url ? req.body.url : '',
-        logo: filename[0].filename,
-        mainAddress:address.id,
-        active:isActive}).fetch();
+        active:isActive
+      }
 
-        let integration = {
-          channel:req.body.channel,
-          url:req.body.apiUrl,
-          key:req.body.key,
-          secret:req.body.secret ? req.body.secret : '',
-          seller:seller.id
-      };
-    
-      if(integration.channel && integration.url && integration.key && integration.secret){
-        if(req.body.user)
-          integration.user = req.body.user
+      filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
+      if(filename.length>0){sellerData.logo = filename[0].filename;}
+
+      let address = await Address.findOrCreate({name:addData.name,addressline1:addData.addressline1},addData);
+
+      if(address){sellerData.mainAddress = address.id;}
       
-      if(req.body.version)
-          integration.version = req.body.version
+      let seller = await Seller.findOrCreate({dni:sellerData.dni},sellerData);
+      let integration = {
+        channel:req.body.channel,
+        url:req.body.apiUrl,
+        key:req.body.key,
+        secret:req.body.secret ? req.body.secret : '',
+        seller:seller.id
+      };
+
+      if(integration.channel && integration.url && integration.key && integration.secret){
+
+        if(req.body.user){integration.user = req.body.user;}
+        if(req.body.version){integration.version = req.body.version;}
     
-      Integrations.findOrCreate({ seller: seller.id, channel:integration.channel}, integration, async (err, record , created )=>{
-          if(err){
-            error = err;
-          }
-    
-          if(!created){
-            let updateIntegration = {
-                channel:req.body.channel,
-                url:req.body.url ? req.body.url : '',
-                key:req.body.key,
-                secret:req.body.secret ? req.body.secret : '',
-                seller:seller.id
-            };
-    
-            if(req.body.user)
-              updateIntegration.user = req.body.user
-          
-            if(req.body.version)
-              updateIntegration.version = req.body.version
-          
-            await Integrations.updateOne({id:record.id}).set(updateIntegration);
-          }
+        Integrations.findOrCreate({ seller: seller.id, channel:integration.channel}, integration, async (err, record , created )=>{
+          if(err){error = err;}
+          if(!created){await Integrations.updateOne({id:record.id}).set(updateIntegration);}
         });
       }
     }catch(err){
-      error=err;
-      if(err.code==='badRequest'){
-       let seller =  await Seller.create({
-          name:req.body.name.trim().toLowerCase(),
-          dni:req.body.dni,
-          contact:req.body.contact,
-          email:req.body.email,
-          tagManager: req.body.tagManager,
-          phone:req.body.phone,
-          domain:req.body.url ? req.body.url : '',
-          mainAddress:address.id,
-          active:isActive}).fetch();
-
-          let integration = {
-            channel:req.body.channel,
-            url:req.body.apiUrl,
-            key:req.body.key,
-            secret:req.body.secret ? req.body.secret : '',
-            seller:seller.id
-        };
-      
-        if(integration.channel && integration.url && integration.key && integration.secret){
-          if(req.body.user)
-            integration.user = req.body.user
-        
-        if(req.body.version)
-            integration.version = req.body.version
-      
-        Integrations.findOrCreate({ seller: seller.id, channel:integration.channel}, integration, async (err, record , created )=>{
-            if(err){
-              error = err;
-            }
-      
-            if(!created){
-              let updateIntegration = {
-                  channel:req.body.channel,
-                  url:req.body.url ? req.body.url : '',
-                  key:req.body.key,
-                  secret:req.body.secret ? req.body.secret : '',
-                  seller:seller.id
-              };
-      
-              if(req.body.user)
-                updateIntegration.user = req.body.user
-            
-              if(req.body.version)
-                updateIntegration.version = req.body.version
-            
-              await Integrations.updateOne({id:record.id}).set(updateIntegration);
-            }
-          });
-        }
-      }
+      console.log(err);
+      return res.redirect('/sellers?error='+err.message);
     }
-
-    if (error===undefined || error===null || error.code==='badRequest'){
-      return res.redirect('/sellers');
-    }else{
-      return res.redirect('/sellers?error='+error);
-    }
+    return res.redirect('/sellers');
   },
   editseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
