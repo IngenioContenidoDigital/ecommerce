@@ -70,8 +70,12 @@ module.exports = {
         active:isActive
       }
 
-      filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      if(filename.length>0){sellerData.logo = filename[0].filename;}
+      try{
+        filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
+        if(filename.length>0){sellerData.logo = filename[0].filename;}
+      }catch(err){
+        console.log(err);
+      }
 
       let address = await Address.findOrCreate({name:addData.name,addressline1:addData.addressline1},addData);
 
