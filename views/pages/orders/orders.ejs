@@ -1,236 +1,60 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-pageloader@2.2.0/dist/css/bulma-pageloader.min.css">
 <% let printed = []; let flag = false; %>
 <div class="container">
-    <% if (error != undefined || error != null) { %>
-        <div class="notification is-danger is-light" id="error">
-            <%= error %>
-        </div>
-      <% } %>
-      <%if(action=='create' || action=='edit'){%>
-        <div class="columns is-size-7">
-          <div class="column">
-            <div class="box">
-              <h7 class="title is-7">Información del Pedido</h7><span id="order" order="<%=order.id %>" class="is-pulled-right is-size-5"><%=order.reference %></span>
-              <hr>
-              <p class="container is-capitalized"><span class="is-lower has-text-weight-bold">Nombre:&nbsp;</span><span class="is-pulled-right"><%= order.customer.fullName %>&nbsp;-&nbsp;<%= order.customer.dniType %>:&nbsp;<%= order.customer.dni %></span></p>
-              <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Email:&nbsp;</span><span class="is-pulled-right is-lowercase is-size-7"><%= order.customer.emailAddress %></span></p>
-              <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Pedido creado:&nbsp;</span><span class="is-pulled-right"><%= moment(order.createdAt).locale('es').format('LLL')%></span></p>
-              <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Tiempo Transcurrido:&nbsp;</span><span class="is-pulled-right"><%= moment.duration((new Date())-order.createdAt).locale('es').humanize()%></span></p>
-              <br>
-              <div class="select is-fullwidth">
-                <select class="is-capitalized" name="orderState">
-                    <% states.forEach(state =>{ %>
-                      <option color="<%= state.color.code;%>" class="is-capitalized" value="<%=state.id%>" <%if(state.id==order.currentstatus.id){%>selected="selected"<%}%>><%=state.name%></option>
-                    <%})%>
-                </select>
-              </div>
-              <br><br>
-                <div class="columns is-mobile">
-                  <div class="column">
-                    <div id="state-color" class="color-container" style="margin-top:8px;background-color:<%= order.currentstatus.color.code %>;border:solid 1px <%=order.currentstatus.color.code%>;"></div>
-                  </div>
-                  <div class="column has-text-right">
-                    <button id="stt" class="button is-primary is-small">Actualizar Estado</button>
-                  </div>
-                </div>
-            </div>
-          </div>
-          <div class="column">
-            <div class="box">
-              <h7 class="title is-7">Información del Pago</h7><span class="is-pulled-right is-size-5"><%=order.paymentId %></span>
-              <hr><br>
-              <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Medio de Pago:&nbsp;</span><span class="is-pulled-right"><%= order.paymentMethod %></span></p>
-              <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Detalle de Pago:&nbsp;</span><span class="is-pulled-right"><%= order.paymentOption %></span></p>
-              <p class="container is-capitalized">
-                <table class="table is-fullwidth">
-                  <tr><td><span class="has-text-weight-bold is-size-7">Productos:</span></td><td><p class="has-text-dark has-text-right">$&nbsp;<%= Math.round(order.totalProducts).toLocaleString('es-CO')%></p></td></tr>
-                  <tr><td><span class="has-text-weight-bold is-size-7">Envío:</span></td><td><p class="has-text-success has-text-right">$&nbsp;<%= Math.round(order.totalShipping).toLocaleString('es-CO')%></p></td></tr>
-                  <tr><td><span class="has-text-weight-bold is-size-7">Pedido:</span></td><td><p class="has-text-danger has-text-right">$&nbsp;<%= Math.round(order.totalOrder).toLocaleString('es-CO')%></p></td></tr>
-                </table>
-              </p>
-            </div>
-          </div>
-          <div class="column">
-            <div class="box">
-              <h7 class="title is-7">Dirección de Entrega</h7>
-              <hr>
-              <p class="container"><%= order.addressDelivery.addressline1 %></p>
-              <%= order.addressDelivery.addressline2 %>
-              <span class="is-capitalized"><%= order.addressDelivery.region.name %>, </span>
-              <span class="is-capitalized"><%= order.addressDelivery.city.name %></span>
-              <span class="is-uppercase"><%= order.addressDelivery.zipcode %></span>
-              <p class="container is-capitalized"><%= order.addressDelivery.country.name %></p>
-              <br>
-              <p class="container"><h7 class="subtitle is-7 has-text-weight-bold">Observaciones:</h7></p>
-              <p><%= order.addressDelivery.notes %></p>
-              <br>
-              <%if(order.tracking!=='' && order.tracking!==null){%>
-              <div class="columns is-mobile">
-                <div class="column">
-                  <span id="tracking" tracking="<%=order.tracking %>" class="is-size-7">Guía: <%=order.tracking%></span>
-                </div>
-                <div class="column">
-                  <p class="container has-text-right">
-                    <a href="/guia/<%=order.tracking%>" id="tracking" class="button is-small"><span class="icon"><i class='bx bxs-truck'></i></span></a>
-                  </p>
-                </div>
-              </div>
-            <%}else{%>
-              <hr>
-            <%}%>
-            </div>
-          </div>
-        </div>
-        <div class="columns">
-          <div class="column">
-            <h7 class="title is-7">Detalle del Pedido</h7>
-            <div class="box">
-              <% items.forEach(item => { %>
-                <% printed.forEach(elm =>{%>
-                  <%if(elm.variation===item.productvariation.id){%>
-                      <% flag = true; %>
-                  <%}%>
-                  <%})%>
-                  <%if(!flag){%>
-                      <% printed.push({variation:item.productvariation.id,quantity:1}); %>
-                  <%}%>
-                  <%if(!flag){%>
-                    <div class="columns">
-                      <div class="column">
-                        <article class="media">
-                            <% item.product.images.forEach(image =>{ %>
-                              <%if(image.cover==1){%>
-                                <img width="128px;" src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=image.file%>" />
-                              <%}%>
-                            <%})%>
-                          <div class="container">
-                            <p class="is-capitalized"><%=item.product.manufacturer.name%></p>
-                            <p><strong class="is-uppercase"><%=item.product.name%></strong></p>
-                            <span>Referencia:&nbsp;<strong><%= item.product.reference %></strong></span>&nbsp;<div class="color-container" style="background-color:<%= item.product.mainColor.code %>;border:solid 1px <%= item.product.mainColor.code %>;"></div>
-                            <p>Talla:&nbsp;<span class="is-uppercase"><%= item.productvariation.variation.name %></span>&nbsp;<span class="is-uppercase">COL:&nbsp<%= item.productvariation.variation.col %></span>&nbsp;<span class="is-uppercase">US:&nbsp<%= item.productvariation.variation.us %></span>&nbsp;<span class="is-uppercase">CM:&nbsp<%= item.productvariation.variation.cm %></span></p>
-                          </div>
-                        </article>
-                      </div>
-                      <div class="column">
-                        <div class="container">
-                          <p class="has-text-centered is-paddingless is-marginless"><span class="has-text-weight-bold">Unidades</span></p>
-                          <p class="has-text-centered"><span id="quantity" class="has-text-info is-size-1 has-text-weight-bold"><%=item.productvariation.quantity%></span></p>
-                        </div>
-                      </div>
-                      <div class="column">
-                        <table class="table is-fullwidth" variation="<%=item.productvariation.id%>">
-                          <tr><td><span class="has-text-weight-bold is-size-7">Precio x Unidad:</span></td><td><p id="unit-price" price="<%=item.originalPrice%>" class="has-text-dark has-text-right">$&nbsp;<%= item.originalPrice.toLocaleString('es-CO')%></p></td></tr>
-                          <tr><td><span class="has-text-weight-bold is-size-7">Valor del descuento:</span></td><td><p id="discount" price="<%=item.discount%>" class="has-text-success has-text-right">$&nbsp;<%= item.discount.toLocaleString('es-CO')%></p></td></tr>
-                          <tr><td><span class="has-text-weight-bold is-size-7">Subtotal:</span></td><td><p id="item-price" price="<%=item.price%>" class="has-text-danger has-text-right">$&nbsp;<%= item.price.toLocaleString('es-CO')%></p></td></tr>
-                        </table>
-                      </div>
-                    </div>
-                  <%}else{%>
-                    <% printed.forEach(elm =>{%>
-                    <%if(elm.variation===item.productvariation.id){%>
-                        <% elm.quantity+=1;%>
-                        <% flag = false; %>
-                    <%}%>
-                  <%})%>
+      <div class="pageloader is-active"><span class="title">Buscando Ordenes ...</span></div>
+      <div class="table-container">
+        <table class="table is-hoverable is-size-7" id="orders-table">
+            <thead>
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Medio de Pago</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Estado</th>
+                <th scope="col">Total</th>
+                <th scope="col">Fecha</th>
+                <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                  <th scope="col">Seller</th>
                 <%}%>
-              <%})%>
-            </div>
-          </div>
-        </div>
-        <script>
-          let totals = <%- JSON.stringify(printed) %>;
-
-          const quantites = () =>{
-              let list = document.querySelectorAll('.table');
-              for(let row of list){
-                  let select = row.parentNode.parentNode.querySelector('#quantity')
-                  totals.forEach(el =>{
-                      if(el.variation.toString()===row.getAttribute('variation')){
-                          select.innerHTML=el.quantity;
-                          let itemPrice = row.querySelector('#item-price')
-                          let itemOriginal = row.querySelector('#unit-price')
-                          let discount = row.querySelector('#discount')
-                          itemPrice.innerHTML = '$ '+Math.round(itemPrice.getAttribute('price')*el.quantity).toLocaleString('es-CO');
-                          itemOriginal.innerHTML = '$ '+Math.round(itemOriginal.getAttribute('price')).toLocaleString('es-CO')+'&nbsp;';
-                          discount.innerHTML = '$ '+Math.round(discount.getAttribute('price')*el.quantity).toLocaleString('es-CO')+'&nbsp;';
-                      }
-                  });
-              }
+                <th scope="col">Opciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+      </div>
+      <script>
+        let datatable = new simpleDatatables.DataTable('#orders-table',{
+          searchable:true,
+          sortable:true,
+          paging:true,
+          perPageSelect:[5,10,20,30,50],
+          perPage:50,
+          labels: {
+            placeholder: "Buscar...",
+            perPage: "{select} registros por página",
+            noRows: "No se encontraron datos",
+            info: "Mostrando {start} a {end} de {rows} registros",
           }
+        });
 
-          quantites();
-
-          live('#stt','click',(e) =>{
-            e.preventDefault();
-            let order= document.getElementById('order').getAttribute('order');
-            let state= document.querySelector('select[name="orderState"]').value;
-            io.socket.put('/order/update',{id:order,orderState:state},(resData) =>{
-              let colorcode = resData.newstate.color.code;
-              document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
-            });
-          });
-
-        </script>
-      <%}else{%>
-        <div class="table-container">
-          <table class="table is-hoverable is-size-7" id="orders-table">
-              <thead>
-              <tr>
-                  <th scope="col">Id</th>
-                  <th scope="col">Medio de Pago</th>
-                  <th scope="col">Cliente</th>
-                  <th scope="col">Estado</th>
-                  <th scope="col">Total</th>
-                  <th scope="col">Fecha</th>
-                  <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-                    <th scope="col">Seller</th>
-                  <%}%>
-                  <th scope="col">Opciones</th>
-              </tr>
-              </thead>
-              <tbody>
-                  <% orders.forEach(function(order){ %>
-                    <tr>
-                        <td scope="row" class="align-middle"><%= order.reference %></td>
-                        <td class="align-middle is-uppercase"><%= order.paymentMethod %></td>
-                        <td class="align-middle"><%= order.customer.fullName %></td>
-                        <td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:<%=order.currentstatus.color.code%>;"><span class="is-size-7 has-text-black has-background-white"><%= order.currentstatus.name %></span></p></td>
-                        <td class="align-middle is-capitalized has-text-right">$&nbsp;<%= Math.round(order.totalOrder).toLocaleString('es-CO') %></td>
-                        <td class="align-middle"><%= moment(order.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
-                        <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-                        <td class="align-middle"><span><%= order.seller.name; %></span></td>
-                        <%}%>
-                        <td class="align-middle">
-                          <a href="/orders/edit/<%=order.id%>" class="button is-small">
-                            <span class="icon">
-                              <i class='bx bx-dots-horizontal'></i>
-                            </span>
-                          </a>
-                          <%if(order.tracking!==''){%>
-                            <a href="/guia/<%=order.tracking%>" class="button is-small"><span class="icon"><i class='bx bxs-truck'></i></span></a>
-                          <%}%>
-                        </td>
-                    </tr>
-                  <% }); %>
-              </tbody>
-          </table>
-        </div>
-        <script>
-          document.addEventListener('DOMContentLoaded', function(){
-            let table = new simpleDatatables.DataTable('#orders-table',{
-              searchable:true,
-              sortable:true,
-              paging:true,
-              perPageSelect:[5,10,20,30,50],
-              perPage:50,
-              labels: {
-                placeholder: "Buscar...",
-                perPage: "{select} registros por página",
-                noRows: "No se encontraron datos",
-                info: "Mostrando {start} a {end} de {rows} registros",
+        let pages = parseInt(<%= pages; %>);
+    
+        let ordersQuery = (page) => {
+          if(page>pages){
+            return;
+          }else{
+            io.socket.get('/ordersquery/'+page, p =>{
+              let loader = document.querySelector('.pageloader');
+              if(hasClass(loader,'is-active')){
+                removeClass(loader,'is-active');
               }
-            });  
-          });
+              datatable.rows().add(p);
+              ordersQuery(page+=1);
+            });
+          }
+        };
+        
+        ordersQuery(1);
 
-        </script>
-      <%}%>
+      </script>
 </div>

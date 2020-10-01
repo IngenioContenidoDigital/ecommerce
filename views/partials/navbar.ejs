@@ -100,7 +100,7 @@
 <script>
   live('#search','click',e=>{
     e.preventDefault();
-    if(document.querySelector('input[name="search"]').value!==''){
+    if(document.querySelector('input[name="q"]').value!==''){
       document.querySelector('#search-form').submit();
     }
   });
