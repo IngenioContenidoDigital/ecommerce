@@ -9,19 +9,13 @@
         <%= success %>
     </div>
   <% } %>
-  <div class="loading">
-  </div>
-  <% if(action=='create' || action=='edit' || action=='createfromtoken'){ %>  
+  <% if(action=='create' || action=='edit'){ %>  
         <div class="container">
             <% if(action=='create') { %>
               <form action="/seller/create" method="POST" enctype="multipart/form-data" novalidate>
             <% } %>
             <% if(action=='edit') { %>
               <form action="/seller/edit/<%= seller.id %>" method="POST" enctype="multipart/form-data" novalidate>
-            <% } %>
-            <% if(action=='createfromtoken') { %>
-              <form id="register-form-seller" action="/seller/createfromtoken" method="POST" enctype="multipart/form-data">
-              <input type="hidden" name="token" value="<%=token%>" />
             <% } %>
               <div class="box">
                 <div class="columns is-mobile is-vcentered">
@@ -35,7 +29,7 @@
                       <% if(action=='edit'){ %>
                         <input id="activo" type="checkbox" <% if(seller.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
                       <label for="activo">Seller: <span id="state"><% if(seller.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
-                      <% }else if(action!=='createfromtoken'){ %>
+                      <% }else{ %>
                         <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
                         <label for="activo">Seller: <span id="state"><b style="color:green;">activo</b></span></label>  
                       <% } %>
@@ -47,7 +41,7 @@
                     <div class="field">
                       <label class="label is-size-7">Nombre del Comercio</label>
                       <div class="control">
-                        <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit' || action=='createfromtoken'){ %>value="<%= seller.name %>"<% }%>/>
+                        <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit'){ %>value="<%= seller.name %>"<% }%>/>
                       </div>
                     </div>
                     <div class="columns">
@@ -55,7 +49,7 @@
                         <div class="field">
                           <label class="label is-size-7">Identificación</label>
                           <div class="control">
-                            <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" <% if(action=='edit'|| action=='createfromtoken'){ %>value="<%= seller.dni %>"<% }%>/>
+                            <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" <% if(action=='edit'){ %>value="<%= seller.dni %>"<% }%>/>
                           </div>
                         </div>
                       </div>
@@ -81,7 +75,7 @@
                         <div class="field">
                           <label class="label is-size-7">Email de Contacto</label>
                           <div class="control">
-                            <input class="input is-size-7" type="text" name="email" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'|| action=='createfromtoken'){ %>value="<%= seller.email %>"<% }%>/>
+                            <input class="input is-size-7" type="text" name="email" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.email %>"<% }%>/>
                           </div>
                         </div>
                       </div>
@@ -89,26 +83,17 @@
                         <div class="field">
                           <label class="label is-size-7">Teléfono</label>
                           <div class="control">
-                            <input class="input is-size-7" type="text" name="phone" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'|| action=='createfromtoken'){ %>value="<%= seller.phone %>"<% }%>/>
+                            <input class="input is-size-7" type="text" name="phone" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.phone %>"<% }%>/>
                           </div>
                         </div>
                       </div>
                     </div>
-                    <%if(action == 'createfromtoken'){%>
-                      <div class="field">
-                        <label class="label">URL</label>
-                        <div class="control">
-                          <input class="input is-size-7" type="text" name="url" placeholder="URL del comercio" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
-                        </div>
-                      </div>
-                      <%}else{%>
                     <div class="field">
                       <label class="label">URL</label>
                       <div class="control">
                         <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
                       </div>
                     </div>
-                    <%}%>
                     <%if(action == 'edit'){%>
                       <a href="/integrations/<%=seller.id%>">
                         <span class="icon">
@@ -146,11 +131,7 @@
                               <div class="field">
                               <label class="label">Consumer secret</label>
                               <div class="control has-icons-left">
-                                <%if(action=='createfromtoken'){%>
-                                  <input class="input" type="text" name="secret" placeholder="Consumer secret" <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].secret%>"<%}%>/>
-                                  <%}else{%>
-                                    <input class="input" type="text" name="secret" placeholder="Consumer secret" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].secret%>"<%}%>/>
-                                    <% } %>
+                                  <input class="input" type="text" name="secret" placeholder="Consumer secret" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].secret%>"<%}%>/>
                                   <span class="icon is-small is-left">
                                   <i class='bx bx-key' ></i>
                                   </span>
@@ -159,11 +140,7 @@
                               <div class="field">
                                   <label class="label">URL Petición</label>
                                   <div class="control has-icons-left">
-                                    <%if(action=='createfromtoken'){%>
-                                      <input class="input" type="text" name="apiurl" placeholder="Url de Petición" <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].url%>"<%}%>/>
-                                      <%}else{%>
-                                        <input class="input" type="text" name="apiurl" placeholder="Url de Petición" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].url%>"<%}%>/>
-                                        <% } %>
+                                      <input class="input" type="text" name="apiurl" placeholder="Url de Petición" required <%if(action==='edit' && integrations.length >0 && integrations.length>0){%>value="<%=integrations[0].url%>"<%}%>/>
                                       <span class="icon is-small is-left">
                                           <i class='bx bx-world'></i>
                                       </span>
@@ -263,11 +240,7 @@
                 <div class="field">
                   <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
                     <label class="file-label">
-                      <%if(action=='createfromtoken'){%>
-                        <input class="file-input" required accept="image/*" type="file" id="logo" name="logo" />
-                        <%}else{%>
-                          <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
-                          <% } %>
+                      <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
                       <span class="file-cta">
                         <span class="file-icon">
                           <i class="bx bx-upload"></i>
@@ -282,160 +255,12 @@
                     </label>
                   </div>
                 </div>
-                <%if(action=='createfromtoken'){%>
-                  <div class="field">
-                    <div id="file-loader-RUT" class="file is-size-7 has-name is-fullwidth">
-                      <label class="file-label">
-                        <input class="file-input" required accept=".pdf" type="file" id="rut" name="logo" />
-                        <span class="file-cta">
-                          <span class="file-icon">
-                            <i class="bx bx-upload"></i>
-                          </span>
-                          <span class="file-label">
-                            RUT
-                          </span>
-                        </span>
-                        <span class="file-name">
-                          No ha cargado ningún archivo.
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <div id="file-loader-camaracomercio" class="file is-size-7 has-name is-fullwidth">
-                      <label class="file-label">
-                        <input class="file-input" required accept=".pdf" type="file" id="cc" name="logo" />
-                        <span class="file-cta">
-                          <span class="file-icon">
-                            <i class="bx bx-upload"></i>
-                          </span>
-                          <span class="file-label">
-                            Cámara De Comercio
-                          </span>
-                        </span>
-                        <span class="file-name">
-                          No ha cargado ningún archivo.
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <div id="file-loader-auth1ecom" class="file is-size-7 has-name is-fullwidth">
-                      <label class="file-label">
-                        <input class="file-input" required accept=".pdf" type="file" id="auth1ecom" name="logo" />
-                        <span class="file-cta">
-                          <span class="file-icon">
-                            <i class="bx bx-upload"></i>
-                          </span>
-                          <span class="file-label">
-                            Autorización a 1Ecommerce
-                          </span>
-                        </span>
-                        <span class="file-name">
-                          No ha cargado ningún archivo.
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <div id="file-loader-ccrepresentate" class="file is-size-7 has-name is-fullwidth">
-                      <label class="file-label">
-                        <input class="file-input" required accept=".pdf" type="file" id="ccr" name="logo" />
-                        <span class="file-cta">
-                          <span class="file-icon">
-                            <i class="bx bx-upload"></i>
-                          </span>
-                          <span class="file-label">
-                            Cédula Representante Legal
-                          </span>
-                        </span>
-                        <span class="file-name">
-                          No ha cargado ningún archivo.
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <div id="file-loader-cbanco" class="file is-size-7 has-name is-fullwidth">
-                      <label class="file-label">
-                        <input class="file-input" required accept=".pdf" type="file" id="cbanco" name="logo" multiple/>
-                        <span class="file-cta">
-                          <span class="file-icon">
-                            <i class="bx bx-upload"></i>
-                          </span>
-                          <span class="file-label">
-                            Certificación Bancaria
-                          </span>
-                        </span>
-                        <span class="file-name">
-                          No ha cargado ningún archivo.
-                        </span>
-                      </label>
-                    </div>
-                  </div> 
-                <%}%>
-                <%if(action=='edit'){%>
-                  <%if(!(seller.rut===undefined||seller.rut==='')){%>
-                    <div class="field">
-                      <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.rut.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
-                         <span class="icon">
-                           <i class='bx bxs-file-pdf'></i>
-                         </span>
-                         RUT
-                       </a>
-                     </div>
-                    <%}%>  
-                  <%if(!(seller.cc===undefined||seller.cc==='')){%>
-                    <div class="field">
-                      <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cc.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
-                         <span class="icon">
-                           <i class='bx bxs-file-pdf'></i>
-                         </span>
-                         Cámara de comercio
-                       </a>
-                     </div>
-                    <%}%>
-                    <%if(!(seller.auth1ecom===undefined||seller.auth1ecom==='')){%>
-                      <div class="field">
-                        <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.auth1ecom.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
-                           <span class="icon">
-                             <i class='bx bxs-file-pdf'></i>
-                           </span>
-                           Autorización a 1Ecommerce.
-                         </a>
-                       </div>
-                      <%}%>
-                    <%if(!(seller.ccr===undefined||seller.ccr==='')){%>
-                      <div class="field">
-                        <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.ccr.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
-                           <span class="icon">
-                             <i class='bx bxs-file-pdf'></i>
-                           </span>
-                           Cédula Representante Legal
-                         </a>
-                       </div>
-                      <%}%>     
-
-                      <%if(!(seller.cbanco===undefined||seller.cbanco==='')){%>
-                        <div class="field">
-                          <a href="https://s3.amazonaws.com/iridio.co/images/sellers/<%=seller.cbanco.replace(':','%3A').replace(/\\/g, '%5C',)%>" target="_blank">
-                             <span class="icon">
-                               <i class='bx bxs-file-pdf'></i>
-                             </span>
-                             Certificación Bancaria
-                           </a>
-                         </div>
-                        <%}%>     
-                <%}%>
-
                 <br>
                 <div class="control buttons is-right">
                   <% if(action=='edit'){ %> 
                     <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Seller</button>
                   <% }else if (action=='create'){ %>
                     <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
-                  <% }else if (action=='createfromtoken'){ %>
-                    <button id="submit-register-seller" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
                   <% } %>
                 </div>
               
@@ -451,55 +276,6 @@
                 fileName.textContent = fileInput.files[0].name;
               }
             };
-            if(!(document.querySelector('#file-loader-RUT input[type=file]')==null)){
-              const fileInputRUT = document.querySelector('#file-loader-RUT input[type=file]');
-              fileInputRUT.onchange = () => {
-                if (fileInputRUT.files.length > 0) {
-                  const fileName = document.querySelector('#file-loader-RUT .file-name');
-                  fileName.textContent = fileInputRUT.files[0].name;
-                }
-            };
-            }
-            if(!(document.querySelector('#file-loader-camaracomercio input[type=file]')==null)){
-              const fileInputCC = document.querySelector('#file-loader-camaracomercio input[type=file]');
-            fileInputCC.onchange = () => {
-              if (fileInputCC.files.length > 0) {
-                const fileName = document.querySelector('#file-loader-camaracomercio .file-name');
-                fileName.textContent = fileInputCC.files[0].name;
-              }
-            };
-            }
-            if(!(document.querySelector('#file-loader-auth1ecom input[type=file]')==null)){
-              const fileInputAuth1ecom = document.querySelector('#file-loader-auth1ecom input[type=file]');
-              fileInputAuth1ecom.onchange = () => {
-              if (fileInputAuth1ecom.files.length > 0) {
-                const fileName = document.querySelector('#file-loader-auth1ecom .file-name');
-                fileName.textContent = fileInputAuth1ecom.files[0].name;
-              }
-            };
-            }
-            if(!(document.querySelector('#file-loader-ccrepresentate input[type=file]')==null)){
-              const fileInputRepresentante = document.querySelector('#file-loader-ccrepresentate input[type=file]');
-            fileInputRepresentante.onchange = () => {
-              if (fileInputRepresentante.files.length > 0) {
-                const fileName = document.querySelector('#file-loader-ccrepresentate .file-name');
-                fileName.textContent = fileInputRepresentante.files[0].name;
-              }
-            };
-            }
-            if(!(document.querySelector('#file-loader-cbanco input[type=file]')==null)){
-              const fileInputCbanco = document.querySelector('#file-loader-cbanco input[type=file]');
-            fileInputCbanco.onchange = () => {
-              if (fileInputCbanco.files.length > 0) {
-                const fileName = document.querySelector('#file-loader-cbanco .file-name');
-                fileName.textContent = fileInputCbanco.files[0].name;
-              }
-            };
-            }
-
-
-
-
             live('#activo','click',function(){
               let elm = this;
               let state = elm.checked;
@@ -521,6 +297,7 @@
               let cities = document.querySelector('#ciudades')
               cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
               addClass(cities,'is-hidden');
+              
               io.socket.get('/find/regions/'+country,resdata =>{
                 if(resdata.regions.length>0){
                   for(let s of resdata.regions){
@@ -649,19 +426,5 @@
           });
         }
       });
-      live('#submit-register-seller','click', e => {
-        e.preventDefault();
-        let dir=document.querySelector('[name ="addressline1"]');
-        let country=document.querySelector('[name ="country"]');
-        if(country.value==="0"){country.value=""}
-        dir.value=dir.value.trim();
-        if(validateForm(document.querySelector('#register-form-seller'))){
-          let rform = document.querySelector('#register-form-seller');
-          rform.submit();
-          var divbox = document.querySelector('.box');
-          divbox.style.display = 'none';
-          document.querySelector('.loading').innerHTML = '<div class="div-loading"><span class="icon has-text-info is-large icon-loading"><i class="bx bx-loader-circle bx-burst bx-rotate-90"></i></span></div>';
-        }
-    });
     </script>
 </div>
