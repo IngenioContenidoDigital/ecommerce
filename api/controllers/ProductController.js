@@ -1431,7 +1431,7 @@ module.exports = {
                 price: pro.price * (1+(tx.value/100)),
                 quantity: 0,
                 seller:pr.seller
-              }).catch((e)=>errors.push(e));
+              }).catch((e)=>errors.push(`Ref: ${pro.reference} :  no se pudo crear esta variación`));
 
               if(variation){
                   result.push(variation);
@@ -1451,7 +1451,7 @@ module.exports = {
                 price: pr.price * (1+(tx.value/100)),
                 quantity: vr.quantity ? vr.quantity : 0,
                 seller:pr.seller
-              }).catch((e)=>errors.push(e));
+              }).catch((e)=>errors.push(new Error(`Ref: ${pr.reference} :  no se pudo crear esta variación`)));
 
               result.push(variation);
 
