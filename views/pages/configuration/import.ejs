@@ -198,6 +198,7 @@
         });
 
         io.socket.on("variation_processed", (resData)=>{
+          console.log("resData", resData);
           if(resData.result.length>=1){
               let items = document.querySelector('#items');
               items.innerHTML=parseInt(items.innerHTML)+1;
