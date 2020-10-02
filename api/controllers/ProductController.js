@@ -1414,59 +1414,64 @@ module.exports = {
           let result = [];
           let  errors = [];
 
-          let pro = await Product.findOne({ externalId : p.externalId});
-          let ct = await Category.find({id:pro.categories}).sort('level ASC');
-          let tx = await Tax.findOne({id:pro.tax});
-          let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+          let pro = await Product.findOne({reference:p.reference, seller:seller});
 
-          if(p.variations ===undefined || p.variations.length<1){
-            let vr = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:'único', col:'único'},{gender:pro.gender,category:ct[0].id,name:'único', col:'único'}).catch((e)=>errors.push(e));;
-            let variacion = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
-                product:pr.id,
-                variation:vr.id,
-                reference: '',
-                supplierreference:pro.reference,
-                ean13: 0,
-                upc: 0,
-                price: pro.price * (1+(tx.value/100)),
-                quantity: 0,
-                seller:pr.seller
-              }).catch((e)=>errors.push(`Ref: ${pro.reference} :  no se pudo crear esta variación`));
-
-              if(variation){
+          if(pro){
+            let ct = await Category.find({id:pro.categories}).sort('level ASC');
+            let tx = await Tax.findOne({id:pro.tax});
+            let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+            try {
+              if(p.variations ===undefined || p.variations.length<1){
+                let vr = await Variation.findOne({gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
+                let variacion = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
+                    product:pr.id,
+                    variation:vr.id,
+                    reference: '',
+                    supplierreference:pro.reference,
+                    ean13: 0,
+                    upc: 0,
+                    price: pro.price * (1+(tx.value/100)),
+                    quantity: 0,
+                    seller:pr.seller
+                  }).catch((e)=>{ throw new Error(`Ref: ${pro.reference} :  no se pudo crear esta variación`)});
+                  
+                  if(variation){
+                      result.push(variation);
+                      sails.sockets.blast('variation_processed',  {result, errors});
+                  }
+    
+              }else{
+                for(let vr of p.variations){
+                  let v = await Variation.findOne({gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()}).catch((e)=>errors.push(e));
+                  let variation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
+                    product:pr.id,
+                    variation:v.id,
+                    reference: '',
+                    supplierreference:pr.reference,
+                    ean13: vr.ean13 ? vr.ean13 : 0,
+                    upc: vr.upc ? vr.upc : 0,
+                    price: vr.price * (1+(tx.value/100)),
+                    quantity: vr.quantity ? vr.quantity : 0,
+                    seller:pr.seller
+                  }).catch((e)=>{ throw new Error(`Ref: ${pro.reference} :  no se pudo crear esta variación`)});
+    
                   result.push(variation);
-                  sails.sockets.blast('variation_processed',  {result, errors});
+    
+                  if(variation){
+                      sails.sockets.blast('variation_processed',  {result, errors});
+                  }
+                }
               }
-
-          }else{
-            for(let vr of p.variations){
-              let v = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()},{gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()}).catch((e)=>errors.push(e));;
-              let variation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
-                product:pr.id,
-                variation:v.id,
-                reference: vr.reference ? vr.reference : '',
-                supplierreference:pr.reference,
-                ean13: vr.ean13 ? vr.ean13 : 0,
-                upc: vr.upc ? vr.upc : 0,
-                price: pr.price * (1+(tx.value/100)),
-                quantity: vr.quantity ? vr.quantity : 0,
-                seller:pr.seller
-              }).catch((e)=>errors.push(new Error(`Ref: ${pr.reference} :  no se pudo crear esta variación`)));
-
-              result.push(variation);
-
-              if(variation){
-                  sails.sockets.blast('variation_processed',  {result, errors});
-              }
+            } catch (error) {
+                errors.push(error);
+                sails.sockets.blast('variation_processed',  {result, errors});
             }
           }
         }
       } else {
         break;
       }
-
       page++;
-
     } while ((!isEmpty));
   }
 };
