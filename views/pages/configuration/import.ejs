@@ -140,10 +140,15 @@
                 <br>
                 <h6 class="title is-6">Espera un momento....</h6>
                 <hr>
-                <div class="notification is-primary">
+                <div id="loading-block" class="notification is-hidden">
+                  <i class="fas fa-sync fa-spin"></i>
+                   Estamos sincronizando el catalogo...
+                   <progress class="progress is-small is-primary" max="100">15%</progress>
+                </div>
+                <div id="success-block" class="notification is-primary is-hidden">
                     Se han procesado un total <span id="items">0</span> de registros.
                 </div>
-                <div class="notification is-danger">
+                <div id="error-block" class="notification is-danger is-hidden">
                     <p>Hemos identificado <span id="errors">0</span> error(es).</p>
                     <br>
                     <div class="container is-fluid">
@@ -171,11 +176,28 @@
         let pages = paginationData.pagesCount;
         let totalItemsData =  paginationData.data.length;
         let total = paginationData.totalRecords;
+        let start = false;
 
         let report = document.querySelector('#report');
         if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
 
+        if(paginationData){
+          let loadingBlock = document.querySelector('#loading-block');
+          if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+        }
+
         io.socket.on("product_processed", (resData)=>{
+          if(!start){
+            start = true;
+            if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+            let loadingBlock = document.querySelector('#loading-block');
+            addClass(loadingBlock, 'is-hidden');
+            let successBlock = document.querySelector('#success-block');
+            let errorBlock = document.querySelector('#error-block');
+            if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
+            if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
+          }
+
           if(resData.result.length>=1){
               let items = document.querySelector('#items');
               items.innerHTML=parseInt(items.innerHTML)+1;
@@ -197,7 +219,53 @@
             }
         });
 
+        io.socket.on("variation_processed", (resData)=>{
+          console.log(resData)
+          if(!start){
+            start = true;
+            if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+            let loadingBlock = document.querySelector('#loading-block');
+            addClass(loadingBlock, 'is-hidden');
+            let successBlock = document.querySelector('#success-block');
+            let errorBlock = document.querySelector('#error-block');
+            if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
+            if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
+          }
+
+          if(resData.result.length>=1){
+              let items = document.querySelector('#items');
+              items.innerHTML=parseInt(items.innerHTML)+1;
+            }
+            
+            if(resData.errors.length>=1){
+              console.log("ERROR", resData.errors[0].message);
+              let errors = document.querySelector('#errors')
+              errors.innerHTML=parseInt(errors.innerHTML)+1;
+              let errorlist = document.querySelector('#error-list');
+              let err = document.createElement('li');
+              err.innerHTML=resData.errors[0].message;
+              errorlist.appendChild(err);
+            }
+            if(processed>=total){
+              let mensaje = document.querySelector('#report > .title');
+              mensaje.innerHTML='Proceso Finalizado';
+            }else{
+              processed+=1;
+            }
+        });
+
         io.socket.on("product_images_processed", (resData)=>{
+          if(!start){
+            start = true;
+            if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+            let loadingBlock = document.querySelector('#loading-block');
+            addClass(loadingBlock, 'is-hidden');
+            let successBlock = document.querySelector('#success-block');
+            let errorBlock = document.querySelector('#error-block');
+            if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
+            if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
+          }
+
           if(resData.result && resData.result.length>=1){
               let items = document.querySelector('#items');
               items.innerHTML=parseInt(items.innerHTML)+1;
