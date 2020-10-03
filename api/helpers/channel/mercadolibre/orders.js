@@ -5,10 +5,6 @@ module.exports = {
     seller:{
       type:'string',
       required:true
-    },
-    params:{
-      type:'ref',
-      required:true
     }
   },
   exits: {
@@ -20,21 +16,31 @@ module.exports = {
     let mercadolibre = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
     let integrations = await Integrations.findOne({channel:'mercadolibre',seller:inputs.seller});
     let profile = await Profile.findOne({name:'customer'});
+    let statuses = ['paid','ready_to_ship','shipped','delivered','cancelled'];
     let moment = require('moment');
-    mercadolibre.get('users/me',{access_token:integrations.secret}, (err, result) =>{
-      if(err){console.log(err);}
-      try{
-        inputs.params.seller=result.id;
-        inputs.params['access_token']=integrations.secret;
-        mercadolibre.get('orders/search/',inputs.params, async (err, result) => {
-          if(err){console.log(err); return exits.error(err);}
-          if(result.results!== undefined && result.results.length>0){
-            for(let order of result.results){
+
+    let result = await sails.helpers.channel.mercadolibre.findUser(mercadolibre, integrations.secret).catch(err =>{return new Error('Error Obteniendo Usuario de Mercadolibre'+err.message)});
+    if(result){
+      let parameters={};
+      parameters.seller=result.id;
+      parameters['access_token']=integrations.secret;
+      for(let state of statuses){
+        parameters['order.status']=state;
+        parameters['order.date_last_updated.from']=moment().subtract(3,'hours').toISOString(true);
+        parameters['order.date_last_updated.to']=moment().toISOString(true);
+        //parameters['order.date_created.from']=moment().subtract(2,'hours').toISOString(true);
+        //parameters['order.date_created.to']=moment().toISOString(true);
+        let orders = await sails.helpers.channel.mercadolibre.findOrders(mercadolibre, parameters).catch(err =>{console.log(err);});
+        if(orders !== undefined && orders.results.length>0){
+          for(let order of orders.results){
+            try{
               let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});
               if(oexists===undefined && order.status==='paid'){
-                mercadolibre.get('shipments/'+order.shipping.id,{'x-format-new':true,access_token:integrations.secret},async (err, result) => {                
-                  if(err){console.log(err); return exits.error(err);}
-                  let cityname = result['receiver_address'].city.name;
+                let shipping = await sails.helpers.channel.mercadolibre.findShipments(mercadolibre,integrations.secret,order.shipping.id).catch(err=>{
+                  return new Error(err.message);
+                })
+                if(shipping){
+                  let cityname = shipping['receiver_address'].city.name;
                   if(cityname==='Bogotá D.C.' || 'Bogotá'){cityname='Bogota'}
                   let city = await City.find({name:cityname.toLowerCase().trim()}).populate('region');
                   if(city && oexists===undefined){
@@ -50,15 +56,15 @@ module.exports = {
                       mobileStatus:'unconfirmed',
                       profile:profile.id
                     });
-                    let address = await Address.findOrCreate({addressline1:result['receiver_address']['address_line'].toLowerCase().trim()},{
-                      name:result['receiver_address']['address_line'].trim().toLowerCase(),
-                      addressline1:result['receiver_address']['address_line'].trim().toLowerCase(),
-                      addressline2:result['receiver_address']['comment'] ? result['receiver_address']['comment'].trim().toLowerCase() : '',
+                    let address = await Address.findOrCreate({addressline1:shipping['receiver_address']['address_line'].toLowerCase().trim()},{
+                      name:shipping['receiver_address']['address_line'].trim().toLowerCase(),
+                      addressline1:shipping['receiver_address']['address_line'].trim().toLowerCase(),
+                      addressline2:shipping['receiver_address']['comment'] ? shipping['receiver_address']['comment'].trim().toLowerCase() : '',
                       country:city[0].region.country,
                       region:city[0].region.id,
                       city:city[0].id,
-                      notes:result['receiver_address']['comment'] ? result['receiver_address']['comment'].trim().toLowerCase() : '',
-                      zipcode:result['receiver_address']['zip_code'] ? result['receiver_address']['zip_code'] : '',
+                      notes:shipping['receiver_address']['comment'] ? shipping['receiver_address']['comment'].trim().toLowerCase() : '',
+                      zipcode:shipping['receiver_address']['zip_code'] ? shipping['receiver_address']['zip_code'] : '',
                       user:user.id,
                     });
                     let payment = {
@@ -84,7 +90,7 @@ module.exports = {
                           });
                         }
                       }catch(err){
-                        console.log(err);
+                        return new Error(err.message);
                       }
                     }
                     if((await CartProduct.count({cart:cart.id}))>0){
@@ -92,8 +98,10 @@ module.exports = {
                       let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:carrier[0]});
                       await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:result.id});
                     }
+                  }else{
+                    return new Error('Ciudad No Localizada')
                   }
-                });
+                }
               }else{
                 if(oexists!==undefined){
                   let currentStatus = await sails.helpers.orderState(order.status);
@@ -104,16 +112,16 @@ module.exports = {
                   });
                 }
               }
+            }catch(err){
+              console.log(err);
             }
           }
           return exits.success();
-        });
-      }catch(err){
-        console.log(err);
+        }else{
+          throw new Error('Sin Ordenes para procesar');
+        }
       }
-    });
+    }
   }
-
-
 };
 
