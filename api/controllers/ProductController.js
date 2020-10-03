@@ -1247,7 +1247,7 @@ module.exports = {
     let seller = null; 
     let page = req.body.page;
     let pageSize = req.body.pageSize;
-
+    let sid = sails.sockets.getId(req);
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
     } else {
@@ -1272,7 +1272,7 @@ module.exports = {
       isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
 
       if (!isEmpty) {
-         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
+         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid).catch((e)=>console.log(e));
       } else {
         break;
       }
@@ -1385,6 +1385,7 @@ module.exports = {
     let seller = null; 
     let page = req.body.page;
     let pageSize = req.body.pageSize;
+    let sid = sails.sockets.getId(req);
 
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -1421,9 +1422,9 @@ module.exports = {
             let tx = await Tax.findOne({id:pro.tax});
             let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
             try {
-              if(p.variations ===undefined || p.variations.length<1){
-                let vr = await Variation.findOne({gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
-                let variacion = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
+              if(p.variations===undefined || p.variations.length<1){
+                let vr = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:'único', col:'único'},{gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
+                let variation  = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
                     product:pr.id,
                     variation:vr.id,
                     reference: '',
@@ -1431,40 +1432,37 @@ module.exports = {
                     ean13: 0,
                     upc: 0,
                     price: pro.price * (1+(tx.value/100)),
-                    quantity: 0,
-                    seller:pr.seller
-                  }).catch((e)=>{ throw new Error(`Ref: ${pro.reference} :  no se pudo crear esta variación`)});
-                  
+                    quantity: 0
+                  });
+
                   if(variation){
-                      result.push(variation);
-                      sails.sockets.blast('variation_processed',  {result, errors});
+                    result.push(variation);
+                    sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
                   }
-    
+                  
               }else{
                 for(let vr of p.variations){
-                  let v = await Variation.findOne({gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()}).catch((e)=>errors.push(e));
+                  let v = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()},{gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()}).catch((e)=>console.log(e));
                   let variation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
                     product:pr.id,
                     variation:v.id,
-                    reference: '',
+                    reference: vr.reference ? vr.reference : '',
                     supplierreference:pr.reference,
                     ean13: vr.ean13 ? vr.ean13 : 0,
                     upc: vr.upc ? vr.upc : 0,
                     price: vr.price * (1+(tx.value/100)),
-                    quantity: vr.quantity ? vr.quantity : 0,
-                    seller:pr.seller
-                  }).catch((e)=>{ throw new Error(`Ref: ${pro.reference} :  no se pudo crear esta variación`)});
-    
-                  result.push(variation);
-    
+                    quantity: vr.quantity ? vr.quantity : 0
+                  }).catch((e)=>console.log(e));
+
                   if(variation){
-                      sails.sockets.blast('variation_processed',  {result, errors});
+                    result.push(variation);
+                    sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
                   }
                 }
               }
-            } catch (error) {
-                errors.push(error);
-                sails.sockets.blast('variation_processed',  {result, errors});
+            } catch (e) {
+                errors.push({ name:'ERRDATA', message:e.message });
+                sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
             }
           }
         }
