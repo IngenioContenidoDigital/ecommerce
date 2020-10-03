@@ -50,6 +50,7 @@ VARIATIONS : `
                 pagesCount
                 data{
                         externalId
+                        reference
                         variations{
                             quantity
                             reference

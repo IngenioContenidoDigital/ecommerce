@@ -570,39 +570,25 @@ module.exports = {
               break;
           }
 
-          do {
+          let importedProducts = await sails.helpers.commerceImporter(
+            req.body.channel,
+            req.body.pk,
+            req.body.sk,
+            req.body.apiUrl,
+            req.body.version,
+            'CATALOG',
+            { page: page, pageSize: pageSize, next: next || null }
+          ).catch((e) => console.log(e));
 
-            let importedProducts = await sails.helpers.commerceImporter(
-              req.body.channel,
-              req.body.pk,
-              req.body.sk,
-              req.body.apiUrl,
-              req.body.version,
-              'CATALOG',
-              { page: page, pageSize: pageSize, next: next || null }
-            ).catch((e) => console.log(e));
+          if (importedProducts && importedProducts.pagination){
+            next = importedProducts.pagination;
+          }
 
-            if (importedProducts && importedProducts.pagination)
-              next = importedProducts.pagination;
-
-              isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
-
-            if (!isEmpty) {
-              return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProducts, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-
-            } else {
-              break;
-            }
-
-            page++;
-
-          } while ((!isEmpty));
-
+          isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
+          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProducts, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+        
           break;
-
         case constants.PRODUCT_VARIATION:
-          do {
-
             let importedProductsVariations = await sails.helpers.commerceImporter(
               req.body.channel,
               req.body.pk,
@@ -617,21 +603,11 @@ module.exports = {
               next = importedProductsVariations.pagination;
 
             isEmpty = (!importedProductsVariations || !importedProductsVariations.data || importedProductsVariations.data.length == 0) ? true : false;
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsVariations, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
 
-            if (!isEmpty) {
-              return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsVariations, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-            } else {
-              break;
-            }
-
-            page++;
-
-          } while ((!isEmpty));
           break;
         case constants.IMAGE_TYPE:
           req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
-          do {
-
             let importedProductsImages = await sails.helpers.commerceImporter(
               req.body.channel,
               req.body.pk,
@@ -646,17 +622,9 @@ module.exports = {
               next = importedProductsImages.pagination;
 
             isEmpty = (!importedProductsImages || !importedProductsImages.data || importedProductsImages.data.length == 0) ? true : false;
-
-            if (!isEmpty) {
-              return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsImages, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-            } else {
-              break;
-            }
-
-            page++;
-
-          } while ((!isEmpty));
-          break;
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsImages, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          
+            break;
         default:
           break;
       }
@@ -1279,7 +1247,7 @@ module.exports = {
     let seller = null; 
     let page = req.body.page;
     let pageSize = req.body.pageSize;
-
+    let sid = sails.sockets.getId(req);
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
     } else {
@@ -1304,7 +1272,7 @@ module.exports = {
       isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
 
       if (!isEmpty) {
-         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller).catch((e)=>console.log(e));
+         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid).catch((e)=>console.log(e));
       } else {
         break;
       }
@@ -1417,6 +1385,7 @@ module.exports = {
     let seller = null; 
     let page = req.body.page;
     let pageSize = req.body.pageSize;
+    let sid = sails.sockets.getId(req);
 
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -1443,47 +1412,64 @@ module.exports = {
 
       if (!isEmpty) {
         for(let p of importedProductsVariations.data){
-          let pro = await Product.findOne({ externalId : p.externalId});
-          let ct = await Category.find({id:pro.categories}).sort('level ASC');
-          let tx = await Tax.findOne({id:pro.tax});
-          let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+          let result = [];
+          let  errors = [];
 
-          if(p.variations ===undefined || p.variations.length<1){
-            let vr = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:'único', col:'único'},{gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
-            await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
-                product:pr.id,
-                variation:vr.id,
-                reference: '',
-                supplierreference:pro.reference,
-                ean13: 0,
-                upc: 0,
-                price: pro.price * (1+(tx.value/100)),
-                quantity: 0,
-                seller:pr.seller
-              });
-          }else{
-            for(let vr of p.variations){
-              let v = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()},{gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()}).catch((e)=>console.log(e));
-              await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
-                product:pr.id,
-                variation:v.id,
-                reference: vr.reference ? vr.reference : '',
-                supplierreference:pr.reference,
-                ean13: vr.ean13 ? vr.ean13 : 0,
-                upc: vr.upc ? vr.upc : 0,
-                price: pr.price * (1+(tx.value/100)),
-                quantity: vr.quantity ? vr.quantity : 0,
-                seller:pr.seller
-              }).catch((e)=>console.log(e));
+          let pro = await Product.findOne({reference:p.reference, seller:seller});
+
+          if(pro){
+            let ct = await Category.find({id:pro.categories}).sort('level ASC');
+            let tx = await Tax.findOne({id:pro.tax});
+            let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+            try {
+              if(p.variations===undefined || p.variations.length<1){
+                let vr = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:'único', col:'único'},{gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
+                let variation  = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
+                    product:pr.id,
+                    variation:vr.id,
+                    reference: '',
+                    supplierreference:pro.reference,
+                    ean13: 0,
+                    upc: 0,
+                    price: pro.price * (1+(tx.value/100)),
+                    quantity: 0
+                  });
+
+                  if(variation){
+                    result.push(variation);
+                    sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
+                  }
+                  
+              }else{
+                for(let vr of p.variations){
+                  let v = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()},{gender:pro.gender,category:ct[0].id,name:vr.talla.trim().toLowerCase()}).catch((e)=>console.log(e));
+                  let variation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
+                    product:pr.id,
+                    variation:v.id,
+                    reference: vr.reference ? vr.reference : '',
+                    supplierreference:pr.reference,
+                    ean13: vr.ean13 ? vr.ean13 : 0,
+                    upc: vr.upc ? vr.upc : 0,
+                    price: vr.price * (1+(tx.value/100)),
+                    quantity: vr.quantity ? vr.quantity : 0
+                  }).catch((e)=>console.log(e));
+
+                  if(variation){
+                    result.push(variation);
+                    sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
+                  }
+                }
+              }
+            } catch (e) {
+                errors.push({ name:'ERRDATA', message:e.message });
+                sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
             }
           }
         }
       } else {
         break;
       }
-
       page++;
-
     } while ((!isEmpty));
   }
 };
