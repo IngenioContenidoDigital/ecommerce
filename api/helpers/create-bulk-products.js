@@ -27,20 +27,26 @@ module.exports = {
                   for(let product of inputs.products){
                     let errors = [];
                     let result = [];
-                    let pro = await sails.helpers.checkProducts(product, seller).catch((e)=> errors.push({ name:'ERRDATA', message:e.message }));
-                    
-                    if(typeof(pro) === 'object'){
+                    try {
+                      let pro = await sails.helpers.checkProducts(product, seller);
+
+                      if(typeof(pro) === 'object'){
                         let pr = await Product.findOrCreate({reference:pro.reference, seller:pro.seller}, pro);
                         result.push(pr);
                         sails.sockets.broadcast(sid, 'product_processed', { errors, result });
+                      }
+
+                    } catch (error) {
+                      errors.push({ name:'ERRDATA', message:error.message });
+                      sails.sockets.broadcast(sid, 'product_processed', { errors, result });
                     }
+                }
 
-                  }
+                return exits.success(true);
 
-                  return exits.success(true);
                 } catch (error) {
-                  sails.sockets.broadcast(sid, 'product_processed', { errors, result });
-                  errors.push(errors);
+                errors.push(errors);
+                sails.sockets.broadcast(sid, 'product_processed', { errors, result });
                   return exits.error(error.message);
                 }
     }
