@@ -203,7 +203,6 @@
               items.innerHTML=parseInt(items.innerHTML)+1;
             }
             if(resData.errors.length>=1){
-              console.log("ERROR", resData.errors[0].message);
               let errors = document.querySelector('#errors')
               errors.innerHTML=parseInt(errors.innerHTML)+1;
               let errorlist = document.querySelector('#error-list');
@@ -220,7 +219,6 @@
         });
 
         io.socket.on("variation_processed", (resData)=>{
-          console.log(resData)
           if(!start){
             start = true;
             if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
@@ -367,7 +365,10 @@
 
     live('#process-from-provider','click',e=>{
         let box = document.querySelector('.box').parentNode;
+        let report = document.querySelector('#report');
+        addClass(report,'is-hidden');
         addClass(box,'is-hidden');
+        
         document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
     });
 

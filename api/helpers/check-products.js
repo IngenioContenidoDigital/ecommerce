@@ -38,13 +38,20 @@ module.exports = {
                 }
 
                 if(inputs.product.manufacturer){
-                    pro.manufacturer = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() })).id;
+                    let brand = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() }));
+
+                    if(!brand){
+                         throw new Error(`Ref: ${pro.reference} : ${inputs.product.manufacturer.toLowerCase()} esta marca no se encuentra registrada`);
+                    }
+
+                    pro.manufacturer = brand.id;
+
                 }else{
                     throw new Error(`Ref: ${pro.reference} : ${pro.name} sin marca`);
                 }
 
                 let color = await sails.helpers.tools.findColor(inputs.product.name+' '+inputs.product.reference);
-                
+
                 if(color && color.length > 0){
                     pro.mainColor = color[0];
                 }else{
