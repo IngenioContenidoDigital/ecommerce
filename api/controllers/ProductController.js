@@ -1430,7 +1430,7 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = await Product.findOne({reference:p.reference, seller:seller});
+            let pro = await Product.findOne({reference:p.reference.toUpperCase(), seller:seller});
           
             if(!pro){
               throw new Error(`Ref: ${p.reference} : no pudimos encontrar este producto.`);
@@ -1482,7 +1482,7 @@ module.exports = {
               } catch (e) {
                   errors.push({ name:'ERRDATA', message:e.message });
                   sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                  console.log()
+                  console.log(e)
               }
             } 
            } catch (error) {
