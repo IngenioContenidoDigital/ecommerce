@@ -26,12 +26,12 @@ module.exports = {
       parameters['access_token']=integrations.secret;
       for(let state of statuses){
         parameters['order.status']=state;
-        parameters['order.date_last_updated.from']=moment().subtract(3,'hours').toISOString(true);
-        parameters['order.date_last_updated.to']=moment().toISOString(true);
+        parameters['order.date_last_updated.from']=moment('2020-10-01 00:00:00')/*.subtract(3,'hours')*/.toISOString(true);
+        parameters['order.date_last_updated.to']=moment('2020-10-09 23:59:59').toISOString(true);
         //parameters['order.date_created.from']=moment().subtract(2,'hours').toISOString(true);
         //parameters['order.date_created.to']=moment().toISOString(true);
         let orders = await sails.helpers.channel.mercadolibre.findOrders(mercadolibre, parameters).catch(err =>{console.log(err);});
-        if(orders !== undefined && orders.results.length>0){
+        if(orders && orders.results.length>0){
           for(let order of orders.results){
             try{
               let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});
@@ -94,9 +94,9 @@ module.exports = {
                       }
                     }
                     if((await CartProduct.count({cart:cart.id}))>0){
-                      let carrier = result['tracking_method'].split(' ');
+                      let carrier = shipping['tracking_method'].split(' ');
                       let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:carrier[0]});
-                      await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:result.id});
+                      await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:shipping.id});
                     }
                   }else{
                     return new Error('Ciudad No Localizada')

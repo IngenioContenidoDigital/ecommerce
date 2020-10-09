@@ -547,7 +547,6 @@ module.exports = {
     let seller = null;
     let integrations = [];
     let sellers = [];
-    let importType = req.body.importType;
 
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -565,7 +564,7 @@ module.exports = {
     let type = req.body.entity ? req.body.entity : null;
 
     if (req.body.channel) {
-
+      let importType = req.body.importType;
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
           req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
