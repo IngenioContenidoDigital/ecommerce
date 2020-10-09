@@ -1,3 +1,4 @@
+const { log } = require('grunt');
 
 /**
  * ProductController
@@ -14,6 +15,8 @@ const constants = {
   SHOPIFY_PAGESIZE: sails.config.custom.SHOPIFY_PAGESIZE,
   WOOCOMMERCE_PAGESIZE: sails.config.custom.WOOCOMMERCE_PAGESIZE,
   WOOCOMMERCE_CHANNEL: sails.config.custom.WOOCOMMERCE_CHANNEL,
+  VTEX_PAGESIZE: sails.config.custom.VTEX_PAGESIZE,
+  VTEX_CHANNEL: sails.config.custom.VTEX_CHANNEL,
   TIMEOUT_PRODUCT_TASK: 4000000,
   TIMEOUT_IMAGE_TASK: 8000000,
 }
@@ -564,85 +567,58 @@ module.exports = {
     let imageItems = [];
 
     if (req.body.channel) {
-
+      let page = 1;
+      let pageSize = 
+        req.body.channel === constants.WOOCOMMERCE_CHANNEL ? constants.WOOCOMMERCE_PAGESIZE : 
+        req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE : 
+        req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE : 0;
+      let next;
+      
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
           req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
-          let page = 1;
-          let pageSize;
-          let next;
 
-          switch (req.body.channel) {
-            case constants.SHOPIFY_CHANNEL:
-              pageSize = constants.SHOPIFY_PAGESIZE;
-              break;
-            case constants.WOOCOMMERCE_CHANNEL:
-              pageSize = constants.WOOCOMMERCE_PAGESIZE;
-              break;
-
-            default:
-              break;
-          }
-
-          let importedProducts = await sails.helpers.commerceImporter(
+          let pagination = await sails.helpers.commerceImporter(
             req.body.channel,
             req.body.pk,
             req.body.sk,
             req.body.apiUrl,
             req.body.version,
-            'CATALOG',
-            { page: page, pageSize: pageSize, next: next || null }
+            'PAGINATION',
+            { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-
-          if (importedProducts && importedProducts.pagination){
-            next = importedProducts.pagination;
-          }
-
-          isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
-          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProducts, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-        
+          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.PRODUCT_VARIATION:
-            let importedProductsVariations = await sails.helpers.commerceImporter(
+            let paginationVariation = await sails.helpers.commerceImporter(
               req.body.channel,
               req.body.pk,
               req.body.sk,
               req.body.apiUrl,
               req.body.version,
-              'VARIATIONS',
-              { page: req.body.page, pageSize: req.body.pageSize, next: req.body.next || null }
+              'PAGINATION',
+              { page: req.body.page, pageSize: pageSize, next: next || null }
             ).catch((e) => console.log(e));
 
-            if (importedProductsVariations && importedProductsVariations.pagination)
-              next = importedProductsVariations.pagination;
-
-            isEmpty = (!importedProductsVariations || !importedProductsVariations.data || importedProductsVariations.data.length == 0) ? true : false;
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsVariations, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.IMAGE_TYPE:
-          req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
-            let importedProductsImages = await sails.helpers.commerceImporter(
+            req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
+            let paginationImage = await sails.helpers.commerceImporter(
               req.body.channel,
               req.body.pk,
               req.body.sk,
               req.body.apiUrl,
               req.body.version,
-              'IMAGES',
-              { page: req.body.page, pageSize: req.body.pageSize, next: req.body.next || null }
+              'PAGINATION',
+              { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
 
-            if (importedProductsImages && importedProductsImages.pagination)
-              next = importedProductsImages.pagination;
-
-            isEmpty = (!importedProductsImages || !importedProductsImages.data || importedProductsImages.data.length == 0) ? true : false;
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsImages, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-          
-            break;
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationImage, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          break;
         default:
           break;
       }
-
       return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, sellers: sellers, rights: rights.name });
     }
     req.setTimeout(600000);
@@ -1257,7 +1233,6 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-
     let seller = null; 
     let page = req.body.page;
     let pageSize = req.body.pageSize;
@@ -1269,7 +1244,6 @@ module.exports = {
     }
 
     do {
-
       let importedProducts = await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,
@@ -1286,13 +1260,12 @@ module.exports = {
       isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
 
       if (!isEmpty) {
-         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid).catch((e)=>console.log(e));
+        rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid).catch((e)=>console.log(e));
       } else {
         break;
       }
 
       page++;
-
     } while ((!isEmpty));
   },
 
@@ -1317,7 +1290,6 @@ module.exports = {
     }
 
     do {
-
       let importedProductsImages = await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,
@@ -1408,7 +1380,6 @@ module.exports = {
     }
 
     do {
-
       let importedProductsVariations= await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,

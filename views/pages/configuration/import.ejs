@@ -68,7 +68,7 @@
                       <section class="tab-content">
                         <% provider = null; %>
                         <%if(typeof integrations =='object' && integrations.length>0){%>
-                            <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify');%>
+                            <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify' || data.channel == 'vtex');%>
                             <% if(provider){%>
                               <form action="/import" method="POST" enctype="multipart/form-data">
                                 <%if(sellers && sellers.length>0){%>
@@ -166,15 +166,13 @@
         let args = <%- JSON.stringify(credentials)%>;
         let seller = '<%= seller %>';
         let importType = '<%= importType %>';
-
         let processed = 1;
         args.page = 1;
-        args.pageSize  = 50;
+        args.pageSize = <%- pageSize %>;
         args.seller = seller
         
         let paginationData =<%- JSON.stringify(pagination)%>;
         let pages = paginationData.pagesCount;
-        let totalItemsData =  paginationData.data.length;
         let total = paginationData.totalRecords;
         let start = false;
 
@@ -393,7 +391,7 @@
       let selected = providers.filter(function(p){
         return p.seller === e.target.value;
       })[0];
-      
+
       document.getElementById("channelTxt").value = selected.channel;
       document.getElementById("urlTxt").value = selected.url;
 

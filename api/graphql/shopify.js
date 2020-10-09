@@ -1,74 +1,65 @@
 module.exports = {
-    CATALOG :  `
-    query ShopifyProductListQuery($pagination: PaginationInput) {
-        ShopifyProducts(listing: { pagination: $pagination}) {
+  PAGINATION :
+    `query ShopifyPaginationQuery($pagination: PaginationInput) {
+      ShopifyPagination(listing: { pagination: $pagination}) {
         totalRecords
-        pagination
+        pagesCount
+      }
+    }`,
+
+  CATALOG :
+    `query ShopifyProductListQuery($pagination: PaginationInput) {
+      ShopifyProducts(listing: { pagination: $pagination}) {
+        totalRecords
         pagesCount
         data{
-            name
-            description
+          name
+          externalId
+          description
+          reference
+          descriptionShort
+          active
+          price
+          manufacturer
+          tax
+          width
+          weight
+          height
+          length
+        }
+      }
+    }`,
+
+  IMAGES :
+    `query ShopifyProductImageListQuery($pagination: PaginationInput) {
+      ShopifyProductImage(listing: { pagination: $pagination}) {
+        totalRecords
+        pagesCount
+        data{
+          externalId
+          images{
+						file
+						position
+            src
+          }
+        }
+      }
+    }`,
+
+  VARIATIONS :
+    `query ShopifyProductVariationListQuery($pagination: PaginationInput) {
+      ShopifyProductVariation(listing: { pagination: $pagination}) {
+        totalRecords
+        pagesCount
+        data{
+          externalId
+          variations{
             reference
-            descriptionShort
-            active
+            talla
             price
-            manufacturer
-            tax{
-                name
-                rate
-            }
-            mainCategory {
-                id
-                name
-                description
-                parent
-                active
-                url
-                level
-                createdAt
-                updateAt
-                dafiti
-                mercadolibre
-                linio
-            }
-            categories{
-                id
-                name
-                description
-                product_id
-                parent
-                active
-                url
-                level
-                createdAt
-                updateAt
-                dafiti
-                mercadolibre
-                linio
-            }
-            gender
-            mainColor
-            width
-            weight
-            height
-            length
-            images{
-                file
-                position
-                cover
-                src
-            }
-                variations{
-                    quantity
-                    reference
-                    talla
-                    gender
-                    upc
-                    price
-                    ean13
-                }
-            }
+            quantity
+          }
         }
-        }
-`
-}
+      }
+    }`
+};

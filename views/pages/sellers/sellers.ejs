@@ -112,10 +112,17 @@
                       <br/>
                       <div class="card is-hidden" id="setup-panel">
                         <div class="card-content">
-                          <div class="tabs is-toggle is-fullwidth o-x-h provider-items">
-                            <img src="/images/wooCommerce.png" /><input type="radio" name="channel" value="woocommerce" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='woocommerce'){%>checked<%}%>/>
-                            <img src="/images/shopify.png" /><input type="radio" name="channel" value="shopify" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='shopify'){%>checked<%}%>/>
-                            <img src="/images/vtex.png" /><input type="radio" name="channel" value="vtex" <%if(action==='edit' && integrations.length >0 && integrations[0].channel==='vtex'){%>checked<%}%>/>
+                          <div class="columns is-gapless">
+                            <div class="column">
+                              <img class="menu-title" style="height: auto;" src="/images/wooCommerce.png" id="woocommerce"/>
+                            </div>
+                            <div class="column">
+                              <img class="menu-title" src="/images/shopify.png" id="shopify"/>
+                            </div>
+                            <div class="column">
+                              <img class="menu-title" src="/images/vtex.png" id="vtex"/>
+                            </div>
+                            <input class="is-hidden" name="channel" value=""/>
                           </div>
                           <div class="setup">
                             <div class="container">
@@ -269,6 +276,16 @@
             </form>
           </div>
           <script>
+            <%if(action==='edit' && integrations.length > 0){%>
+              let channel = document.querySelector('input[name="channel"]');
+              let woocommerce = document.getElementById('woocommerce');
+              let shopify = document.getElementById('shopify');
+              let vtex = document.getElementById('vtex');
+              channel.value = <%- integrations[0].channel === 'woocommerce' %> ? 'woocommerce' : <%- integrations[0].channel === 'shopify' %> ? 'shopify' : <%- integrations[0].channel === 'vtex' %> ? 'vtex' : '';
+              <%- integrations[0].channel === 'woocommerce' %> ? addClass(woocommerce,'img-multiple') : removeClass(woocommerce, 'img-multiple');
+              <%- integrations[0].channel === 'shopify' %> ? addClass(shopify,'img-multiple') : removeClass(shopify, 'img-multiple');
+              <%- integrations[0].channel === 'vtex' %> ? addClass(vtex,'img-multiple') : removeClass(vtex, 'img-multiple');
+            <%}%>
             const fileInput = document.querySelector('#file-loader input[type=file]');
             fileInput.onchange = () => {
               if (fileInput.files.length > 0) {
@@ -327,6 +344,18 @@
                   removeClass(cities,'is-hidden');
                 }
               });
+            });
+            
+            live('.menu-title', 'click', e =>{
+              let channel = document.querySelector('input[name="channel"]');
+              let images = document.querySelectorAll('.menu-title');
+
+              channel.value = e.target.id;
+
+              images.forEach(img =>{
+                removeClass(img, 'img-multiple');
+              });
+              addClass(e.target,'img-multiple');
             });
           </script>
     <% } else { %>
