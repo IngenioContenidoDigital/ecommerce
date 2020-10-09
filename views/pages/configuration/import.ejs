@@ -162,6 +162,15 @@
     </div>
   </div>
   <script>
+    function showReportPane(){
+      if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+      let loadingBlock = document.querySelector('#loading-block');
+      addClass(loadingBlock, 'is-hidden');
+      let successBlock = document.querySelector('#success-block');
+      let errorBlock = document.querySelector('#error-block');
+      if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
+      if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
+    }
     <% if(typeof pagination ==='object' && pagination!== null ){ %>
         let args = <%- JSON.stringify(credentials)%>;
         let seller = '<%= seller %>';
@@ -187,15 +196,9 @@
         }
 
         io.socket.on("product_processed", (resData)=>{
+          showReportPane();
           if(!start){
             start = true;
-            if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-            let loadingBlock = document.querySelector('#loading-block');
-            addClass(loadingBlock, 'is-hidden');
-            let successBlock = document.querySelector('#success-block');
-            let errorBlock = document.querySelector('#error-block');
-            if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
-            if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
           }
 
           if(resData.result.length>=1){
@@ -219,15 +222,10 @@
         });
 
         io.socket.on("variation_processed", (resData)=>{
+          showReportPane();
+          
           if(!start){
             start = true;
-            if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-            let loadingBlock = document.querySelector('#loading-block');
-            addClass(loadingBlock, 'is-hidden');
-            let successBlock = document.querySelector('#success-block');
-            let errorBlock = document.querySelector('#error-block');
-            if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
-            if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
           }
 
           if(resData.result.length>=1){
@@ -236,7 +234,6 @@
             }
             
             if(resData.errors.length>=1){
-              console.log("ERROR", resData.errors[0].message);
               let errors = document.querySelector('#errors')
               errors.innerHTML=parseInt(errors.innerHTML)+1;
               let errorlist = document.querySelector('#error-list');
@@ -253,15 +250,10 @@
         });
 
         io.socket.on("product_images_processed", (resData)=>{
+          showReportPane();
+
           if(!start){
             start = true;
-            if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-            let loadingBlock = document.querySelector('#loading-block');
-            addClass(loadingBlock, 'is-hidden');
-            let successBlock = document.querySelector('#success-block');
-            let errorBlock = document.querySelector('#error-block');
-            if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
-            if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
           }
 
           if(resData.result && resData.result.length>=1){
@@ -317,6 +309,7 @@
       if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
       for(let p of records){  
         io.socket.post('/productcheck',{type:type,product:p,seller:seller},resData =>{
+            showReportPane();
             if(resData.items.length>=1){
               let items = document.querySelector('#items');
               items.innerHTML=parseInt(items.innerHTML)+1;
@@ -358,6 +351,9 @@
     }
     };
     live('#process','click',e=>{
+        let report = document.querySelector('#report');
+        addClass(report,'is-hidden');
+        
         let box = document.querySelector('.box').parentNode;
         addClass(box,'is-hidden');
         document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
@@ -442,6 +438,7 @@
 })();
 
 setSellerInfo();
+
 
 });
 
