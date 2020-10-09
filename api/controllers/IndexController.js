@@ -9,11 +9,14 @@ module.exports = {
   index: async function(req, res){
     let seller = null;
     let slider = null;
+
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
-    }else if(req.hostname==='iridio.co' || req.hostname==='localhost'){
+    }
+    if(req.hostname==='iridio.co' || req.hostname==='localhost'){
       slider = await Slider.find({active:true}).populate('textColor');
-    }else{
+    }
+    if(req.hostname==='sanpolos.com'){
       seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
       slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
     }

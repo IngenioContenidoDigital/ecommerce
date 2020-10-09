@@ -562,6 +562,7 @@ module.exports = {
     let errors = [];
     let imageErrors = [];
     let imageItems = [];
+    let type = req.body.entity ? req.body.entity : null;
 
     if (req.body.channel) {
 
@@ -599,7 +600,7 @@ module.exports = {
           }
 
           isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
-          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProducts, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, type:type, pagination: importedProducts, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
         
           break;
         case constants.PRODUCT_VARIATION:
@@ -617,7 +618,7 @@ module.exports = {
               next = importedProductsVariations.pagination;
 
             isEmpty = (!importedProductsVariations || !importedProductsVariations.data || importedProductsVariations.data.length == 0) ? true : false;
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsVariations, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsVariations, seller:seller, importType : importType, seller:seller, type:type, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
 
           break;
         case constants.IMAGE_TYPE:
@@ -636,20 +637,19 @@ module.exports = {
               next = importedProductsImages.pagination;
 
             isEmpty = (!importedProductsImages || !importedProductsImages.data || importedProductsImages.data.length == 0) ? true : false;
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsImages, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: importedProductsImages, seller:seller, type:type, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           
             break;
         default:
           break;
       }
 
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, sellers: sellers, rights: rights.name });
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, sellers: sellers, seller:seller, rights: rights.name, type:type });
     }
     req.setTimeout(600000);
     let route = sails.config.views.locals.imgurl;
     const csv = require('csvtojson');
     let json = [];
-    let type = req.body.entity ? req.body.entity : null;
     try {
       if (req.body.entity === 'ProductImage') {
         let imageslist = await sails.helpers.fileUpload(req, 'file', 200000000, 'images/products/tmp');
