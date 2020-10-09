@@ -1,5 +1,5 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/css/bulma-carousel.min.css">
-        <%if(typeof slider == 'object'){%>
+        <%if(typeof slider === 'object' && slider!== null){%>
           
           <%let main = slider.filter(el => el.position =='main');%>
           <%if(main.length>1){%>
