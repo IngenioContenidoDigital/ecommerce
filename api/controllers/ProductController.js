@@ -550,7 +550,6 @@ module.exports = {
     let seller = null;
     let integrations = [];
     let sellers = [];
-    let importType = req.body.importType;
 
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -565,6 +564,7 @@ module.exports = {
     let errors = [];
     let imageErrors = [];
     let imageItems = [];
+    let type = req.body.entity ? req.body.entity : null;
 
     if (req.body.channel) {
       let page = 1;
@@ -619,13 +619,13 @@ module.exports = {
         default:
           break;
       }
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, sellers: sellers, rights: rights.name });
+
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, sellers: sellers, seller:seller, rights: rights.name, type:type });
     }
     req.setTimeout(600000);
     let route = sails.config.views.locals.imgurl;
     const csv = require('csvtojson');
     let json = [];
-    let type = req.body.entity ? req.body.entity : null;
     try {
       if (req.body.entity === 'ProductImage') {
         let imageslist = await sails.helpers.fileUpload(req, 'file', 200000000, 'images/products/tmp');
@@ -1401,7 +1401,7 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = await Product.findOne({reference:p.reference, seller:seller});
+            let pro = await Product.findOne({reference:p.reference.toUpperCase(), seller:seller});
           
             if(!pro){
               throw new Error(`Ref: ${p.reference} : no pudimos encontrar este producto.`);
@@ -1453,7 +1453,7 @@ module.exports = {
               } catch (e) {
                   errors.push({ name:'ERRDATA', message:e.message });
                   sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                  console.log()
+                  console.log(e)
               }
             } 
            } catch (error) {
