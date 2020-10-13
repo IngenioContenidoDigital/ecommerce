@@ -12,6 +12,7 @@ module.exports = {
       ShopifyProducts(listing: { pagination: $pagination}) {
         totalRecords
         pagesCount
+        pagination
         data{
           name
           externalId
@@ -21,12 +22,15 @@ module.exports = {
           active
           price
           manufacturer
-          tax
+          tax{
+              name
+              rate
+          }
           width
           weight
           height
           length
-        }
+          }
       }
     }`,
 
@@ -35,6 +39,7 @@ module.exports = {
       ShopifyProductImage(listing: { pagination: $pagination}) {
         totalRecords
         pagesCount
+        pagination
         data{
           externalId
           images{
@@ -53,6 +58,7 @@ module.exports = {
         pagesCount
         data{
           externalId
+          reference
           variations{
             reference
             talla
