@@ -1,4 +1,12 @@
 module.exports = {
+    PAGINATION :
+    `query WooCommercePaginationQuery($pagination: PaginationInput) {
+        WooCommercePagination(listing: { pagination: $pagination}) {
+        totalRecords
+        pagesCount
+      }
+    }`,
+
     CATALOG :`
             query WooCommerceProductListQuery($pagination: PaginationInput) {
                 WooCommerceProduct(listing: { pagination: $pagination}) {

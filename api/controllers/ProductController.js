@@ -550,6 +550,7 @@ module.exports = {
     let seller = null;
     let integrations = [];
     let sellers = [];
+    let importType = req.body.importType;
 
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -573,6 +574,7 @@ module.exports = {
         req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE : 
         req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE : 0;
       let next;
+
       
       switch (req.body.importType) {
         case constants.PRODUCT_TYPE:
