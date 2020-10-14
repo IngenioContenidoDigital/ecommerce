@@ -31,7 +31,7 @@ module.exports = {
         //parameters['order.date_created.from']=moment().subtract(2,'hours').toISOString(true);
         //parameters['order.date_created.to']=moment().toISOString(true);
         let orders = await sails.helpers.channel.mercadolibre.findOrders(mercadolibre, parameters).catch(err =>{console.log(err);});
-        if(orders && orders.results.length>0){
+        if(orders && orders.results && orders.results.length>0){
           for(let order of orders.results){
             try{
               let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});
