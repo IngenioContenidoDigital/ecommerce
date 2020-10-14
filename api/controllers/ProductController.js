@@ -589,7 +589,7 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: [], integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.PRODUCT_VARIATION:
             let paginationVariation = await sails.helpers.commerceImporter(
@@ -1237,8 +1237,11 @@ module.exports = {
     }
     let seller = null; 
     let page = req.body.page;
+    let lastPage;
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
+    let next;
+
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
     } else {
@@ -1246,6 +1249,13 @@ module.exports = {
     }
 
     do {
+
+      if(req.body.channel == constants.SHOPIFY_CHANNEL){
+          if(page === (lastPage + 1)){
+            break;
+          }
+      }
+
       let importedProducts = await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,
@@ -1253,8 +1263,9 @@ module.exports = {
         req.body.apiUrl,
         req.body.version,
         'CATALOG',
-        { page: page, pageSize: pageSize, next: req.body.next || null }
+        { page: page, pageSize: pageSize, next: next|| null }
       ).catch((e) => console.log(e));
+      lastPage = importedProducts.pagesCount;
 
       if (importedProducts && importedProducts.pagination)
         next = importedProducts.pagination;
@@ -1374,6 +1385,8 @@ module.exports = {
     let page = req.body.page;
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
+    let lastPage;
+    let next;
 
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -1382,6 +1395,13 @@ module.exports = {
     }
 
     do {
+
+      if(req.body.channel == constants.SHOPIFY_CHANNEL){
+        if(page === (lastPage + 1)){
+          break;
+        }
+      }
+
       let importedProductsVariations= await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,
@@ -1389,11 +1409,12 @@ module.exports = {
         req.body.apiUrl,
         req.body.version,
         'VARIATIONS',
-        { page: page, pageSize: pageSize, next: req.body.next || null }
+        { page: page, pageSize: pageSize, next: next|| null }
       ).catch((e) => console.log(e));
 
       if (importedProductsVariations && importedProductsVariations.pagination)
         next = importedProductsVariations.pagination;
+        lastPage = importedProductsVariations.pagesCount;
 
       isEmpty = (!importedProductsVariations || !importedProductsVariations.data || importedProductsVariations.data.length == 0) ? true : false;
 

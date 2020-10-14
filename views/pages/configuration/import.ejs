@@ -299,6 +299,7 @@
 
     <% if(resultados!==null){ %>
       let records = <%- JSON.stringify(resultados)%>;
+      console.log("records", records);
       let type = '<%= type %>';
       let seller = '<%= seller %>';
       let totalrecords = records.length;
