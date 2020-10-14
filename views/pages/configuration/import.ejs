@@ -68,7 +68,7 @@
                       <section class="tab-content">
                         <% provider = null; %>
                         <%if(typeof integrations =='object' && integrations.length>0){%>
-                            <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify' || data.channel == 'vtex');%>
+                            <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify' || data.channel == 'vtex' || data.channel == 'prestashop');%>
                             <% if(provider){%>
                               <form action="/import" method="POST" enctype="multipart/form-data">
                                 <%if(sellers && sellers.length>0){%>

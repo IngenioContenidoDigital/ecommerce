@@ -3,6 +3,7 @@ const axios = require('axios');
 let shopify = require('../graphql/shopify');
 let woocommerce = require('../graphql/woocommerce');
 let vtex = require('../graphql/vtex');
+let prestashop = require('../graphql/prestashop');
 
 let signRequest = (data, query) => {
   let rootQuery;
@@ -40,6 +41,15 @@ let signRequest = (data, query) => {
         }, 'secret'),
         query: rootQuery
       };
+      case 'prestashop':
+        rootQuery = prestashop[query];
+        return {
+          token: jwt.sign({
+            url: data.apiUrl,
+            apiKey: data.pk,
+          }, 'secret'),
+          query: rootQuery
+        };
     default:
       break;
   }

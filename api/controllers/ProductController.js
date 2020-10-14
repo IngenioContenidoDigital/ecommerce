@@ -17,6 +17,8 @@ const constants = {
   WOOCOMMERCE_CHANNEL: sails.config.custom.WOOCOMMERCE_CHANNEL,
   VTEX_PAGESIZE: sails.config.custom.VTEX_PAGESIZE,
   VTEX_CHANNEL: sails.config.custom.VTEX_CHANNEL,
+  PRESTASHOP_PAGESIZE: sails.config.custom.PRESTASHOP_PAGESIZE,
+  PRESTASHOP_CHANNEL: sails.config.custom.PRESTASHOP_CHANNEL,
   TIMEOUT_PRODUCT_TASK: 4000000,
   TIMEOUT_IMAGE_TASK: 8000000,
 }
@@ -572,7 +574,8 @@ module.exports = {
       let pageSize = 
         req.body.channel === constants.WOOCOMMERCE_CHANNEL ? constants.WOOCOMMERCE_PAGESIZE : 
         req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE : 
-        req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE : 0;
+        req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE :
+        req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE : 0;
       let next;
 
       

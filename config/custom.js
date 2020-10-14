@@ -20,6 +20,8 @@ module.exports.custom = {
   WOOCOMMERCE_CHANNEL : 'woocommerce',
   VTEX_PAGESIZE : 10,
   VTEX_CHANNEL : 'vtex',
+  PRESTASHOP_PAGESIZE : 50,
+  PRESTASHOP_CHANNEL : 'prestashop',
   DEFAULTPAGE: 300,
 
   /***************************************************************************
