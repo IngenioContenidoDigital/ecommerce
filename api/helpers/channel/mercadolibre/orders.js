@@ -26,8 +26,8 @@ module.exports = {
       parameters['access_token']=integrations.secret;
       for(let state of statuses){
         parameters['order.status']=state;
-        parameters['order.date_last_updated.from']=moment('2020-10-01 00:00:00')/*.subtract(3,'hours')*/.toISOString(true);
-        parameters['order.date_last_updated.to']=moment('2020-10-09 23:59:59').toISOString(true);
+        parameters['order.date_last_updated.from']=moment(/*'2020-10-01 00:00:00'*/).subtract(3,'hours').toISOString(true);
+        parameters['order.date_last_updated.to']=moment(/*'2020-10-09 23:59:59'*/).toISOString(true);
         //parameters['order.date_created.from']=moment().subtract(2,'hours').toISOString(true);
         //parameters['order.date_created.to']=moment().toISOString(true);
         let orders = await sails.helpers.channel.mercadolibre.findOrders(mercadolibre, parameters).catch(err =>{console.log(err);});
