@@ -298,7 +298,7 @@
     <% } %>
 
     <% if(typeof resultados ==='object' && resultados!==null && resultados.length>0){ %>
-      let records = '<%- JSON.stringify(resultados) %>';
+      let records = <%- JSON.stringify(resultados) %>;
       let type = '<%= type %>';
       let seller = '<%= seller %>';
       let totalrecords = records.length;
