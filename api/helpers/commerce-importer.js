@@ -13,8 +13,8 @@ let signRequest = (data, query) => {
       return {
         token: jwt.sign({
           shopName: data.apiUrl,
+          apiKey: data.pk,
           password: data.sk,
-          consumerSecret: data.pk,
           version: data.version
         }, 'secret'),
         query: rootQuery

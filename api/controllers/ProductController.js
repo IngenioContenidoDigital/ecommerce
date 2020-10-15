@@ -599,10 +599,10 @@ module.exports = {
               req.body.apiUrl,
               req.body.version,
               'PAGINATION',
-              { page: req.body.page, pageSize: pageSize, next: next || null }
+              { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
 
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: [], integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.IMAGE_TYPE:
             req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
