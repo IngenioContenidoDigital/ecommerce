@@ -284,10 +284,12 @@
               let woocommerce = document.getElementById('woocommerce');
               let shopify = document.getElementById('shopify');
               let vtex = document.getElementById('vtex');
+              let prestashop = document.getElementById('prestashop');
               channel.value = <%- integrations[0].channel === 'woocommerce' %> ? 'woocommerce' : <%- integrations[0].channel === 'shopify' %> ? 'shopify' : <%- integrations[0].channel === 'vtex' %> ? 'vtex' : '';
               <%- integrations[0].channel === 'woocommerce' %> ? addClass(woocommerce,'img-multiple') : removeClass(woocommerce, 'img-multiple');
               <%- integrations[0].channel === 'shopify' %> ? addClass(shopify,'img-multiple') : removeClass(shopify, 'img-multiple');
               <%- integrations[0].channel === 'vtex' %> ? addClass(vtex,'img-multiple') : removeClass(vtex, 'img-multiple');
+              <%- integrations[0].channel === 'prestashop' %> ? addClass(prestashop,'img-multiple') : removeClass(prestashop, 'img-multiple');
             <%}%>
             const fileInput = document.querySelector('#file-loader input[type=file]');
             fileInput.onchange = () => {
@@ -354,7 +356,30 @@
               let images = document.querySelectorAll('.menu-title');
 
               channel.value = e.target.id;
-
+              
+              if(channel.value=='prestashop'){
+                let secret=document.querySelector('input[name="secret"]');
+                addClass(secret,'is-hidden');
+                addClass(secret.parentNode,'is-hidden');
+                addClass(secret.parentNode.parentElement,'is-hidden');
+                secret.value="N/A";
+                let version=document.querySelector('input[name="version"]');
+                addClass(version,'is-hidden');
+                addClass(version.parentNode,'is-hidden');
+                addClass(version.parentNode.parentElement,'is-hidden');
+                version.value="N/A";
+              }else{
+                let secret=document.querySelector('input[name="secret"]');
+                removeClass(secret,'is-hidden');
+                removeClass(secret.parentNode,'is-hidden');
+                removeClass(secret.parentNode.parentElement,'is-hidden');
+                secret.value="";
+                let version=document.querySelector('input[name="version"]');
+                removeClass(version,'is-hidden');
+                removeClass(version.parentNode,'is-hidden');
+                removeClass(version.parentNode.parentElement,'is-hidden');
+                version.value="";
+              }
               images.forEach(img =>{
                 removeClass(img, 'img-multiple');
               });
