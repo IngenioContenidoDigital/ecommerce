@@ -23,8 +23,8 @@ module.exports = {
           price
           manufacturer
           tax{
-              name
-              rate
+            name
+            rate
           }
           width
           weight
@@ -56,6 +56,7 @@ module.exports = {
       ShopifyProductVariation(listing: { pagination: $pagination}) {
         totalRecords
         pagesCount
+        pagination
         data{
           externalId
           reference
@@ -64,6 +65,7 @@ module.exports = {
             talla
             price
             quantity
+            ean13
           }
         }
       }
