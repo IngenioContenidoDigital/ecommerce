@@ -58,13 +58,11 @@ module.exports = {
                     throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);
                 }
 
-                if (inputs.product.gender) {
-                    let gender = await sails.helpers.tools.findGender(inputs.product.name+' '+inputs.product.reference);
-                    if (gender && gender.length>0) {
-                        pro.gender = gender[0];
-                    } else {
-                        pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
-                    }
+                let gender = await sails.helpers.tools.findGender(inputs.product.name+' '+inputs.product.reference);
+                if (gender && gender.length>0) {
+                    pro.gender = gender[0];
+                } else {
+                    pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
                 }
                 
                 if (inputs.product.tax) {
