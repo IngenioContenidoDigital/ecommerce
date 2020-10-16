@@ -1298,6 +1298,9 @@ module.exports = {
     let seller = null; 
     let page = req.body.page;
     let pageSize = req.body.pageSize;
+    let lastPage;
+    let next;
+    let sid = sails.sockets.getId(req);
 
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -1306,6 +1309,13 @@ module.exports = {
     }
 
     do {
+
+      if(req.body.channel == constants.SHOPIFY_CHANNEL){
+          if(page === (lastPage + 1)){
+            break;
+          }
+      }
+
       let importedProductsImages = await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,
@@ -1313,11 +1323,12 @@ module.exports = {
         req.body.apiUrl,
         req.body.version,
         'IMAGES',
-        { page: page, pageSize: pageSize, next: req.body.next || null }
+        { page, pageSize, next: next || null }
       ).catch((e) => console.log(e));
 
       if (importedProductsImages && importedProductsImages.pagination)
         next = importedProductsImages.pagination;
+        lastPage = importedProductsImages.pagesCount;
 
       isEmpty = (!importedProductsImages || !importedProductsImages.data || importedProductsImages.data.length == 0) ? true : false;
 
@@ -1353,14 +1364,14 @@ module.exports = {
                       result.push(rs);
                   }
   
-                  sails.sockets.blast('product_images_processed',  {result});
+                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
   
                 }
               }
 
             } catch (err) {
                 errors.push(err)
-                sails.sockets.blast('product_images_processed',  {errors});
+                sails.sockets.broadcast(sid, 'product_images_processed',  {result});
             }
           }
 
