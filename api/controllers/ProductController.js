@@ -1438,41 +1438,26 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = await Product.findOne({reference:p.reference.toUpperCase(), seller:seller});
-          
+            let pro = await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
+
             if(!pro){
               throw new Error(`Ref: ${p.reference} : no pudimos encontrar este producto.`);
             }
   
             if(pro){
-              let ct = await Category.find({id:pro.categories}).sort('level ASC');
               let tx = await Tax.findOne({id:pro.tax});
               let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
               try {
-                if(!p.variations || p.variations.length<1){
-                  let vr = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:'único', col:'único'},{gender:pro.gender,category:ct[0].id,name:'único', col:'único'});
-                  let variation  = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:vr.id},{
-                      product:pr.id,
-                      variation:vr.id,
-                      reference: '',
-                      supplierreference:pro.reference,
-                      ean13: 0,
-                      upc: 0,
-                      price: pro.price * (1+(tx.value/100)),
-                      quantity: 0
-                    });
-  
-                    if(variation){
-                      result.push(variation);
-                      sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                    }
-                    
-                }else{
                   for(let vr of p.variations){
-                    let v = await Variation.findOrCreate({gender:pro.gender,category:ct[0].id,name:vr.talla ? vr.talla.trim().toLowerCase() : 'único'},{gender:pro.gender,category:ct[0].id,name:vr.talla ? vr.talla.trim().toLowerCase() : 'único'}).catch((e)=>console.log(e));
-                    let variation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:v.id},{
+                    let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
+                    
+                    if(!variation){
+                        variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
+                    }
+
+                    let productVariation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:variation.id},{
                       product:pr.id,
-                      variation:v.id,
+                      variation:variation.id,
                       reference: vr.reference ? vr.reference : '',
                       supplierreference:pr.reference,
                       ean13: vr.ean13 ? vr.ean13 : 0,
@@ -1481,12 +1466,12 @@ module.exports = {
                       quantity: vr.quantity ? vr.quantity : 0
                     }).catch((e)=>console.log(e));
   
-                    if(variation){
-                      result.push(variation);
+                    if(productVariation){
+                      result.push(productVariation);
                       sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
                     }
+                    
                   }
-                }
               } catch (e) {
                   errors.push({ name:'ERRDATA', message:e.message });
                   sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
