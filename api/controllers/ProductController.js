@@ -1463,7 +1463,8 @@ module.exports = {
                       ean13: vr.ean13 ? vr.ean13 : 0,
                       upc: vr.upc ? vr.upc : 0,
                       price: vr.price * (1+(tx.value/100)),
-                      quantity: vr.quantity ? vr.quantity : 0
+                      quantity: vr.quantity ? vr.quantity : 0,
+                      seller:pr.seller
                     }).catch((e)=>console.log(e));
   
                     if(productVariation){
