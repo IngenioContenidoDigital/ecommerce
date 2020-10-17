@@ -29,8 +29,8 @@ module.exports = {
                 pro.reference = inputs.product.reference.toUpperCase().trim();
                 pro.description = inputs.product.description.toLowerCase().trim();
                 pro.descriptionShort = inputs.product.descriptionShort.toLowerCase().trim();
-
-                let cats = await sails.helpers.tools.findCategory(inputs.product.name+' '+inputs.product.reference);
+                let textPredictor = inputs.product.textLink ? inputs.product.textLink : inputs.product.name+' '+inputs.product.reference;
+                let cats = await sails.helpers.tools.findCategory(textPredictor);
                 if(cats.length>0){
                     pro.categories = cats;
                     let main = await Category.find({id:cats}).sort('level DESC');
@@ -50,7 +50,7 @@ module.exports = {
                     throw new Error(`Ref: ${pro.reference} : ${pro.name} sin marca`);
                 }
 
-                let color = await sails.helpers.tools.findColor(inputs.product.name+' '+inputs.product.reference);
+                let color = await sails.helpers.tools.findColor(textPredictor);
 
                 if(color && color.length > 0){
                     pro.mainColor = color[0];
@@ -58,7 +58,7 @@ module.exports = {
                     throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);
                 }
 
-                let gender = await sails.helpers.tools.findGender(inputs.product.name+' '+inputs.product.reference);
+                let gender = await sails.helpers.tools.findGender(textPredictor);
                 if (gender && gender.length>0) {
                     pro.gender = gender[0];
                 } else {

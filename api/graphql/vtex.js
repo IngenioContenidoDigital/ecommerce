@@ -21,7 +21,11 @@ module.exports = {
         active
         price
         manufacturer
-        tax
+        textLink
+        tax{
+          name
+          rate
+        }
         width
         weight
         height
