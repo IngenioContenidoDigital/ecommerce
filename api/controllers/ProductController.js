@@ -93,6 +93,7 @@ module.exports = {
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
       if (rights.name !== 'superadmin' && rights.name !== 'admin') { row.splice(8, 1); }
+      if(p.images.length<1){row[0]=`<td class="align-middle is-uppercase">` + p.name + `</td>`}
       productdata.push(row);
     }
     return res.send(productdata);
