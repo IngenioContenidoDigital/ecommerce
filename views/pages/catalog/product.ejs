@@ -97,7 +97,7 @@
             <label class="label is-inline is-size-7" for="price_wt">Precio IVA incluído</label>
             <div class="field">
               <p class="control has-icons-left">
-                <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
+                <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%= (Math.ceil((product.price * (1 + (product.tax.value / 100)))*100)/100).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
                 <span class="icon is-small is-left is-size-7">
                   <i class="bx bx-dollar"></i>
                 </span>
@@ -465,7 +465,7 @@
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(product.price*(1+product.tax.value/100)).toFixed(2)%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(Math.ceil((product.price * (1 + (product.tax.value / 100)))*100)/100).toFixed(2);%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
           '<td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>'
         ];
@@ -884,11 +884,11 @@
       switch(name){
         case 'tax':
           target = pricewt;
-          target.value=(pricent.value*(1+(range/100))).toFixed(2);
+          target.value=(Math.ceil((pricent.value * (1 + (range / 100)))*100)/100).toFixed(2);
           break;
         case 'price_nt':
           target = pricewt;
-          target.value=(pricent.value*(1+(range/100))).toFixed(2);
+          target.value=(Math.ceil((pricent.value * (1 + (range / 100)))*100)/100).toFixed(2);
           break;
         case 'price_wt':
           target = pricent;

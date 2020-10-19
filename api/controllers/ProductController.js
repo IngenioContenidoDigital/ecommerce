@@ -84,7 +84,7 @@ module.exports = {
         `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="` + p.id + `">` + p.name + `</a></td>`,
         `<td class="align-middle">` + p.reference + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
-        `<td class="align-middle">$ ` + parseInt(p.price * (1 + (p.tax.value / 100))).toLocaleString('es-CO') + `</td>`,
+        `<td class="align-middle">$ ` + (Math.ceil((p.price * (1 + (p.tax.value / 100)))*100)/100) + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.mainColor ? p.mainColor.name : '') + `</td>`,
         `<td class="align-middle">` + p.stock + `</td>`,
         `<td class="align-middle"><span class="action"><i product="` + p.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,

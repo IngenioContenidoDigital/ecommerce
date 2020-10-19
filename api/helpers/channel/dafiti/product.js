@@ -71,7 +71,7 @@ module.exports = {
                 Brand:(product.manufacturer.name==='Adidas' || product.manufacturer.name==='adidas') ? 'Adidas Performance' : product.manufacturer.name,
                 Condition:'new',
                 Variation:pv.variation.col.replace(/\.5/,'½').toString(),
-                Price:(pv.price*(1+priceadjust)).toFixed(2),
+                Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(2),
                 Quantity:pv.quantity <= 0 ? '0' : pv.quantity.toString(),
                 ProductData:{
                   Gender:product.gender.name,

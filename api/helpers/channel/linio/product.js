@@ -71,7 +71,7 @@ module.exports = {
                 Categories: categories.join(','),
                 Description: jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
                 Brand: product.manufacturer.name,
-                Price: (pv.price*(1+priceadjust)).toFixed(2),
+                Price: (Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(2),
                 Quantity: pv.quantity < 0 ? '0' : pv.quantity.toString(),
                 TaxClass: product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%',
                 ProductData: {
