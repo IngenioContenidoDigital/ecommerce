@@ -211,12 +211,8 @@
               err.innerHTML=resData.errors[0].message;
               errorlist.appendChild(err);
             }
-            if(processed>=total){
-              let mensaje = document.querySelector('#report > .title');
-              mensaje.innerHTML='Proceso Finalizado';
-            }else{
-              processed+=1;
-            }
+
+            processed+=1;
         });
 
         io.socket.on("variation_processed", (resData)=>{
@@ -239,12 +235,8 @@
               err.innerHTML=resData.errors[0].message;
               errorlist.appendChild(err);
             }
-            if(processed>=total){
-              let mensaje = document.querySelector('#report > .title');
-              mensaje.innerHTML='Proceso Finalizado';
-            }else{
-              processed+=1;
-            }
+
+            processed+=1;
         });
 
         io.socket.on("product_images_processed", (resData)=>{
@@ -259,7 +251,6 @@
               items.innerHTML=parseInt(items.innerHTML)+1;
             }
             if(resData.errors && resData.errors.length>=1){
-              console.log("ERROR", resData.errors[0].message);
               let errors = document.querySelector('#errors')
               errors.innerHTML=parseInt(errors.innerHTML)+1;
               let errorlist = document.querySelector('#error-list');
@@ -267,33 +258,50 @@
               err.innerHTML=resData.errors[0].message;
               errorlist.appendChild(err);
             }
-            if(processed>=total){
-              let mensaje = document.querySelector('#report > .title');
-              mensaje.innerHTML='Proceso Finalizado';
-            }else{
-              processed+=1;
-            }
+
+            processed+=1;
         });
 
         switch (importType) {
           case 'Product':
                 io.socket.post('/import-products', args, (response)=>{
-                  console.log("response", response);
+
                 });
             break;
             case 'ProductImage':
                 io.socket.post('/import-images', args, (response)=>{
-                  console.log("response", response);
+                  io.socket.on("images_task_ended", (resData)=>{
+                      let mensaje = document.querySelector('#report > .title');
+                      mensaje.innerHTML='Proceso Finalizado';
+                  });
                 });
             break;
             case 'Variations':
                 io.socket.post('/import-variations', args, (response)=>{
-                  console.log("response", response);
+                  io.socket.on("variation_task_ended", (resData)=>{
+                      let mensaje = document.querySelector('#report > .title');
+                      mensaje.innerHTML='Proceso Finalizado';
+                  });
                 });
             break;
           default:
             break;
         }
+
+        io.socket.on("product_task_ended", (resData)=>{
+            let mensaje = document.querySelector('#report > .title');
+            mensaje.innerHTML='Proceso Finalizado';
+        });
+
+        io.socket.on("image_task_ended", (resData)=>{
+            let mensaje = document.querySelector('#report > .title');
+            mensaje.innerHTML='Proceso Finalizado';
+        });
+
+        io.socket.on("variation_task_ended", (resData)=>{
+                let mensaje = document.querySelector('#report > .title');
+                mensaje.innerHTML='Proceso Finalizado';
+        });
 
     <% } %>
 
