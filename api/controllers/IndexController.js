@@ -974,6 +974,15 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         break;
     }
     return res.view('pages/front/cms',{content:content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+  },
+  dafitisync: async (req, res) =>{
+    let fs = require('fs');
+    let moment = require('moment');
+    let body = req.body;
+    fs.writeFile('./logs/'+moment().format()+'.json',JSON.stringify(body),err =>{
+      if(err){console.log(err);}
+    });
+    return res.ok();
   }
 };
 

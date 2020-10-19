@@ -26,6 +26,7 @@ module.exports.routes = {
   'GET /login' : {view:'pages/configuration/login', locals:{error:null}},
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},
+  'POST /dafitisync' : {controller:'IndexController',action:'dafitisync'},
   'GET /account' : {controller:'FrontController',action:'account'},
   'GET /account/user/:id' : {controller:'FrontController',action:'user'},
   'GET /account/orders' : {controller:'FrontController',action:'orders'},
