@@ -1043,7 +1043,7 @@ module.exports = {
             result = await sails.helpers.channel.dafiti.images(products)
               .catch(err => {
                 throw new Error(err.message);
-              })
+              });
           } else {
             result = await sails.helpers.channel.dafiti.product(products)
               .catch(err => {
@@ -1135,7 +1135,7 @@ module.exports = {
           case 'ProductUpdate':
             action = 'Update';
             params.ml = true;
-            params.mlstatus = true;
+            params.mlid = { '!=': '' };
             params.active = true;
             break;
           case 'Image':
@@ -1148,7 +1148,7 @@ module.exports = {
         let products = await Product.find(params);
         if (products.length > 0) {
           for (let pl of products) {
-            await sails.helpers.channel.mercadolibre.product(seller, action)
+            await sails.helpers.channel.mercadolibre.product(pl.id, action)
               .then(async result => {
                 response.items.push(result);
                 await Product.updateOne({ id: pl.id }).set({
@@ -1345,8 +1345,8 @@ module.exports = {
               let url = (im.src.split('?'))[0];
               let file = (im.file.split('?'))[0];
               
-              let product = await Product.findOne({ externalId : p.externalId, seller:seller});
-              if(product){
+              let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+              if(product && product.images.length === 0){
                 let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
                   throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                 });

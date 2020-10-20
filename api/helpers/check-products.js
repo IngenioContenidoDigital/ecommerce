@@ -82,7 +82,7 @@ module.exports = {
                 pro.height = (inputs.product.height === undefined || inputs.product.height === null || inputs.product.height < 1) ? 15 : inputs.product.height;
                 pro.length = (inputs.product.length === undefined || inputs.product.length === null || inputs.product.length < 1) ? 32 : inputs.product.length;
                 pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : inputs.product.weight;
-                pro.price =  (inputs.product.price / (1 + (tax.value/100)));
+                pro.price =  Math.ceil((inputs.product.price*(1 + (tax.value/100))*100)/100).toFixed(2);
 
                 return exits.success(pro);
           

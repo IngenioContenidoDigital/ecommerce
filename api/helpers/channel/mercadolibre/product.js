@@ -154,15 +154,14 @@ module.exports = {
       if(storeid>0){body['official_store_id']=storeid;}
       switch(inputs.action){
         case 'Update':
-          if(product.ml && product.mlstatus){body = {'status':'paused'};}
-          if(product.ml && !product.mlstatus){
-            body['status']='active';
+          body['status']='active';
+          //if(product.ml && !product.mlstatus){
             delete body['title'];
             delete body['listing_type_id'];
             delete body['buying_mode'];
-            delete body['price'];
+          //  delete body['price'];
             delete body['description'];
-          }
+          //}
           mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
             if(error){console.log(error); return exits.error(error);}
             return exits.success(result);
