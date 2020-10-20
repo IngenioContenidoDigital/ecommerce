@@ -23,7 +23,6 @@ module.exports.custom = {
   PRESTASHOP_PAGESIZE : 50,
   PRESTASHOP_CHANNEL : 'prestashop',
   DEFAULTPAGE: 300,
-
   /***************************************************************************
   *                                                                          *
   * Any other custom config this Sails app should use during development.    *

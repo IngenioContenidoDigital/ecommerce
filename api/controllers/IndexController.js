@@ -974,6 +974,35 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         break;
     }
     return res.view('pages/front/cms',{content:content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+  },
+
+  dafitiSync : async (req, res)=>{
+    let data = req.body.payload;
+    let response = {};
+
+    switch (req.body.event) {
+      case 'onOrderCreated':
+        
+        break;
+      case 'onOrderItemsStatusChanged':
+       
+      let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>response['error'] = { ERRSTATUS : `Error identificando el estado ${data.NewStatus} : ${e.message}`});
+
+      if(!state){
+        console.log({ ERRSTATUS : `No se pudo identificar el estado : ${data.NewStatus}`});
+        return response['error'] = { ERRSTATUS : `No se pudo identificar el estado : ${data.NewStatus} de dafiti`}
+      }
+
+      result = await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
+      response['success'] = result;
+
+        break
+      default:
+        break;
+    }
+    
+    res.status(200).json(response);
   }
+
 };
 
