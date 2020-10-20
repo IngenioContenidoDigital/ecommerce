@@ -986,16 +986,6 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         break;
       case 'onOrderItemsStatusChanged':
 
-      let fs = require('fs');
-      let path = require('path');
-      
-      let moment = require('moment');
-      let body = req.body;
-
-      fs.writeFile(path.join(__dirname, 'logs', `${moment().format()}.json`), JSON.stringify(body), err =>{
-        if(err){console.log(err);}
-      });
-       
       let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>response['error'] = { ERRSTATUS : `Error identificando el estado ${data.NewStatus} : ${e.message}`});
 
       if(!state){
