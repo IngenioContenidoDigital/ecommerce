@@ -1,5 +1,3 @@
-const { logAndExitProcess } = require('@sentry/node/dist/handlers');
-
 module.exports = {
   friendlyName: 'Dafiti Images',
   description: 'Images dafiti.',
@@ -17,8 +15,9 @@ module.exports = {
   fn: async function (inputs,exits) {
     let imagebody={Request:[]};
     //Imagenes
-    let ilist = {Images:[]};
+    let ilist = {};
     for(let p of inputs.products){
+      ilist.Images= [];
       try{
         let images = await ProductImage.find({product:p.id}).sort('position ASC');
         if(images.length>0){
@@ -40,7 +39,7 @@ module.exports = {
             throw new Error('Producto sin Variaciones');
           }
         }else{
-          await Product.updateOne({id:pp.id}).set({dafiti:true,dafitistatus:false,dafitiqc:false});
+          await Product.updateOne({id:p.id}).set({dafiti:true,dafitistatus:false,dafitiqc:false});
           throw new Error('Producto sin Imágenes');
         }
       }catch(err){
