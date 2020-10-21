@@ -184,6 +184,159 @@ module.exports = {
         await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+rts,'POST');
       }
     }
+    if(order.carrier.name==='mensajeros urbanos'){
+      let axios = require('axios');
+      const querystring = require('querystring');
+      let options={};
+      let products=[];
+      for(let p in oitems){
+        
+        let image = await Productimage.findOne({product:oitems[p].product.id,cover:1});
+        // if(p < 1 || p ==='0'){
+        //   largo=oitems[0].product.length;
+        //   ancho=oitems[0].product.width;
+        // }
+        let obj={
+          "store_id": seller.dni,
+          "sku": oitems[p].product.reference,
+          "product_name": oitems[p].product.name,
+          "url_img": `https://s3.amazonaws.com/iridio.co/images/products/${image.product}/${image.file}`,
+          "value": oitems[p].product.price,
+          "quantity": 1,
+          "barcode": oitems[p].product.id,
+          "planogram": ""
+        }
+        console.log(obj);
+      }
+
+      if(city.name==seller.mainAddress.city.name){
+        switch (city.name) {
+          case 'bogota':
+            city.muvalue=1;
+            break;
+          case 'cali':
+            city.muvalue=2;
+            break;   
+          case 'medellin':
+            city.muvalue=3;
+            break;
+          case 'barranquilla':
+            city.muvalue=4;
+            break;
+          case 'cartagena':
+            city.muvalue=8;
+            break;
+          case 'santa marta':
+            city.muvalue=9;
+            break;   
+          case 'bucaramanga':
+            city.muvalue=10;
+            break;
+          case 'ibague':
+            city.muvalue=11;
+            break;               
+          default:
+            break;
+        }
+        options = {
+          method: 'post',
+          url: `http://dev.api.mensajerosurbanos.com/oauth/token`,
+          // url: `https://cerberus.mensajerosurbanos.com/oauth/token`,
+          headers: {
+              'client_secret':'e29690feccaecde68b8e50b51c6094761f1e2aae',
+              'client_id':'14kh8th70kfwvctw6_murbanos',
+              'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          data:querystring.stringify({
+              'grant_type':'client_credentials'
+          })
+        };
+  
+        let token = await axios(options).catch((e) => console.log(e));
+  
+        if (token.data) {
+          token=token.data.access_token;
+          options = {
+            method: 'post',
+            url: `http://dev.api.mensajerosurbanos.com/Add-store`,
+            // url: `https://cerberus.mensajerosurbanos.com/Add-store`,
+            headers: {
+                'access_token':token
+            },
+            data:{
+              "id_user": 146157,
+              "id_point": seller.dni,
+              "name": seller.name,
+              "address": seller.mainAddress.addressline1,
+              "city": city.muvalue,
+              "phone": seller.phone.toString(),
+              "schedule": "L-V de 8:00AM - 07:00PM",
+              "parking": 1000,
+              "id_company": 145455
+            }
+          };
+          // await axios(options).catch((e) => console.log(e));  
+
+
+
+          options = {
+            method: 'post',
+            url: `http://dev.api.mensajerosurbanos.com/Create-services`,
+            // url: `https://cerberus.mensajerosurbanos.com/Create-services`,
+            headers: {
+                'access_token':token
+            },
+            data:{
+              "id_user": 146157,
+              "type_service": 4,
+              "roundtrip": 0,
+              "declared_value": 1250,
+              "city": 1,
+              "start_date": "2017-04-18",
+              "start_time": "15:59:00",
+              "observation": "Servicio XXXX para WWWW",
+              "user_payment_type": 1,
+              "type_segmentation": 1,
+              "type_task_cargo_id": 2,
+              "os": "NEW API 2.0",
+              "coordinates": [
+                {
+                  "type": "1",
+                  "order_id": 471,
+                  "address": "Calle 166 # 48 21",
+                  "token": 234,
+                  "city": "bogota",
+                  "description": "Favor cobrar lo que dice la factura dado que los valores indicados en este informe pueden ser superiores al monto real.",
+                  "client_data": {
+                    "client_name": "Pedro Perez",
+                    "client_phone": "3154000000",
+                    "client_email": "cliente1@gmail.com",
+                    "products_value": "1000",
+                    "domicile_value": "0",
+                    "client_document": "79170747",
+                    "payment_type": 1
+                  },
+                  "products": [
+                    {
+                      "store_id": seller.dni,
+                      "sku": "1020651",
+                      "product_name": "Afelius 50 Frasco X60ml.",
+                      "url_img": "http://images.big/co_items_1020651_big_standart_1429259746242.jpg",
+                      "value": 92100,
+                      "quantity": 1,
+                      "barcode": "7707355050843",
+                      "planogram": "PISO 3"
+                    }
+                  ]
+                }
+              ]
+            }
+          };
+        //  let tracking=await axios(options).catch((e) => console.log(e)); 
+        //  console.log(tracking);
+        }
+      }
+    }
 
     return exits.success();
   }

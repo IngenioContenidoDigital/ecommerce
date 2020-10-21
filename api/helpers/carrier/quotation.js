@@ -19,18 +19,21 @@ module.exports = {
       const querystring = require('querystring');
       let url = 'http://sandbox.coordinadora.com/ags/1.5/server.php?wsdl';
       //   let url = 'https://ws.coordinadora.com/ags/1.5/server.php?wsdl';
-      let order = await Order.findOne({id:inputs.id}).populate('addressDelivery');
+      let order = await Order.findOne({id:inputs.id}).populate('addressDelivery').populate('carrier');
       let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
       seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city');
       let city = await City.findOne({id:order.addressDelivery.city});
+      city.muvalue=0;
       let oitems = await OrderItem.find({order:order.id}).populate('product');
       let items = oitems.length;
       let alto = 0;
       let largo = 0;
       let ancho = 0;
       let peso = 0;
+      let flete_mensajerosurbanos;
       let flete_coordinadora;
-      
+      let carriers = await Carrier.find();
+      let carrier;
   
       for(let p in oitems){
         if(p < 1 || p ==='0'){
@@ -73,60 +76,95 @@ module.exports = {
         if(err){return exits.error(err);}
         method(requestArgs, async (err, result)=>{
           if(err){return exits.error(err);}
-          console.log(result);
           flete_coordinadora=result.Cotizador_cotizarResult.flete_total;
         });
       });
-
-      options = {
-        method: 'post',
-        url: `http://dev.api.mensajerosurbanos.com/oauth/token`,
-        headers: {
-            'client_secret':'e29690feccaecde68b8e50b51c6094761f1e2aae',
-            'client_id':'14kh8th70kfwvctw6_murbanos',
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        data:querystring.stringify({
-            'grant_type':'client_credentials'
-        })
-       };
-
-
-
-       
-      let token = await axios(options).catch((e) => console.log(e));
-      token=token.data.access_token
-      console.log(token);
-
-      options = {
-        method: 'post',
-        url: `http://dev.api.mensajerosurbanos.com/calculate`,
-        headers: {
-            'access_token':token
-        },
-        data:{
-            "id_user": 146157,
-            "type_service": 4,
-            "roundtrip": 0,
-            "declared_value": 1250,
-            "city": 1,
-            "parking_surcharge": 2000,
-            "coordinates": [
-              {
-                "address": "Cra 7 #120-20",
-                "city": "bogota"
+      if(city.name==seller.mainAddress.city.name){
+        switch (city.name) {
+          case 'bogota':
+            city.muvalue=1;
+            break;
+          case 'cali':
+            city.muvalue=2;
+            break;   
+          case 'medellin':
+            city.muvalue=3;
+            break;
+          case 'barranquilla':
+            city.muvalue=4;
+            break;
+          case 'cartagena':
+            city.muvalue=8;
+            break;
+          case 'santa marta':
+            city.muvalue=9;
+            break;   
+          case 'bucaramanga':
+            city.muvalue=10;
+            break;
+          case 'ibague':
+            city.muvalue=11;
+            break;               
+          default:
+            break;
+        }
+        if(!(city.muvalue===0)){
+          options = {
+            method: 'post',
+            url: `http://dev.api.mensajerosurbanos.com/oauth/token`,
+            // url: `https://cerberus.mensajerosurbanos.com/oauth/token`,
+            headers: {
+                'client_secret':'e29690feccaecde68b8e50b51c6094761f1e2aae',
+                'client_id':'14kh8th70kfwvctw6_murbanos',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data:querystring.stringify({
+                'grant_type':'client_credentials'
+            })
+           };
+    
+          let token = await axios(options).catch((e) => console.log(e));
+          
+          if (token.data) {
+            token=token.data.access_token;
+            options = {
+              method: 'post',
+              url: `http://dev.api.mensajerosurbanos.com/calculate`,
+              // url: `https://cerberus.mensajerosurbanos.com/calculate`,
+              headers: {
+                  'access_token':token
               },
-              {
-                "address": "calle 19b#6b",
-                "city": "bogota"
-              }
-            ]
+              data:{
+                  "id_user": 146157,
+                  "type_service": 5,
+                  "roundtrip": 0,
+                  "declared_value": (order.totalProducts/1.19)*0.8,
+                  "city": city.muvalue,
+                  "parking_surcharge": 2000,
+                  "coordinates": [
+                    {
+                      "address": seller.mainAddress.addressline1,
+                      "city": seller.mainAddress.city.name
+                    },
+                    {
+                      "address": order.addressDelivery.addressline1,
+                      "city": city.name
+                    }
+                  ]
+                }
+             };
+             flete_mensajerosurbanos = await axios(options).catch((e) => console.log(e));   
           }
-       };
-
-       let flete_mensajerosurbanos = await axios(options).catch((e) => console.log(e));
-
-       console.log(flete_mensajerosurbanos);
+        }
+         if(flete_mensajerosurbanos.data.data&&flete_coordinadora){
+          flete_mensajerosurbanos=flete_mensajerosurbanos.data.data.total_service;
+          if(flete_mensajerosurbanos<flete_coordinadora){
+            carrier=carriers.find(c=>c.name=="mensajeros urbanos");
+            await Order.updateOne({id:inputs.id}).set({carrier:carrier.id});
+          }
+         }
+      }
+      
 
       return exits.success();
     }
