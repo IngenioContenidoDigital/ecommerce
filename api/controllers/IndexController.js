@@ -991,7 +991,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
              return response['error'] = { ERRPARAMS : `El parametro OrderId es requerido`};
           }
 
-          integration = await Integrations.findOne({ channel : 'dafiti', user : identifier}).catch((e)=>response['error'] = { ERRSTATUS : `Error identificando esta integración: ${e.message}`});
+          integration = await Integrations.findOne({ channel : 'dafiti', key : identifier}).catch((e)=>response['error'] = { ERRSTATUS : `Error identificando esta integración: ${e.message}`});
           await sails.helpers.channel.dafiti.orderbyid(integration.seller,  { orderId : order } ).catch((e)=>response['error'] = { ERRSTATUS : `Error obteniendo el la orden : ${e.message}`});
         
           response['success'] = { ORDER_STATUS : 'CREATED'};
