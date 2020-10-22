@@ -30,8 +30,15 @@ module.exports = {
       encodeURIComponent('UserID')+'='+encodeURIComponent(integration.user),
       encodeURIComponent('Action')+'='+encodeURIComponent(inputs.action),
       encodeURIComponent('Format')+'='+encodeURIComponent('JSON'),
-      encodeURIComponent('Timestamp')+'='+encodeURIComponent(moment().toISOString(true)),
+      encodeURIComponent('Timestamp')+'='+encodeURIComponent(moment().toISOString(true))
     ];
+
+    if(inputs.params.orderId){
+      params.push(
+        encodeURIComponent('OrderId')+'='+encodeURIComponent(inputs.params.orderId)
+      )
+    }
+
     if(inputs.params!==undefined && inputs.params.length>0){
       for(let p of inputs.params){
         let d = p.split('=');

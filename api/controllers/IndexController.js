@@ -979,10 +979,22 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
   dafitiSync : async (req, res)=>{
     let data = req.body.payload;
     let response = {};
+    let identifier = req.param('identifier');
+    let integration;
 
     switch (req.body.event) {
       case 'onOrderCreated':
-        
+        if(identifier){
+          let order = req.body.payload.OrderId;
+
+          if(!order){
+             return response['error'] = { ERRPARAMS : `El parametro OrderId es requerido`};
+          }
+
+          integration = await Integrations.findOne({ channel : 'dafiti', user : identifier}).catch((e)=>response['error'] = { ERRSTATUS : `Error identificando esta integración: ${e.message}`});
+          await sails.helpers.channel.dafiti.orderbyid(integration.seller,  { orderId : order } ).catch((e)=>response['error'] = { ERRSTATUS : `Error obteniendo el la orden : ${e.message}`});
+        }
+
         break;
       case 'onOrderItemsStatusChanged':
 
