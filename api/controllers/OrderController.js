@@ -384,7 +384,7 @@ module.exports = {
     let order = await Order.updateOne({id:id}).set({currentstatus:req.body.orderState});
     let newstate = await OrderState.findOne({id:req.body.orderState}).populate('color');
     if(newstate.name==='empacado' && order.tracking===''){
-      await sails.helpers.carrier.quotation(id);
+      await sails.helpers.carrier.mensajerosurbanos.quotation(id);
       await sails.helpers.carrier.shipment(id);
     }
 

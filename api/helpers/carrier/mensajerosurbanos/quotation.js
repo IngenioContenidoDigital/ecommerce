@@ -159,8 +159,12 @@ module.exports = {
          if(flete_mensajerosurbanos.data.data&&flete_coordinadora){
           flete_mensajerosurbanos=flete_mensajerosurbanos.data.data.total_service;
           if(flete_mensajerosurbanos<flete_coordinadora){
+            console.log('hola');
             carrier=carriers.find(c=>c.name=="mensajeros urbanos");
             await Order.updateOne({id:inputs.id}).set({carrier:carrier.id});
+          }else{
+            console.log(flete_mensajerosurbanos);
+            console.log(flete_coordinadora);
           }
          }
       }

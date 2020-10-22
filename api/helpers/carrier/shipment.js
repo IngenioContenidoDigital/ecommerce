@@ -187,26 +187,23 @@ module.exports = {
     if(order.carrier.name==='mensajeros urbanos'){
       let axios = require('axios');
       const querystring = require('querystring');
+      let moment = require('moment');
       let options={};
       let products=[];
       for(let p in oitems){
         
-        let image = await Productimage.findOne({product:oitems[p].product.id,cover:1});
-        // if(p < 1 || p ==='0'){
-        //   largo=oitems[0].product.length;
-        //   ancho=oitems[0].product.width;
-        // }
+        let image = await ProductImage.findOne({product:oitems[p].product.id,cover:1});
         let obj={
           "store_id": seller.dni,
           "sku": oitems[p].product.reference,
           "product_name": oitems[p].product.name,
           "url_img": `https://s3.amazonaws.com/iridio.co/images/products/${image.product}/${image.file}`,
-          "value": oitems[p].product.price,
+          "value": oitems[p].price,
           "quantity": 1,
           "barcode": oitems[p].product.id,
           "planogram": ""
         }
-        console.log(obj);
+        products.push(obj);
       }
 
       if(city.name==seller.mainAddress.city.name){
@@ -275,9 +272,18 @@ module.exports = {
               "id_company": 145455
             }
           };
-          // await axios(options).catch((e) => console.log(e));  
-
-
+          await axios(options).catch((e) => console.log(e));  
+          let formapago = 3;
+          if(order.paymentMethod==='COD'){
+            switch(order.paymentOption){
+              case 'cash':
+                formapago = 1;
+                break;
+              case 'terminal':
+                formapago = 2;
+                break;
+            }
+          } 
 
           options = {
             method: 'post',
@@ -290,50 +296,41 @@ module.exports = {
               "id_user": 146157,
               "type_service": 4,
               "roundtrip": 0,
-              "declared_value": 1250,
-              "city": 1,
-              "start_date": "2017-04-18",
-              "start_time": "15:59:00",
-              "observation": "Servicio XXXX para WWWW",
-              "user_payment_type": 1,
-              "type_segmentation": 1,
+              "declared_value": (order.totalProducts/1.19)*0.8,
+              "city": city.muvalue,
+              "start_date": moment().format("YYYY-MM-DD"),
+              "start_time": moment().format("kk:mm:ss"),
+              "observation": `Servicio de entrega prestado a ${seller.name}, para el cliente ${order.customer.fullName}`,
+              "user_payment_type": formapago,
+              "type_segmentation": 5,
               "type_task_cargo_id": 2,
               "os": "NEW API 2.0",
               "coordinates": [
                 {
                   "type": "1",
-                  "order_id": 471,
-                  "address": "Calle 166 # 48 21",
-                  "token": 234,
-                  "city": "bogota",
+                  "order_id": order.id,
+                  "address": order.addressDelivery.addressline1,
+                  "token": order.customer.dni,
+                  "city": city.name,
                   "description": "Favor cobrar lo que dice la factura dado que los valores indicados en este informe pueden ser superiores al monto real.",
                   "client_data": {
-                    "client_name": "Pedro Perez",
-                    "client_phone": "3154000000",
-                    "client_email": "cliente1@gmail.com",
-                    "products_value": "1000",
+                    "client_name": order.customer.fullName,
+                    "client_phone": order.customer.mobile,
+                    "client_email": order.customer.emailAddress,
+                    "products_value": order.totalProducts,
                     "domicile_value": "0",
-                    "client_document": "79170747",
-                    "payment_type": 1
+                    "client_document": order.customer.dni,
+                    "payment_type": formapago
                   },
-                  "products": [
-                    {
-                      "store_id": seller.dni,
-                      "sku": "1020651",
-                      "product_name": "Afelius 50 Frasco X60ml.",
-                      "url_img": "http://images.big/co_items_1020651_big_standart_1429259746242.jpg",
-                      "value": 92100,
-                      "quantity": 1,
-                      "barcode": "7707355050843",
-                      "planogram": "PISO 3"
-                    }
-                  ]
+                  "products": products
                 }
               ]
             }
           };
-        //  let tracking=await axios(options).catch((e) => console.log(e)); 
-        //  console.log(tracking);
+         let tracking=await axios(options).catch((e) => console.log(e)); 
+         console.log(tracking);
+         let new_order=await Order.updateOne({id:order.id}).set({tracking:tracking.data.uuid, fleteTotal:tracking.data.total});
+          console.log(new_order);
         }
       }
     }
