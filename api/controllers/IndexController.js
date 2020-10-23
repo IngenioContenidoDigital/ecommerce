@@ -978,7 +978,6 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
 
   dafitiSync : async (req, res)=>{
     let data = req.body.payload;
-    let response = {};
     let identifier = req.param('identifier');
     let integration;
 
@@ -988,34 +987,28 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           let order = req.body.payload.OrderId;
 
           if(!order){
-             return response['error'] = { ERRPARAMS : `El parametro OrderId es requerido`};
+            return res.serverError('No se Localizó la Orden Solicitada'+req.body.payload.OrderId);
           }
 
-          integration = await Integrations.findOne({ channel : 'dafiti', key : identifier}).catch((e)=>response['error'] = { ERRSTATUS : `Error identificando esta integración: ${e.message}`});
-          await sails.helpers.channel.dafiti.orderbyid(integration.seller,  { orderId : order } ).catch((e)=>response['error'] = { ERRSTATUS : `Error obteniendo el la orden : ${e.message}`});
-        
-          response['success'] = { ORDER_STATUS : 'CREATED'};
+          integration = await Integrations.findOne({ channel : 'dafiti', key : identifier}).catch((e)=> {return res.serverError('No se localizó lla integracion');});
+          await sails.helpers.channel.dafiti.orderbyid(integration.seller,  { orderId : order } ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
         }
-
         break;
       case 'onOrderItemsStatusChanged':
 
-      let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>response['error'] = { ERRSTATUS : `Error identificando el estado ${data.NewStatus} : ${e.message}`});
+        let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
 
-      if(!state){
-        console.log({ ERRSTATUS : `No se pudo identificar el estado : ${data.NewStatus}`});
-        return response['error'] = { ERRSTATUS : `No se pudo identificar el estado : ${data.NewStatus} de dafiti`}
-      }
+        if(!state){
+          return res.serverError('Nuevo estado del pedido no identificado'); 
+        }
 
-      result = await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
-      response['success'] = result;
-
+        await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
         break
       default:
         break;
     }
     
-    res.status(200).json(response);
+    return res.ok();
   }
 
 };
