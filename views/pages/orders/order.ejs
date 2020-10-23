@@ -98,8 +98,8 @@
                         <p class="is-capitalized"><%=item.product.manufacturer.name%></p>
                         <p><strong class="is-uppercase"><%=item.product.name%></strong></p>
                         <p><span>Referencia:&nbsp;<strong><%= item.product.reference %></strong></span></p>
-                        <%if(item.reference!== undefined && item.reference!==''){%><p><span>Referencia Item:&nbsp;<strong><%= item.reference %></strong></span></p><%}%>
-                        <span>Color:</span>&nbsp;&nbsp;<div class="color-container" style="background-color:<%= item.product.mainColor.code %>;border:solid 1px <%= item.product.mainColor.code %>;"></div>
+                        <%if(item.productvariation.reference!== undefined && item.productvariation.reference!==''){%><p><span>SKU:&nbsp;<strong><%= item.productvariation.reference %></strong></span></p><%}%>
+                        <span>Color:</span>&nbsp;&nbsp;<span class="is-capitalized"><%=item.product.mainColor.name %>&nbsp;&nbsp;</span><div class="color-container" style="background-color:<%= item.product.mainColor.code %>;border:solid 1px <%= item.product.mainColor.code %>;"></div>
                         <p>Talla:&nbsp;<span class="is-uppercase"><%= item.productvariation.variation.name %></span>&nbsp;<span class="is-uppercase">COL:&nbsp<%= item.productvariation.variation.col %></span>&nbsp;<span class="is-uppercase">US:&nbsp<%= item.productvariation.variation.us %></span>&nbsp;<span class="is-uppercase">CM:&nbsp<%= item.productvariation.variation.cm %></span></p>
                       </div>
                     </article>
