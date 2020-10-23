@@ -63,6 +63,7 @@ module.exports = {
     let questions = 0;
     let questionsSeller = 0;
     let seller = req.session.user.seller || '';
+    let sellers = await Seller.find({});
     let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
     if(rights.name !== 'superadmin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
@@ -70,7 +71,7 @@ module.exports = {
       questions = await Question.count({status: 'UNANSWERED'});
     }
     req.session.questions = integration ? questionsSeller : questions;
-    return res.view('pages/homeadmin',{layout:'layouts/admin'});
+    return res.view('pages/homeadmin',{layout:'layouts/admin', sellers});
   },
   filterDashboard:async (req, res) =>{
     let moment = require('moment');
@@ -216,6 +217,217 @@ module.exports = {
     const buffer = await workbook.xlsx.writeBuffer();
     return res.send(buffer);
   },
+  generateReportSeller:async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
+      throw 'forbidden';
+    }
+    const moment = require('moment');
+    const pdf = require('html-pdf');
+    const pdf2base64 = require('pdf-to-base64');
+    let guia = null;
+    let ordersItem = [];
+    let sellerId = req.param('seller');
+    let seller = await Seller.findOne({ id: sellerId });
+    let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
+    let date = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
+    let startDate = new Date(moment().subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
+    let endDate = new Date(moment().subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
+    let state =  await OrderState.findOne({name: 'entregado'});
+    let totalPrice = 0;
+    let totalCommissionFee = 0;
+    let totalCommissionVat = 0;
+    let totalRetFte = 0;
+    let totalRetIca = 0;
+    let orders = await Order.find({
+      where: {
+        seller: sellerId,
+        currentstatus: state.id,
+        updatedAt: { '>': startDate, '<': endDate }
+      }
+    });
+    for (const order of orders) {
+      let items = await OrderItem.find({order: order.id});
+      items.forEach(async item => {
+        let commissionFee = item.price * (seller.salesCommission/100);
+        totalCommissionFee += commissionFee;
+        totalCommissionVat += (commissionFee * 0.19);
+        totalRetFte += (commissionFee * 0.04);
+        if (address.city.name === 'bogota') {
+          totalRetIca += (commissionFee * (9.66/1000));
+        }
+        totalPrice += item.price;
+        ordersItem.push(item);
+      });
+    }
+    let totalBalance = totalPrice - (totalCommissionFee + totalCommissionVat + totalRetFte + totalRetIca);
+    try {
+      const html = `<!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Template Report</title>
+          <style>
+            body {
+              font-family: BlinkMacSystemFont,
+              -apple-system,"Segoe UI",
+              Roboto,Oxygen,Ubuntu,Cantarell,
+              "Fira Sans","Droid Sans",
+              "Helvetica Neue",
+              Helvetica,Arial,sans-serif;
+            }
+            .column {
+              float: left;
+              width: 50%;
+            }
+            .column-2 {
+              float: left;
+              width: 28%;
+            }
+            .column-3 {
+              float: left;
+              width: 40.5%;
+            }
+            .row {
+              padding: 0rem 1.5rem;
+            }
+            .row:after {
+              content: "";
+              display: table;
+              clear: both;
+            }
+            .subtitle {
+              color: #4a4a4a;
+              font-size: 1.25rem;
+              font-weight: 400;
+              line-height: 1.25;
+            }
+            .title {
+              color: #4a4a4a;
+              font-size: 1rem;
+              line-height: 1.25;
+              font-weight: bold;
+            }
+            .title-balance {
+              color: #4a4a4a;
+              font-size: 1.6rem;
+              line-height: 1.25;
+              font-weight: bold;
+            }
+            .subtitle.is-6 {
+              font-size: 1rem;
+            }
+            .img{
+              margin-left: 30%;
+              width: 200px;
+            }
+            .text{
+              margin-top: 8px;
+              margin-bottom: 0px;
+            }
+          </style>
+        </head>
+      
+        <body>
+          <div class="row">
+            <div class="column">
+              <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `</h5>
+              <h5 class="subtitle is-6">`+ address.addressline1 +`<br>Tel. `+ seller.phone +`<br>`+ address.city.name.toUpperCase()+' - '+ address.country.name.toUpperCase()+`</h5>
+            </div>
+            <div class="column">
+              <img class="img" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ seller.logo +`">
+            </div>
+          </div>
+          <div class="row">
+            <div class="column">
+              <h5 class="title is-6">BALANCE CON CORTE A:<br>ELABORACIÓN:</h5>
+            </div>
+            <div class="column">
+              <h5 class="title is-6 img">`+ date.toLocaleUpperCase() +`<br>`+ moment().format('L') +`</h5>
+            </div>
+          </div>
+          <div class="row">
+            <div class="column-3">
+              <h5 class="title is-6 text">Ordenes (CR)</h5>
+              <br>
+              <h5 class="title is-6 text" style="margin-top: 265px;">Reembolsos (CAN)</h5>
+              <br><br><br>
+              <h5 class="title is-6 text">Otros Conceptos</h5>
+              <br>
+              <div style="margin-top: 150px">
+                <h5 class="title is-6 text">Abono de Retencion por servicios</h5>
+                <h5 class="title is-6 text">Abono de Retencion de Ica 9,66/1000</h5>
+                <h5 class="title is-6 text">Ajuste al peso</h5>
+              </div>
+            </div>
+            <div class="column-2">
+              <h5 class="title is-6 text">Ingresos</h5>
+              <p class="subtitle is-6 text">Ingreso por ventas</p>
+              <p class="title is-6 text">Otros Ingresos</p>
+              <p class="subtitle is-6 text">Siniestros</p>
+              <p class="subtitle is-6 text">Ajustes (CC)</p>
+              <br>
+              <p class="title is-6 text">Cargos</p>
+              <p class="subtitle is-6 text">Servicio de Marketplace</p>
+              <p class="subtitle is-6 text">Penalidades (PEN)</p>
+              <p class="subtitle is-6 text">Servicio de Marketplace en siniestros</p>
+              <br><br>
+              <p class="subtitle is-6 text">Ordenes devueltas y/o canceladas</p>
+              <br><br>
+              <p class="subtitle is-6 text">Bolsas (BLS)</p>
+              <p class="subtitle is-6 text">Fotografia (FTG)</p>
+              <p class="subtitle is-6 text">Marketing (MKT)</p>
+              <p class="subtitle is-6 text">Serv Envio (ENV)</p>
+              <p class="subtitle is-6 text">Ajustes (CC - CAN)</p>
+            </div>
+            <div class="column-2">
+              <div class="row">
+                <div class="column-2" style="margin-left: 110px;">
+                  <p class="subtitle is-6 text">`+ Math.round(totalPrice).toLocaleString('es-CO') +`</p>
+                </div>
+              </div>
+              <p class="subtitle is-6 text">`+ Math.round(totalPrice).toLocaleString('es-CO') +`</p>
+              <br><br><br><br><br>
+              <div class="row">
+                <div class="column-2" style="margin-left: 110px;">
+                  <p class="subtitle is-6 text">`+ Math.round(totalCommissionFee + totalCommissionVat).toLocaleString('es-CO') +`</p>
+                </div>
+              </div>
+              <p class="subtitle is-6 text">`+ Math.round(totalCommissionFee + totalCommissionVat).toLocaleString('es-CO') +`</p>
+              <br><br><br><br>
+              <div class="row">
+                <div class="column-2" style="margin-left: 110px;">
+                  <p class="subtitle is-6 text">0</p>
+                </div>
+              </div>
+              <br><br><br>
+              <div class="row">
+                <div class="column-2" style="margin-left: 110px;">
+                  <p class="subtitle is-6 text">0</p>
+                </div>
+              </div>
+              <div class="row">
+                <div class="column-2" style="margin-top: 168px; margin-left: 110px;">
+                <p class="subtitle is-6 text">`+ Math.round(totalRetFte).toLocaleString('es-CO') +`</p>
+                <p class="subtitle is-6 text">`+ Math.round(totalRetIca).toLocaleString('es-CO') +`</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <h2 class="title-balance is-6 text" style="margin-top: 15px;margin-left: 450px;">Balance Total  $`+Math.round(totalBalance).toLocaleString('es-CO')+`</h2>
+        </body>
+      </html>`;
+      const options = { format: 'Letter' };
+      pdf.create(html, options).toFile('./.tmp/uploads/reports/reporteVendedor.pdf', async (err, result) => {
+        if (err) {return console.log(err);}
+        guia = await pdf2base64(result.filename);
+        return res.view('pages/pdf',{layout:'layouts/admin', guia, label: null});
+      });
+    } catch (err) {
+      return res.notFound(err);
+    }
+  },
   checkout: async function(req, res){
     if(req.session.cart===undefined || req.session.cart===null){
       return res.redirect('/cart');
@@ -347,7 +559,7 @@ module.exports = {
       stats: 'STRING_VALUE'*/
     };
     if(seller!==null){
-      params.filterQuery = "seller:'"+seller.id+"'";
+      params.filterQuery = 'seller:\''+seller.id+'\'';
     }
 
     let exists = async (element,compare) =>{

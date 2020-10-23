@@ -21,6 +21,7 @@ module.exports.policies = {
   IndexController:{
     'checkout': ['isLoggedIn','isEmailVerified'],
     'admin':'isLoggedIn',
+    'generateReportSeller': 'isLoggedIn',
     '*': true
   },
   FrontController:{'*':'isLoggedIn'},

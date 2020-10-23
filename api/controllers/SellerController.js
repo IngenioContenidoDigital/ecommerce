@@ -67,7 +67,9 @@ module.exports = {
         tagManager: req.body.tagManager ? req.body.tagManager : '',
         phone:req.body.phone,
         domain:req.body.url ? req.body.url : '',
-        active:isActive
+        active:isActive,
+        salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
+        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0
       }
 
       try{
@@ -152,7 +154,9 @@ module.exports = {
         domain:req.body.url,
         logo: filename[0].filename,
         mainAddress:address.id,
-        active:isActive});
+        active:isActive,
+        salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
+        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0});
 
         if(req.body.secret && req.body.key && req.body.version && req.body.apiurl){
             integration = {
@@ -188,7 +192,9 @@ module.exports = {
           tagManager: req.body.tagManager,
           domain:req.body.url,
           mainAddress:address.id,
-          active:isActive});
+          active:isActive,
+          salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
+          skuPrice: req.body.skuPrice ? req.body.skuPrice : 0});
         
         if(req.body.secret && req.body.key && req.body.version && req.body.apiurl){
             integration = {

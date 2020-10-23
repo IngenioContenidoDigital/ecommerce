@@ -463,12 +463,12 @@
     <div id="Reports" class="content-tab" style="display:none">
       <section class="section-dashboard">
         <div class="columns container-chart">
-          <div class="column is-half">
+          <div class="column is-three-fifths">
             <div class="card">
               <header class="card-header">
                 <p class="card-header-title">
-                  <span class="icon"><i class="bx bx-import"></i></span>
-                  Generar Reporte
+                  <span class="icon"><i class="bx bxs-calendar-event"></i></span>
+                  Reporte Pedidos
                 </p>
               </header>
               <div class="card-content">
@@ -493,6 +493,37 @@
                 <i class="fas fa-sync fa-spin"></i>
                   Estamos generando tu reporte...
                   <progress class="progress is-small is-primary" max="100">15%</progress>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="section-dashboard">
+        <div class="columns container-chart">
+          <div class="column is-three-fifths">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">
+                  <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
+                  Reporte Seller
+                </p>
+              </header>
+              <div class="card-content">
+                <%if(sellers && sellers.length>0){%>
+                  <div class="field">
+                    <label class="label">Seller</label>
+                    <div class="select is-fullwidth">
+                      <select name="seller" id="selectSeller" required>
+                        <% sellers.forEach(s=>{%> {%>
+                          <option value="<%=s.id%>"><%=s.name%></option>
+                        <% }) %>
+                      </select>
+                    </div>
+                  </div>
+                <% } %>
+                <div class="control buttons is-right">
+                  <a href="#" class="button is-primary" id="saveReport"><i class='bx bx bxs-share'></i>&nbsp;Generar</a>
+                </div> 
               </div>
             </div>
           </div>
@@ -610,6 +641,15 @@
       }
     }
   });
+  const selectSeller = document.querySelector('#selectSeller');
+  selectSeller.onchange = changeSelect;
+
+  function changeSelect(){
+    let seller = document.querySelector('#selectSeller').value
+    if (seller !== '') {
+      document.getElementById("saveReport").href = "/reportseller/" + seller;
+    }
+  }
 
   function getCities(cities) {
     let total = 0;
@@ -877,6 +917,12 @@
         addClass(loadingBlock,'is-hidden');
       }
     });
+  });
+  live('#saveReport','click',e=>{
+    let report = document.querySelector('#report');
+    let loadingBlock = document.querySelector('#loading-block');
+    if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+    if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
   });
 
   filterDate(start, end);
