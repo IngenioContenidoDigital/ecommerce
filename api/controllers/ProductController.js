@@ -786,6 +786,8 @@ module.exports = {
           .exec(async (err, record, wasCreated) => {
             if (err) { throw err; }
             if (!wasCreated) {
+              delete prod.mainCategory;
+              delete prod.categories;
               await Product.updateOne({ id: record.id }).set(prod)
                 .catch(err => {
                   throw err;
