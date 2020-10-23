@@ -31,6 +31,7 @@ module.exports = {
     let city = await City.findOne({id:order.addressDelivery.city});
     let oitems = await OrderItem.find({order:order.id}).populate('product');
     let items = oitems.length;
+    let city_muvalue=0;
 
     if(order.carrier.name==='coordinadora'){
       let alto = 0;
@@ -206,35 +207,36 @@ module.exports = {
         products.push(obj);
       }
 
-      if(city.name==seller.mainAddress.city.name){
-        switch (city.name) {
+      
+        switch (seller.mainAddress.city.name) {
           case 'bogota':
-            city.muvalue=1;
+            city_muvalue=1;
             break;
           case 'cali':
-            city.muvalue=2;
+            city_muvalue=2;
             break;   
           case 'medellin':
-            city.muvalue=3;
+            city_muvalue=3;
             break;
           case 'barranquilla':
-            city.muvalue=4;
+            city_muvalue=4;
             break;
           case 'cartagena':
-            city.muvalue=8;
+            city_muvalue=8;
             break;
           case 'santa marta':
-            city.muvalue=9;
+            city_muvalue=9;
             break;   
           case 'bucaramanga':
-            city.muvalue=10;
+            city_muvalue=10;
             break;
           case 'ibague':
-            city.muvalue=11;
+            city_muvalue=11;
             break;               
           default:
             break;
         }
+      if(!(city_muvalue===0)){
         options = {
           method: 'post',
           url: `http://dev.api.mensajerosurbanos.com/oauth/token`,
@@ -251,7 +253,7 @@ module.exports = {
   
         let token = await axios(options).catch((e) => console.log(e));
   
-        if (token.data) {
+        if (token) {
           token=token.data.access_token;
           options = {
             method: 'post',
@@ -265,7 +267,7 @@ module.exports = {
               "id_point": seller.dni,
               "name": seller.name,
               "address": seller.mainAddress.addressline1,
-              "city": city.muvalue,
+              "city": city_muvalue,
               "phone": seller.phone.toString(),
               "schedule": "L-V de 8:00AM - 07:00PM",
               "parking": 1000,
@@ -297,7 +299,7 @@ module.exports = {
               "type_service": 4,
               "roundtrip": 0,
               "declared_value": (order.totalProducts/1.19)*0.8,
-              "city": city.muvalue,
+              "city": city_muvalue,
               "start_date": moment().format("YYYY-MM-DD"),
               "start_time": moment().format("kk:mm:ss"),
               "observation": `Servicio de entrega prestado a ${seller.name}, para el cliente ${order.customer.fullName}`,
@@ -327,10 +329,10 @@ module.exports = {
               ]
             }
           };
-         let tracking=await axios(options).catch((e) => console.log(e)); 
-         console.log(tracking);
-         let new_order=await Order.updateOne({id:order.id}).set({tracking:tracking.data.uuid, fleteTotal:tracking.data.total});
-          console.log(new_order);
+         let tracking=await axios(options).catch((e) => console.log(e));
+         if(tracking){
+           await Order.updateOne({id:order.id}).set({tracking:tracking.data.data.uuid, fleteTotal:tracking.data.data.total});
+         }
         }
       }
     }

@@ -23,7 +23,7 @@ module.exports = {
       let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
       seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city');
       let city = await City.findOne({id:order.addressDelivery.city});
-      city.muvalue=0;
+      city_muvalue=0;
       let oitems = await OrderItem.find({order:order.id}).populate('product');
       let items = oitems.length;
       let alto = 0;
@@ -79,36 +79,36 @@ module.exports = {
           flete_coordinadora=result.Cotizador_cotizarResult.flete_total;
         });
       });
-      if(city.name==seller.mainAddress.city.name){
-        switch (city.name) {
+      
+        switch (seller.mainAddress.city.name) {
           case 'bogota':
-            city.muvalue=1;
+            city_muvalue=1;
             break;
           case 'cali':
-            city.muvalue=2;
+            city_muvalue=2;
             break;   
           case 'medellin':
-            city.muvalue=3;
+            city_muvalue=3;
             break;
           case 'barranquilla':
-            city.muvalue=4;
+            city_muvalue=4;
             break;
           case 'cartagena':
-            city.muvalue=8;
+            city_muvalue=8;
             break;
           case 'santa marta':
-            city.muvalue=9;
+            city_muvalue=9;
             break;   
           case 'bucaramanga':
-            city.muvalue=10;
+            city_muvalue=10;
             break;
           case 'ibague':
-            city.muvalue=11;
+            city_muvalue=11;
             break;               
           default:
             break;
         }
-        if(!(city.muvalue===0)){
+        if(!(city_muvalue===0)){
           options = {
             method: 'post',
             url: `http://dev.api.mensajerosurbanos.com/oauth/token`,
@@ -136,11 +136,11 @@ module.exports = {
               },
               data:{
                   "id_user": 146157,
-                  "type_service": 5,
+                  "type_service": 4,
                   "roundtrip": 0,
                   "declared_value": (order.totalProducts/1.19)*0.8,
-                  "city": city.muvalue,
-                  "parking_surcharge": 2000,
+                  "city": city_muvalue,
+                  "parking_surcharge": 0,
                   "coordinates": [
                     {
                       "address": seller.mainAddress.addressline1,
@@ -155,19 +155,16 @@ module.exports = {
              };
              flete_mensajerosurbanos = await axios(options).catch((e) => console.log(e));   
           }
-        }
-         if(flete_mensajerosurbanos.data.data&&flete_coordinadora){
+        }    
+         if(flete_mensajerosurbanos&&flete_coordinadora){
           flete_mensajerosurbanos=flete_mensajerosurbanos.data.data.total_service;
           if(flete_mensajerosurbanos<flete_coordinadora){
-            console.log('hola');
+            
             carrier=carriers.find(c=>c.name=="mensajeros urbanos");
             await Order.updateOne({id:inputs.id}).set({carrier:carrier.id});
-          }else{
-            console.log(flete_mensajerosurbanos);
-            console.log(flete_coordinadora);
           }
          }
-      }
+      
       
 
       return exits.success();

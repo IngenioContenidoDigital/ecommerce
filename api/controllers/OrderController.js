@@ -537,5 +537,11 @@ module.exports = {
     const buffer = await workbook.xlsx.writeBuffer();
     return res.send(buffer);
   },
+  tracking_MU: async(req, res)=>{
+    let tracking=req.body.details.uuid;
+    let status_id=req.body.details.status_id;
+    await sails.helpers.carrier.mensajerosurbanos.tracking(tracking, status_id);
+    return res.ok();
+  }
 };
 

@@ -35,6 +35,7 @@ module.exports.policies = {
   OrderController:{
     'response':true,
     'confirmation':true,
+    'tracking_MU':true,
     '*': 'isLoggedIn'
   },
   ProductController:{

@@ -143,6 +143,7 @@ module.exports.routes = {
   'PUT /carrier/:id' : {controller:'CarrierController',action:'carrierstate'},
   'POST /carrier/edit/:id' : {controller:'CarrierController',action:'editcarrier'},
   'GET /guia/:tracking' : {controller:'CarrierController',action:'shipment'},
+  'POST /mensajerosurbanos' : {controller:'OrderController',action:'tracking_MU'},
 
   'GET /order/state/:action?/:id?' : {controller:'OrderController',action:'liststates'},
   'POST /orderstate/create' : {controller:'OrderController',action:'stateadd'},
