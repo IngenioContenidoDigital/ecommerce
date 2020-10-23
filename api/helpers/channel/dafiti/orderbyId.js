@@ -18,32 +18,22 @@ module.exports = {
     },
     fn: async function (inputs,exits) {
       let moment = require('moment');
-      console.log(inputs);
       
       let sign = await sails.helpers.channel.dafiti.sign('GetOrder',inputs.seller, inputs.params);
-      console.log("sign", sign);
-
       let profile = await Profile.findOne({name:'customer'});
-
-      console.log("profile", profile);
 
       await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET')
       .then(async (response)=>{
         let result = await JSON.parse(response);
-        console.log("result", result);
         let orders = {
           Order:[]
         };
           orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
-          console.log("order", orders);
           for(let order of orders.Order){
             let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId,seller:inputs.seller});
             console.log("order", order);
             if(order.Statuses.Status==='pending'){
-              console.log("pending", order.Statuses);
-              console.log("city", order.AddressShipping.City);
-              let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');
-              console.log("city", city);
+              let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');              
 
               if(city.length>0 && oexists===undefined){
                 let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
@@ -58,8 +48,6 @@ module.exports = {
                   mobileStatus:'unconfirmed',
                   profile:profile.id
                 });
-
-                console.log("user", user);
                 
                 let address = await Address.findOrCreate({addressline1:order.AddressShipping.Address1.toLowerCase().trim()},{
                   name:order.AddressShipping.Address1.trim().toLowerCase(),
@@ -85,7 +73,6 @@ module.exports = {
                 await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+itemsign,'GET')
                 .then(async (result)=>{
                   let rs = JSON.parse(result);
-                  console.log("rs", rs);
                   let items = {
                     OrderItem:[]
                   };
@@ -97,8 +84,6 @@ module.exports = {
                     .catch(err=>{
                       console.log(err.message);
                     });
-                    console.log('item', item)
-                    console.log('productvariation', productvariation)
                     //let productvariation = await ProductVariation.findOne({id:'5ef0c5ae4283b925e44c2c4f'});
                     if(productvariation){
                       await CartProduct.create({
@@ -113,7 +98,6 @@ module.exports = {
                   }
                   if((await CartProduct.count({cart:cart.id}))>0){
                     let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.PaymentMethod,payment:payment,carrier:'servientrega'});
-                    console.log("corders", corders);
                     await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order.CreatedAt).valueOf())});
                   }
                 });

@@ -991,7 +991,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           }
 
           integration = await Integrations.findOne({ channel : 'dafiti', key : identifier}).catch((e)=> {return res.serverError('No se localizó lla integracion');});
-          await sails.helpers.channel.dafiti.orderbyid(integration.seller,  { orderId : order } ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
+          await sails.helpers.channel.dafiti.orderbyid(integration.seller,  ['OrderId='+order] ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
         }
         break;
       case 'onOrderItemsStatusChanged':

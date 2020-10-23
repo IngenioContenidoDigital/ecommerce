@@ -1,6 +1,6 @@
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
-  dafitiOrders: {
+  /*dafitiOrders: {
     schedule: '05 05 * * * *',
     onTick: async () => {
       console.log('Iniciando Captura de Ordenes Dafiti');
@@ -12,9 +12,9 @@ module.exports.cron = {
           let parameters=[];
           statuses.forEach(async state =>{
             if(state==='pending'){
-              parameters= [/*'CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(127,'minutes').toISOString(true),*/'Status='+state,'SortDirection=ASC']
+              parameters= ['CreatedBefore='+moment().toISOString(true),'CreatedAfter='+moment().subtract(127,'minutes').toISOString(true),'Status='+state,'SortDirection=ASC']
             }else{
-              parameters= ['UpdatedBefore='+moment(/*'2020-07-14 23:59:59'*/).toISOString(true),'UpdatedAfter='+moment(/*'2020-07-14 00:00:00'*/).subtract(127,'minutes').toISOString(true),'Status='+state,'SortDirection=ASC']
+              parameters= ['UpdatedBefore='+moment().toISOString(true),'UpdatedAfter='+moment().subtract(127,'minutes').toISOString(true),'Status='+state,'SortDirection=ASC']
             }
             await sails.helpers.channel.dafiti.orders(integration.seller,parameters).catch(err =>{
               throw new Error(err);
@@ -26,7 +26,7 @@ module.exports.cron = {
       });
     },
     timezone: 'America/Bogota'
-  },
+  },*/
   meliOrders:{
     schedule: '05 25 * * * *',
     onTick: async () =>{
