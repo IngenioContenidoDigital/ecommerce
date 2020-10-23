@@ -33,12 +33,6 @@ module.exports = {
       encodeURIComponent('Timestamp')+'='+encodeURIComponent(moment().toISOString(true))
     ];
 
-    if(inputs.params.orderId){
-      params.push(
-        encodeURIComponent('OrderId')+'='+encodeURIComponent(inputs.params.orderId)
-      )
-    }
-
     if(inputs.params!==undefined && inputs.params.length>0){
       for(let p of inputs.params){
         let d = p.split('=');
