@@ -218,6 +218,7 @@ module.exports = {
       if((await ProductVariation.count({product:product.id}))>0){
         await ProductVariation.update({product:product.id}).set({price:product.priceWt});
       }
+      await sails.helpers.channel.channelSync(product);
     } catch (err) {
       error = err.message;
     }
@@ -313,20 +314,7 @@ module.exports = {
         });
     }
 
-    let jsonxml = require('jsontoxml');
-    if (product.dafiti) { 
-      let result = await sails.helpers.channel.dafiti.product([product], product.dafitiprice);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.dafiti.sign('ProductUpdate',product.seller);
-      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
-    }
-    if (product.ml) { await sails.helpers.channel.mercadolibre.product(product.id, 'Update', product.mlprice);}
-    if (product.linio) {
-      let result = await sails.helpers.channel.linio.product([product], product.linioprice);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.linio.sign('ProductUpdate',product.seller);
-      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml); 
-    }
+    await sails.helpers.channel.channelSync(product);
 
     return res.send('ok');
   },
