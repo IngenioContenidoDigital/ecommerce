@@ -179,6 +179,7 @@ module.exports = {
           reference: req.body.reference.toUpperCase().trim(),
           description: req.body.description,
           descriptionShort: req.body.descriptionshort,
+          register:req.body.register ? req.body.register : '',
           active: req.body.active,
           price: req.body.price,
           tax: req.body.tax,
@@ -199,6 +200,7 @@ module.exports = {
           reference: req.body.reference.toUpperCase().trim(),
           description: req.body.description,
           descriptionShort: req.body.descriptionshort,
+          register:req.body.register ? req.body.register : '',
           active: req.body.active,
           price: req.body.price,
           tax: req.body.tax,
@@ -770,6 +772,7 @@ module.exports = {
         prod.length = parseFloat(req.body.product.length.replace(',', '.'));
         prod.weight = parseFloat(req.body.product.weight.replace(',', '.'));
         prod.seller = seller;
+        prod.register = req.body.product.register || '';
         prod.price = parseFloat(req.body.product.price.replace(',', '.'));
         prod.description = req.body.product.description;
         prod.descriptionShort = req.body.product.descriptionShort;
@@ -881,6 +884,7 @@ module.exports = {
       }
       prod.active = req.body.product.active || false;
       prod.externalId = req.body.product.externalId || '';
+      prod.register = req.body.product.register || '';
       prod.active = req.body.product.active;
       prod.width = (req.body.product.width === undefined || req.body.product.width === null || req.body.product.width < 1) ? 15 : req.body.product.width;
       prod.height = (req.body.product.height === undefined || req.body.product.height === null || req.body.product.height < 1) ? 15 : req.body.product.height;

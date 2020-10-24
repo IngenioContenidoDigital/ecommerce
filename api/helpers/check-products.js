@@ -77,6 +77,7 @@ module.exports = {
 
                 pro.seller = inputs.seller;
                 pro.externalId = inputs.product.externalId || '';
+                pro.register = inputs.product.register || '';
                 pro.active = inputs.product.active;
                 pro.width = (inputs.product.width === undefined || inputs.product.width === null || inputs.product.width < 1) ? 15 : inputs.product.width;
                 pro.height = (inputs.product.height === undefined || inputs.product.height === null || inputs.product.height < 1) ? 15 : inputs.product.height;
