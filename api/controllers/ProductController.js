@@ -831,7 +831,7 @@ module.exports = {
     let prod = {};
 
     try {
-      prod.name = req.body.product.name.toUpperCase().trim();
+      prod.name = req.body.product.name.toLowerCase().trim();
 
       if(!req.body.product.reference){
           throw new Error('Producto ' + inputs.product.name + ' sin referencia');

@@ -20,7 +20,7 @@ module.exports = {
 
     fn: async (inputs, exits) => {
             let pro = {}
-                pro.name = inputs.product.name.toUpperCase().trim();
+                pro.name = inputs.product.name.toLowerCase().trim();
 
                 if(!inputs.product.reference){
                     throw new Error(`${pro.name} sin referencia`);
