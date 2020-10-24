@@ -1446,23 +1446,31 @@ module.exports = {
               try {
                   for(let vr of p.variations){
                     let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
-                    
+                    let productVariation;
+
                     if(!variation){
                         variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                     }
-
-                    let productVariation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:variation.id},{
-                      product:pr.id,
-                      variation:variation.id,
-                      reference: vr.reference ? vr.reference : '',
-                      supplierreference:pr.reference,
-                      ean13: vr.ean13 ? vr.ean13 : 0,
-                      upc: vr.upc ? vr.upc : 0,
-                      price: vr.price,
-                      quantity: vr.quantity ? vr.quantity : 0,
-                      seller:pr.seller
-                    }).catch((e)=>console.log(e));
-  
+                    let exists = await ProductVariation.findOne({ product:pr.id,supplierreference:pr.reference,variation:variation.id });
+                    if (!exists) {
+                      productVariation = await ProductVariation.create({
+                        product:pr.id,
+                        variation:variation.id,
+                        reference: vr.reference ? vr.reference : '',
+                        supplierreference:pr.reference,
+                        ean13: vr.ean13 ? vr.ean13 : 0,
+                        upc: vr.upc ? vr.upc : 0,
+                        price: vr.price,
+                        quantity: vr.quantity ? vr.quantity : 0,
+                        seller:pr.seller
+                      }).fetch();
+                    } else {
+                      productVariation = await ProductVariation.updateOne({ id: exists.id }).set({
+                        price: vr.price,
+                        quantity: vr.quantity ? vr.quantity : 0,
+                      });
+                    }
+                  
                     if(productVariation){
                       result.push(productVariation);
                       sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
