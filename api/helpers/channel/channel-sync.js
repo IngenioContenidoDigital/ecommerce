@@ -14,7 +14,7 @@ module.exports = {
       description: 'All done.',
     },
   },
-  fn: async function (inputs,exits) {
+  fn: async function (inputs) {
     let jsonxml = require('jsontoxml');
     if (inputs.product.dafiti) { 
       let result = await sails.helpers.channel.dafiti.product([inputs.product], inputs.product.dafitiprice);
@@ -29,7 +29,6 @@ module.exports = {
       let sign = await sails.helpers.channel.linio.sign('ProductUpdate',inputs.product.seller);
       await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml); 
     }
-    return exits.success();
   }
 };
 
