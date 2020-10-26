@@ -246,6 +246,13 @@ module.exports = {
         updatedAt: { '>': startDate, '<': endDate }
       }
     });
+    let totalProducts = await Product.count({
+      where: {
+        seller: sellerId,
+        createdAt: { '<': endDate }
+      }
+    });
+    let totalSku = (Math.ceil(totalProducts /100)) * seller.skuPrice * 1.19;
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
       items.forEach(async item => {
@@ -260,7 +267,8 @@ module.exports = {
         ordersItem.push(item);
       });
     }
-    let totalBalance = totalPrice - (totalCommissionFee + totalCommissionVat + totalRetFte + totalRetIca);
+    totalRetFte = totalSku !== 0 ? totalRetFte + (totalSku >= 142000 ? (totalSku/1.19)*0.04 : 0) : totalRetFte;
+    let totalBalance = (totalCommissionFee + totalCommissionVat + totalSku) - (totalRetFte + totalRetIca);
     try {
       const html = `<!DOCTYPE html>
       <html lang="en">
@@ -351,31 +359,31 @@ module.exports = {
             <div class="column-3">
               <h5 class="title is-6 text">Ordenes (CR)</h5>
               <br>
-              <h5 class="title is-6 text" style="margin-top: 265px;">Reembolsos (CAN)</h5>
-              <br><br><br>
-              <h5 class="title is-6 text">Otros Conceptos</h5>
+              <h5 class="title is-6 text" style="margin-top: 255px;">Reembolsos (CAN)</h5>
+              <br><br>
+              <h5 class="title is-6 text" style="margin-top: 20px;">Otros Conceptos</h5>
               <br>
-              <div style="margin-top: 150px">
-                <h5 class="title is-6 text">Abono de Retencion por servicios</h5>
-                <h5 class="title is-6 text">Abono de Retencion de Ica 9,66/1000</h5>
+              <div style="margin-top: 170px">
+                <h5 class="title is-6 text">Retencion por servicios</h5>
+                <h5 class="title is-6 text">Retencion de Ica 9,66/1000</h5>
                 <h5 class="title is-6 text">Ajuste al peso</h5>
               </div>
             </div>
             <div class="column-2">
-              <h5 class="title is-6 text">Ingresos</h5>
-              <p class="subtitle is-6 text">Ingreso por ventas</p>
+              <h5 class="title is-6 text">Total 1Ecommerce</h5>
+              <p class="subtitle is-6 text">Valor Pedidos Entregados</p>
               <p class="title is-6 text">Otros Ingresos</p>
               <p class="subtitle is-6 text">Siniestros</p>
               <p class="subtitle is-6 text">Ajustes (CC)</p>
               <br>
               <p class="title is-6 text">Cargos</p>
-              <p class="subtitle is-6 text">Servicio de Marketplace</p>
+              <p class="subtitle is-6 text">Comisión 1Ecommerce</p>
               <p class="subtitle is-6 text">Penalidades (PEN)</p>
-              <p class="subtitle is-6 text">Servicio de Marketplace en siniestros</p>
+              <p class="subtitle is-6 text">Marketplace en siniestros</p>
               <br><br>
               <p class="subtitle is-6 text">Ordenes devueltas y/o canceladas</p>
               <br><br>
-              <p class="subtitle is-6 text">Bolsas (BLS)</p>
+              <p class="subtitle is-6 text">Referencias Activas (SKU)</p>
               <p class="subtitle is-6 text">Fotografia (FTG)</p>
               <p class="subtitle is-6 text">Marketing (MKT)</p>
               <p class="subtitle is-6 text">Serv Envio (ENV)</p>
@@ -401,21 +409,24 @@ module.exports = {
                   <p class="subtitle is-6 text">0</p>
                 </div>
               </div>
-              <br><br><br>
+              <p class="subtitle is-6 text">0</p>
+              <br>
               <div class="row">
                 <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">0</p>
+                  <p class="subtitle is-6 text">`+ Math.round(totalSku).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
+              <p class="subtitle is-6 text">`+ Math.round(totalSku).toLocaleString('es-CO') +`</p>
+
               <div class="row">
-                <div class="column-2" style="margin-top: 168px; margin-left: 110px;">
+                <div class="column-2" style="margin-top: 155px; margin-left: 110px;">
                 <p class="subtitle is-6 text">`+ Math.round(totalRetFte).toLocaleString('es-CO') +`</p>
                 <p class="subtitle is-6 text">`+ Math.round(totalRetIca).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
             </div>
           </div>
-          <h2 class="title-balance is-6 text" style="margin-top: 15px;margin-left: 450px;">Balance Total  $`+Math.round(totalBalance).toLocaleString('es-CO')+`</h2>
+          <h2 class="title-balance is-6 text" style="margin-top: 17px;margin-left: 450px;">Balance Total  $`+Math.round(totalBalance).toLocaleString('es-CO')+`</h2>
         </body>
       </html>`;
       const options = { format: 'Letter' };
