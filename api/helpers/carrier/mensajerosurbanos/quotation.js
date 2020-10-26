@@ -125,7 +125,7 @@ module.exports = {
     
           let token = await axios(options).catch((e) => console.log(e));
           
-          if (token.data) {
+          if (token) {
             token=token.data.access_token;
             options = {
               method: 'post',
