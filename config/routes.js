@@ -28,6 +28,7 @@ module.exports.routes = {
   'GET /login' : {view:'pages/configuration/login', locals:{error:null}},
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},
+  'POST /dafitisync' : {controller:'IndexController',action:'dafitisync'},
   'GET /account' : {controller:'FrontController',action:'account'},
   'GET /account/user/:id' : {controller:'FrontController',action:'user'},
   'GET /account/orders' : {controller:'FrontController',action:'orders'},
@@ -86,6 +87,7 @@ module.exports.routes = {
   'GET /import' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},
   'GET /dafiticheck' : {controller:'ProductController',action:'dafiticheck'},
+  'POST /dafitisync/:identifier?' : {controller:'IndexController',action:'dafitiSync'},
   'POST /productcheck' : {controller:'ProductController',action:'checkdata'},
   'POST /check-product-provider' : {controller:'ProductController',action:'checkProductFromProvider'},
 
@@ -186,6 +188,7 @@ module.exports.routes = {
   'GET /colorindex/:action':{controller:'ColorController',action:'colorindex'},
   'GET /genderindex/:action':{controller:'ProductController',action:'genderindex'},
   'GET /categoryindex/:action':{controller:'CategoryController',action:'categoryindex'},
+  'GET /categoryscheme':{controller:'CategoryController',action:'categoryscheme'},
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

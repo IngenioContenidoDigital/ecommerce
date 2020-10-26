@@ -152,6 +152,9 @@
         </div>
         <div class="columns">
           <div class="column">
+            <label class="label is-inline is-size-7" for="register">Registro Sanitario</label>
+            <input class="input is-size-7" type="text" placeholder="Registro Sanitario" name="register" <% if(action=='edit'){ %> value="<%= product.register %>" <% } %> />
+            <br>
             <div class="tabs">
               <ul>
                 <li class="is-active"><a option="ctl-descriptionshort">Resumen</a></li>
@@ -170,7 +173,6 @@
             </div>
           </div>
           <div class="column">
-            <br><br>
             <div style="margin: 5px 5px; " class="field is-pulled-right">
               <div class="control">
                 <div class="select is-small is-danger">
@@ -487,7 +489,7 @@
           }
         });
 
-        live('.dropdown, .button, .button > span','click', e=>{
+        live('.dropdown > .button, .button > span','click', e=>{
           e.preventDefault();
           let elm = e.target;
           let parent = elm.closest('.dropdown');
@@ -1044,7 +1046,8 @@
           length:form.querySelector('input[name="length"]').value,
           weight:form.querySelector('input[name="weight"]').value,
           descriptionshort:textdescriptionshort,
-          description:textdescription
+          description:textdescription,
+          register:form.querySelector('input[name="register"]').value
         }, 
         function (resData, jwRes) {
           if(jwRes.statusCode==200){

@@ -15,8 +15,9 @@ module.exports = {
   fn: async function (inputs,exits) {
     let imagebody={Request:[]};
     //Imagenes
-    let ilist = {Images:[]};
+    let ilist = {};
     for(let p of inputs.products){
+      ilist.Images= [];
       try{
         let images = await ProductImage.find({product:p.id}).sort('position ASC');
         if(images.length>0){

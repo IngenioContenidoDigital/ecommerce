@@ -20,7 +20,7 @@ module.exports = {
 
     fn: async (inputs, exits) => {
             let pro = {}
-                pro.name = inputs.product.name.toUpperCase().trim();
+                pro.name = inputs.product.name.toLowerCase().trim();
 
                 if(!inputs.product.reference){
                     throw new Error(`${pro.name} sin referencia`);
@@ -77,12 +77,13 @@ module.exports = {
 
                 pro.seller = inputs.seller;
                 pro.externalId = inputs.product.externalId || '';
+                pro.register = inputs.product.register || '';
                 pro.active = inputs.product.active;
                 pro.width = (inputs.product.width === undefined || inputs.product.width === null || inputs.product.width < 1) ? 15 : inputs.product.width;
                 pro.height = (inputs.product.height === undefined || inputs.product.height === null || inputs.product.height < 1) ? 15 : inputs.product.height;
                 pro.length = (inputs.product.length === undefined || inputs.product.length === null || inputs.product.length < 1) ? 32 : inputs.product.length;
                 pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : inputs.product.weight;
-                pro.price =  (inputs.product.price / (1 + (tax.value/100)));
+                pro.price =  inputs.product.price;
 
                 return exits.success(pro);
           

@@ -1268,6 +1268,42 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         break;
     }
     return res.view('pages/front/cms',{content:content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+  },
+
+  dafitiSync : async (req, res)=>{
+    let data = req.body.payload;
+    let identifier = req.param('identifier');
+    let integration;
+
+    switch (req.body.event) {
+      case 'onOrderCreated':
+        if(identifier){
+          let order = req.body.payload.OrderId;
+
+          if(!order){
+            return res.serverError('No se Localizó la Orden Solicitada'+req.body.payload.OrderId);
+          }
+
+          integration = await Integrations.findOne({ channel : 'dafiti', key : identifier}).catch((e)=> {return res.serverError('No se localizó lla integracion');});
+          await sails.helpers.channel.dafiti.orderbyid(integration.seller,  ['OrderId='+order] ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
+        }
+        break;
+      case 'onOrderItemsStatusChanged':
+
+        let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
+
+        if(!state){
+          return res.serverError('Nuevo estado del pedido no identificado'); 
+        }
+
+        await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
+        break
+      default:
+        break;
+    }
+    
+    return res.ok();
   }
+
 };
 

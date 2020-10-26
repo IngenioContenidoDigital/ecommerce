@@ -13,6 +13,7 @@ module.exports = {
     reference:{type:'string'},
     description:{type:'string'},
     descriptionShort:{type:'string'},
+    register:{type:'string'},
     active:{type:'boolean',required:true},
     price:{type:'number'},
     tax:{model:'tax'},

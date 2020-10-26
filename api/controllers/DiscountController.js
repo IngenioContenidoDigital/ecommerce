@@ -201,7 +201,7 @@ module.exports = {
     affected.push(product.id);
 
     await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
-
+    await sails.helpers.channel.channelSync(product);
     //let discounts = await Product.findOne({id:product.id}).populate('discount');
 
     return res.send(discount);
@@ -218,6 +218,8 @@ module.exports = {
     try{
       members.push(req.body.product);
       await CatalogDiscount.removeFromCollection(req.body.discount,'products').members(members);
+      let product = await Product.findOne({id:req.body.product});
+      await sails.helpers.channel.channelSync(product);
       return res.send('ok');
     }catch(err){
       console.log(err);

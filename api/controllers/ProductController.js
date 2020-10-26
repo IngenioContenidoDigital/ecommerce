@@ -179,6 +179,7 @@ module.exports = {
           reference: req.body.reference.toUpperCase().trim(),
           description: req.body.description,
           descriptionShort: req.body.descriptionshort,
+          register:req.body.register ? req.body.register : '',
           active: req.body.active,
           price: req.body.price,
           tax: req.body.tax,
@@ -199,6 +200,7 @@ module.exports = {
           reference: req.body.reference.toUpperCase().trim(),
           description: req.body.description,
           descriptionShort: req.body.descriptionshort,
+          register:req.body.register ? req.body.register : '',
           active: req.body.active,
           price: req.body.price,
           tax: req.body.tax,
@@ -218,6 +220,7 @@ module.exports = {
       if((await ProductVariation.count({product:product.id}))>0){
         await ProductVariation.update({product:product.id}).set({price:product.priceWt});
       }
+      await sails.helpers.channel.channelSync(product);
     } catch (err) {
       error = err.message;
     }
@@ -313,20 +316,7 @@ module.exports = {
         });
     }
 
-    let jsonxml = require('jsontoxml');
-    if (product.dafiti) { 
-      let result = await sails.helpers.channel.dafiti.product([product], product.dafitiprice);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.dafiti.sign('ProductUpdate',product.seller);
-      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
-    }
-    if (product.ml) { await sails.helpers.channel.mercadolibre.product(product.id, 'Update', product.mlprice);}
-    if (product.linio) {
-      let result = await sails.helpers.channel.linio.product([product], product.linioprice);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.linio.sign('ProductUpdate',product.seller);
-      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml); 
-    }
+    await sails.helpers.channel.channelSync(product);
 
     return res.send('ok');
   },
@@ -782,6 +772,7 @@ module.exports = {
         prod.length = parseFloat(req.body.product.length.replace(',', '.'));
         prod.weight = parseFloat(req.body.product.weight.replace(',', '.'));
         prod.seller = seller;
+        prod.register = req.body.product.register || '';
         prod.price = parseFloat(req.body.product.price.replace(',', '.'));
         prod.description = req.body.product.description;
         prod.descriptionShort = req.body.product.descriptionShort;
@@ -798,6 +789,8 @@ module.exports = {
           .exec(async (err, record, wasCreated) => {
             if (err) { throw err; }
             if (!wasCreated) {
+              delete prod.mainCategory;
+              delete prod.categories;
               await Product.updateOne({ id: record.id }).set(prod)
                 .catch(err => {
                   throw err;
@@ -841,7 +834,7 @@ module.exports = {
     let prod = {};
 
     try {
-      prod.name = req.body.product.name.toUpperCase().trim();
+      prod.name = req.body.product.name.toLowerCase().trim();
 
       if(!req.body.product.reference){
           throw new Error('Producto ' + inputs.product.name + ' sin referencia');
@@ -891,6 +884,7 @@ module.exports = {
       }
       prod.active = req.body.product.active || false;
       prod.externalId = req.body.product.externalId || '';
+      prod.register = req.body.product.register || '';
       prod.active = req.body.product.active;
       prod.width = (req.body.product.width === undefined || req.body.product.width === null || req.body.product.width < 1) ? 15 : req.body.product.width;
       prod.height = (req.body.product.height === undefined || req.body.product.height === null || req.body.product.height < 1) ? 15 : req.body.product.height;
@@ -913,6 +907,8 @@ module.exports = {
         .exec(async (err, record, wasCreated) => {
           if (err) { throw err; }
           if (!wasCreated) {
+            delete prod.categories;
+            delete prod.mainCategory;
             await Product.updateOne({ id: record.id }).set(prod)
               .catch(err => {
                 throw err;
@@ -1043,7 +1039,7 @@ module.exports = {
             result = await sails.helpers.channel.dafiti.images(products)
               .catch(err => {
                 throw new Error(err.message);
-              })
+              });
           } else {
             result = await sails.helpers.channel.dafiti.product(products)
               .catch(err => {
@@ -1135,7 +1131,7 @@ module.exports = {
           case 'ProductUpdate':
             action = 'Update';
             params.ml = true;
-            params.mlstatus = true;
+            params.mlid = { '!=': '' };
             params.active = true;
             break;
           case 'Image':
@@ -1148,7 +1144,7 @@ module.exports = {
         let products = await Product.find(params);
         if (products.length > 0) {
           for (let pl of products) {
-            await sails.helpers.channel.mercadolibre.product(seller, action)
+            await sails.helpers.channel.mercadolibre.product(pl.id, action)
               .then(async result => {
                 response.items.push(result);
                 await Product.updateOne({ id: pl.id }).set({
@@ -1256,6 +1252,7 @@ module.exports = {
 
       if(req.body.channel == constants.SHOPIFY_CHANNEL){
           if(page === (lastPage + 1)){
+            sails.sockets.broadcast(sid, 'product_task_ended', true);
             break;
           }
       }
@@ -1313,6 +1310,7 @@ module.exports = {
 
       if(req.body.channel == constants.SHOPIFY_CHANNEL){
           if(page === (lastPage + 1)){
+            sails.sockets.broadcast(sid, 'image_task_ended', true);
             break;
           }
       }
@@ -1343,8 +1341,8 @@ module.exports = {
               let url = (im.src.split('?'))[0];
               let file = (im.file.split('?'))[0];
               
-              let product = await Product.findOne({ externalId : p.externalId, seller:seller});
-              if(product){
+              let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+              if(product && product.images.length === 0){
                 let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
                   throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                 });
@@ -1413,6 +1411,7 @@ module.exports = {
 
       if(req.body.channel == constants.SHOPIFY_CHANNEL){
         if(page === (lastPage + 1)){
+          sails.sockets.broadcast(sid, 'variation_task_ended', true);
           break;
         }
       }
@@ -1451,23 +1450,31 @@ module.exports = {
               try {
                   for(let vr of p.variations){
                     let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
-                    
+                    let productVariation;
+
                     if(!variation){
                         variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                     }
-
-                    let productVariation = await ProductVariation.findOrCreate({product:pr.id,supplierreference:pr.reference,variation:variation.id},{
-                      product:pr.id,
-                      variation:variation.id,
-                      reference: vr.reference ? vr.reference : '',
-                      supplierreference:pr.reference,
-                      ean13: vr.ean13 ? vr.ean13 : 0,
-                      upc: vr.upc ? vr.upc : 0,
-                      price: vr.price,
-                      quantity: vr.quantity ? vr.quantity : 0,
-                      seller:pr.seller
-                    }).catch((e)=>console.log(e));
-  
+                    let exists = await ProductVariation.findOne({ product:pr.id,supplierreference:pr.reference,variation:variation.id });
+                    if (!exists) {
+                      productVariation = await ProductVariation.create({
+                        product:pr.id,
+                        variation:variation.id,
+                        reference: vr.reference ? vr.reference : '',
+                        supplierreference:pr.reference,
+                        ean13: vr.ean13 ? vr.ean13 : 0,
+                        upc: vr.upc ? vr.upc : 0,
+                        price: vr.price,
+                        quantity: vr.quantity ? vr.quantity : 0,
+                        seller:pr.seller
+                      }).fetch();
+                    } else {
+                      productVariation = await ProductVariation.updateOne({ id: exists.id }).set({
+                        price: vr.price,
+                        quantity: vr.quantity ? vr.quantity : 0,
+                      });
+                    }
+                  
                     if(productVariation){
                       result.push(productVariation);
                       sails.sockets.broadcast(sid, 'variation_processed', {result, errors});

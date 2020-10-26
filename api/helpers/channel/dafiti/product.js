@@ -58,6 +58,17 @@ module.exports = {
             }
           }
           
+          let brand = null;
+          switch(product.manufacturer.name){
+            case 'Adidas' || 'adidas':
+              brand = 'Adidas Performance';
+            case 'Rosé Pistol':
+              brand = 'Rose Pistol';
+            default:
+              brand = product.manufacturer.name;
+              break;
+          }
+
           let i = 0;
           for(let pv of productvariation){
             let data={
@@ -68,7 +79,7 @@ module.exports = {
                 PrimaryCategory:product.mainCategory.dafiti.split(',')[0],
                 Categories:categories.join(','),
                 Description: jsonxml.cdata((product.descriptionShort+' '+product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
-                Brand:(product.manufacturer.name==='Adidas' || product.manufacturer.name==='adidas') ? 'Adidas Performance' : product.manufacturer.name,
+                Brand:brand,
                 Condition:'new',
                 Variation:pv.variation.col.replace(/\.5/,'½').toString(),
                 Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(2),
