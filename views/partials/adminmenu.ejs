@@ -98,6 +98,7 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('updateindex')){%><li><a href="/colorindex/add">Indexar Colores</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('updateindex')){%><li><a href="/genderindex/add">Indexar Géneros</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('updateindex')){%><li><a href="/categoryindex/add">Indexar Categorias</a></li><%}%>
+      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('updateindex')){%><li><a href="/categoryscheme">Reglas de Categoria</a></li><%}%>
     </ul>
     <%}%>
   </aside>
