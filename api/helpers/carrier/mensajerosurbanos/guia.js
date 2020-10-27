@@ -17,20 +17,16 @@ module.exports = {
         const pdf2base64 = require('pdf-to-base64');
         let moment = require('moment');
         let order = await Order.findOne({tracking:inputs.tracking}).populate('addressDelivery').populate('carrier').populate('customer');
+        order.addressDelivery = await Address.findOne({id:order.addressDelivery.id}).populate('city').populate('region');
         let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
         seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city').populate('region');
-        let city = await City.findOne({id:order.addressDelivery.city});
         let oitems = await OrderItem.find({order:order.id}).populate('product');
-        let totalSku=1110;
         let price=0;
         if(order.paymentMethod==='COD'){
             price=order.totalOrder;
           } 
-        console.log(seller.mainAddress);
-        console.log(order);
 
         try {
-            // const html = '<p class="subtitle is-6 text">Siniestros</p>';
             const html = `<!DOCTYPE html>
             <html lang="en">
               <head>
@@ -52,36 +48,22 @@ module.exports = {
                   }
                   .row {
                     padding: 0rem 2rem;
+                    margin-left: 80px;
                   }
                   .row:after {
                     content: "";
                     display: table;
                     clear: both;
                   }
-                  .subtitle {
-                    color: #4a4a4a;
-                    font-size: 1rem;
-                    font-weight: 400;
-                    line-height: 1.25;
-                  }
-                  .title {
-                    color: #4a4a4a;
-                    font-size: 0.75rem;
-                    line-height: 1.25;
-                    font-weight: bold;
-                  }
-                  .title-balance {
-                    color: #4a4a4a;
-                    font-size: 1rem;
-                    line-height: 1.25;
-                    font-weight: bold;
-                  }
                   .subtitle.is-6 {
                     font-size: 0.75rem;
+                    color: #4a4a4a;
+                    font-weight: 400;
+                    line-height: normal;
                   }
-                  .subtitle.is-8 {
+                  .title {
                     text-align: center;
-                    font-size: 1rem;
+                    font-size: 0.75rem;
                     font-weight: bold;
                   }
                   .img{
@@ -89,93 +71,74 @@ module.exports = {
                     width: 200px;
                   }
                   .text{
-                    margin-top: 8px;
+                    margin-top: 4px;
                     margin-bottom: 0px;
                   }
                 </style>
               </head>
             
               <body>
-                 <p class="subtitle is-8">Guía (uuid): `+ order.tracking +`</p>
+                 <p class="title">GUIA (UUID): `+ order.tracking +`</p>
                 <div class="row">
                   <div class="column">
-                    <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `<br>`+ seller.mainAddress.addressline1 +`<br>Tel. `+ seller.phone +`<br></h5>
-                    <h5 class="subtitle is-6">` + order.customer.fullName.toUpperCase() + `<br> ` + order.customer.dniType +`. ` + order.customer.dni + `<br>`+ order.addressDelivery.addressline1 +`<br>Tel. `+ order.customer.mobile +`<br></h5>
+                    <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `<br>`+ seller.mainAddress.addressline1+' - '+seller.mainAddress.addressline2 +' - '+seller.mainAddress.notes+`<br>Tel. `+ seller.phone +`<br></h5>
+                    <h5 class="subtitle is-6">` + order.customer.fullName.toUpperCase() + `<br> ` + order.customer.dniType +`. ` + order.customer.dni + `<br>`+ order.addressDelivery.addressline1+' - '+order.addressDelivery.addressline2+' - '+order.addressDelivery.notes+`<br>Tel. `+ order.customer.mobile +`</h5>
                   </div>
                   <div class="column">
-                    <h5 class="subtitle is-6"><br><br>`+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`<br><br><br><br></h5>
-                    <h5 class="subtitle is-6">`+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`</h5>
+                    <h5 class="subtitle is-6"><br><br>`+ seller.mainAddress.zipcode+' - '+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`<br><br><br><br><br></h5>
+                    <h5 class="subtitle is-6">`+ order.addressDelivery.zipcode+' - '+ order.addressDelivery.city.name.toUpperCase()+' - '+ order.addressDelivery.region.name.toUpperCase()+`</h5>
                   </div>
                 </div>
                 <div class="row">
                   <div class="column">
-                    <p class="subtitle is-6">`+moment(order.createdAt).format("YYYY-MM-DD")+`</p>
-                    <p class="subtitle is-6">Paquete con `+ oitems.length +` Artículo(s)</p>
+                    <p class="subtitle is-6">`+moment(order.createdAt).format("YYYY-MM-DD")+`<br>Paquete con `+oitems.length+` Artículo(s).</p>                  </div>
+                  <div class="column">
+                    <p class="subtitle is-6">Valor a recaudar:`+ Math.round(price).toLocaleString('es-CO')+`<br>REF:`+ order.reference +`</p>
+                  </div>
+                </div>
+                <p class="title text">Archivo</p>
+                <p class="title text">----------------------------------------------------------------------------------------------------------</p>
+                <p class="title">GUIA (UUID): `+ order.tracking +`</p>
+                <div class="row">
+                  <div class="column">
+                  <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `<br>`+ seller.mainAddress.addressline1+' - '+seller.mainAddress.addressline2 +' - '+seller.mainAddress.notes+`<br>Tel. `+ seller.phone +`<br></h5>
+                    <h5 class="subtitle is-6">` + order.customer.fullName.toUpperCase() + `<br> ` + order.customer.dniType +`. ` + order.customer.dni + `<br>`+ order.addressDelivery.addressline1+' - '+order.addressDelivery.addressline2+' - '+order.addressDelivery.notes+`<br>Tel. `+ order.customer.mobile +`</h5>
                   </div>
                   <div class="column">
-                    <p class="subtitle is-6">Valor a recaudar:`+ Math.round(price).toLocaleString('es-CO')+`</p>
-                    <p class="subtitle is-6">REF:`+ order.reference +`</p>
+                  <h5 class="subtitle is-6"><br><br>`+ seller.mainAddress.zipcode+' - '+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`<br><br><br><br><br></h5>
+                  <h5 class="subtitle is-6">`+ order.addressDelivery.zipcode+' - '+ order.addressDelivery.city.name.toUpperCase()+' - '+ order.addressDelivery.region.name.toUpperCase()+`</h5>
                   </div>
                 </div>
-                <br>
-                <div class="row" style="text-align: center;">
-                    <h2 class="title-balance is-6 text">Archivo</h2>
-                    <h2 class="title-balance is-6 text">------------------------------------------------------------</h2>
+                <div class="row">
+                  <div class="column">
+                  <p class="subtitle is-6">`+moment(order.createdAt).format("YYYY-MM-DD")+`<br>Paquete con `+oitems.length+` Artículo(s).</p>
+                  </div>
+                  <div class="column">
+                  <p class="subtitle is-6">Valor a recaudar:`+ Math.round(price).toLocaleString('es-CO')+`<br>REF:`+ order.reference +`</p>
+                  </div>
                 </div>
-                <div class="row" style="text-align: center;">
-                <h5 class="subtitle is-8">Guía (uuid): `+ order.tracking +`</h5>
-               </div>
-               <div class="row">
-                 <div class="column">
-                   <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `<br>`+ seller.mainAddress.addressline1 +`<br>Tel. `+ seller.phone +`<br></h5>
-                   <h5 class="subtitle is-6">` + order.customer.fullName.toUpperCase() + `<br> ` + order.customer.dniType +`. ` + order.customer.dni + `<br>`+ order.addressDelivery.addressline1 +`<br>Tel. `+ order.customer.mobile +`<br></h5>
-                 </div>
-                 <div class="column">
-                   <h5 class="subtitle is-6"><br><br>`+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`<br><br><br><br></h5>
-                   <h5 class="subtitle is-6">`+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`</h5>
-                 </div>
-               </div>
-               <div class="row">
-                 <div class="column">
-                   <p class="subtitle is-6">`+moment(order.createdAt).format("YYYY-MM-DD")+`</p>
-                   <p class="subtitle is-6">Paquete con `+ oitems.length +` Artículo(s)</p>
-                 </div>
-                 <div class="column">
-                   <p class="subtitle is-6">Valor a recaudar:`+ Math.round(price).toLocaleString('es-CO')+`</p>
-                   <p class="subtitle is-6">REF:`+ order.reference +`</p>
-                 </div>
-               </div>
-               <br>
-              <div class="row" style="text-align: center;">
-                  <h2 class="title-balance is-6 text">Destinatario</h2>
-              </div>
-              <div class="row" style="text-align: center;">
-              <h5 class="subtitle is-8">Guía (uuid): `+ order.tracking +`</h5>
-             </div>
-             <div class="row">
-               <div class="column">
-                 <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `<br>`+ seller.mainAddress.addressline1 +`<br>Tel. `+ seller.phone +`<br></h5>
-                 <h5 class="subtitle is-6">` + order.customer.fullName.toUpperCase() + `<br> ` + order.customer.dniType +`. ` + order.customer.dni + `<br>`+ order.addressDelivery.addressline1 +`<br>Tel. `+ order.customer.mobile +`<br></h5>
-               </div>
-               <div class="column">
-                 <h5 class="subtitle is-6"><br><br>`+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`<br><br><br><br></h5>
-                 <h5 class="subtitle is-6">`+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`</h5>
-               </div>
-             </div>
-             <div class="row">
-               <div class="column">
-                 <p class="subtitle is-6">`+moment(order.createdAt).format("YYYY-MM-DD")+`</p>
-                 <p class="subtitle is-6">Paquete con `+ oitems.length +` Artículo(s)</p>
-               </div>
-               <div class="column">
-                 <p class="subtitle is-6">Valor a recaudar:`+ Math.round(price).toLocaleString('es-CO')+`</p>
-                 <p class="subtitle is-6">REF:`+ order.reference +`</p>
-               </div>
-             </div>
-             <br>
-            <div class="row" style="text-align: center;">
-                <h2 class="title-balance is-6 text">Control Entrega</h2>
-            </div>
+                <p class="title text">Destinatario</p>
+                <p class="title text">----------------------------------------------------------------------------------------------------------</p>
+                <p class="title">GUIA (UUID): `+ order.tracking +`</p>
+                <div class="row">
+                  <div class="column">
+                  <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `<br>`+ seller.mainAddress.addressline1+' - '+seller.mainAddress.addressline2 +' - '+seller.mainAddress.notes+`<br>Tel. `+ seller.phone +`<br></h5>
+                    <h5 class="subtitle is-6">` + order.customer.fullName.toUpperCase() + `<br> ` + order.customer.dniType +`. ` + order.customer.dni + `<br>`+ order.addressDelivery.addressline1+' - '+order.addressDelivery.addressline2+' - '+order.addressDelivery.notes+`<br>Tel. `+ order.customer.mobile +`</h5>
+                  </div>
+                  <div class="column">
+                  <h5 class="subtitle is-6"><br><br>`+ seller.mainAddress.zipcode+' - '+ seller.mainAddress.city.name.toUpperCase()+' - '+ seller.mainAddress.region.name.toUpperCase()+`<br><br><br><br><br></h5>
+                  <h5 class="subtitle is-6">`+ order.addressDelivery.zipcode+' - '+ order.addressDelivery.city.name.toUpperCase()+' - '+ order.addressDelivery.region.name.toUpperCase()+`</h5>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="column">
+                  <p class="subtitle is-6">`+moment(order.createdAt).format("YYYY-MM-DD")+`<br>Paquete con `+oitems.length+` Artículo(s).</p>
+                  </div>
+                  <div class="column">
+                  <p class="subtitle is-6">Valor a recaudar:`+ Math.round(price).toLocaleString('es-CO')+`<br>REF:`+ order.reference +`</p>
+                  </div>
+                </div>
+                <p class="title text">Control Entrega</p>
             </body>
             </html>`;
             const options = { format: 'Letter' };
