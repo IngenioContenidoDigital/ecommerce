@@ -101,16 +101,11 @@ module.exports = {
     let guia=null;
     let label=null;
     if(order[0].channel==='direct'){
-      if(order[0].carrier.name!=='mensajeros urbanos'){
-        console.log('hola');
+      if(order[0].carrier.name==='mensajeros urbanos'){
+        guia = await sails.helpers.carrier.mensajerosurbanos.guia(tracking);
+      }else{
         guia = await sails.helpers.carrier.guia(tracking);
         label = await sails.helpers.carrier.label(tracking);
-        // console.log(label);
-        // console.log(guia);
-      }else if(order[0].carrier.name==='mensajeros urbanos'){
-        console.log('mensajeros');
-        guia = await sails.helpers.carrier.mensajerosurbanos.guia(tracking);
-        // label = await sails.helpers.carrier.mensajerosurbanos.label(tracking);
       }
     }
     if(order[0].channel==='dafiti'){
