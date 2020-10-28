@@ -1453,10 +1453,11 @@ module.exports = {
                     let productVariation;
 
                     if(!variation){
-                        variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
+                      variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                     }
-                    let exists = await ProductVariation.findOne({ product:pr.id,supplierreference:pr.reference,variation:variation.id });
-                    if (!exists) {
+                    let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
+                    let pv = pvs.find(pv=> pv.variation.name == variation.name);
+                    if (!pv) {
                       productVariation = await ProductVariation.create({
                         product:pr.id,
                         variation:variation.id,
@@ -1469,8 +1470,9 @@ module.exports = {
                         seller:pr.seller
                       }).fetch();
                     } else {
-                      productVariation = await ProductVariation.updateOne({ id: exists.id }).set({
+                      productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
                         price: vr.price,
+                        variation: variation.id,
                         quantity: vr.quantity ? vr.quantity : 0,
                       });
                     }
