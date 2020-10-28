@@ -701,7 +701,7 @@ module.exports = {
       if (req.body.type === 'ProductVariation') {
         prod.reference = req.body.product.reference2 ? req.body.product.reference2.trim().toUpperCase() : '';
         prod.supplierreference = req.body.product.reference.trim().toUpperCase();
-        prod.ean13 = req.body.product.ean13 ? parseInt(req.body.product.ean13) : 0;
+        prod.ean13 = req.body.product.ean13 ? req.body.product.ean13.toString() : '';
         prod.upc = req.body.product.upc ? parseInt(req.body.product.upc) : 0;
         prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
         prod.seller = seller;
@@ -1462,7 +1462,7 @@ module.exports = {
                         variation:variation.id,
                         reference: vr.reference ? vr.reference : '',
                         supplierreference:pr.reference,
-                        ean13: vr.ean13 ? vr.ean13 : 0,
+                        ean13: vr.ean13 ? vr.ean13.toString() : '',
                         upc: vr.upc ? vr.upc : 0,
                         price: vr.price,
                         quantity: vr.quantity ? vr.quantity : 0,
