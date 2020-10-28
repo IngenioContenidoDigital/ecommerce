@@ -75,7 +75,7 @@
                         <div class="field">
                           <label class="label is-size-7">Email de Contacto</label>
                           <div class="control">
-                            <input class="input is-size-7" type="text" name="email" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.email %>"<% }%>/>
+                            <input class="input is-size-7" type="text" name="email" required="true" placeholder="Email del contacto principal" <% if(action=='edit'){ %>value="<%= seller.email %>"<% }%>/>
                           </div>
                         </div>
                       </div>
@@ -83,7 +83,31 @@
                         <div class="field">
                           <label class="label is-size-7">Teléfono</label>
                           <div class="control">
-                            <input class="input is-size-7" type="text" name="phone" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.phone %>"<% }%>/>
+                            <input class="input is-size-7" type="text" name="phone" required="true" placeholder="Teléfono del contacto principal" <% if(action=='edit'){ %>value="<%= seller.phone %>"<% }%>/>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="columns">
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Comisión por venta </label>
+                          <div class="control has-icons-left">
+                            <input class="input is-size-7" type="number" name="salesCommission" placeholder="Comisión por venta" <% if(action=='edit'){ %>value="<%= seller.salesCommission %>"<% }%>/>
+                            <span class="icon-input-left is-small is-left">
+                              <i class="bx bxs-offer "></i>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Costo por sku</label>
+                          <div class="control has-icons-left">
+                            <input class="input is-size-7" type="number" name="skuPrice" placeholder="Costo por sku" <% if(action=='edit'){ %>value="<%= seller.skuPrice %>"<% }%>/>
+                            <span class="icon-input-left is-small is-left">
+                              <i class="bx bxs-badge-dollar"></i>
+                            </span>
                           </div>
                         </div>
                       </div>

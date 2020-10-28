@@ -18,6 +18,8 @@ module.exports = {
     phone:{type:'number'},
     domain:{type:'string'},
     tagManager:{type:'string'},
+    salesCommission:{type:'number', defaultsTo:0},
+    skuPrice:{type:'number', defaultsTo:0},
     mainAddress:{
       model:'address'
     },
