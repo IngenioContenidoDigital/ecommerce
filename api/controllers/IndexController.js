@@ -1303,6 +1303,41 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
     }
     
     return res.ok();
+  },
+
+  linioSync : async (req, res)=>{
+    let data = req.body.payload;
+    let identifier = req.param('identifier');
+    let integration;
+
+    switch (req.body.event) {
+      case 'onOrderCreated':
+        if(identifier){
+          let order = req.body.payload.OrderId;
+
+          if(!order){
+            return res.serverError('No se Localizó la Orden Solicitada'+req.body.payload.OrderId);
+          }
+
+          integration = await Integrations.findOne({ channel : 'linio', key : identifier}).catch((e)=> {return res.serverError('No se localizó la integracion');});
+          await sails.helpers.channel.linio.orderbyid(integration.seller,  ['OrderId='+order] ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
+        }
+        break;
+      case 'onOrderItemsStatusChanged':
+
+        let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
+
+        if(!state){
+          return res.serverError('Nuevo estado del pedido no identificado'); 
+        }
+
+        await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
+        break
+      default:
+        break;
+    }
+    
+    return res.ok();
   }
 
 };

@@ -88,6 +88,7 @@ module.exports.routes = {
   'POST /import' : {controller:'ProductController',action:'importexecute'},
   'GET /dafiticheck' : {controller:'ProductController',action:'dafiticheck'},
   'POST /dafitisync/:identifier?' : {controller:'IndexController',action:'dafitiSync'},
+  'POST /liniosync/:identifier?' : {controller:'IndexController',action:'linioSync'},
   'POST /productcheck' : {controller:'ProductController',action:'checkdata'},
   'POST /check-product-provider' : {controller:'ProductController',action:'checkProductFromProvider'},
 
