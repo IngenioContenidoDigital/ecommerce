@@ -62,8 +62,10 @@ module.exports = {
           switch(product.manufacturer.name){
             case 'adidas':
               brand = 'Adidas Performance';
+              break;
             case 'Rosé Pistol':
               brand = 'Rose Pistol';
+              break;
             default:
               brand = product.manufacturer.name;
               break;
@@ -118,6 +120,7 @@ module.exports = {
           console.log(err);
         }
       }
+      console.log(JSON.stringify(body));
     return exits.success(body);
   }
 };
