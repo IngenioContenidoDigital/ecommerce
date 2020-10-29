@@ -1024,7 +1024,7 @@ module.exports = {
             break;
           case 'Image':
             params.dafiti = true;
-            params.dafitistatus = false;
+            params.dafitistatus = true;
             params.dafitiqc = false;
             params.active = true;
             break;
