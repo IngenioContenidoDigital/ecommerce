@@ -1,5 +1,5 @@
 module.exports = {
-  friendlyName: 'Find orders',
+  friendlyName: 'Find order',
   description: '',
   inputs: {
     meli:{
@@ -9,6 +9,10 @@ module.exports = {
     params:{
       type:'ref',
       required:true,
+    },
+    resource:{
+      type:'string',
+      required:true,
     }
   },
   exits: {
@@ -17,7 +21,7 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    inputs.meli.get('orders/search/',inputs.params, async (err, result) => {
+    inputs.meli.get(inputs.resource, inputs.params, async (err, result) => {
       if(err){throw new Error(err.message);}
       return exits.success(result);
     });

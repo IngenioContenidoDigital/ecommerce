@@ -184,7 +184,7 @@
         cart.setAttribute('data-badge',data.items);
     });
 
-    const socketNotification = io.socket.on('notificationmessage', function (data){
+    const socketNotification = io.socket.on('notificationml', function (data){
       let notification = document.querySelector('#notification-button')
       let user = <%- JSON.stringify(session.user) %>;
       if(user !== undefined && user.rights.name !== 'superadmin' && data.seller === user.seller){

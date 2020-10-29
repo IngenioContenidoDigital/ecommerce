@@ -296,7 +296,7 @@ module.exports = {
 
     res.view('pages/sellers/messagesml',{layout:'layouts/admin', sellers});
   },
-  notificationmessage: async function(req, res){
+  notificationml: async function(req, res){
     let moment = require('moment');
     let resource = req.body.resource;
     let user = req.body.application_id;
@@ -304,41 +304,50 @@ module.exports = {
     let integration = await Integrations.findOne({user: user, channel: 'mercadolibre'});
     if (integration) {
       let seller = integration.seller;
-      let question = await sails.helpers.channel.mercadolibre.findQuestion(seller, integration.secret, resource);
-      let itemId = question.item_id;
-      let product = await Product.findOne({mlid: itemId});
 
       try {
-        if (product && topic === 'questions') {
-          let answer = null;
-          if (question.answer !== null) {
-            answer = await Answer.create({
-              text: question.answer.text,
-              status: question.answer.status,
-              dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-            }).fetch();
-          }
+        switch (topic) {
+          case 'questions':
+            let question = await sails.helpers.channel.mercadolibre.findQuestion(seller, integration.secret, resource);
+            let itemId = question.item_id;
+            let product = await Product.findOne({mlid: itemId});
+            if (product) {
+              let answer = null;
+              if (question.answer !== null) {
+                answer = await Answer.create({
+                  text: question.answer.text,
+                  status: question.answer.status,
+                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                }).fetch();
+              }
 
-          let questi = {
-            idMl: question.id,
-            seller: integration.seller,
-            text: question.text,
-            status: question.status,
-            dateCreated: parseInt(moment(question.date_created).valueOf()),
-            product: product.id,
-            answer: answer ? answer.id : null
-          };
+              let questi = {
+                idMl: question.id,
+                seller: integration.seller,
+                text: question.text,
+                status: question.status,
+                dateCreated: parseInt(moment(question.date_created).valueOf()),
+                product: product.id,
+                answer: answer ? answer.id : null
+              };
 
-          await Question.findOrCreate({idMl: question.id}, questi).exec(async (err, record, wasCreated)=>{
-            if(err){return res.send('error');}
-            if(!wasCreated){
-              await Question.updateOne({id: record.id}).set({answer: answer ? answer.id : null, status: question.status});
+              await Question.findOrCreate({idMl: question.id}, questi).exec(async (err, record, wasCreated)=>{
+                if(err){return res.send('error');}
+                if(!wasCreated){
+                  await Question.updateOne({id: record.id}).set({answer: answer ? answer.id : null, status: question.status});
+                }
+              });
             }
-          });
+            let questio = await Question.count({status: 'UNANSWERED'});
+            let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+            sails.sockets.blast('notificationml', {questions: questio + 1, questionsSeller: questionsSeller, seller});
+            break;
+          case 'orders_v2':
+            await sails.helpers.channel.mercadolibre.orders(seller, integration.secret, resource);
+            break;
+          default:
+            break;
         }
-        let questio = await Question.count({status: 'UNANSWERED'});
-        let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-        sails.sockets.blast('notificationmessage', {questions: questio + 1, questionsSeller: questionsSeller, seller});
         return res.ok();
       } catch(err) {
         return res.send(err);
@@ -405,7 +414,7 @@ module.exports = {
       }
       let question = await Question.count({status: 'UNANSWERED'});
       let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-      sails.sockets.blast('notificationmessage', {questions: question, questionsSeller, seller});
+      sails.sockets.blast('notificationml', {questions: question, questionsSeller, seller});
       return res.send({messages});
     } catch (error) {
       console.log(error);
