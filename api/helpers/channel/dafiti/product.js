@@ -52,7 +52,7 @@ module.exports = {
           for (let c of product.categories){
             let cd = c.dafiti.split(',');
             for(let dd of cd){
-              if(!categories.includes(dd)){
+              if(!categories.includes(dd) && dd!== '' && dd!==null){
                 categories.push(dd);
               }
             }
@@ -92,7 +92,7 @@ module.exports = {
                 }
               }
             };
-            
+            if(categories.length<2){delete data.Product.Categories;}
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }

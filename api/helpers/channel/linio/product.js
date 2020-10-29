@@ -87,7 +87,7 @@ module.exports = {
                 }
               }
             };
-            
+            if(categories.length<2){delete data.Product.Categories;}
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }
