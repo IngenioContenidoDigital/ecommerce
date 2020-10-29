@@ -60,7 +60,7 @@ module.exports = {
           
           let brand = null;
           switch(product.manufacturer.name){
-            case 'Adidas' || 'adidas':
+            case 'adidas':
               brand = 'Adidas Performance';
             case 'Rosé Pistol':
               brand = 'Rose Pistol';
