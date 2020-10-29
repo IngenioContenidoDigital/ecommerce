@@ -350,10 +350,10 @@ module.exports = {
         }
         return res.ok();
       } catch(err) {
-        return res.send(err);
+        return res.status(404).send(err);
       }
     }
-    return res.send('No se encontró integracion para el seller');
+    return res.status(404).send('No se encontró integracion para el seller');
   },
   filtermessages: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

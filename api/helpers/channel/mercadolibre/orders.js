@@ -19,6 +19,9 @@ module.exports = {
     success: {
       description: 'All done.',
     },
+    error:{
+      description: 'Error'
+    },
   },
   fn: async function (inputs,exits) {
     let mercadolibre = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
@@ -26,18 +29,18 @@ module.exports = {
     let profile = await Profile.findOne({name:'customer'});
     let moment = require('moment');
 
-    let result = await sails.helpers.channel.mercadolibre.findUser(mercadolibre, inputs.secret).catch(err =>{return new Error('Error Obteniendo Usuario de Mercadolibre'+err.message);});
+    let result = await sails.helpers.channel.mercadolibre.findUser(mercadolibre, inputs.secret).catch(err =>{return exits.error(err.message);});
     if(result.id){
       let parameters = {};
       parameters.seller = result.id;
       parameters['access_token'] = inputs.secret;
-      let order = await sails.helpers.channel.mercadolibre.findOrder(mercadolibre, parameters, inputs.resource).catch(err =>{console.log(err);});
+      let order = await sails.helpers.channel.mercadolibre.findOrder(mercadolibre, parameters, inputs.resource).catch(err =>{return exits.error(err.message);});
       if(order){
         try{
           let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});
           if(oexists===undefined && order.status==='paid'){
             let shipping = await sails.helpers.channel.mercadolibre.findShipments(mercadolibre,inputs.secret,order.shipping.id).catch(err=>{
-              return new Error(err.message);
+              return exits.error(err.message);
             });
             if(shipping){
               let cityname = shipping['receiver_address'].city.name;
@@ -90,7 +93,7 @@ module.exports = {
                       });
                     }
                   }catch(err){
-                    return new Error(err.message);
+                    return exits.error(err.message);
                   }
                 }
                 if((await CartProduct.count({cart:cart.id}))>0){
@@ -99,13 +102,12 @@ module.exports = {
                   await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:shipping.id});
                 }
               }else{
-                return new Error('Ciudad No Localizada');
+                return exits.error('Ciudad No Localizada');
               }
             }
           }else{
             if(oexists!==undefined){
               let currentStatus = await sails.helpers.orderState(order.status);
-              console.log(currentStatus);
               await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order['last_updated']).valueOf()),currentstatus:currentStatus});
               await OrderHistory.create({
                 order:oexists.id,
@@ -114,11 +116,11 @@ module.exports = {
             }
           }
         }catch(err){
-          console.log(err);
+          return exits.error(err);
         }
         return exits.success();
       }else{
-        throw new Error('Sin Ordenes para procesar');
+        return exits.error('Sin Ordenes para procesar');
       }
     }
   }
