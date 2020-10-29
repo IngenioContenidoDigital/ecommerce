@@ -641,8 +641,10 @@
       }
     }
   });
-  const selectSeller = document.querySelector('#selectSeller');
-  selectSeller.onchange = changeSelect;
+  <%if(sellers){%>
+    const selectSeller = document.querySelector('#selectSeller');
+    selectSeller.onchange = changeSelect;
+  <%}%>
 
   function changeSelect(){
     let seller = document.querySelector('#selectSeller').value
