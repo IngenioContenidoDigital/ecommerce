@@ -799,10 +799,47 @@ module.exports = {
           });
         result['items'].push(prod);
       }
+      if(req.body.type === 'Discount'){
+        if((req.body.product.range && req.body.product.range!=='') && (req.body.product.type && req.body.product.type!=='') && (req.body.product.value && req.body.product.value!=='')){  
+          prod.reference=req.body.product.reference.trim().toUpperCase();
+          let product = await Product.findOne({reference:prod.reference,seller:seller});
+          let moment = require('moment');
+          let range = req.body.product.range.split(' - ');
+          let from;
+          let to;
+          if(range[0] && range[1]){
+            let aDatefrom = moment(range[0], 'YYYY-MM-DD HH:mm:ss', true);
+            let aDateto = moment(range[1], 'YYYY-MM-DD HH:mm:ss', true);
+            let isValidfrom = aDatefrom.isValid();
+            let isValidto = aDateto.isValid();
+            if(isValidfrom && isValidto){
+              from = moment(range[0]).valueOf();
+              to = moment(range[0]).valueOf();
+            }else{throw new Error('Formato fecha debe ser YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss');}
+          }else{
+            throw new Error('Formato fecha debe ser YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss');
+          }
+          let affected = [];
+          let discount = await CatalogDiscount.create({
+            name:req.body.product.name.trim().toLowerCase(),
+            from:from,
+            to:to,
+            type:req.body.product.type.trim().toUpperCase(),
+            value:parseFloat(req.body.product.value),
+            seller:seller
+          }).fetch();
+        
+            affected.push(product.id);
+            await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
+            await sails.helpers.channel.channelSync(product);
+          result['items'].push(product);
+        }
+      }
     } catch (err) {
       if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: ' + req.body.product.variation + ' - ' + err.message); }
       if (req.body.type === 'Product') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }
       if (req.body.type === 'ProductImage') { result['errors'].push('Archivo: ' + req.body.product.original + ': ' + err.message); }
+      if (req.body.type === 'Discount') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }
     }
     return res.send(result);
   },
