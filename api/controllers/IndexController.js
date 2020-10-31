@@ -63,11 +63,12 @@ module.exports = {
     let questions = 0;
     let questionsSeller = 0;
     let seller = req.session.user.seller || '';
-    let sellers = await Seller.find({});
+    let sellers;
     let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
     if(rights.name !== 'superadmin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
     } else {
+      sellers = await Seller.find({});
       questions = await Question.count({status: 'UNANSWERED'});
     }
     req.session.questions = integration ? questionsSeller : questions;
@@ -252,11 +253,13 @@ module.exports = {
         createdAt: { '<': endDate }
       }
     });
-    let totalSku = (Math.ceil(totalProducts /100)) * seller.skuPrice * 1.19;
+    let skuPrice = seller.skuPrice || 0;
+    let salesCommission = seller.salesCommission || 0;
+    let totalSku = (Math.ceil(totalProducts /100)) * skuPrice * 1.19;
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
       items.forEach(async item => {
-        let commissionFee = item.price * (seller.salesCommission/100);
+        let commissionFee = item.price * (salesCommission/100);
         totalCommissionFee += commissionFee;
         totalCommissionVat += (commissionFee * 0.19);
         totalRetFte += (commissionFee * 0.04);
