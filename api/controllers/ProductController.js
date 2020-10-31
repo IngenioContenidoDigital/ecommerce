@@ -825,7 +825,7 @@ module.exports = {
             let isValidto = aDateto.isValid();
             if(isValidfrom && isValidto){
               from = moment(range[0]).valueOf();
-              to = moment(range[0]).valueOf();
+              to = moment(range[1]).valueOf();
             }else{throw new Error('Formato fecha debe ser YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss');}
           }else{
             throw new Error('Formato fecha debe ser YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss');
