@@ -23,8 +23,8 @@ module.exports = {
     await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET')
     .then(async (resData)=>{
       let result = JSON.parse(resData);
-      if(result.SuccessResponse.Body.Brands.length>0){
-        for(let b of result.SuccessResponse.Body.Brands){
+      if(result.SuccessResponse.Body.Brands.Brand.length>0){
+        for(let b of result.SuccessResponse.Body.Brands.Brand){
           if(b.Name.toLowerCase()===inputs.brand.toLowerCase()){
             return exits.success(inputs.brand.toLowerCase());
           }

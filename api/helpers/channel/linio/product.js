@@ -63,13 +63,15 @@ module.exports = {
             case 'Rosé Pistol':
               brand = 'Rose Pistol';
               break;
+            case '7 de color siete' || 'color siete care':
+              brand = 'color siete';
+              break;
             default:
               brand = product.manufacturer.name;
               break;
           }
 
           brand = await sails.helpers.channel.linio.checkBrand(brand,product.seller);
-          console.log(brand);
 
           let i = 0;
           for(let pv of productvariation){
@@ -128,7 +130,6 @@ module.exports = {
           console.log(err);
         }
       }
-      console.log(JSON.stringify(body));
     return exits.success(body);
   }
 };
