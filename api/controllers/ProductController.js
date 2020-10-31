@@ -799,6 +799,56 @@ module.exports = {
           });
         result['items'].push(prod);
       }
+      if(req.body.type === 'Discount'){
+        if((req.body.product.range && req.body.product.range!=='') && (req.body.product.type && req.body.product.type!=='') && (req.body.product.value && req.body.product.value!=='')){  
+          let product;
+          let moment = require('moment');
+          let range = req.body.product.range.split(' - ');
+          let from;
+          let to;
+          let affected = [];
+          if(req.body.product.reference && req.body.product.reference!==''){
+            prod.reference=req.body.product.reference.trim().toUpperCase();
+            product = await Product.findOne({reference:prod.reference,seller:seller});
+            if(!product){
+              prod.name=req.body.product.name.trim().toLowerCase();
+              product = await Product.findOne({name:prod.name,seller:seller});
+            }
+          }else if(req.body.product.name && req.body.product.name!==''){
+            prod.name=req.body.product.name.trim().toLowerCase();
+            product = await Product.findOne({name:prod.name,seller:seller});
+          }
+          if(range[0] && range[1]){
+            let aDatefrom = moment(range[0], 'YYYY-MM-DD HH:mm:ss', true);
+            let aDateto = moment(range[1], 'YYYY-MM-DD HH:mm:ss', true);
+            let isValidfrom = aDatefrom.isValid();
+            let isValidto = aDateto.isValid();
+            if(isValidfrom && isValidto){
+              from = moment(range[0]).valueOf();
+              to = moment(range[0]).valueOf();
+            }else{throw new Error('Formato fecha debe ser YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss');}
+          }else{
+            throw new Error('Formato fecha debe ser YYYY-MM-DD HH:mm:ss - YYYY-MM-DD HH:mm:ss');
+          }
+          if(product){
+            let discount = await CatalogDiscount.create({
+              name:req.body.product.name.trim().toLowerCase(),
+              from:from,
+              to:to,
+              type:req.body.product.type.trim().toUpperCase(),
+              value:parseFloat(req.body.product.value),
+              seller:seller
+            }).fetch();
+          
+            affected.push(product.id);
+            await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
+            await sails.helpers.channel.channelSync(product);
+            result['items'].push(product);
+         }else{
+           throw new Error('Producto principal no localizado');
+          }
+        }
+      }
     } catch (err) {
       if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: ' + req.body.product.variation + ' - ' + err.message); }
       if (req.body.type === 'Product') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }

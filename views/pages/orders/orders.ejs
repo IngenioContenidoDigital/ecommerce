@@ -54,7 +54,12 @@
           }
         };
         
-        ordersQuery(1);
+        if(pages>0){
+          ordersQuery(1);
+        }else{
+          let loader = document.querySelector('.pageloader');
+          if(hasClass(loader,'is-active')){removeClass(loader,'is-active');}
+        }
 
       </script>
 </div>
