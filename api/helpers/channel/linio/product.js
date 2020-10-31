@@ -58,6 +58,19 @@ module.exports = {
             }
           }
 
+          let brand = null;
+          switch(product.manufacturer.name){
+            case 'Rosé Pistol':
+              brand = 'Rose Pistol';
+              break;
+            default:
+              brand = product.manufacturer.name;
+              break;
+          }
+
+          brand = await sails.helpers.channel.linio.checkBrand(brand,product.seller);
+          console.log(brand);
+
           let i = 0;
           for(let pv of productvariation){
             let data = {
@@ -70,7 +83,7 @@ module.exports = {
                 PrimaryCategory: product.mainCategory.linio.split(',')[0],
                 Categories: categories.join(','),
                 Description: jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
-                Brand: product.manufacturer.name,
+                Brand: brand,
                 Price: (Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(2),
                 Quantity: pv.quantity < 0 ? '0' : pv.quantity.toString(),
                 TaxClass: product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%',
@@ -87,7 +100,9 @@ module.exports = {
                 }
               }
             };
+            //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
             if(categories.length<2){delete data.Product.Categories;}
+            if(categories.includes('13984')){delete data.Product.ProductData.Gender;}
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }
@@ -113,6 +128,7 @@ module.exports = {
           console.log(err);
         }
       }
+      console.log(JSON.stringify(body));
     return exits.success(body);
   }
 };

@@ -120,7 +120,6 @@ module.exports = {
           console.log(err);
         }
       }
-      console.log(JSON.stringify(body));
     return exits.success(body);
   }
 };
