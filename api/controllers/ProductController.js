@@ -810,6 +810,10 @@ module.exports = {
           if(req.body.product.reference && req.body.product.reference!==''){
             prod.reference=req.body.product.reference.trim().toUpperCase();
             product = await Product.findOne({reference:prod.reference,seller:seller});
+            if(!product){
+              prod.name=req.body.product.name.trim().toLowerCase();
+              product = await Product.findOne({name:prod.name,seller:seller});
+            }
           }else if(req.body.product.name && req.body.product.name!==''){
             prod.name=req.body.product.name.trim().toLowerCase();
             product = await Product.findOne({name:prod.name,seller:seller});
@@ -840,7 +844,9 @@ module.exports = {
             await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
             await sails.helpers.channel.channelSync(product);
             result['items'].push(product);
-         }else{throw new Error('Producto principal no localizado');}
+         }else{
+           throw new Error('Producto principal no localizado');
+          }
         }
       }
     } catch (err) {
