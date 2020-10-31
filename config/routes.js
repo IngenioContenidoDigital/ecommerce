@@ -74,7 +74,7 @@ module.exports.routes = {
   'GET /messagesmeli/' : {controller:'SellerController',action:'showmessages'},
   'POST /filter/questions' : {controller:'SellerController', action:'filtermessages'},
   'POST /answerquestion' : {controller:'SellerController', action:'answerquestion'},
-  'POST /notificationmessage/' : {controller:'SellerController',action:'notificationmessage'},
+  'POST /notificationml/' : {controller:'SellerController',action:'notificationml'},
   'POST /seller/create' : {controller:'SellerController',action:'createseller'},
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},
   'POST /seller/edit/:id' : {controller:'SellerController',action:'editseller'},

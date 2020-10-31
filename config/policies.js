@@ -42,7 +42,7 @@ module.exports.policies = {
     '*': 'isLoggedIn'
   },
   SellerController:{
-    'notificationmessage': true,
+    'notificationml': true,
     '*': 'isLoggedIn'
   },
   SupplierController:{'*': 'isLoggedIn'},
