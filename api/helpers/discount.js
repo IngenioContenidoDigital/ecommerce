@@ -34,7 +34,7 @@ module.exports = {
           discAmount+=(product.price*(product.discount[0].value/100));
           break;
         case 'C':
-          discPrice+=(product.price-product.discount[0].value)*(1+(product.tax.value/100));
+          discPrice+=(product.price*(1+(product.tax.value/100)))-product.discount[0].value;
           discAmount+=product.discount[0].value;
           break;
       }
