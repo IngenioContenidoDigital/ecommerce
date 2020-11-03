@@ -43,8 +43,8 @@ module.exports = {
               return exits.error(err.message);
             });
             if(shipping){
-              let cityname = shipping['receiver_address'].city.name;
-              if(cityname==='Bogotá D.C.' || 'Bogotá'){cityname='Bogota';}
+              let cityname = shipping['receiver_address'].city.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              if(cityname==='Bogotá D.C.'){cityname='Bogota';}
               let city = await City.find({name:cityname.toLowerCase().trim()}).populate('region');
               if(city && oexists===undefined){
                 let user = await User.findOrCreate({emailAddress:order.buyer.email},{
