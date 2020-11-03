@@ -479,7 +479,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product(product, req.body.linioprice,status);      
+      let result = await sails.helpers.channel.linio.product(product, req.body.linioprice,status);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.linio.sign(action,product[0].seller);
       await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml)
