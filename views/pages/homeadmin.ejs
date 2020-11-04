@@ -22,12 +22,12 @@
         <span>Logística</span>
       </a>
     </li>
-    <li class="tab" onclick="openTab(event,'Inventory')">
+    <!-- <li class="tab" onclick="openTab(event,'Inventory')">
       <a>
         <span class="icon is-small"><i class="bx bxs-purchase-tag" aria-hidden="true"></i></span>
         <span>Inventario</span>
       </a>
-    </li>
+    </li> -->
     <%if(session.user.rights.name === 'superadmin' || session.user.rights.name === 'admin'){%>
       <li class="tab" onclick="openTab(event,'Reports')">
         <a>
@@ -209,7 +209,7 @@
       </section>
     </div>
   <%}%>
-  <div id="Inventory" class="content-tab" style="display:none">
+  <!-- <div id="Inventory" class="content-tab" style="display:none">
     <section class="section-dashboard">
       <div class="tile is-ancestor">
         <div class="tile is-parent">
@@ -317,7 +317,7 @@
         </div>
       <%}%>
     </section>
-  </div>
+  </div> -->
   <div id="Logistics" class="content-tab" style="display:none">
     <section class="section-dashboard">
       <div class="tile is-ancestor">

@@ -134,16 +134,16 @@ module.exports = {
       id: req.session.user.id
     });
 
-    let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller);
-    sails.sockets.blast('datadashboardinventory', {
-      totalInventory: dataInventory.totalInventory,
-      totalProductsReference: dataInventory.totalProductsReference,
-      totalProductsReferenceInactive: dataInventory.totalProductsReferenceInactive,
-      totalProductsReferenceActive: dataInventory.totalProductsReferenceActive,
-      productsInventory: dataInventory.productsInventory,
-      productsUnd: dataInventory.productsUnd,
-      id: req.session.user.id
-    });
+    // let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller);
+    // sails.sockets.blast('datadashboardinventory', {
+    //   totalInventory: dataInventory.totalInventory,
+    //   totalProductsReference: dataInventory.totalProductsReference,
+    //   totalProductsReferenceInactive: dataInventory.totalProductsReferenceInactive,
+    //   totalProductsReferenceActive: dataInventory.totalProductsReferenceActive,
+    //   productsInventory: dataInventory.productsInventory,
+    //   productsUnd: dataInventory.productsUnd,
+    //   id: req.session.user.id
+    // });
 
     return res.ok();
   },
