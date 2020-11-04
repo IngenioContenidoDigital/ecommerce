@@ -104,7 +104,7 @@ module.exports = {
             };
             //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
             if(categories.length<2){delete data.Product.Categories;}
-            if(categories.includes('13984') || categories.includes('15215') || categories.includes('138')){delete data.Product.ProductData.Gender;}
+            if(categories.includes('13984') || categories.includes('15215') || categories.includes('12792')){delete data.Product.ProductData.Gender;}
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }
