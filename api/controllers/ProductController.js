@@ -1326,6 +1326,7 @@ module.exports = {
       if (!isEmpty) {
         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid).catch((e)=>console.log(e));
       } else {
+        sails.sockets.broadcast(sid, 'product_task_ended', true);
         break;
       }
 
@@ -1426,6 +1427,7 @@ module.exports = {
 
         }
       } else {
+        sails.sockets.broadcast(sid, 'image_task_ended', true);
         break;
       }
 
@@ -1545,6 +1547,7 @@ module.exports = {
            }
         }
       } else {
+        sails.sockets.broadcast(sid, 'variation_task_ended', true);
         break;
       }
       page++;
