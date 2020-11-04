@@ -1500,7 +1500,7 @@ module.exports = {
             if(pro){
               let tx = await Tax.findOne({id:pro.tax});
               let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
-              if (discount && p.discount.length > 0) {
+              if (discount && p.discount && p.discount.length > 0) {
                 let disc = await CatalogDiscount.find({
                   where:{
                     name: p.discount[0].name.trim().toLowerCase(),
