@@ -81,7 +81,7 @@ module.exports = {
                 ProductId: pv.ean13,
                 Status: status,
                 Name: product.name,
-                Variation: pv.variation.col.toString(),
+                Variation: pv.variation.col.toString() === 'Único' ? 'Talla Única' : pv.variation.col.toString(),
                 PrimaryCategory: product.mainCategory.linio.split(',')[0],
                 Categories: categories.join(','),
                 Description: jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
@@ -104,7 +104,7 @@ module.exports = {
             };
             //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
             if(categories.length<2){delete data.Product.Categories;}
-            if(categories.includes('13984') || categories.includes('15215')){delete data.Product.ProductData.Gender;}
+            if(categories.includes('13984') || categories.includes('15215') || categories.includes('12792')){delete data.Product.ProductData.Gender;}
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }
