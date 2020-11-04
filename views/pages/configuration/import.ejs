@@ -93,7 +93,14 @@
                                             <option value="ProductImage">Imagenes de Producto</option>
                                         </select>
                                     </div>
-                                </div> 
+                                  </div>
+                                  <div id="fieldDiscount" class="field is-hidden">
+                                    <div class="control">
+                                      <label class="label">Importar Descuentos</label>
+                                      <input id="discount" type="checkbox" name="discount" class="switch is-success">
+                                      <label for="discount"></label>
+                                    </div>
+                                  </div>
                                   <div class="field">
                                       <div class="control">
                                         <label class="label">Proveedor</label>
@@ -179,7 +186,8 @@
         let processed = 1;
         args.page = 1;
         args.pageSize = <%- pageSize %>;
-        args.seller = seller
+        args.seller = seller;
+        args.discount = <%- discount %>;
         
         let paginationData =<%- JSON.stringify(pagination)%>;
         let pages = paginationData.pagesCount;
@@ -349,14 +357,21 @@
       document.getElementsByName("apiUrl")[0].value = provider[0].url;
       document.getElementsByName("version")[0].value = provider[0].version;
       document.getElementsByName("channel")[0].value = provider[0].channel;
-  }
+    }
     const fileInput = document.querySelector('#file-loader input[type=file]');
     fileInput.onchange = () => {
-    if (fileInput.files.length > 0) {
+      if (fileInput.files.length > 0) {
         const fileName = document.querySelector('#file-loader .file-name');
         fileName.textContent = fileInput.files[0].name;
-    }
+      }
     };
+
+    live('select[name="importType"]','change', e=>{
+      let field = document.querySelector('#fieldDiscount');
+      let value =  e.target.value;
+      value === 'Variations' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
+    });
+
     live('#process','click',e=>{
         let report = document.querySelector('#report');
         addClass(report,'is-hidden');
