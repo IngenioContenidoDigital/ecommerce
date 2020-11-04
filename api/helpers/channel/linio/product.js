@@ -95,7 +95,7 @@ module.exports = {
                   PackageLength: product.length,
                   PackageWidth: product.width,
                   PackageWeight: product.weight,
-                  Gender: product.gender.name === 'masculino' ? 'hombre' : product.gender.name === 'femenino' ? 'mujer' : product.gender.name,
+                  Gender: product.gender.name === 'masculino' ? 'hombre' : product.gender.name === 'femenino' ? 'mujer' : product.gender.name === 'niños' ? 'niño' : product.gender.name === 'niñas' ? 'niña' : product.gender.name,
                   Color:product.mainColor.name,
                   /*FilterColor: product.mainColor.name,*/
                   ConditionType: 'Nuevo',
