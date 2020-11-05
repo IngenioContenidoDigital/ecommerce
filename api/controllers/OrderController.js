@@ -437,7 +437,104 @@ module.exports = {
       }
     };
     return res.view('pages/front/order',{order:order, payment:payment, menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
-  }
+  },  
+  report: async (req, res) => {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'updateorder')) {
+      throw 'forbidden';
+    }
+    let sellers = [];
+    let seller = req.session.user.seller;
 
+    if (seller) {
+      seller = await Seller.find({id:req.session.user.seller});
+    } else {
+      sellers = await Seller.find({});
+    }
+    return res.view('pages/orders/report', { layout: 'layouts/admin', sellers: sellers, seller: seller});
+  },
+  generateReportExcel:async (req, res) =>{
+    const Excel = require('exceljs');
+    const moment = require('moment');
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'updateorder')){
+      throw 'forbidden';
+    }
+ 
+    let dateStart = new Date(req.param('startFilter')).valueOf();
+    let dateEnd = new Date(req.param('endFilter')).valueOf();
+    let seller = req.body.seller;
+
+    let orders = await Order.find({
+      where: {
+        updatedAt: { '>': dateStart, '<': dateEnd },
+        seller:seller
+      }      
+    }).populate('customer').populate('currentstatus');
+
+    let workbook = new Excel.Workbook();
+    let worksheet = workbook.addWorksheet('Reporte');
+    let ordersItem = [];
+    worksheet.columns = [
+      { header: 'Id', key: 'id', width: 26 },
+      { header: 'Cliente', key: 'customer', width: 35 },
+      { header: 'Email cliente', key: 'emailcustomer', width: 35 },
+      { header: 'Fecha de creación', key: 'createdAt', width: 20 },
+      { header: 'Fecha de actualización', key: 'updatedAt', width: 22 },
+      { header: 'Estado', key: 'currentstatus', width: 12 },
+      { header: 'Marca', key: 'manufacturer', width: 22 },
+      { header: 'Producto', key: 'product', width: 56 },
+      { header: 'Referencia', key: 'externalReference', width: 22 },
+      { header: 'Color', key: 'color', width: 15 },
+      { header: 'Talla', key: 'size', width: 15 },      
+      { header: 'Precio', key: 'price', width: 12 },
+      { header: 'Método de pago', key: 'paymentMethod', width: 26 },
+      { header: 'Código de pago', key: 'paymentId', width: 20 },
+      { header: 'Marketplace', key: 'channel', width: 12 },
+      { header: 'Referencia marketplace', key: 'channelref', width: 22 },
+      { header: 'Referencia del pedido', key: 'orderref', width: 15 },
+      { header: 'Número de rastreo', key: 'tracking', width: 20 },
+      { header: 'Ciudad', key: 'city', width: 20 },
+      { header: 'Departamento', key: 'region', width: 20 },
+      { header: 'Dirección', key: 'address', width: 46 },
+    ];
+    worksheet.getRow(1).font = { bold: true };
+
+    for (const order of orders) {
+      let items = await OrderItem.find({order: order.id});
+      let address = await Address.find({id:order.addressDelivery}).populate('region').populate('city');
+      items.forEach(async item => {
+        let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller').populate('manufacturer');
+        let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
+        item.id = order.id;
+        item.customer = order.customer.fullName;
+        item.emailcustomer = order.customer.emailAddress;
+        item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
+        item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
+        item.currentstatus = order.currentstatus.name;
+        item.manufacturer = product.manufacturer.name;
+        item.product = product.name;
+        item.color = product.mainColor.name;
+        item.size = productVariation ? productVariation.variation.col : '';
+        item.paymentMethod = order.paymentMethod;
+        item.paymentId = order.paymentId;
+        item.channel = order.channel;
+        item.channelref = order.channelref;
+        item.orderref = order.reference;
+        item.tracking = order.tracking;
+        item.city = address[0].city.name;
+        item.region = address[0].region.name;
+        item.address = address[0].addressline1;
+        ordersItem.push(item);
+      });
+    }
+    worksheet.addRows(ordersItem);
+    const buffer = await workbook.xlsx.writeBuffer();
+    return res.send(buffer);
+  },
 };
 

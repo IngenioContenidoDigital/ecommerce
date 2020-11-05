@@ -67,6 +67,13 @@ module.exports = {
             quantity
             ean13
           }
+          discount{
+            name
+            from
+            to
+            type
+            value
+          }
         }
       }
     }`

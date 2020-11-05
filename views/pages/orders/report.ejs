@@ -1,0 +1,140 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<div class="container">
+    <h4 class="title is-4">Generear Reporte De Órdenes</h4>
+    <hr>
+ 
+    <div id="Reports" class="content-tab">
+        <section class="section-dashboard"> 
+          <div class="columns container-chart">
+            <div class="column is-three-fifths">
+              <div class="card">
+                <header class="card-header">
+                  <p class="card-header-title">
+                    <span class="icon"><i class="bx bxs-calendar-event"></i></span>
+                    Reporte Pedidos
+                  </p>
+                </header>
+                <div class="card-content">
+                  <div class="field">
+                    <label class="label">Seleccione la fecha</label>
+                    <div class="is-right input-datepiker">
+                      <input class="input" type="date" name="filter"/>
+                    </div>
+                  </div>
+                  <%if(sellers && sellers.length>0){%>
+                    <div class="field">
+                      <label class="label">Seller</label>
+                      <div class="select is-fullwidth">
+                        <select name="seller" id="selectSeller" required>
+                          <% sellers.forEach(s=>{%> {%>
+                            <option value="<%=s.id%>"><%=s.name%></option>
+                          <% }) %>
+                        </select>
+                      </div>
+                    </div>
+                  <% }else if(seller && seller.length>0){ %>
+                  <div class="field">
+                    <label class="label">Seller</label>
+                    <div class="select is-fullwidth">
+                      <select name="seller" id="selectSeller" required>
+                          <option value="<%=seller[0].id%>"><%=seller[0].name%></option>
+                      </select>
+                    </div>
+                  </div>
+                  <% } %>
+                  <div class="control buttons is-right">
+                    <button id="generateReport" class="button is-primary"><i class="bx bxs-cloud-download"></i>&nbsp;Descargar</button>
+                  </div>  
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div id="report" class="container is-fluid is-hidden">
+                <br>
+                <h6 class="title is-6">Espera un momento....</h6>
+                <hr>
+                <div id="loading-block" class="notification is-hidden">
+                  <i class="fas fa-sync fa-spin"></i>
+                    Estamos generando tu reporte...
+                    <progress class="progress is-small is-primary" max="100">15%</progress>
+                </div>
+              </div>
+            </div>
+        </div>    
+        </section>
+      </div>
+  </div>
+  <script>
+    let start = moment().startOf('month');
+    let end = moment().endOf('month');
+    let startFilter = moment().startOf('month');
+    let endFilter = moment().endOf('month');
+    let seller = document.querySelector('#selectSeller').value;
+
+    <%if(sellers){%>
+      const selectSeller = document.querySelector('#selectSeller');
+      selectSeller.onchange = changeSelect;
+    <%}%>
+
+    function changeSelect(){
+      seller = document.querySelector('#selectSeller').value;
+    }
+
+    const calendars = bulmaCalendar.attach('[name="range"]', {
+    type:'date',
+    isRange: true,
+    allowSameDayRange: true,
+    dateFormat:'YYYY-MM-DD',
+    displayMode:'default',
+    cancelLabel:'Cancelar',
+    clearLabel:'Limpiar',
+    todayLabel:'Hoy',
+    validateLabel:'Seleccionar',
+    startDate: new Date(start),
+    endDate: new Date(end),
+  });
+
+  const filterGenerate = bulmaCalendar.attach('[name="filter"]', {
+    type:'date',
+    isRange: true,
+    allowSameDayRange: true,
+    dateFormat:'YYYY-MM-DD',
+    displayMode:'default',
+    cancelLabel:'Cancelar',
+    clearLabel:'Limpiar',
+    todayLabel:'Hoy',
+    validateLabel:'Seleccionar',
+    startDate: new Date(startFilter),
+    endDate: new Date(endFilter),
+  });
+
+  filterGenerate.forEach(calendar => {
+    calendar.on('select', date => {
+      startFilter = moment(date.data.startDate).format('YYYY/MM/DD');
+      endFilter = moment(date.data.endDate).add(1, 'days').format('YYYY/MM/DD');
+    });
+  });
+
+  calendars.forEach(calendar => {
+    calendar.on('select', date => {
+      filterDate(moment(date.data.startDate).format('YYYY/MM/DD'), moment(date.data.endDate).add(1, 'days').format('YYYY/MM/DD'))
+    });
+  });
+
+    live('#generateReport','click',e=>{
+    e.preventDefault();
+    let index=document.getElementById("selectSeller").options.selectedIndex;
+    let name=document.getElementById("selectSeller").options[index].text;
+    let report = document.querySelector('#report');
+    let loadingBlock = document.querySelector('#loading-block');
+    if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+    if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+    io.socket.post('/order/generatereport', {startFilter, endFilter, seller}, (resData, jwRes) =>{
+      if(jwRes.statusCode == 200) {
+        saveAs(new Blob([resData],{type:"application/octet-stream"}), `Reporte ${name}.xlsx`);
+        addClass(report,'is-hidden');
+        addClass(loadingBlock,'is-hidden');
+      }
+    });
+    });
+  </script>

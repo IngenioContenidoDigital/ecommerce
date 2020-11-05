@@ -5,8 +5,6 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
-const Integration = require("../models/Integration");
-
 module.exports = {
   showcategories: async function (req,res) {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -107,7 +105,7 @@ module.exports = {
     var isActive=false;
     var error = null;
     const route = 'images/categories';
-    let category = await Category.findOne({id:req.param('id')});
+    let category = await Category.findOne({id:req.param('id')})
     let parent = await Category.findOne({id:req.body.current});
     let dafiticat = '';
     let liniocat = '';
@@ -156,6 +154,16 @@ module.exports = {
       await Category.removeFromCollection(req.body.parent,'children').members([category.id]);
       await Category.addToCollection(parent.id,'children',category.id);
       await Category.updateOne({id:parent.id}).set({hasChildren:true});
+      
+      let categoryRoute = await sails.helpers.tools.buildTree(category.id); //Construimos el Arbol Ascendente a partir de la categoría modificada, solo si el Padre fue modificado
+      let catProducts = await Category.findOne({id:category.id}).populate('products'); //Obtenemos la lista de Productos de la categoria modificada.
+
+      for(let p of catProducts.products){
+        if(!categoryRoute.includes(p.mainCategory)){categoryRoute.push(p.mainCategory);} //Se mantiene la categoría principal del producto
+        await Product.replaceCollection(p.id,'categories').members(categoryRoute); //Se reemplaza la ruta anterior del árbol de categorias
+        categoryRoute.splice(categoryRoute.indexOf(p.mainCategory), 1); //Se elimina la categoria principal de la nueva ruta para evitar cambiar o agregar categorias incorrectas.
+      }
+
     }
 
     if (error===undefined || error===null || error.code==='badRequest'){
