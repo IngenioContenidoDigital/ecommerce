@@ -1490,55 +1490,59 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
+            
+            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }) 
+            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 });
 
             if(!pro){
-              throw new Error(`Ref: ${p.reference} : no pudimos encontrar este producto.`);
+              throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
             }
   
             if(pro){
-              let tx = await Tax.findOne({id:pro.tax});
-              let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
               try {
-                  for(let vr of p.variations){
-                    let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
-                    let productVariation;
+                let tx = await Tax.findOne({id:pro.tax});
+                let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+                if (!pro.categories[0]) {
+                  throw new Error(`El producto Ref ${pro.reference} no tiene categoría.`);
+                }
+                for(let vr of p.variations){
+                  let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
+                  let productVariation;
 
-                    if(!variation){
-                      variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
-                    }
-                    let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
-                    let pv = pvs.find(pv=> pv.variation.name == variation.name);
-                    if (!pv) {
-                      productVariation = await ProductVariation.create({
-                        product:pr.id,
-                        variation:variation.id,
-                        reference: vr.reference ? vr.reference : '',
-                        supplierreference:pr.reference,
-                        ean13: vr.ean13 ? vr.ean13.toString() : '',
-                        upc: vr.upc ? vr.upc : 0,
-                        price: vr.price,
-                        quantity: vr.quantity ? vr.quantity : 0,
-                        seller:pr.seller
-                      }).fetch();
-                    } else {
-                      productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                        price: vr.price,
-                        variation: variation.id,
-                        quantity: vr.quantity ? vr.quantity : 0,
-                      });
-                    }
-                  
-                    if(productVariation){
-                      result.push(productVariation);
-                      sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                    }
-                    
+                  if(!variation){
+                    variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                   }
+                  let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
+                  let pv = pvs.find(pv=> pv.variation.name == variation.name);
+                  if (!pv) {
+                    productVariation = await ProductVariation.create({
+                      product:pr.id,
+                      variation:variation.id,
+                      reference: vr.reference ? vr.reference : '',
+                      supplierreference:pr.reference,
+                      ean13: vr.ean13 ? vr.ean13.toString() : '',
+                      upc: vr.upc ? vr.upc : 0,
+                      price: vr.price,
+                      quantity: vr.quantity ? vr.quantity : 0,
+                      seller:pr.seller
+                    }).fetch();
+                  } else {
+                    productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
+                      price: vr.price,
+                      variation: variation.id,
+                      quantity: vr.quantity ? vr.quantity : 0,
+                    });
+                  }
+                
+                  if(productVariation){
+                    result.push(productVariation);
+                    sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
+                  }
+                  
+                }
               } catch (e) {
                   errors.push({ name:'ERRDATA', message:e.message });
                   sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                  console.log(e)
               }
             } 
            } catch (error) {
