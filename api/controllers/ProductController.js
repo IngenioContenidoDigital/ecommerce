@@ -595,8 +595,8 @@ module.exports = {
               'PAGINATION',
               { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
-
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            let discount = req.body.discount && req.body.discount == 'on' ? true : false
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, discount, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.IMAGE_TYPE:
             req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
@@ -1441,7 +1441,7 @@ module.exports = {
       return res.badRequest();
     }
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-
+    let moment = require('moment');
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
@@ -1450,6 +1450,7 @@ module.exports = {
     let page = req.body.page;
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
+    let discount = req.body.discount;
     let lastPage;
     let next;
 
@@ -1499,6 +1500,37 @@ module.exports = {
             if(pro){
               let tx = await Tax.findOne({id:pro.tax});
               let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+              if (discount && p.discount && p.discount.length > 0) {
+                let disc = await CatalogDiscount.find({
+                  where:{
+                    name: p.discount[0].name.trim().toLowerCase(),
+                    to:{'>=':moment().valueOf()},
+                    from:{'<=':moment().valueOf()},
+                    value: p.discount[0].value,
+                    type: p.discount[0].type
+                  },
+                  sort: 'createdAt DESC',
+                  limit: 1
+                })
+                if (disc.length > 0) {
+                  await CatalogDiscount.updateOne({ id: disc[0].id }).set({
+                    value: parseFloat(p.discount[0].value),
+                    type: p.discount[0].type,
+                    from: moment(p.discount[0].from).valueOf(),
+                    to: moment(p.discount[0].to).valueOf()
+                  });
+                } else {
+                  let discount = await CatalogDiscount.create({
+                    name: p.discount[0].name.trim().toLowerCase(), 
+                    from: moment(p.discount[0].from).valueOf(),
+                    to: moment(p.discount[0].to).valueOf(),
+                    type: p.discount[0].type,
+                    value: parseFloat(p.discount[0].value),
+                    seller: pro.seller
+                  }).fetch();
+                  await CatalogDiscount.addToCollection(discount.id,'products').members([pro.id]);
+                }
+              }
               try {
                   for(let vr of p.variations){
                     let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
