@@ -583,7 +583,7 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: [], integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: [], integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, discount: false, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.PRODUCT_VARIATION:
             let paginationVariation = await sails.helpers.commerceImporter(
@@ -610,7 +610,7 @@ module.exports = {
               { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
 
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationImage, pageSize, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationImage, pageSize, discount: false,seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         default:
           break;
@@ -1386,45 +1386,43 @@ module.exports = {
         for(p of importedProductsImages.data){
           let errors = [];
           let result = [];
-
-          for (let im of p.images) {
-            try {
-              let url = (im.src.split('?'))[0];
-              let file = (im.file.split('?'))[0];
-              
-              let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
-              if(product && product.images.length === 0){
-                let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                  throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                });
-                if (uploaded) {
-                  let cover = 1;
-                  let totalimg = await ProductImage.count({ product: product.id});
-                  totalimg += 1;
-                  if (totalimg > 1) { cover = 0; }
-                  
-                  let rs = await ProductImage.create({
-                    file: file,
-                    position: totalimg,
-                    cover: cover,
-                    product: product.id
-                  }).fetch();
-  
-                  if(typeof(rs) === 'object'){
-                      result.push(rs);
+          let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+          if(product && product.images.length === 0){
+            for (let im of p.images) {
+              try {
+                let url = (im.src.split('?'))[0];
+                let file = (im.file.split('?'))[0];
+                
+                  let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                    throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                  });
+                  if (uploaded) {
+                    let cover = 1;
+                    let totalimg = await ProductImage.count({ product: product.id});
+                    totalimg += 1;
+                    if (totalimg > 1) { cover = 0; }
+                    
+                    let rs = await ProductImage.create({
+                      file: file,
+                      position: totalimg,
+                      cover: cover,
+                      product: product.id
+                    }).fetch();
+    
+                    if(typeof(rs) === 'object'){
+                        result.push(rs);
+                    }
+    
+                    sails.sockets.broadcast(sid, 'product_images_processed',  {result});
+    
                   }
-  
-                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
-  
-                }
-              }
 
-            } catch (err) {
-                errors.push(err)
-                sails.sockets.broadcast(sid, 'product_images_processed',  {result});
+              } catch (err) {
+                  errors.push(err)
+                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
+              }
             }
           }
-
         }
       } else {
         sails.sockets.broadcast(sid, 'image_task_ended', true);
