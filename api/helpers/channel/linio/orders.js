@@ -35,7 +35,7 @@ module.exports = {
         for(let order of orders.Order){
           let oexists = await Order.findOne({channel: 'linio', channelref: order.OrderId});
           if(order.Statuses.Status === 'pending'){
-            let city = await City.find({name: order.AddressShipping.City.split(',')[0].toLowerCase().trim()}).populate('region');
+            let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
             if(city.length > 0 && oexists === undefined){
               const customerEmail = order.AddressBilling.CustomerEmail || order.CustomerFirstName.replace(' ', '') + order.CustomerLastName.replace(' ', '') + '@linio.com.co';
               let user = await User.findOrCreate({emailAddress: customerEmail},{

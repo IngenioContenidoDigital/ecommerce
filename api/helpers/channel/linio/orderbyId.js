@@ -22,7 +22,7 @@ module.exports = {
       let sign = await sails.helpers.channel.linio.sign('GetOrder',inputs.seller, inputs.params);
       let profile = await Profile.findOne({name:'customer'});
 
-      await sails.helpers.request('https://sellercenter.linio.com.co','/?'+sign,'GET')
+      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET')
       .then(async (response)=>{
         let result = await JSON.parse(response);
         let orders = {
@@ -31,13 +31,11 @@ module.exports = {
           orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
           for(let order of orders.Order){
             let oexists = await Order.findOne({channel:'linio',channelref:order.OrderId,seller:inputs.seller});
-            console.log("order", order);
             if(order.Statuses.Status==='pending'){
-              let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');              
-
+              let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
               if(city.length>0 && oexists===undefined){
                 let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
-                  emailAddress:order.AddressBilling.CustomerEmail,
+                  emailAddress:order.AddressBilling.CustomerEmail !=='' ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.FirstName).replace(/\s/g,''))+'@linio.com.co',
                   emailStatus:'confirmed',
                   password:await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
                   fullName:order.CustomerFirstName+' '+order.CustomerLastName,
@@ -70,7 +68,7 @@ module.exports = {
                 payment.data['ref_payco'] = order.OrderNumber;
                 let cart = await Cart.create().fetch();
                 let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems',inputs.seller,['OrderId='+order.OrderId]);
-                await sails.helpers.request('https://sellercenter.linio.com.co','/?'+itemsign,'GET')
+                await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+itemsign,'GET')
                 .then(async (result)=>{
                   let rs = JSON.parse(result);
                   let items = {
