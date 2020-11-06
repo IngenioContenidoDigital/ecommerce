@@ -65,7 +65,7 @@ let fetch = async (data) => {
     }).catch((e) => console.log(e));
 
     if (response && response.data) {
-      return resolve(response.data.data[Object.keys(response.data.data)[0]]);
+        return resolve(response.data.data[Object.keys(response.data.data)[0]]);
     }
   });
 };

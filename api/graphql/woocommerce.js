@@ -64,6 +64,13 @@ VARIATIONS : `
                             reference
                             talla
                             price
+                            discount{
+                                name
+                                from
+                                to
+                                type
+                                value
+                            }
                         }
                     }
             }
