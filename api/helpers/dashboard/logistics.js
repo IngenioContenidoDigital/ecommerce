@@ -61,7 +61,9 @@ module.exports = {
         let states = [];
         let orderHistory = await OrderHistory.find({order: order.id}).populate('state');
         orderHistory.forEach(hist => {
-          states.push({name: hist.state.name, date: hist.createdAt});
+          if (hist.state) {
+            states.push({name: hist.state.name, date: hist.createdAt});
+          }
         });
         if (states.some(e => e.name === 'aceptado') && states.some(e => e.name === 'empacado')) {
           const history1 = states.find(item => item.name === 'aceptado');
