@@ -57,14 +57,19 @@ module.exports = {
         externalId
         reference
         variations{
-            quantity
-            reference
-            talla
-            price
-
+          quantity
+          reference
+          talla
+          price
         }
-    
-    }
+        discount{
+          name
+          from
+          to
+          type
+          value
+        }
+      }
     }
   }`
 };
