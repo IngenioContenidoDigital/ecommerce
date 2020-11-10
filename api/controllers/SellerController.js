@@ -298,10 +298,15 @@ module.exports = {
   },
   notificationml: async function(req, res){
     let moment = require('moment');
+    let fs = require('fs');
+    let path = require('path');
     let resource = req.body.resource;
     let user = req.body.application_id;
     let topic = req.body.topic;
     let integration = await Integrations.findOne({user: user, channel: 'mercadolibre'});
+    fs.writeFile(path.join(__dirname, 'logs', `${moment().format('YYYYMMDD_HHmms')}.json`), JSON.stringify(req.body), err =>{
+      if(err){console.log(err);}
+    });
     if (integration) {
       let seller = integration.seller;
 
