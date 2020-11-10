@@ -274,7 +274,7 @@ module.exports = {
               "id_company": 145455
             }
           };
-          await axios(options).catch((e) => console.log(e));  
+          await axios(options).catch((e) => {if(!e.response.data.message.includes(" Punto existente en MU")){ console.log(e);}});  
           let formapago = 3;
           if(order.paymentMethod==='COD'){
             switch(order.paymentOption){
