@@ -56,11 +56,19 @@ module.exports = {
       pagesCount
       data{
         externalId
+        discount{
+          name
+          from
+          to
+          type
+          value
+        }
         variations{
           reference
           talla
           price
           quantity
+          ean13
         }
       }
     }
