@@ -93,8 +93,12 @@
               </div>
             </div>
           </div>
-          <% let tax = product.tax ? (product.tax.value/100) : 0; %>
-          <% let price = product.price ? product.price : 0; %>
+          <%let tax = 0;%>
+          <%let price = 0; %>
+          <% if(action=='edit'){%>
+          <% tax = product.tax ? (product.tax.value/100) : 0; %>
+          <% price = product.price ? product.price : 0; %>
+          <%}%>
           <div class="column">
             <label class="label is-inline is-size-7" for="price_wt">Precio IVA incluído</label>
             <div class="field">
