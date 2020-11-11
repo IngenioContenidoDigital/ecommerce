@@ -87,17 +87,19 @@
               <div class="select is-fullwidth is-size-7">
                 <select name="tax" id="tax" required>
                   <% taxes.forEach(function(tax){ %>
-                    <option class="is-capitalized" <% if(action=='edit' && tax.id==product.tax.id ){ %> selected <% } %> value="<%= tax.id %>" tax="<%= tax.value %>" ><%= tax.name %></option>
+                    <option class="is-capitalized" <% if(action=='edit' && product.tax && tax.id==product.tax.id) { %> selected <% } %> value="<%= tax.id %>" tax="<%= tax.value %>" ><%= tax.name %></option>
                   <%})%>
                 </select>
               </div>
             </div>
           </div>
+          <% let tax = product.tax ? (product.tax.value/100) : 0; %>
+          <% let price = product.price ? product.price : 0; %>
           <div class="column">
             <label class="label is-inline is-size-7" for="price_wt">Precio IVA incluído</label>
             <div class="field">
               <p class="control has-icons-left">
-                <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%= (Math.ceil((product.price * (1 + (product.tax.value / 100)))*100)/100).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
+                <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%= (Math.ceil((price * (1 + tax))*100)/100).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
                 <span class="icon is-small is-left is-size-7">
                   <i class="bx bx-dollar"></i>
                 </span>
@@ -445,6 +447,8 @@
         let rowid = variations.tBodies[0].rows.length;
         let pricep = document.querySelector('input[name="price_wt"]').value;
         let referencep = document.querySelector('input[name="reference"]').value;
+        let tax = product.tax ? (product.tax.value/100) : 0;
+        let price = product.price ? product.price : 0;
         
         let newrow=[
           `<td scope="row" class="align-middle"><div class="dropdown is-small is-fullwidth is-hoverable">
@@ -467,7 +471,7 @@
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(Math.ceil((product.price * (1 + (product.tax.value / 100)))*100)/100).toFixed(2);%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" <% if(action=='edit'){ %> value="<%=(Math.ceil((price * (1 + tax))*100)/100).toFixed(2);%>" <% } else { %> value="'+parseFloat(pricep).toFixed(2)+'" <%}%> placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
           '<td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>'
         ];

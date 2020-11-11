@@ -80,11 +80,13 @@ module.exports = {
       if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
       if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
       if (p.linio) { published += '<li><small>Linio</small></li>'; }
+      let tax = p.tax ? (p.tax.value/100) : 0;
+      let price = p.price ? p.price : 0;
       row = [
         `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="` + p.id + `">` + p.name + `</a></td>`,
         `<td class="align-middle">` + p.reference + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
-        `<td class="align-middle">$ ` + (Math.ceil((p.price * (1 + (p.tax.value / 100)))*100)/100) + `</td>`,
+        `<td class="align-middle">$ ` + (Math.ceil((price * (1 + tax))*100)/100).toFixed(2) + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.mainColor ? p.mainColor.name : '') + `</td>`,
         `<td class="align-middle">` + p.stock + `</td>`,
         `<td class="align-middle"><span class="action"><i product="` + p.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
