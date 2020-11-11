@@ -35,6 +35,7 @@ module.exports = {
     linioprice:{type:'number', defaultsTo:0},
     liniostatus:{type:'boolean', defaultsTo:false},
     linio:{type:'boolean', defaultsTo:false},
+    linioqc:{type:'boolean', defaultsTo:false},
     mlprice:{type:'number', defaultsTo:0},
     mlstatus:{type:'boolean', defaultsTo:false},
     ml:{type:'boolean', defaultsTo:false},

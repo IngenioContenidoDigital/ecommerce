@@ -86,7 +86,7 @@ module.exports = {
         `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="` + p.id + `">` + p.name + `</a></td>`,
         `<td class="align-middle">` + p.reference + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
-        `<td class="align-middle">$ ` + (Math.ceil((price * (1 + tax))*100)/100).toFixed(2) + `</td>`,
+        `<td class="align-middle">$ ` + parseInt(price * (1 + tax)).toFixed(2) + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.mainColor ? p.mainColor.name : '') + `</td>`,
         `<td class="align-middle">` + p.stock + `</td>`,
         `<td class="align-middle"><span class="action"><i product="` + p.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
@@ -515,6 +515,32 @@ module.exports = {
       console.log(err);
       return res.send(err.message);
     }
+  },
+  liniocheck: async (req, res) => {
+    req.setTimeout(900000);
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
+      throw 'forbidden';
+    }
+    let response = {
+      items: [],
+      errors: []
+    }
+    let integrationSellers = await Integrations.find({ channel: 'linio' });
+    for (let s of integrationSellers) {
+      let products = await Product.find({ seller: s.seller, linio: true, linioqc: false })
+      for (let p of products) {
+        let result = await sails.helpers.channel.linio.checkstatus(p.id)
+          .catch(e => {
+            response.errors.push({ code: e.raw.code, message: p.reference });
+          });
+
+        if (result) {
+          response.items.push({ code: 'OK', message: p.reference });
+        }
+      }
+    }
+    return res.send(JSON.stringify(response));
   },
   import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
