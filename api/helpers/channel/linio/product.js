@@ -90,7 +90,7 @@ module.exports = {
                 Quantity: pv.quantity < 0 ? '0' : pv.quantity.toString(),
                 TaxClass: product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%',
                 ProductData: {
-                  ShortDescription: jsonxml.cdata((product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
+                  ShortDescription: jsonxml.cdata((product.descriptionShort)/*.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))*/,
                   PackageHeight: product.height,
                   PackageLength: product.length,
                   PackageWidth: product.width,
