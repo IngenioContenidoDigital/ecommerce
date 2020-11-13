@@ -31,10 +31,8 @@ module.exports = {
           orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
           for(let order of orders.Order){
             let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId,seller:inputs.seller});
-            console.log("order", order);
             if(order.Statuses.Status==='pending'){
               let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');              
-
               if(city.length>0 && oexists===undefined){
                 let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
                   emailAddress:order.AddressBilling.CustomerEmail,
@@ -77,8 +75,11 @@ module.exports = {
                     OrderItem:[]
                   };
                   
-                  items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
-                  
+                  if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
+                    items = rs.SuccessResponse.Body.OrderItems;
+                  }else{
+                    items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+                  }
                   for(let item of items.OrderItem){
                     let productvariation = await ProductVariation.find({or : [
                       { id:item.Sku },

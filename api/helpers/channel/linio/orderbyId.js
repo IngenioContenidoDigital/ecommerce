@@ -75,7 +75,11 @@ module.exports = {
                     OrderItem:[]
                   };
                   
-                  items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+                  if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
+                    items = rs.SuccessResponse.Body.OrderItems;
+                  }else{
+                    items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+                  }
                   
                   for(let item of items.OrderItem){
                     let productvariation = await ProductVariation.find({or : [
