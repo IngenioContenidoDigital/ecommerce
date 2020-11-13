@@ -80,7 +80,10 @@ module.exports = {
                   items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
                   
                   for(let item of items.OrderItem){
-                    let productvariation = await ProductVariation.findOne({id:item.Sku})
+                    let productvariation = await ProductVariation.findOne({or : [
+                      { id:item.Sku },
+                      { reference: item.Sku }
+                    ]})
                     .catch(err=>{
                       console.log(err.message);
                     });
