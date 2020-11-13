@@ -80,7 +80,7 @@ module.exports = {
                   items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
                   
                   for(let item of items.OrderItem){
-                    let productvariation = await ProductVariation.findOne({or : [
+                    let productvariation = await ProductVariation.find({or : [
                       { id:item.Sku },
                       { reference: item.Sku }
                     ]})
@@ -91,8 +91,8 @@ module.exports = {
                     if(productvariation){
                       await CartProduct.create({
                         cart:cart.id,
-                        product:productvariation.product,
-                        productvariation:productvariation.id,
+                        product:productvariation[0].product,
+                        productvariation:productvariation[0].id,
                         totalDiscount:parseFloat(item.VoucherAmount),
                         totalPrice:parseFloat(item.ItemPrice),
                         externalReference:item.OrderItemId
