@@ -66,6 +66,7 @@ module.exports = {
         name:req.body.nombre.trim().toLowerCase(),
         logo:filename[0].filename,
         description:req.body.descripcion,
+        tags: req.body.tags ? req.body.tags : '',
         dafiti:dafiticat,
         linio: liniocat,
         parent:current.id,
@@ -79,6 +80,7 @@ module.exports = {
         await Category.create({
           name:req.body.nombre.trim().toLowerCase(),
           description:req.body.descripcion,
+          tags: req.body.tags ? req.body.tags : '',
           parent:current.id,
           dafiti:dafiticat,
           linio: liniocat,
@@ -129,6 +131,7 @@ module.exports = {
       await Category.updateOne({id:category.id}).set({
         name:req.body.nombre,
         description:req.body.descripcion,
+        tags: req.body.tags ? req.body.tags : '',
         parent:parent.id,
         dafiti:dafiticat,
         linio: liniocat,
@@ -142,6 +145,7 @@ module.exports = {
         await Category.updateOne({id:category.id}).set({
           name:req.body.nombre,
           description:req.body.descripcion,
+          tags: req.body.tags ? req.body.tags : '',
           parent:parent.id,
           url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
           dafiti:dafiticat,

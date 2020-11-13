@@ -12,6 +12,7 @@ module.exports = {
     name:{type:'string', required:true},
     logo:{type:'string'},
     description:{type:'string'},
+    tags:{type:'string'},
     active:{type:'boolean', required:true},
     url:{type:'string'},
     level:{type:'number'},
