@@ -113,6 +113,8 @@ module.exports = {
             }
             if(categories.includes('15215')/** Hogar*/){ delete data.Product.ProductData.Gender; }
             if(categories.includes('12792')/** Deportes*/){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('10253')/** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
 
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
