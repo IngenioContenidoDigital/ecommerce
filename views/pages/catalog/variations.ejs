@@ -93,6 +93,29 @@
                 </div>
               </div>
               </div>
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label">Cantidad / Volumen</label>
+                    <div class="control">
+                      <input class="input" type="number" name="unit" placeholder="Contenido del Producto" <% if(action=='edit'){ %>value="<%= variation.unit %>"<%}%>/>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label is-inline is-size-7-mobile" for="gender">Unidad de Medida</label>
+                    <div class="control">
+                      <div class="select is-fullwidth">
+                        <select class="is-capitalized" name="measure" id="measure" required>
+                          <option value="">-- Elegir Unidad de Medida --</option>
+                          <% measures.forEach(measure => { %>
+                            <option class="is-capitalized" <% if(action=='edit' && variation.measure!== null && measure==variation.measure ){ %> selected <% } %> value="<%= measure %>" ><%= measure %></option>
+                          <%})%>
+                        </select>
+                      </div>
+                    </div>
+                  </div>   
+                </div>
+              </div>
               <br>
               <div class="control buttons is-right">
                 <% if(action=='edit'){ %> 

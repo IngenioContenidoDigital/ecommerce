@@ -43,7 +43,7 @@ module.exports = {
             sort: 'createdAt DESC',
             limit: 1
           });
-          let status= inputs.status ? inputs.status : active;
+          let status= inputs.status ? inputs.status : 'active';
 
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
