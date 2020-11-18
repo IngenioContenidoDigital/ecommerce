@@ -397,7 +397,7 @@
                         <td scope="row" class="align-middle">
                           <div class="field is-small">
                             <div class="control">                          
-                              <input class="input is-primary is-small has-text-right" type="string" field="ean13" name="variations[<%=rowcount%>][ean13]" value="<%=pv.ean13%>" placeholder="EAN13"/>
+                              <input class="input is-primary is-small has-text-right" type="text" field="ean13" name="variations[<%=rowcount%>][ean13]" value="<%=pv.ean13%>" placeholder="EAN13"/>
                             </div>
                           </div>
                         </td>
@@ -471,7 +471,7 @@
           </td>`,
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="reference" name="variations['+rowid+'][reference]" value="" placeholder="Referencia"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="1111111111111" max="9999999999999" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="text" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" value="'+parseFloat(pricep).toFixed(2)+'" placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
