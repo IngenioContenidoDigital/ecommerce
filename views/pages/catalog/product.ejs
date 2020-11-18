@@ -871,9 +871,9 @@
 
       live('#linio','click',e=>{
         let p = document.querySelector('#product-data').value;
-        let pricelinio = document.querySelector('select[name="pricelinio"]').value;
+        let linioprice = document.querySelector('select[name="linioprice"]').value;
         //if(e.target.checked){
-          io.socket.post('/linio/add',{product: p, pricelinio: pricelinio, status: e.target.checked});
+          io.socket.post('/linio/add',{product: p, linioprice: linioprice, status: e.target.checked});
         //}
       });
 
