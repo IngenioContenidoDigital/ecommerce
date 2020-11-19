@@ -1531,7 +1531,6 @@ module.exports = {
               if (discount && p.discount && p.discount.length > 0) {
                 let disc = await CatalogDiscount.find({
                   where:{
-                    name: p.discount[0].name.trim().toLowerCase(),
                     to:{'>=':moment().valueOf()},
                     from:{'<=':moment().valueOf()},
                     value: p.discount[0].value,
@@ -1542,8 +1541,6 @@ module.exports = {
                 })
                 if (disc.length > 0) {
                   await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                    value: parseFloat(p.discount[0].value),
-                    type: p.discount[0].type,
                     from: moment(p.discount[0].from).valueOf(),
                     to: moment(p.discount[0].to).valueOf()
                   });
