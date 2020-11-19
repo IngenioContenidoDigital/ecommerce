@@ -1,82 +1,82 @@
 module.exports = {
-    friendlyName: 'Orders by Id',
-    description: 'Orders by Id Linio.',
-    inputs: {
-      seller:{
-        type:'string',
-        required:true
-      },
-      params:{
-        type:'ref',
-        required:true
-      }
+  friendlyName: 'Orders by Id',
+  description: 'Orders by Id Linio.',
+  inputs: {
+    seller:{
+      type:'string',
+      required:true
     },
-    exits: {
-      success: {
-        description: 'All done.',
-      },
+    params:{
+      type:'ref',
+      required:true
+    }
+  },
+  exits: {
+    success: {
+      description: 'All done.',
     },
-    fn: async function (inputs,exits) {
-      let moment = require('moment');
-      
-      let sign = await sails.helpers.channel.linio.sign('GetOrder',inputs.seller, inputs.params);
-      let profile = await Profile.findOne({name:'customer'});
-
-      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET')
+  },
+  fn: async function (inputs,exits) {
+    let moment = require('moment');
+    let sign = await sails.helpers.channel.linio.sign('GetOrder',inputs.seller, inputs.params);
+    let profile = await Profile.findOne({name:'customer'});
+    let data;
+    await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET')
       .then(async (response)=>{
         let result = await JSON.parse(response);
         let orders = {
           Order:[]
         };
-          orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
-          for(let order of orders.Order){
-            let oexists = await Order.findOne({channel:'linio',channelref:order.OrderId,seller:inputs.seller});
-            if(order.Statuses.Status==='pending'){
-              let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
-              if(city.length>0 && oexists===undefined){
-                let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
-                  emailAddress:order.AddressBilling.CustomerEmail !=='' ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.FirstName).replace(/\s/g,''))+'@linio.com.co',
-                  emailStatus:'confirmed',
-                  password:await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
-                  fullName:order.CustomerFirstName+' '+order.CustomerLastName,
-                  dniType:'CC',
-                  dni:order.NationalRegistrationNumber.replace(/\./gi,''),
-                  mobilecountry:city[0].region.country,
-                  mobile:order.AddressShipping.Phone2 ? parseInt(order.AddressShipping.Phone2) : 0,
-                  mobileStatus:'unconfirmed',
-                  profile:profile.id
-                });
-                
-                let address = await Address.findOrCreate({addressline1:order.AddressShipping.Address1.toLowerCase().trim()},{
-                  name:order.AddressShipping.Address1.trim().toLowerCase(),
-                  addressline1:order.AddressShipping.Address1.trim().toLowerCase(),
-                  addressline2:order.AddressShipping.Address2 ? order.AddressShipping.Address2.trim().toLowerCase() : '',
-                  country:city[0].region.country,
-                  region:city[0].region.id,
-                  city:city[0].id,
-                  notes:order.DeliveryInfo ? order.DeliveryInfo : '',
-                  zipcode:order.AddressShipping.PostCode ? order.AddressShipping.PostCode : '',
-                  user:user.id,
-                });
-                let payment = {
-                  data:{
-                    estado:'Aceptada',
-                    channel:'linio',
-                    channelref:order.OrderId
-                  }
-                };
-                payment.data['ref_payco'] = order.OrderNumber;
-                let cart = await Cart.create().fetch();
-                let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems',inputs.seller,['OrderId='+order.OrderId]);
-                await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+itemsign,'GET')
+        orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
+        for(let order of orders.Order){
+          let oexists = await Order.findOne({channel:'linio',channelref:order.OrderId,seller:inputs.seller});
+          data = {channel: 'linio', channelref: order.OrderId, seller: inputs.seller};
+          if(order.Statuses.Status==='pending'){
+            let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
+            if(city.length>0 && oexists===undefined){
+              let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
+                emailAddress:order.AddressBilling.CustomerEmail !=='' ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.FirstName).replace(/\s/g,''))+'@linio.com.co',
+                emailStatus:'confirmed',
+                password:await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
+                fullName:order.CustomerFirstName+' '+order.CustomerLastName,
+                dniType:'CC',
+                dni:order.NationalRegistrationNumber.replace(/\./gi,''),
+                mobilecountry:city[0].region.country,
+                mobile:order.AddressShipping.Phone2 ? parseInt(order.AddressShipping.Phone2) : 0,
+                mobileStatus:'unconfirmed',
+                profile:profile.id
+              });
+
+              let address = await Address.findOrCreate({addressline1:order.AddressShipping.Address1.toLowerCase().trim()},{
+                name:order.AddressShipping.Address1.trim().toLowerCase(),
+                addressline1:order.AddressShipping.Address1.trim().toLowerCase(),
+                addressline2:order.AddressShipping.Address2 ? order.AddressShipping.Address2.trim().toLowerCase() : '',
+                country:city[0].region.country,
+                region:city[0].region.id,
+                city:city[0].id,
+                notes:order.DeliveryInfo ? order.DeliveryInfo : '',
+                zipcode:order.AddressShipping.PostCode ? order.AddressShipping.PostCode : '',
+                user:user.id,
+              });
+              let payment = {
+                data:{
+                  estado:'Aceptada',
+                  channel:'linio',
+                  channelref:order.OrderId
+                }
+              };
+              payment.data['ref_payco'] = order.OrderNumber;
+              let cart = await Cart.create().fetch();
+              let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems',inputs.seller,['OrderId='+order.OrderId]);
+              await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+itemsign,'GET')
                 .then(async (result)=>{
                   let rs = JSON.parse(result);
                   let items = {
                     OrderItem:[]
                   };
-                  
+
                   items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
-                  
+
                   for(let item of items.OrderItem){
                     let productvariation = await ProductVariation.findOne({id:item.Sku})
                     .catch(err=>{
@@ -99,22 +99,21 @@ module.exports = {
                     await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order.CreatedAt).valueOf())});
                   }
                 });
-              }
-            }else{
-              if(oexists!==undefined){
-                let currentStatus = await sails.helpers.orderState(order.Statuses.Status);
-                await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order.UpdatedAt).valueOf()),currentstatus:currentStatus});
-                await OrderHistory.create({
-                  order:oexists.id,
-                  state:currentStatus
-                });
-              }
+            }
+          }else{
+            if(oexists!==undefined){
+              let currentStatus = await sails.helpers.orderState(order.Statuses.Status);
+              await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order.UpdatedAt).valueOf()),currentstatus:currentStatus});
+              await OrderHistory.create({
+                order:oexists.id,
+                state:currentStatus
+              });
             }
           }
-      }).catch((e)=>console.log("error", e));
-      
-      return exits.success(true);
-    }
-  };
-  
-  
+        }
+      }).catch((e)=>console.log('error', e));
+
+    return exits.success(data);
+  }
+};
+

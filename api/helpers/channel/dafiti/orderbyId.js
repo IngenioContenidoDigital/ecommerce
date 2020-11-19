@@ -21,7 +21,7 @@ module.exports = {
       
       let sign = await sails.helpers.channel.dafiti.sign('GetOrder',inputs.seller, inputs.params);
       let profile = await Profile.findOne({name:'customer'});
-
+      let data;
       await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET')
       .then(async (response)=>{
         let result = await JSON.parse(response);
@@ -31,7 +31,7 @@ module.exports = {
           orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
           for(let order of orders.Order){
             let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId,seller:inputs.seller});
-            console.log("order", order);
+            data = {channel: 'dafiti', channelref: order.OrderId, seller: inputs.seller};
             if(order.Statuses.Status==='pending'){
               let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');              
 
@@ -115,7 +115,7 @@ module.exports = {
           }
       }).catch((e)=>console.log("error", e));
       
-      return exits.success(true);
+      return exits.success(data);
     }
   };
   
