@@ -491,7 +491,7 @@ module.exports = {
           await Product.updateOne({ id: req.param('product') }).set({
             linio: true,
             liniostatus: (product[0].liniostatus) ? false : true,
-            linioprice: req.body.dafitiprice,
+            linioprice: req.body.linioprice,
           });
           let imgresult = await sails.helpers.channel.linio.images(product);      
           var imgxml = jsonxml(imgresult,true);
