@@ -104,12 +104,16 @@ module.exports = {
             };
             //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
             if(categories.length<2){delete data.Product.Categories;}
-            
             if(categories.includes('13984')/** Belleza y Cuidado*/){ 
               delete data.Product.ProductData.Gender; 
               data.Product.ProductData.SanitaryRegistration= product.register ? product.register : '';
               data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
               data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
+              if(categories.includes('14444')/** Perfumes */){
+                data.Product.ProductData.ProductContent= pv.variation.name;
+                //let intencity = ['Perfume Extract','Eau de Parfum','Eau de Toilette','Eau de Cologne'];
+                data.Product.ProductData.Intencity = 'Eau de Toilette';
+              }
             }
             if(categories.includes('15215')/** Hogar*/){ delete data.Product.ProductData.Gender; }
             if(categories.includes('12792')/** Deportes*/){ delete data.Product.ProductData.Gender;}
