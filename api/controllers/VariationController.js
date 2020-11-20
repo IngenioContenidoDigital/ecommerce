@@ -18,10 +18,11 @@ module.exports = {
     let categories = await Category.find({level:2});
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
+    let measures = ['centímetro', 'gramo','mililitro','unidad'];
     if(id){
       variation = await Variation.findOne({id:id}).populate('gender');
     }
-    return res.view('pages/catalog/variations',{layout:'layouts/admin',variations:variations,categories:categories,action:action,error:error,variation:variation,genders:genders});
+    return res.view('pages/catalog/variations',{layout:'layouts/admin',variations:variations,categories:categories,action:action,error:error,variation:variation,genders:genders,measures:measures});
   },
   createvariation: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -38,7 +39,9 @@ module.exports = {
         col:req.body.col,
         us:req.body.us,
         eu:req.body.eu,
-        wide:req.body.wide
+        wide:req.body.wide,
+        unit:req.body.unit ? req.body.unit : 1,
+        measure:req.body.measure ? req.body.measure : 'unidad'
       });
     }catch(err){
       error = err;
@@ -64,7 +67,9 @@ module.exports = {
         col:req.body.col,
         us:req.body.us,
         eu:req.body.eu,
-        wide:req.body.wide
+        wide:req.body.wide,
+        unit:req.body.unit ? req.body.unit : 1,
+        measure:req.body.measure ? req.body.measure : 'unidad'
       });
     }catch(err){
       error = err;

@@ -41,17 +41,40 @@
                 </div>
                 <% } %>
               </div>
+            </div>
+            <div class="columns">
+              <div class="column">
+                <input type="hidden" name="tags" <%if(action=='edit'){%>value="<%=current.tags%>"<%}%>/>
+                <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('updateindex')){%>
+                <label class="label is-small">Etiquetas de Categoría</label>
+                <div class="field has-addons">
+                  <div class="control">
+                    <input class="input is-small" type="text" id="new-tag" placeholder="Agregar Etiqueta">
+                  </div>
+                  <div class="control"><a class="button is-small is-primary" id="add-tag">Crear Etiqueta</a></div>
+                </div>
+                <br/>
+                <%let taglist = current.tags.split(',').filter(el => {return el != null && el != '';}); %>
+                <div class="tags">
+                <%if(taglist.length>0){%>
+                  <%for(let tag of taglist){%>
+                    <span class="tag"><%=tag%><button class="delete is-small"></button></span>
+                  <%}%>
+                <%}%>
+                </div>
+                <%}%>
+              </div>
               <div class="column">
                 <div class="field">
-                  <label class="label">Descripción</label>
+                  <label class="label is-small">Descripción</label>
                   <div class="control">
                     <textarea class="textarea" name="descripcion" placeholder="Descripción de la categoría"><% if(action=='edit'){ %><%= current.description %><% }%></textarea>
                   </div>
-                </div>
-	       </div>
+              </div>
+	          </div>
             </div>
             <div class="field">
-                <article class="panel is-primary">
+                <article class="panel is-primary is-size-7">
                     <p class="panel-heading">
                       Categoría Padre
                     </p>
@@ -256,6 +279,37 @@
       }
     });
 
+    live('#add-tag','click', e =>{
+      e.preventDefault();
+      let tags = document.querySelector('input[name="tags"]');
+      let htags = document.querySelector('.tags');
+      let taglist = tags.value.split(',').filter(el => {return el != null && el != '';});
+      let ntag = (document.querySelector('#new-tag').value).toLowerCase();
+      if(!taglist.includes(ntag)){
+        taglist.push(ntag);
+        let nt = document.createElement('span');
+        nt.setAttribute('class','tag');
+        nt.innerHTML=ntag.trim().toLowerCase()+'<button class="delete is-small"></button>';
+        htags.appendChild(nt);
+      }
+      document.querySelector('#new-tag').value='';
+      tags.value = taglist.join(',');
+    });
+
+    live('.delete','click',e=>{
+      e.preventDefault();
+      let dtag = e.target.parentNode.innerHTML.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'').trim().toLowerCase();
+      let tags = document.querySelector('input[name="tags"]');
+      let taglist = tags.value.split(',').filter(el => {return el != null && el != '';});
+      for(let t of taglist){
+        if(t==dtag){
+          taglist.splice (taglist.indexOf(t),1);
+          e.target.parentNode.remove();
+        }
+      }
+      document.querySelector('#new-tag').value='';
+      tags.value = taglist.join(',');
+    });
   </script>
   <% if(action=='edit'){ %>
       <script>

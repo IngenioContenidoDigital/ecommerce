@@ -13,15 +13,11 @@ module.exports = {
     col:{type:'string'},
     us:{type:'string'},
     eu:{type:'string'},
-    wide:{
-      type:'number', defaultsTo:0
-    },
-    gender:{
-      model:'gender'
-    },
-    category:{
-      model:'category'
-    }
+    wide:{type:'number', defaultsTo:0},
+    unit:{type:'number', defaultsTo:1},
+    measure:{type:'string', isIn:['centímetro', 'gramo','mililitro','unidad']},
+    gender:{model:'gender'},
+    category:{model:'category'}
   },
 
 };

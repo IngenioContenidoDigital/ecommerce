@@ -75,10 +75,17 @@ module.exports = {
                     OrderItem:[]
                   };
                   
-                  items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+                  if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
+                    items = rs.SuccessResponse.Body.OrderItems;
+                  }else{
+                    items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+                  }
                   
                   for(let item of items.OrderItem){
-                    let productvariation = await ProductVariation.findOne({id:item.Sku})
+                    let productvariation = await ProductVariation.find({or : [
+                      { id:item.Sku },
+                      { reference: item.Sku }
+                    ]})
                     .catch(err=>{
                       console.log(err.message);
                     });
@@ -86,8 +93,8 @@ module.exports = {
                     if(productvariation){
                       await CartProduct.create({
                         cart:cart.id,
-                        product:productvariation.product,
-                        productvariation:productvariation.id,
+                        product:productvariation[0].product,
+                        productvariation:productvariation[0].id,
                         totalDiscount:parseFloat(item.VoucherAmount),
                         totalPrice:parseFloat(item.ItemPrice),
                         externalReference:item.OrderItemId
