@@ -448,13 +448,14 @@ module.exports = {
     }
     try {
       let action = null;
+      let status = req.body.status ? 'active' : 'paused';
       let product = await Product.findOne({ id: req.body.product });
       if (product.ml) {
         action = 'Update';
       } else {
         action = 'Post';
       }
-      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre);
+      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre,status);
       if (response) {
         console.log(response);
         await Product.updateOne({ id: req.param('product') }).set({
