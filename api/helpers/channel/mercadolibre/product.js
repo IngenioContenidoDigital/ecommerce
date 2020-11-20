@@ -169,6 +169,8 @@ module.exports = {
             delete body['buying_mode'];
             delete body['price'];
             delete body['description'];
+            delete body['condition'];
+            delete body['category_id'];
           //}
            /* BLOQUE DE DESCUENTOS 
             let mlproduct = result.id;
