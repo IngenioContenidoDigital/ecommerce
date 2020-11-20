@@ -1415,44 +1415,40 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          for (let im of p.images) {
-            try {
-              let url = (im.src.split('?'))[0];
-              let file = (im.file.split('?'))[0];
-              
-              let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
-              if(product && product.images.length === 0){
-                let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                  throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                });
-                if (uploaded) {
-                  let cover = 1;
-                  let totalimg = await ProductImage.count({ product: product.id});
-                  totalimg += 1;
-                  if (totalimg > 1) { cover = 0; }
-                  
-                  let rs = await ProductImage.create({
-                    file: file,
-                    position: totalimg,
-                    cover: cover,
-                    product: product.id
-                  }).fetch();
-  
-                  if(typeof(rs) === 'object'){
-                      result.push(rs);
-                  }
-  
-                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
-  
+          let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+          if(product && product.images.length === 0){
+            for (let im of p.images) {
+              try {
+                let url = (im.src.split('?'))[0];
+                let file = (im.file.split('?'))[0];
+                
+                  let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                    throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                  });
+                  if (uploaded) {
+                    let cover = 1;
+                    let totalimg = await ProductImage.count({ product: product.id});
+                    totalimg += 1;
+                    if (totalimg > 1) { cover = 0; }
+                    
+                    let rs = await ProductImage.create({
+                      file: file,
+                      position: totalimg,
+                      cover: cover,
+                      product: product.id
+                    }).fetch();
+    
+                    if(typeof(rs) === 'object'){
+                        result.push(rs);
+                    }
+                    sails.sockets.broadcast(sid, 'product_images_processed',  {result});
                 }
+              } catch (err) {
+                  errors.push(err)
+                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
               }
-
-            } catch (err) {
-                errors.push(err)
-                sails.sockets.broadcast(sid, 'product_images_processed',  {result});
             }
           }
-
         }
       } else {
         sails.sockets.broadcast(sid, 'image_task_ended', true);
@@ -1519,15 +1515,14 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
+            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }) 
+            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 });
 
             if(!pro){
-              throw new Error(`Ref: ${p.reference} : no pudimos encontrar este producto.`);
+              throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
             }
   
             if(pro){
-              let tx = await Tax.findOne({id:pro.tax});
-              let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
               if (discount && p.discount && p.discount.length > 0) {
                 let disc = await CatalogDiscount.find({
                   where:{
@@ -1557,6 +1552,11 @@ module.exports = {
                 }
               }
               try {
+                let tx = await Tax.findOne({id:pro.tax});
+                let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+                if (!pro.categories[0]) {
+                  throw new Error(`El producto Ref ${pro.reference} no tiene categoría.`);
+                }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
                     let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
@@ -1591,7 +1591,6 @@ module.exports = {
                       if (discount && vr.discount && vr.discount.length > 0) {
                         let disc = await CatalogDiscount.find({
                           where:{
-                            name: (vr.discount && vr.discount[0].name) ? vr.discount[0].name.trim().toLowerCase() : pro.name,
                             to:{'>=':moment().valueOf()},
                             from:{'<=':moment().valueOf()},
                             value: vr.discount[0].value,
@@ -1602,8 +1601,6 @@ module.exports = {
                         })
                         if (disc.length > 0) {
                           await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                            value: parseFloat(vr.discount[0].value),
-                            type: vr.discount[0].type,
                             from: moment(vr.discount[0].from).valueOf(),
                             to: moment(vr.discount[0].to).valueOf()
                           });
