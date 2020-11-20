@@ -81,7 +81,7 @@ module.exports = {
                 ProductId: pv.ean13,
                 Status: status,
                 Name: product.name,
-                Variation: pv.variation.col.toString() === 'Único' ? 'Talla Única' : pv.variation.col.toString(),
+                Variation: (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único') ? 'Talla Única' : pv.variation.col.toString(),
                 PrimaryCategory: product.mainCategory.linio.split(',')[0],
                 Categories: categories.join(','),
                 Description: jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
