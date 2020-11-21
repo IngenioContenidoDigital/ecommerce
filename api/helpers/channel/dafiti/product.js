@@ -63,8 +63,8 @@ module.exports = {
             case 'adidas':
               brand = 'Adidas Performance';
               break;
-            case 'Rosé Pistol':
-              brand = 'Rose Pistol';
+            case 'rosé pistol':
+              brand = 'rose pistol';
               break;
             case '7 de color siete' || 'color siete care':
               brand = 'color siete';
