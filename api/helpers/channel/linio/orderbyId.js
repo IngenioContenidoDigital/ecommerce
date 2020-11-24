@@ -34,7 +34,8 @@ module.exports = {
             if(order.Statuses.Status==='pending'){
               let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
               if(city.length>0 && oexists===undefined){
-                let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
+                let userEmail = order.AddressBilling.CustomerEmail ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).replace(/\s/g,''))+'@linio.com.co'
+                let user = await User.findOrCreate({emailAddress:userEmail},{
                   emailAddress:order.AddressBilling.CustomerEmail !=='' ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).replace(/\s/g,''))+'@linio.com.co',
                   emailStatus:'confirmed',
                   password:await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
@@ -80,7 +81,6 @@ module.exports = {
                   }else{
                     items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
                   }
-                  
                   for(let item of items.OrderItem){
                     let productvariation = await ProductVariation.find({or : [
                       { id:item.Sku },
