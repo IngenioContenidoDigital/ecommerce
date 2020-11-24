@@ -66,7 +66,10 @@ module.exports = {
             case 'rosé pistol':
               brand = 'rose pistol';
               break;
-            case '7 de color siete' || 'color siete care':
+            case '7 de color siete':
+              brand = 'color siete';
+              break;
+            case 'color siete care':
               brand = 'color siete';
               break;
             default:
