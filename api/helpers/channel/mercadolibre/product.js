@@ -156,7 +156,7 @@ module.exports = {
       }
       categories = categories.join(' ');
       let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
-      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories);
+      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories)
       let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
       let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
       if(storeid>0){body['official_store_id']=storeid;}
