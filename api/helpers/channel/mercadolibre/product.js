@@ -84,7 +84,7 @@ module.exports = {
             }
           ],
           'available_quantity':variation.quantity,
-          'price':price, //Crear función para validar precio específico de la variación
+          'price':parseInt(price), //Crear función para validar precio específico de la variación
           'attributes':[{
             'id':'SELLER_SKU',
             'value_name':variation.id
@@ -97,7 +97,7 @@ module.exports = {
 
       body ={
         'title':product.name.substring(0,59),
-        'price':price,
+        'price':parseInt(price),
         'currency_id':'COP',
         'buying_mode':'buy_it_now',
         'condition':'new',
@@ -195,6 +195,7 @@ module.exports = {
             }*/
           mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
             if(error){console.log(error); return exits.error(error);}
+            console.log(result);
             return exits.success(result);
           });
           break;
