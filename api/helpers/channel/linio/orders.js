@@ -82,7 +82,9 @@ module.exports = {
                 }else{
                   items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
                 }
+                let carrier = null;
                 for(let item of items.OrderItem){
+                  carrier = item.ShipmentProvider ? item.ShipmentProvider : null;
                   let productvariation = await ProductVariation.find({or : [
                     { id:item.Sku },
                     { reference: item.Sku }
@@ -99,7 +101,8 @@ module.exports = {
                   }
                 }
                 if((await CartProduct.count({cart: cart.id})) > 0){
-                  let corders = await sails.helpers.order({address: address, user: user, cart: cart, method: order.PaymentMethod, payment: payment, carrier: 'servientrega'});
+                  if(carrier===null){carrier='servientrega';}
+                  let corders = await sails.helpers.order({address: address, user: user, cart: cart, method: order.PaymentMethod, payment: payment, carrier: carrier});
                   await Order.updateOne({id: corders[0].id}).set({createdAt: parseInt(moment(order.CreatedAt).valueOf())});
                 }
               });

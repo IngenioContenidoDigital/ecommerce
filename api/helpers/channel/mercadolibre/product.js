@@ -80,7 +80,7 @@ module.exports = {
           'attribute_combinations':[
             {
               'id':'SIZE',
-              'value_name':variation.variation.col,
+              'value_name':variation.variation.col ? variation.variation.col : variation.variation.name,
             }
           ],
           'available_quantity':variation.quantity,
@@ -156,7 +156,7 @@ module.exports = {
       }
       categories = categories.join(' ');
       let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
-      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories);
+      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories)
       let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
       let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
       if(storeid>0){body['official_store_id']=storeid;}
@@ -169,6 +169,8 @@ module.exports = {
             delete body['buying_mode'];
             delete body['price'];
             delete body['description'];
+            delete body['condition'];
+            delete body['category_id'];
           //}
            /* BLOQUE DE DESCUENTOS 
             let mlproduct = result.id;

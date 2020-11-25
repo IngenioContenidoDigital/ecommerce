@@ -34,8 +34,14 @@ module.exports = {
     let filter = {};
     let error = null;
     let products = null;
+    let seller = null;
     const perPage = sails.config.custom.DEFAULTPAGE;
-    if (rights.name !== 'superadmin' && rights.name !== 'admin') { filter.seller = req.session.user.seller; }
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') { 
+      filter.seller = req.session.user.seller;
+    }else if(req.param('seller')){
+      filter.seller = req.param('seller');
+      seller = req.param('seller');
+    }
     totalproducts = await Product.count(filter);
     let pages = Math.ceil(totalproducts / perPage);
     let moment = require('moment');
@@ -44,6 +50,7 @@ module.exports = {
       products: products,
       error: error,
       pages: pages,
+      seller:seller,
       moment: moment
     });
   },
@@ -57,8 +64,13 @@ module.exports = {
     let productdata = [];
     let row = [];
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
+    let seller = req.param('seller') ? req.param('seller') : null;
     const perPage = sails.config.custom.DEFAULTPAGE;
-    if (rights.name !== 'superadmin' && rights.name !== 'admin') { filter.seller = req.session.user.seller; }
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') { 
+      filter.seller = req.session.user.seller;
+    }else if(seller!==null){
+      filter.seller = seller;
+    }
 
     productdata = [];
     products = await Product.find({
@@ -76,6 +88,7 @@ module.exports = {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle' }
+      if(p.active && (p.stock<1 || p.images.length <1)){ /*await sails.helpers.tools.productState(p.id,false);*/ cl = 'bx-x-circle';}
       let published = '';
       if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
       if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
@@ -217,12 +230,12 @@ module.exports = {
           weight: req.body.weight
         });
         await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
+        await sails.helpers.tools.productState(product.id,product.active);
       }
       product.priceWt = product.price * (1 + ((await Tax.findOne({ id: product.tax })).value / 100));
       if((await ProductVariation.count({product:product.id}))>0){
         await ProductVariation.update({product:product.id}).set({price:product.priceWt});
       }
-      await sails.helpers.channel.channelSync(product);
     } catch (err) {
       error = err.message;
     }
@@ -317,8 +330,7 @@ module.exports = {
           }
         });
     }
-
-    await sails.helpers.channel.channelSync(product);
+    await sails.helpers.tools.productState(product.id,product.active);
 
     return res.send('ok');
   },
@@ -363,9 +375,9 @@ module.exports = {
       return res.badRequest();
     }
     var id = req.param('id');
-    var state = req.param('active');
-    var updatedProduct = await Product.updateOne({ id: id }).set({ active: state });
-    return res.send(updatedProduct);
+    var state = req.param('active');    
+    await sails.helpers.tools.productState(id,state);
+    return res.send(state);
   },
   dafitiadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }

@@ -79,12 +79,14 @@
         if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
 
         io.socket.put('/products/'+id,{active:status},function(resData, jwr){
-          if(resData.active===false){
-            removeClass(elm, 'bx-check-circle');
-            addClass(elm,'bx-x-circle');
-          }else{
+          console.log('----');
+          console.log(resData);
+          if(resData){
             removeClass(elm, 'bx-x-circle');
             addClass(elm,'bx-check-circle');
+          }else{
+            removeClass(elm, 'bx-check-circle');
+            addClass(elm,'bx-x-circle');
           }
         });
     });
@@ -106,12 +108,15 @@
     });
 
     let pages = parseInt(<%= pages; %>);
+    <% if(seller!==undefined && seller!==null){%>let seller = '<%= seller%>';<%}else{%>let seller = null;<%} %>;
     
     let catalogQuery = (page) => {
       if(page>pages){
         return;
       }else{
-        io.socket.get('/catalogquery/'+page, p =>{
+        let route = '/catalogquery/'+page;
+        if(seller!==null){route+='/'+seller;}
+        io.socket.get(route, p =>{
           let loader = document.querySelector('.pageloader');
           if(hasClass(loader,'is-active')){
             removeClass(loader,'is-active');
@@ -121,7 +126,6 @@
         });
       }
     };
-    
     catalogQuery(1);
   </script>
 </div>
