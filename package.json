@@ -24,6 +24,7 @@
     "jsonwebtoken": "^8.5.1",
     "mercadolibre": "0.0.13",
     "moment": "^2.24.0",
+    "mssql": "^6.2.3",
     "node-uuid": "^1.4.8",
     "pdf-to-base64": "^1.0.3",
     "randomatic": "^3.1.1",

@@ -26,7 +26,8 @@ module.exports = {
     let idCity = address.city.code.slice(2);
     let customerName = await sails.helpers.parseName(customer.fullName);
     let secondLastName = customerName.secondLastName !== '' ? customerName.secondLastName : customerName.lastName;
-    let requestArgs={
+    let addressline = address.addressline1.length > 40 ? address.addressline1.slice(0, 40) : address.addressline1;
+    let requestArgs= {
       idDocumento: 80028,
       strNombreDocumento: 'Clientes Ocasionales',
       idCompania: 2,
@@ -47,7 +48,7 @@ module.exports = {
           <F160_FECHA_INGRESO>${moment().format('YYYYMMDD')}</F160_FECHA_INGRESO>
           <F160_FECHA_NACIMIENTO>${moment().format('YYYYMMDD')}</F160_FECHA_NACIMIENTO>
           <F015_CONTACTO>${customer.fullName}</F015_CONTACTO>
-          <F015_DIRECCION1>${address.addressline1}</F015_DIRECCION1>
+          <F015_DIRECCION1>${addressline}</F015_DIRECCION1>
           <F015_ID_PAIS>169</F015_ID_PAIS>
           <F015_ID_DEPTO>${idDepto}</F015_ID_DEPTO>
           <F015_ID_CIUDAD>${idCity}</F015_ID_CIUDAD>
@@ -57,7 +58,6 @@ module.exports = {
           </MyDataSet>]]>`,
       Path: 'E:'
     };
-
     let options = { endpoint: 'http://190.0.46.6:14999/ServiciosWeb/wsGenerarPlano.asmx'};
     soap.createClient(url, options, (err, client) =>{
       let method = client['ImportarDatosXML'];

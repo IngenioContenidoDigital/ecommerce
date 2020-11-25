@@ -23,34 +23,51 @@ module.exports = {
       let resultCustomer = await sails.helpers.integrationsiesa.exportClient(order.customer, address);
       if (resultCustomer.ImportarDatosXMLResult === 'Importacion exitosa') {
         let Movto = '';
+        let i = 0;
         let deliveryDate = moment().add(5, 'days').format('YYYYMMDD');
         let idSucursal = address.region.name === 'san andrés y providencia' ? '002' : '001';
         let nameAddress = address.region.name + ' ' + address.city.name;
         let noteAddress = nameAddress.toLowerCase().trim().split(' ').map( v => v[0].toUpperCase() + v.substr(1) ).join(' ');
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          const movtoItem = `<Movto_Pedidos_Comercial>
-            <f431_consec_docto>1</f431_consec_docto>
-            <f431_nro_registro>${i+1}</f431_nro_registro>
-            <f431_referencia_item></f431_referencia_item>
-            <f431_codigo_barras>${item.productvariation.ean13}</f431_codigo_barras>
-            <f431_id_ext1_detalle></f431_id_ext1_detalle>
-            <f431_id_ext2_detalle></f431_id_ext2_detalle>
-            <f431_id_un_movto></f431_id_un_movto>
-            <f431_fecha_entrega>${deliveryDate}</f431_fecha_entrega>
-            <f431_num_dias_entrega>5</f431_num_dias_entrega>
-            <f431_id_unidad_medida>UND</f431_id_unidad_medida>
-            <f431_cant_pedida_base>1</f431_cant_pedida_base>
-            <f431_precio_unitario>${item.productvariation.price}</f431_precio_unitario>
-          </Movto_Pedidos_Comercial>
-          <Impuestos>
-            <F430_CONSEC_DOCTO>1</F430_CONSEC_DOCTO>
-            <F431_NRO_REGISTRO>${i+1}</F431_NRO_REGISTRO>
-            <F433_ID_LLAVE_IMPUESTO>IV02</F433_ID_LLAVE_IMPUESTO>
-            <F433_VLR_UNI>8765</F433_VLR_UNI>
-          </Impuestos>`;
-          Movto = Movto + movtoItem;
-        }
+        let resultItems = [];
+        items.forEach((ite) => {
+          var tempKey = ite.productvariation.id;
+          if (!resultItems.hasOwnProperty(tempKey)) {
+            ite.quantity = 1;
+            resultItems[tempKey] = ite;
+          } else {
+            resultItems[tempKey].quantity += 1;
+          }
+        });
+        Object.keys(resultItems).map((key) => {
+          const item = resultItems[key];
+          const priceIva = parseInt(item.originalPrice - (item.originalPrice/1.19));
+          const unitPrice = address.region.iva ? Math.ceil((item.originalPrice - item.discount) - priceIva) : Math.ceil(item.originalPrice - item.discount);
+          const movtoItem = `<Movto_Pedidos_Comercial>              
+              <f431_id_tipo_docto>EMV</f431_id_tipo_docto>
+              <f431_consec_docto>1</f431_consec_docto>
+              <f431_nro_registro>${i+1}</f431_nro_registro>
+              <f431_referencia_item></f431_referencia_item>
+              <f431_codigo_barras>${item.productvariation.ean13}</f431_codigo_barras>
+              <f431_id_ext1_detalle></f431_id_ext1_detalle>
+              <f431_id_ext2_detalle></f431_id_ext2_detalle>
+              <f431_id_un_movto></f431_id_un_movto>
+              <f431_fecha_entrega>${deliveryDate}</f431_fecha_entrega>
+              <f431_num_dias_entrega>5</f431_num_dias_entrega>
+              <f431_id_unidad_medida>UND</f431_id_unidad_medida>
+              <f431_cant_pedida_base>${item.quantity}</f431_cant_pedida_base>
+              <f431_precio_unitario>${unitPrice}</f431_precio_unitario>
+            </Movto_Pedidos_Comercial>`;
+          const tax = address.region.iva ? '' : `
+            <Impuestos>
+              <F430_CONSEC_DOCTO>1</F430_CONSEC_DOCTO>
+              <F431_NRO_REGISTRO>${i+1}</F431_NRO_REGISTRO>
+              <F433_ID_LLAVE_IMPUESTO>IV02</F433_ID_LLAVE_IMPUESTO>
+              <F433_VLR_UNI>${priceIva}</F433_VLR_UNI>
+            </Impuestos>
+          `;
+          Movto = Movto + movtoItem + tax;
+          i += 1;
+        });
         let requestArgs={
           idDocumento: 80032,
           strNombreDocumento: 'Pedidos',
@@ -90,8 +107,11 @@ module.exports = {
           if(err){return exits.error(err);}
           method(requestArgs, async (err, result)=>{
             if(err){return exits.error(err);}
-            if(result){
-              return exits.success(true);
+            if(result.ImportarDatosXMLResult === 'Importacion exitosa'){
+              await sails.helpers.integrationsiesa.updateCargue(order.reference, 'Aceptado');
+              return exits.success(result);
+            }else {
+              return exits.error('No se pudo crear el pedido');
             }
           });
         });
