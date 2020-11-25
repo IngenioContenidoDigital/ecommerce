@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-pageloader@2.2.0/dist/css/bulma-pageloader.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pubsub-js/1.9.0/pubsub.min.js" integrity="sha512-uBtVltNBUq45IPe/JWfSr1t6bWcpivYh/EJfQxZQ8jVqI6olmUfDrOscYHSoZnmJJpHe1cWZTupZ1SFgQaLyQw==" crossorigin="anonymous"></script>
 <% let printed = []; let flag = false; %>
 <div class="container">
       <div class="pageloader is-active"><span class="title">Buscando Ordenes ...</span></div>
@@ -63,6 +64,6 @@
           let loader = document.querySelector('.pageloader');
           if(hasClass(loader,'is-active')){removeClass(loader,'is-active');}
         }
-
+        
       </script>
 </div>
