@@ -45,7 +45,7 @@ module.exports = {
 
     let filename = null;
     let isActive = (req.body.activo==='on') ? true : false;
-    
+    let integrationErp = (req.body.integrationErp==='on') ? true : false;
     try{
 
       let addData = {
@@ -69,7 +69,8 @@ module.exports = {
         domain:req.body.url ? req.body.url : '',
         active:isActive,
         salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
-        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0
+        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
+        integrationErp
       }
 
       try{
@@ -115,6 +116,7 @@ module.exports = {
     }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
+    let integrationErp = (req.body.integrationErp==='on') ? true : false;
     let id = req.param('id');
     let seller = await Seller.findOne({id:id});
     let address = null;
@@ -156,7 +158,8 @@ module.exports = {
         mainAddress:address.id,
         active:isActive,
         salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
-        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0});
+        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
+        integrationErp});
 
         if(req.body.secret && req.body.key && req.body.version && req.body.apiurl){
             integration = {
@@ -194,7 +197,8 @@ module.exports = {
           mainAddress:address.id,
           active:isActive,
           salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
-          skuPrice: req.body.skuPrice ? req.body.skuPrice : 0});
+          skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
+          integrationErp});
         
         if(req.body.secret && req.body.key && req.body.version && req.body.apiurl){
             integration = {

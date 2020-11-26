@@ -113,9 +113,16 @@
                       </div>
                     </div>
                     <div class="field">
-                      <label class="label">URL</label>
+                      <label class="label is-size-7">URL</label>
                       <div class="control">
                         <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <div class="control">
+                        <label class="label is-size-7">Integracion ERP</label>
+                        <input id="integrationErp" type="checkbox" name="integrationErp" class="switch is-success" <% if(action=='edit' && seller.integrationErp){%>checked<%}%>>
+                        <label for="integrationErp"></label>
                       </div>
                     </div>
                     <%if(action == 'edit'){%>
