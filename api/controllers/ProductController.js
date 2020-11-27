@@ -34,8 +34,14 @@ module.exports = {
     let filter = {};
     let error = null;
     let products = null;
+    let seller = null;
     const perPage = sails.config.custom.DEFAULTPAGE;
-    if (rights.name !== 'superadmin' && rights.name !== 'admin') { filter.seller = req.session.user.seller; }
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') { 
+      filter.seller = req.session.user.seller;
+    }else if(req.param('seller')){
+      filter.seller = req.param('seller');
+      seller = req.param('seller');
+    }
     totalproducts = await Product.count(filter);
     let pages = Math.ceil(totalproducts / perPage);
     let moment = require('moment');
@@ -44,6 +50,7 @@ module.exports = {
       products: products,
       error: error,
       pages: pages,
+      seller:seller,
       moment: moment
     });
   },
@@ -57,8 +64,13 @@ module.exports = {
     let productdata = [];
     let row = [];
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
+    let seller = req.param('seller') ? req.param('seller') : null;
     const perPage = sails.config.custom.DEFAULTPAGE;
-    if (rights.name !== 'superadmin' && rights.name !== 'admin') { filter.seller = req.session.user.seller; }
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') { 
+      filter.seller = req.session.user.seller;
+    }else if(seller!==null){
+      filter.seller = seller;
+    }
 
     productdata = [];
     products = await Product.find({
@@ -76,6 +88,7 @@ module.exports = {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle' }
+      if(p.active && (p.stock<1 || p.images.length <1)){ /*await sails.helpers.tools.productState(p.id,false);*/ cl = 'bx-x-circle';}
       let published = '';
       if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
       if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
@@ -217,12 +230,12 @@ module.exports = {
           weight: req.body.weight
         });
         await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
+        await sails.helpers.tools.productState(product.id,product.active);
       }
       product.priceWt = product.price * (1 + ((await Tax.findOne({ id: product.tax })).value / 100));
       if((await ProductVariation.count({product:product.id}))>0){
         await ProductVariation.update({product:product.id}).set({price:product.priceWt});
       }
-      await sails.helpers.channel.channelSync(product);
     } catch (err) {
       error = err.message;
     }
@@ -317,8 +330,7 @@ module.exports = {
           }
         });
     }
-
-    await sails.helpers.channel.channelSync(product);
+    await sails.helpers.tools.productState(product.id,product.active);
 
     return res.send('ok');
   },
@@ -363,9 +375,9 @@ module.exports = {
       return res.badRequest();
     }
     var id = req.param('id');
-    var state = req.param('active');
-    var updatedProduct = await Product.updateOne({ id: id }).set({ active: state });
-    return res.send(updatedProduct);
+    var state = req.param('active');    
+    await sails.helpers.tools.productState(id,state);
+    return res.send(state);
   },
   dafitiadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
@@ -448,13 +460,14 @@ module.exports = {
     }
     try {
       let action = null;
+      let status = req.body.status ? 'active' : 'paused';
       let product = await Product.findOne({ id: req.body.product });
       if (product.ml) {
         action = 'Update';
       } else {
         action = 'Post';
       }
-      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre);
+      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre,status);
       if (response) {
         console.log(response);
         await Product.updateOne({ id: req.param('product') }).set({
@@ -491,7 +504,7 @@ module.exports = {
           await Product.updateOne({ id: req.param('product') }).set({
             linio: true,
             liniostatus: (product[0].liniostatus) ? false : true,
-            linioprice: req.body.dafitiprice,
+            linioprice: req.body.linioprice,
           });
           let imgresult = await sails.helpers.channel.linio.images(product);      
           var imgxml = jsonxml(imgresult,true);
@@ -1415,44 +1428,40 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          for (let im of p.images) {
-            try {
-              let url = (im.src.split('?'))[0];
-              let file = (im.file.split('?'))[0];
-              
-              let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
-              if(product && product.images.length === 0){
-                let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                  throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                });
-                if (uploaded) {
-                  let cover = 1;
-                  let totalimg = await ProductImage.count({ product: product.id});
-                  totalimg += 1;
-                  if (totalimg > 1) { cover = 0; }
-                  
-                  let rs = await ProductImage.create({
-                    file: file,
-                    position: totalimg,
-                    cover: cover,
-                    product: product.id
-                  }).fetch();
-  
-                  if(typeof(rs) === 'object'){
-                      result.push(rs);
-                  }
-  
-                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
-  
+          let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+          if(product && product.images.length === 0){
+            for (let im of p.images) {
+              try {
+                let url = (im.src.split('?'))[0];
+                let file = (im.file.split('?'))[0];
+                
+                  let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                    throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                  });
+                  if (uploaded) {
+                    let cover = 1;
+                    let totalimg = await ProductImage.count({ product: product.id});
+                    totalimg += 1;
+                    if (totalimg > 1) { cover = 0; }
+                    
+                    let rs = await ProductImage.create({
+                      file: file,
+                      position: totalimg,
+                      cover: cover,
+                      product: product.id
+                    }).fetch();
+    
+                    if(typeof(rs) === 'object'){
+                        result.push(rs);
+                    }
+                    sails.sockets.broadcast(sid, 'product_images_processed',  {result});
                 }
+              } catch (err) {
+                  errors.push(err)
+                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
               }
-
-            } catch (err) {
-                errors.push(err)
-                sails.sockets.broadcast(sid, 'product_images_processed',  {result});
             }
           }
-
         }
       } else {
         sails.sockets.broadcast(sid, 'image_task_ended', true);
@@ -1519,19 +1528,17 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
+            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }) 
+            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 });
 
             if(!pro){
-              throw new Error(`Ref: ${p.reference} : no pudimos encontrar este producto.`);
+              throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
             }
   
             if(pro){
-              let tx = await Tax.findOne({id:pro.tax});
-              let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
               if (discount && p.discount && p.discount.length > 0) {
                 let disc = await CatalogDiscount.find({
                   where:{
-                    name: p.discount[0].name.trim().toLowerCase(),
                     to:{'>=':moment().valueOf()},
                     from:{'<=':moment().valueOf()},
                     value: p.discount[0].value,
@@ -1542,8 +1549,6 @@ module.exports = {
                 })
                 if (disc.length > 0) {
                   await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                    value: parseFloat(p.discount[0].value),
-                    type: p.discount[0].type,
                     from: moment(p.discount[0].from).valueOf(),
                     to: moment(p.discount[0].to).valueOf()
                   });
@@ -1560,6 +1565,11 @@ module.exports = {
                 }
               }
               try {
+                let tx = await Tax.findOne({id:pro.tax});
+                let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
+                if (!pro.categories[0]) {
+                  throw new Error(`El producto Ref ${pro.reference} no tiene categoría.`);
+                }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
                     let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
@@ -1594,7 +1604,6 @@ module.exports = {
                       if (discount && vr.discount && vr.discount.length > 0) {
                         let disc = await CatalogDiscount.find({
                           where:{
-                            name: (vr.discount && vr.discount[0].name) ? vr.discount[0].name.trim().toLowerCase() : pro.name,
                             to:{'>=':moment().valueOf()},
                             from:{'<=':moment().valueOf()},
                             value: vr.discount[0].value,
@@ -1605,8 +1614,6 @@ module.exports = {
                         })
                         if (disc.length > 0) {
                           await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                            value: parseFloat(vr.discount[0].value),
-                            type: vr.discount[0].type,
                             from: moment(vr.discount[0].from).valueOf(),
                             to: moment(vr.discount[0].to).valueOf()
                           });

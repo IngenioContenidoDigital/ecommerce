@@ -267,7 +267,7 @@
                           <div class="field">
                             <label class="label is-size-7">Código Postal</label>
                             <div class="control">
-                              <input class="input is-size-7" name="zipcode" type="string" placeholder="Código Postal de la Dirección" <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.zipcode%>"<%}%>/>
+                              <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección" <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.zipcode%>"<%}%>/>
                             </div>
                           </div>
                           <div class="field">
@@ -452,6 +452,11 @@
                                 <span class="icon">
                                 <i class="bx bxs-edit"></i>
                                 </span>
+                            </a>
+                            <a href="/products/<%= seller.id %>" class="button is-small">
+                              <span class="icon">
+                                <i class='bx bx-scan'></i>
+                              </span>
                             </a>
                             </td>
                         </tr>

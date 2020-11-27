@@ -43,7 +43,7 @@ module.exports = {
             sort: 'createdAt DESC',
             limit: 1
           });
-          let status= inputs.status ? inputs.status : active;
+          let status= inputs.status ? inputs.status : 'active';
 
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
@@ -63,7 +63,10 @@ module.exports = {
             case 'Rosé Pistol':
               brand = 'Rose Pistol';
               break;
-            case '7 de color siete' || 'color siete care':
+            case '7 de color siete':
+              brand = 'color siete';
+              break;
+            case 'color siete care':
               brand = 'color siete';
               break;
             default:
@@ -81,7 +84,7 @@ module.exports = {
                 ProductId: pv.ean13,
                 Status: status,
                 Name: product.name,
-                Variation: pv.variation.col.toString() === 'Único' ? 'Talla Única' : pv.variation.col.toString(),
+                Variation: (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único') ? 'Talla Única' : pv.variation.col.toString(),
                 PrimaryCategory: product.mainCategory.linio.split(',')[0],
                 Categories: categories.join(','),
                 Description: jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
@@ -90,7 +93,7 @@ module.exports = {
                 Quantity: pv.quantity < 0 ? '0' : pv.quantity.toString(),
                 TaxClass: product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%',
                 ProductData: {
-                  ShortDescription: jsonxml.cdata((product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
+                  ShortDescription: jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort)/*.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))*/,
                   PackageHeight: product.height,
                   PackageLength: product.length,
                   PackageWidth: product.width,
@@ -104,7 +107,22 @@ module.exports = {
             };
             //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
             if(categories.length<2){delete data.Product.Categories;}
-            if(categories.includes('13984') || categories.includes('15215') || categories.includes('12792')){delete data.Product.ProductData.Gender;}
+            if(categories.includes('13984')/** Belleza y Cuidado*/){ 
+              delete data.Product.ProductData.Gender; 
+              data.Product.ProductData.SanitaryRegistration= product.register ? product.register : '';
+              data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
+              data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
+              if(categories.includes('14444')/** Perfumes */){
+                data.Product.ProductData.ProductContent= pv.variation.name;
+                //let intencity = ['Perfume Extract','Eau de Parfum','Eau de Toilette','Eau de Cologne'];
+                data.Product.ProductData.Intencity = 'Eau de Toilette';
+              }
+            }
+            if(categories.includes('15215')/** Hogar*/){ delete data.Product.ProductData.Gender; }
+            if(categories.includes('12792')/** Deportes*/){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('10253')/** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
+
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }

@@ -43,7 +43,7 @@ module.exports = {
             sort: 'createdAt DESC',
             limit: 1
           });
-          let status= inputs.status ? inputs.status : active;
+          let status= inputs.status ? inputs.status : 'active';
 
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
@@ -63,10 +63,13 @@ module.exports = {
             case 'adidas':
               brand = 'Adidas Performance';
               break;
-            case 'Rosé Pistol':
-              brand = 'Rose Pistol';
+            case 'rosé pistol':
+              brand = 'rose pistol';
               break;
-            case '7 de color siete' || 'color siete care':
+            case '7 de color siete':
+              brand = 'color siete';
+              break;
+            case 'color siete care':
               brand = 'color siete';
               break;
             default:

@@ -82,13 +82,18 @@ module.exports = {
                 }else{
                   items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
                 }
+                let carrier = null;
                 for(let item of items.OrderItem){
-                  let productvariation = await ProductVariation.findOne({id: item.Sku});
+                  carrier = item.ShipmentProvider ? item.ShipmentProvider : null;
+                  let productvariation = await ProductVariation.find({or : [
+                    { id:item.Sku },
+                    { reference: item.Sku }
+                  ]});
                   if(productvariation){
                     await CartProduct.create({
                       cart: cart.id,
-                      product: productvariation.product,
-                      productvariation: productvariation.id,
+                      product: productvariation[0].product,
+                      productvariation: productvariation[0].id,
                       totalDiscount: parseFloat(item.VoucherAmount),
                       totalPrice: parseFloat(item.ItemPrice),
                       externalReference: item.OrderItemId
@@ -96,7 +101,8 @@ module.exports = {
                   }
                 }
                 if((await CartProduct.count({cart: cart.id})) > 0){
-                  let corders = await sails.helpers.order({address: address, user: user, cart: cart, method: order.PaymentMethod, payment: payment, carrier: 'servientrega'});
+                  if(carrier===null){carrier='servientrega';}
+                  let corders = await sails.helpers.order({address: address, user: user, cart: cart, method: order.PaymentMethod, payment: payment, carrier: carrier});
                   await Order.updateOne({id: corders[0].id}).set({createdAt: parseInt(moment(order.CreatedAt).valueOf())});
                 }
               });

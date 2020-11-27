@@ -16,9 +16,6 @@ module.exports = {
     }
   },
   fn: async function (inputs, exits) {
-    let soap = require('strong-soap').soap;
-    //let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
-    let url = 'http://guias.coordinadora.com/ws/guias/1.6/server.php?wsdl';
 
     let order = await Order.findOne({id:inputs.order})
     .populate('customer')
@@ -32,7 +29,10 @@ module.exports = {
     let oitems = await OrderItem.find({order:order.id}).populate('product');
     let items = oitems.length;
 
-    if(order.carrier.name==='coordinadora'){
+    if(order.channel==='direct'){
+      let soap = require('strong-soap').soap;
+      //let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
+      let url = 'http://guias.coordinadora.com/ws/guias/1.6/server.php?wsdl';
       let alto = 0;
       let largo = 0;
       let ancho = 0;
@@ -158,7 +158,7 @@ module.exports = {
         });
       });
     }
-    if(order.carrier.name==='servientrega' && order.channel==='dafiti'){
+    if(order.channel==='dafiti'){
       let litems = [];
       for(let it of oitems){
         if(!litems.includes(it.externalReference)){
@@ -182,6 +182,32 @@ module.exports = {
         await Order.updateOne({id:order.id}).set({tracking:tracking});
         let rts = await sails.helpers.channel.dafiti.sign('SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega','TrackingNumber='+tracking]);
         await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+rts,'POST');
+      }
+    }
+    if(order.channel==='linio'){
+      let litems = [];
+      for(let it of oitems){
+        if(!litems.includes(it.externalReference)){
+          litems.push(it.externalReference);
+        }
+      }
+      let route = await sails.helpers.channel.linio.sign('SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship']);
+      let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'POST');
+      let result = JSON.parse(response);
+      if(result.SuccessResponse){
+        let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems',order.seller,['OrderId='+order.channelref]);
+        let citems = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+itemsign,'GET');
+        let rs = JSON.parse(citems);
+        let items = {OrderItem:[]};
+        if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
+          items = rs.SuccessResponse.Body.OrderItems;
+        }else{
+          items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+        }
+        let tracking = items.OrderItem[0].TrackingCode;
+        await Order.updateOne({id:order.id}).set({tracking:tracking});
+        let rts = await sails.helpers.channel.linio.sign('SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','TrackingNumber='+tracking]);
+        await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+rts,'POST');
       }
     }
 

@@ -27,58 +27,65 @@ module.exports = {
         let orders = {
           Order:[]
         };
-        orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
-        for(let order of orders.Order){
-          let oexists = await Order.findOne({channel:'linio',channelref:order.OrderId,seller:inputs.seller});
-          data = {channel: 'linio', channelref: order.OrderId, seller: inputs.seller};
-          if(order.Statuses.Status==='pending'){
-            let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
-            if(city.length>0 && oexists===undefined){
-              let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
-                emailAddress:order.AddressBilling.CustomerEmail !=='' ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.FirstName).replace(/\s/g,''))+'@linio.com.co',
-                emailStatus:'confirmed',
-                password:await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
-                fullName:order.CustomerFirstName+' '+order.CustomerLastName,
-                dniType:'CC',
-                dni:order.NationalRegistrationNumber.replace(/\./gi,''),
-                mobilecountry:city[0].region.country,
-                mobile:order.AddressShipping.Phone2 ? parseInt(order.AddressShipping.Phone2) : 0,
-                mobileStatus:'unconfirmed',
-                profile:profile.id
-              });
-
-              let address = await Address.findOrCreate({addressline1:order.AddressShipping.Address1.toLowerCase().trim()},{
-                name:order.AddressShipping.Address1.trim().toLowerCase(),
-                addressline1:order.AddressShipping.Address1.trim().toLowerCase(),
-                addressline2:order.AddressShipping.Address2 ? order.AddressShipping.Address2.trim().toLowerCase() : '',
-                country:city[0].region.country,
-                region:city[0].region.id,
-                city:city[0].id,
-                notes:order.DeliveryInfo ? order.DeliveryInfo : '',
-                zipcode:order.AddressShipping.PostCode ? order.AddressShipping.PostCode : '',
-                user:user.id,
-              });
-              let payment = {
-                data:{
-                  estado:'Aceptada',
-                  channel:'linio',
-                  channelref:order.OrderId
-                }
-              };
-              payment.data['ref_payco'] = order.OrderNumber;
-              let cart = await Cart.create().fetch();
-              let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems',inputs.seller,['OrderId='+order.OrderId]);
-              await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+itemsign,'GET')
+          orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
+          for(let order of orders.Order){
+            let oexists = await Order.findOne({channel:'linio',channelref:order.OrderId,seller:inputs.seller});
+            data = {channel: 'linio', channelref: order.OrderId, seller: inputs.seller};
+            if(order.Statuses.Status==='pending'){
+              let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
+              if(city.length>0 && oexists===undefined){
+                let userEmail = order.AddressBilling.CustomerEmail ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).replace(/\s/g,''))+'@linio.com.co'
+                let user = await User.findOrCreate({emailAddress:userEmail},{
+                  emailAddress:order.AddressBilling.CustomerEmail !=='' ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).replace(/\s/g,''))+'@linio.com.co',
+                  emailStatus:'confirmed',
+                  password:await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
+                  fullName:order.CustomerFirstName+' '+order.CustomerLastName,
+                  dniType:'CC',
+                  dni:order.NationalRegistrationNumber.replace(/\./gi,''),
+                  mobilecountry:city[0].region.country,
+                  mobile:order.AddressShipping.Phone2 ? parseInt(order.AddressShipping.Phone2) : 0,
+                  mobileStatus:'unconfirmed',
+                  profile:profile.id
+                });
+                
+                let address = await Address.findOrCreate({addressline1:order.AddressShipping.Address1.toLowerCase().trim()},{
+                  name:order.AddressShipping.Address1.trim().toLowerCase(),
+                  addressline1:order.AddressShipping.Address1.trim().toLowerCase(),
+                  addressline2:order.AddressShipping.Address2 ? order.AddressShipping.Address2.trim().toLowerCase() : '',
+                  country:city[0].region.country,
+                  region:city[0].region.id,
+                  city:city[0].id,
+                  notes:order.DeliveryInfo ? order.DeliveryInfo : '',
+                  zipcode:order.AddressShipping.PostCode ? order.AddressShipping.PostCode : '',
+                  user:user.id,
+                });
+                let payment = {
+                  data:{
+                    estado:'Aceptada',
+                    channel:'linio',
+                    channelref:order.OrderId
+                  }
+                };
+                payment.data['ref_payco'] = order.OrderNumber;
+                let cart = await Cart.create().fetch();
+                let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems',inputs.seller,['OrderId='+order.OrderId]);
+                await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+itemsign,'GET')
                 .then(async (result)=>{
                   let rs = JSON.parse(result);
                   let items = {
                     OrderItem:[]
                   };
-
-                  items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
-
+                  
+                  if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
+                    items = rs.SuccessResponse.Body.OrderItems;
+                  }else{
+                    items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+                  }
                   for(let item of items.OrderItem){
-                    let productvariation = await ProductVariation.findOne({id:item.Sku})
+                    let productvariation = await ProductVariation.find({or : [
+                      { id:item.Sku },
+                      { reference: item.Sku }
+                    ]})
                     .catch(err=>{
                       console.log(err.message);
                     });
@@ -86,8 +93,8 @@ module.exports = {
                     if(productvariation){
                       await CartProduct.create({
                         cart:cart.id,
-                        product:productvariation.product,
-                        productvariation:productvariation.id,
+                        product:productvariation[0].product,
+                        productvariation:productvariation[0].id,
                         totalDiscount:parseFloat(item.VoucherAmount),
                         totalPrice:parseFloat(item.ItemPrice),
                         externalReference:item.OrderItemId
