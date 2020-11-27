@@ -31,11 +31,11 @@ module.exports = {
     };
     try {
       let connection = await sql.connect(config);
-      let results = await connection.request()
+      await connection.request()
         .input('idCargue', sql.VarChar(50), inputs.orderState)
         .input('referenciaVtex', sql.VarChar(50), inputs.orderRef)
         .execute('sp_ActualizarCargue');
-      return exits.success(results.recordset[0].resultado);
+      return exits.success(true);
     } catch (error) {
       return exits.error(error);
     }

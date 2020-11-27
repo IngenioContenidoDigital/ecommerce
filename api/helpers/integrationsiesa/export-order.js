@@ -50,6 +50,7 @@ module.exports = {
               <f431_codigo_barras>${item.productvariation.ean13}</f431_codigo_barras>
               <f431_id_ext1_detalle></f431_id_ext1_detalle>
               <f431_id_ext2_detalle></f431_id_ext2_detalle>
+              <f431_id_motivo>${order.channel === 'dafiti' ? 19 : order.channel === 'linio' ? 20 : order.channel === 'mercadolibre' ? 21 : 13 }</f431_id_motivo>
               <f431_id_un_movto></f431_id_un_movto>
               <f431_fecha_entrega>${deliveryDate}</f431_fecha_entrega>
               <f431_num_dias_entrega>5</f431_num_dias_entrega>
@@ -109,15 +110,11 @@ module.exports = {
             if(err){return exits.error(err);}
             if(result.ImportarDatosXMLResult === 'Importacion exitosa'){
               await sails.helpers.integrationsiesa.updateCargue(order.reference, 'Aceptado');
-              return exits.success(result);
-            }else {
-              return exits.error('No se pudo crear el pedido');
             }
           });
         });
-      } else {
-        return exits.error(resultCustomer.ImportarDatosXMLResult);
       }
+      return exits.success(true);
     } else {
       return exits.error('La orden no fue encontrada');
     }
