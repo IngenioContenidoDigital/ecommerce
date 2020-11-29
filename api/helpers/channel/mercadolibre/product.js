@@ -195,7 +195,6 @@ module.exports = {
             }*/
           mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
             if(error){console.log(error); return exits.error(error);}
-            console.log(result);
             return exits.success(result);
           });
           break;
