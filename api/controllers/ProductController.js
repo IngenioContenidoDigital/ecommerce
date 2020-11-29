@@ -1575,6 +1575,7 @@ module.exports = {
                     let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
                     let productVariation;
                     let discountHandled = false;
+                    
                     if(!variation){
                       variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                     }
