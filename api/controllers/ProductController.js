@@ -443,13 +443,8 @@ module.exports = {
       let products = await Product.find({ seller: s.seller, dafiti: true, dafitiqc: false })
       for (let p of products) {
         let result = await sails.helpers.channel.dafiti.checkstatus(p.id)
-          .catch(e => {
-            response.errors.push({ code: e.raw.code, message: p.reference });
-          });
-
-        if (result) {
-          response.items.push({ code: 'OK', message: p.reference });
-        }
+          .tolerate('notFound', () => {response.errors.push({ code: e.raw.code, message: p.reference });});
+        if (result) {response.items.push({ code: 'OK', message: p.reference });}
       }
     }
     return res.send(JSON.stringify(response));
@@ -544,13 +539,8 @@ module.exports = {
       let products = await Product.find({ seller: s.seller, linio: true, linioqc: false })
       for (let p of products) {
         let result = await sails.helpers.channel.linio.checkstatus(p.id)
-          .catch(e => {
-            response.errors.push({ code: e.raw.code, message: p.reference });
-          });
-
-        if (result) {
-          response.items.push({ code: 'OK', message: p.reference });
-        }
+        .tolerate('notFound', ()=>{response.errors.push({ code: 'NOTFOUND', message: p.reference });});
+        if(result){response.items.push({ code: 'OK', message: p.reference });}
       }
     }
     return res.send(JSON.stringify(response));
