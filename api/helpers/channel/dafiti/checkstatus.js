@@ -31,16 +31,24 @@ module.exports = {
     let result = JSON.parse(response);
 
     try{
-      let state = result.SuccessResponse.Body.Status.State.Status ? result.SuccessResponse.Body.Status.State.Status : result.SuccessResponse.Body.Status.State[0].Status; 
-      if(state==='approved'){
-        await Product.updateOne({id:inputs.product}).set({linio:true,linioqc:true});
-        return exits.success(result);
+      if(result.SuccessResponse.Body.Status){
+        let state = result.SuccessResponse.Body.Status.State.Status ? result.SuccessResponse.Body.Status.State.Status : result.SuccessResponse.Body.Status.State[0].Status
+        if(state==='approved'){
+          await Product.updateOne({id:inputs.product}).set({dafiti:true,dafitiqc:true});
+        }else if(state==='pending'){
+          await Product.updateOne({id:inputs.product}).set({dafiti:true,dafitiqc:false});
+        }else{
+          await Product.updateOne({id:inputs.product}).set({dafiti:false,dafitiqc:false});
+        } 
+        return exits.success(state);
+      }else{
+        await Product.updateOne({id:inputs.product}).set({dafiti:false,dafitistatus:false,dafitiqc:false});
+        return exits.success();
       }
     }catch(e){
       console.log(e);
+      throw 'notFound';
     }
-    await Product.updateOne({id:inputs.product}).set({linio:false,liniostatus:false,linioprice:0,linioqc:false});
-    throw 'notFound';
 
   }
 
