@@ -120,7 +120,12 @@ module.exports = {
             }
             if(categories.includes('15215')/** Hogar*/){ delete data.Product.ProductData.Gender; }
             if(categories.includes('12792')/** Deportes*/){ delete data.Product.ProductData.Gender;}
-            if(categories.includes('10253')/** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('10253')/** Salud y Bienestar*/){ 
+              delete data.Product.ProductData.Gender;
+              data.Product.ProductData.SanitaryRegistration= product.register ? product.register : '';
+              data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
+              data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
+            }
             if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
 
             if(i>0 && productvariation.length>1){
