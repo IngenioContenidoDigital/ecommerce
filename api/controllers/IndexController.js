@@ -62,16 +62,14 @@ module.exports = {
     let questions = 0;
     let questionsSeller = 0;
     let seller = req.session.user.seller || '';
-    let sellers;
     let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
     } else {
-      sellers = await Seller.find({});
       questions = await Question.count({status: 'UNANSWERED'});
     }
     req.session.questions = integration ? questionsSeller : questions;
-    return res.view('pages/homeadmin',{layout:'layouts/admin', sellers});
+    return res.view('pages/homeadmin',{layout:'layouts/admin'});
   },
   filterDashboard:async (req, res) =>{
     let moment = require('moment');
@@ -149,13 +147,15 @@ module.exports = {
   generateReport:async (req, res) =>{
     const Excel = require('exceljs');
     const moment = require('moment');
+    moment.locale('es');
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
     }
     let sellerId = req.param('seller');
-    let dateStart = new Date(moment().subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
-    let dateEnd = new Date(moment().subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
+    let month = req.param('month');
+    let dateStart = new Date(moment(month, 'MMMM YYYY').subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
+    let dateEnd = new Date(moment(month, 'MMMM YYYY').subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let orders = await Order.find({
       where: {
         seller: sellerId,
@@ -224,8 +224,9 @@ module.exports = {
     const moment = require('moment');
     const pdf = require('html-pdf');
     let sellerId = req.param('seller');
-    let date = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
-    let data = await sails.helpers.reportSeller(sellerId);
+    let month = req.param('month');
+    let date = moment(month, 'MMMM YYYY').subtract(1, 'months').locale('es').format('MMMM YYYY');
+    let data = await sails.helpers.reportSeller(sellerId, month);
     try {
       const html = `<!DOCTYPE html>
       <html lang="en">
@@ -401,9 +402,18 @@ module.exports = {
       throw 'forbidden';
     }
     let sellers = await Seller.find({});
-    let month = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
-    let available = '20 ' + moment().locale('es').format('MMMM');
-    res.view('pages/sellers/reports', {layout:'layouts/admin', sellers, month, available, guia: null});
+    let months = [];
+    let currentDay =  moment().format('DD');
+    let availableOptions = false;
+    for (let i = 14; i >= 0; i--) {
+      let month = moment().subtract(i+1, 'months').locale('es').format('MMMM YYYY');
+      let available = moment().subtract(i, 'months').locale('es').format('MMMM YYYY');
+      if (i === 0 && currentDay < 20) {
+        availableOptions = true;
+      }
+      months.push({month, available, availableOptions});
+    }
+    res.view('pages/sellers/reports', {layout:'layouts/admin', sellers, months});
   },
   showreport: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -411,9 +421,11 @@ module.exports = {
       throw 'forbidden';
     }
     const moment = require('moment');
+    moment.locale('es');
     const seller = req.param('seller');
-    let date = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
-    let data = await sails.helpers.reportSeller(seller);
+    const month = req.param('month');
+    let date = moment(month, 'MMMM YYYY').subtract(1, 'months').locale('es').format('MMMM YYYY');
+    let data = await sails.helpers.reportSeller(seller, month);
     res.view('pages/sellers/showreport', {layout:'layouts/admin', data, date});
   },
   checkout: async function(req, res){

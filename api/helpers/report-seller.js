@@ -5,6 +5,10 @@ module.exports = {
     sellerId: {
       type:'string',
       required: true
+    },
+    month: {
+      type:'string',
+      required: true
     }
   },
   exits: {
@@ -14,11 +18,12 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     const moment = require('moment');
+    moment.locale('es');
     let ordersItem = [];
     let seller = await Seller.findOne({ id: inputs.sellerId });
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
-    let startDate = new Date(moment().subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
-    let endDate = new Date(moment().subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
+    let startDate = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
+    let endDate = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let state =  await OrderState.findOne({name: 'entregado'});
     let totalPrice = 0;
     let totalCommissionFee = 0;
