@@ -30,7 +30,7 @@ module.exports = {
     let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET');
     let result = JSON.parse(response);
     if(result.SuccessResponse.Body.Status.State){
-      await Product.updateOne({id:inputs.product}).set({dafiti:true,dafitiqc:true});
+      await Product.updateOne({id:inputs.product}).set({linio:true,linioqc:true});
       return exits.success(result);
     }else{
       await Product.updateOne({id:inputs.product}).set({linio:false,liniostatus:false,linioprice:0,linioqc:false});
