@@ -438,17 +438,16 @@ module.exports = {
       items: [],
       errors: []
     }
-    let integrationSellers = await Integrations.find({ channel: 'dafiti' });
+    let params = { channel: 'linio' };
+    if(req.param('seller')){params.seller=req.param('seller');}
+    let integrationSellers = await Integrations.find(params);
     for (let s of integrationSellers) {
       let products = await Product.find({ seller: s.seller, dafiti: true, dafitiqc: false })
       for (let p of products) {
         let result = await sails.helpers.channel.dafiti.checkstatus(p.id)
-          .catch(e => {
-            response.errors.push({ code: e.raw.code, message: p.reference });
-          });
-
-        if (result) {
-          response.items.push({ code: 'OK', message: p.reference });
+        .tolerate('notFound', () => {response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });});
+        if (result) {response.items.push({ code: 'DAFITI', message: 'REF: '+p.reference+' - '+result });}else{
+          response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });
         }
       }
     }
@@ -539,17 +538,16 @@ module.exports = {
       items: [],
       errors: []
     }
-    let integrationSellers = await Integrations.find({ channel: 'linio' });
+    let params = { channel: 'linio' };
+    if(req.param('seller')){params.seller=req.param('seller');}
+    let integrationSellers = await Integrations.find(params);
     for (let s of integrationSellers) {
       let products = await Product.find({ seller: s.seller, linio: true, linioqc: false })
       for (let p of products) {
         let result = await sails.helpers.channel.linio.checkstatus(p.id)
-          .catch(e => {
-            response.errors.push({ code: e.raw.code, message: p.reference });
-          });
-
-        if (result) {
-          response.items.push({ code: 'OK', message: p.reference });
+        .tolerate('notFound', () => {response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });});
+        if (result) {response.items.push({ code: 'LINIO', message: 'REF: '+p.reference+' - '+result });}else{
+          response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });
         }
       }
     }
