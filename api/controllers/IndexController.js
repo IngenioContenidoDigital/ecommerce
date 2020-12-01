@@ -149,17 +149,16 @@ module.exports = {
   generateReport:async (req, res) =>{
     const Excel = require('exceljs');
     const moment = require('moment');
-    if (!req.isSocket) {
-      return res.badRequest();
-    }
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
     }
-    let dateStart = new Date(req.param('startFilter')).valueOf();
-    let dateEnd = new Date(req.param('endFilter')).valueOf();
+    let sellerId = req.param('seller');
+    let dateStart = new Date(moment().subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
+    let dateEnd = new Date(moment().subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let orders = await Order.find({
       where: {
+        seller: sellerId,
         updatedAt: { '>': dateStart, '<': dateEnd }
       }
     }).populate('customer').populate('currentstatus');
@@ -224,53 +223,9 @@ module.exports = {
     }
     const moment = require('moment');
     const pdf = require('html-pdf');
-    const pdf2base64 = require('pdf-to-base64');
-    let guia = null;
-    let ordersItem = [];
     let sellerId = req.param('seller');
-    let seller = await Seller.findOne({ id: sellerId });
-    let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     let date = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
-    let startDate = new Date(moment().subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
-    let endDate = new Date(moment().subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
-    let state =  await OrderState.findOne({name: 'entregado'});
-    let totalPrice = 0;
-    let totalCommissionFee = 0;
-    let totalCommissionVat = 0;
-    let totalRetFte = 0;
-    let totalRetIca = 0;
-    let orders = await Order.find({
-      where: {
-        seller: sellerId,
-        currentstatus: state.id,
-        updatedAt: { '>': startDate, '<': endDate }
-      }
-    });
-    let totalProducts = await Product.count({
-      where: {
-        seller: sellerId,
-        createdAt: { '<': endDate }
-      }
-    });
-    let skuPrice = seller.skuPrice || 0;
-    let salesCommission = seller.salesCommission || 0;
-    let totalSku = (Math.ceil(totalProducts /100)) * skuPrice * 1.19;
-    for (const order of orders) {
-      let items = await OrderItem.find({order: order.id});
-      items.forEach(async item => {
-        let commissionFee = item.price * (salesCommission/100);
-        totalCommissionFee += commissionFee;
-        totalCommissionVat += (commissionFee * 0.19);
-        totalRetFte += (commissionFee * 0.04);
-        if (address.city.name === 'bogota') {
-          totalRetIca += (commissionFee * (9.66/1000));
-        }
-        totalPrice += item.price;
-        ordersItem.push(item);
-      });
-    }
-    totalRetFte = totalSku !== 0 ? totalRetFte + (totalSku >= 142000 ? (totalSku/1.19)*0.04 : 0) : totalRetFte;
-    let totalBalance = (totalCommissionFee + totalCommissionVat + totalSku) - (totalRetFte + totalRetIca);
+    let data = await sails.helpers.reportSeller(sellerId);
     try {
       const html = `<!DOCTYPE html>
       <html lang="en">
@@ -342,11 +297,11 @@ module.exports = {
         <body>
           <div class="row">
             <div class="column">
-              <h5 class="subtitle is-6">` + seller.name.toUpperCase() + `<br>NIT. ` + seller.dni + `</h5>
-              <h5 class="subtitle is-6">`+ address.addressline1 +`<br>Tel. `+ seller.phone +`<br>`+ address.city.name.toUpperCase()+' - '+ address.country.name.toUpperCase()+`</h5>
+              <h5 class="subtitle is-6">` + data.seller.name.toUpperCase() + `<br>NIT. ` + data.seller.dni + `</h5>
+              <h5 class="subtitle is-6">`+ data.address.addressline1 +`<br>Tel. `+ data.seller.phone +`<br>`+ data.address.city.name.toUpperCase()+' - '+ data.address.country.name.toUpperCase()+`</h5>
             </div>
             <div class="column">
-              <img class="img" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ seller.logo +`">
+              <img class="img" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ data.seller.logo +`">
             </div>
           </div>
           <div class="row">
@@ -394,17 +349,17 @@ module.exports = {
             <div class="column-2">
               <div class="row">
                 <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">`+ Math.round(totalPrice).toLocaleString('es-CO') +`</p>
+                  <p class="subtitle is-6 text">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
-              <p class="subtitle is-6 text">`+ Math.round(totalPrice).toLocaleString('es-CO') +`</p>
+              <p class="subtitle is-6 text">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
               <br><br><br><br><br>
               <div class="row">
                 <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">`+ Math.round(totalCommissionFee + totalCommissionVat).toLocaleString('es-CO') +`</p>
+                  <p class="subtitle is-6 text">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
-              <p class="subtitle is-6 text">`+ Math.round(totalCommissionFee + totalCommissionVat).toLocaleString('es-CO') +`</p>
+              <p class="subtitle is-6 text">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
               <br><br><br><br>
               <div class="row">
                 <div class="column-2" style="margin-left: 110px;">
@@ -415,31 +370,51 @@ module.exports = {
               <br>
               <div class="row">
                 <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">`+ Math.round(totalSku).toLocaleString('es-CO') +`</p>
+                  <p class="subtitle is-6 text">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
-              <p class="subtitle is-6 text">`+ Math.round(totalSku).toLocaleString('es-CO') +`</p>
+              <p class="subtitle is-6 text">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
 
               <div class="row">
                 <div class="column-2" style="margin-top: 155px; margin-left: 110px;">
-                <p class="subtitle is-6 text">`+ Math.round(totalRetFte).toLocaleString('es-CO') +`</p>
-                <p class="subtitle is-6 text">`+ Math.round(totalRetIca).toLocaleString('es-CO') +`</p>
+                <p class="subtitle is-6 text">`+ Math.round(data.totalRetFte).toLocaleString('es-CO') +`</p>
+                <p class="subtitle is-6 text">`+ Math.round(data.totalRetIca).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
             </div>
           </div>
-          <h2 class="title-balance is-6 text" style="margin-top: 17px;margin-left: 450px;">Balance Total  $`+Math.round(totalBalance).toLocaleString('es-CO')+`</h2>
+          <h2 class="title-balance is-6 text" style="margin-top: 17px;margin-left: 450px;">Balance Total  $`+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
         </body>
       </html>`;
-      const options = { format: 'Letter' };
-      pdf.create(html, options).toFile('./.tmp/uploads/reports/reporteVendedor.pdf', async (err, result) => {
+      pdf.create(html).toBuffer((err, buffer) => {
         if (err) {return console.log(err);}
-        guia = await pdf2base64(result.filename);
-        return res.view('pages/pdf',{layout:'layouts/admin', guia, label: null});
+        return res.send(buffer);
       });
     } catch (err) {
       return res.notFound(err);
     }
+  },
+  showreports: async function(req, res){
+    const moment = require('moment');
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'reports')){
+      throw 'forbidden';
+    }
+    let sellers = await Seller.find({});
+    let month = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
+    let available = '20 ' + moment().locale('es').format('MMMM');
+    res.view('pages/sellers/reports', {layout:'layouts/admin', sellers, month, available, guia: null});
+  },
+  showreport: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'reports')){
+      throw 'forbidden';
+    }
+    const moment = require('moment');
+    const seller = req.param('seller');
+    let date = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
+    let data = await sails.helpers.reportSeller(seller);
+    res.view('pages/sellers/showreport', {layout:'layouts/admin', data, date});
   },
   checkout: async function(req, res){
     if(req.session.cart===undefined || req.session.cart===null){
@@ -1295,15 +1270,15 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
 
         if(!state){
-          return res.serverError('Nuevo estado del pedido no identificado'); 
+          return res.serverError('Nuevo estado del pedido no identificado');
         }
 
         await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
-        break
+        break;
       default:
         break;
     }
-    
+
     return res.ok();
   },
 
@@ -1330,15 +1305,15 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
 
         if(!state){
-          return res.serverError('Nuevo estado del pedido no identificado'); 
+          return res.serverError('Nuevo estado del pedido no identificado');
         }
 
         await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
-        break
+        break;
       default:
         break;
     }
-    
+
     return res.ok();
   }
 
