@@ -489,7 +489,6 @@ module.exports = {
       { header: 'Cliente', key: 'customer', width: 35 },
       { header: 'Email cliente', key: 'emailcustomer', width: 35 },
       { header: 'Fecha de creación', key: 'createdAt', width: 20 },
-      { header: 'Fecha de actualización', key: 'updatedAt', width: 22 },
       { header: 'Estado', key: 'currentstatus', width: 12 },
       { header: 'Marca', key: 'manufacturer', width: 22 },
       { header: 'Producto', key: 'product', width: 56 },
@@ -519,7 +518,6 @@ module.exports = {
         item.customer = order.customer.fullName;
         item.emailcustomer = order.customer.emailAddress;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
-        item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         item.currentstatus = order.currentstatus.name;
         item.manufacturer = product.manufacturer.name;
         item.product = product.name;

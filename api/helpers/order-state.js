@@ -30,13 +30,25 @@ module.exports = {
       case 'Fallida':
         name='fallido';
         break;
+      case '8':
+        name='fallido';
+        break;
       case 'ready_to_ship':
         name='empacado';
         break;
       case 'shipped':
         name='enviado';
         break;
+      case '5':
+        name='enviado';
+        break;
+      case '4':
+        name='enviado';
+        break;
       case 'delivered':
+        name='entregado';
+        break;
+      case '6':
         name='entregado';
         break;
       case 'returned':
