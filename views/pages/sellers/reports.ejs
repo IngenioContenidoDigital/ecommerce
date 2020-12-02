@@ -1,10 +1,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <section class="container">
-  <h4 class="title is-4">Informe del Mes</h4>
+  <h4 class="title is-4">Informes Mensuales de Ventas</h4>
   <hr>
   <div id="loading-block" class="notification is-hidden">
     <i class="fas fa-sync fa-spin"></i>
-      Estamos generando tu reporte...
+      Estamos generando tu informe...
       <progress class="progress is-small is-primary" max="100">15%</progress>
   </div>
   <div class="box content">
@@ -20,57 +20,62 @@
           </select>
         </div>
       </div>
-      <br>
-      <table id="reportTable" class="table is-hidden">
-        <thead>
-          <tr>
-            <th>Mes</th>
-            <th>Fecha Disponibilidad</th>
-            <th></th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% months.forEach((element) =>{ %>
-            <tr>
-              <td><%= element.month %></td>
-              <td><%= '20 ' + element.available %></td>
-              <td>
-                <button id="seeReport" class="button is-rounded is-small is-link" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
-                  <span class="icon is-small">
-                    <i class='bx bxs-file-find bx-sm'></i>
-                  </span>
-                  <span>Ver Reporte</span>
-                </button>
-              </td>
-              <td>
-                <button id="generatePdf" class="button is-rounded is-small is-danger" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
-                  <span class="icon is-small">
-                    <i class='bx bxs-file-pdf bx-sm'></i>
-                  </span>
-                  <span>Generar PDF</span>
-                </button>
-              </td>
-              <td>
-                <button id="generateReport" class="button is-rounded is-small is-primary" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
-                  <span class="icon is-small">
-                    <i class='bx bxs-file-doc bx-sm'></i>
-                  </span>
-                  <span>Detalle Excel</span>
-                </button>
-              </td>
-            </tr>
-          <%})%>
-        </tbody>
-      </table>
     <% } %>
+    <br>
+    <table id="reportTable" class="table is-striped is-hidden">
+      <thead>
+        <tr>
+          <th>Mes</th>
+          <th>Fecha Disponibilidad</th>
+          <th></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% months.forEach((element) =>{ %>
+          <tr>
+            <td><%= element.month %></td>
+            <td><%= '20 ' + element.available %></td>
+            <td>
+              <button id="seeReport" class="button is-rounded is-small is-link" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                <span class="icon is-small">
+                  <i class='bx bxs-file-find bx-sm'></i>
+                </span>
+                <span>Ver Reporte</span>
+              </button>
+            </td>
+            <td>
+              <button id="generatePdf" class="button is-rounded is-small is-danger" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                <span class="icon is-small">
+                  <i class='bx bxs-file-pdf bx-sm'></i>
+                </span>
+                <span>Generar PDF</span>
+              </button>
+            </td>
+            <td>
+              <button id="generateReport" class="button is-rounded is-small is-primary" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                <span class="icon is-small">
+                  <i class='bx bxs-file-doc bx-sm'></i>
+                </span>
+                <span>Detalle Excel</span>
+              </button>
+            </td>
+          </tr>
+        <%})%>
+      </tbody>
+    </table>
   </div>
   <div class="content" id="showreport"></div>
 </section>
 <script>
-  let seller = document.querySelector('#selectSeller').value;
-  <%if(sellers){%>
+  let seller;
+  <%if(!sellers){%>
+    const table = document.querySelector('#reportTable');
+    seller = '<%- seller %>';
+    removeClass(table, 'is-hidden');
+  <%}else{%>
+    seller = document.querySelector('#selectSeller').value;
     const selectSeller = document.querySelector('#selectSeller');
     selectSeller.onchange = changeSelect;
   <%}%>
@@ -83,11 +88,19 @@
     removeClass(table, 'is-hidden');
   }
 
+  function nameReport() {
+    let name = '1Ecommerce';
+    if (document.getElementById("selectSeller")) {
+      let index = document.getElementById("selectSeller").options.selectedIndex;
+      name = document.getElementById("selectSeller").options[index].text;
+    }
+    return name;
+  }
+
   live('#generateReport','click', function(){
     if (!this.disabled) {
+      let name = nameReport();
       let month = this.getAttribute('monthavailable');
-      let index = document.getElementById("selectSeller").options.selectedIndex;
-      let name = document.getElementById("selectSeller").options[index].text;
       let loadingBlock = document.querySelector('#loading-block');
       if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
       io.socket.post('/generatereport', {seller, month}, (resData, jwRes) =>{
@@ -101,9 +114,8 @@
 
   live('#generatePdf','click', function(){
     if (!this.disabled) {
+      let name = nameReport();
       let month = this.getAttribute('monthavailable');
-      let index = document.getElementById("selectSeller").options.selectedIndex;
-      let name = document.getElementById("selectSeller").options[index].text;
       let loadingBlock = document.querySelector('#loading-block');
       if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
       io.socket.post('/reportseller', {seller, month}, (resData, jwRes) =>{
