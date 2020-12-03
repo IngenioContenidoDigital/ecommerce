@@ -88,7 +88,7 @@ module.exports = {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle' }
-      if(p.active && (p.stock<1 || p.images.length <1)){ /*await sails.helpers.tools.productState(p.id,false);*/ cl = 'bx-x-circle';}
+      if(p.active && (p.stock<1 || p.images.length <1)){ await sails.helpers.tools.productState(p.id,false); cl = 'bx-x-circle';}
       let published = '';
       if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
       if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
@@ -1249,14 +1249,14 @@ module.exports = {
         if (products.length > 0) {
           for (let pl of products) {
             let result = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
-            .intercept(async (err) => {
+            .tolerate(async (err) => {
               await Product.updateOne({ id: pl.id }).set({
                 ml: true,
                 mlstatus: false,
                 mlid: '',
                 mlprice:0
               });
-              return new Error(err.message);
+              response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
             });
             if(result && result.id){
               response.items.push(result);
@@ -1265,14 +1265,6 @@ module.exports = {
                   mlstatus: true,
                   mlid: result.id
                 });
-            }else{
-              await Product.updateOne({ id: pl.id }).set({
-                ml: false,
-                mlstatus: false,
-                mlid: '',
-                mlprice:0
-              });
-              throw new Error('Error en la creación del Producto');    
             }
           }
         } else {
