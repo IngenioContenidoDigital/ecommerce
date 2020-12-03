@@ -4,7 +4,10 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-
+const constant = {
+  APP_ID_ML: sails.config.custom.APP_ID_ML,
+  SECRET_KEY_ML: sails.config.custom.SECRET_KEY_ML
+};
 module.exports = {
   showsellers: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -247,7 +250,7 @@ module.exports = {
     let seller = await Seller.findOne({id:req.param('id')});
     integrations = await Integrations.find({seller:seller.id});
 
-    return res.view('pages/sellers/integrations',{layout:'layouts/admin',seller:seller,integrations:integrations});
+    return res.view('pages/sellers/integrations',{layout:'layouts/admin',seller:seller,integrations:integrations, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML});
   },
   setintegration:async (req,res)=>{
     let seller = req.param('seller');
