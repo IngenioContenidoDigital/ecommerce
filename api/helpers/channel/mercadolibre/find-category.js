@@ -18,17 +18,13 @@ module.exports = {
       description: 'All done.',
     },
     noCategory:{
-      description: 'No Category was found'
+      description: 'No se pudo localizar la categoria en Mercadolibre'
     }
   },
   fn: async function (inputs,exits) {
     inputs.ml.get('sites/MCO/domain_discovery/search?limit=1&q='+encodeURIComponent(inputs.categories), (error,response) =>{
-      if(error){return exits.error(error);}
-      if (response.length > 0) {
-        return exits.success(response[0].category_id);
-      } else {
-        return exits.noCategory('Categoria no Localizada');
-      }
+      if(error || response.length<1){ return exits.noCategory(); }
+      return exits.success(response[0].category_id);
     });
   }
 };
