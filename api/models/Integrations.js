@@ -29,6 +29,9 @@ module.exports = {
       type:'string',
       required:false
     },
+    useridml:{
+      type:'string'
+    },
     seller:{
       model:'seller',
       required:true

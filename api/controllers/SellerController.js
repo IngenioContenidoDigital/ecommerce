@@ -304,9 +304,9 @@ module.exports = {
     let fs = require('fs');
     let path = require('path');
     let resource = req.body.resource;
-    let user = req.body.application_id;
+    let userId = req.body.user_id;
     let topic = req.body.topic;
-    let integration = await Integrations.findOne({user: user, channel: 'mercadolibre'});
+    let integration = await Integrations.findOne({useridml: userId, channel: 'mercadolibre'});
     fs.writeFile(path.join(__dirname, 'logs', `${moment().format('YYYYMMDD_HHmms')}.json`), JSON.stringify(req.body), err =>{
       if(err){console.log(err);}
     });
@@ -425,7 +425,6 @@ module.exports = {
       sails.sockets.blast('notificationml', {questions: question, questionsSeller, seller});
       return res.send({messages});
     } catch (error) {
-      console.log(error);
       return res.send(error);
     }
   }
