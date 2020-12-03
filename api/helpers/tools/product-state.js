@@ -25,7 +25,7 @@ module.exports = {
     }else{
       updated = await Product.updateOne({ id: inputs.product }).set({ active: false });
     }
-    await sails.helpers.channel.channelSync(updated);
+    //await sails.helpers.channel.channelSync(updated);
   }
 };
 
