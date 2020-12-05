@@ -8,6 +8,9 @@
           <hr>
           <p class="container is-capitalized"><span class="is-lower has-text-weight-bold">Nombre:&nbsp;</span><span class="is-pulled-right"><%= order.customer.fullName %>&nbsp;-&nbsp;<%= order.customer.dniType %>:&nbsp;<%= order.customer.dni %></span></p>
           <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Email:&nbsp;</span><span class="is-pulled-right is-lowercase is-size-7"><%= order.customer.emailAddress %></span></p>
+          <%if(order.customer.mobile){%>
+          <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Teléfono:&nbsp;</span><span class="is-pulled-right is-lowercase is-size-7"><%= order.customer.mobile %></span></p>
+          <%}%>
           <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Pedido creado:&nbsp;</span><span class="is-pulled-right"><%= moment(order.createdAt).locale('es').format('LLL')%></span></p>
           <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Tiempo Transcurrido:&nbsp;</span><span class="is-pulled-right"><%= moment.duration((new Date())-order.createdAt).locale('es').humanize()%></span></p>
           <br>
