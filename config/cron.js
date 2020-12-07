@@ -2,17 +2,21 @@ const { months } = require('moment');
 
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
-  dafitiOrders: {
+  trackingCoordinadora: {
     schedule: '00 12 */3 * * *',
     onTick: async () => {
       console.log('Iniciando Rastreo de Pedidos');
       let moment = require('moment');
-      let packed= await OrderState.findOne({name:'empacado'});
+      let statesIds = [];
+      let packed= await OrderState.find({
+        where:{name:['empacado','enviado']},
+        select:['id']
+      });
+      for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
       let orders = await Order.find({
-        where:{currentstatus:packed.id,channel:'direct',tracking:{'!=':''}},
+        where:{currentstatus:statesIds,channel:'direct',tracking:{'!=':''}},
         select:['id','tracking']
       });
-      
       for(let order of orders){
         let result = await sails.helpers.carrier.coordinadora.tracking(order.tracking);
         if(result){
