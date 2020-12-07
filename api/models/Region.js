@@ -17,6 +17,10 @@ module.exports = {
       type:'string',
       required:true
     },
+    iva:{
+      type:'boolean',
+      defaultsTo:false
+    },
     country:{
       model:'country',
       required:true

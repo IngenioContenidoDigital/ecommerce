@@ -35,7 +35,7 @@ module.exports.cron = {
     timezone: 'America/Bogota'
   },
   SiesaOrdersStatusChanged: {
-    schedule: '*/15 * * * *',
+    schedule: '50 20 */3 * * *',
     onTick: async () => {
       console.log('Iniciando Rastreo de Pedidos Siesa');
       let moment = require('moment');
