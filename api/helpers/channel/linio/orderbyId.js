@@ -1,28 +1,27 @@
 module.exports = {
-    friendlyName: 'Orders by Id',
-    description: 'Orders by Id Linio.',
-    inputs: {
-      seller:{
-        type:'string',
-        required:true
-      },
-      params:{
-        type:'ref',
-        required:true
-      }
+  friendlyName: 'Orders by Id',
+  description: 'Orders by Id Linio.',
+  inputs: {
+    seller:{
+      type:'string',
+      required:true
     },
-    exits: {
-      success: {
-        description: 'All done.',
-      },
+    params:{
+      type:'ref',
+      required:true
+    }
+  },
+  exits: {
+    success: {
+      description: 'All done.',
     },
-    fn: async function (inputs,exits) {
-      let moment = require('moment');
-      
-      let sign = await sails.helpers.channel.linio.sign('GetOrder',inputs.seller, inputs.params);
-      let profile = await Profile.findOne({name:'customer'});
-
-      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET')
+  },
+  fn: async function (inputs,exits) {
+    let moment = require('moment');
+    let sign = await sails.helpers.channel.linio.sign('GetOrder',inputs.seller, inputs.params);
+    let profile = await Profile.findOne({name:'customer'});
+    let data;
+    await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET')
       .then(async (response)=>{
         let result = await JSON.parse(response);
         let orders = {
@@ -31,6 +30,7 @@ module.exports = {
           orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
           for(let order of orders.Order){
             let oexists = await Order.findOne({channel:'linio',channelref:order.OrderId,seller:inputs.seller});
+            data = {channel: 'linio', channelref: order.OrderId, seller: inputs.seller};
             if(order.Statuses.Status==='pending'){
               let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
               if(city.length>0 && oexists===undefined){
@@ -106,22 +106,21 @@ module.exports = {
                     await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order.CreatedAt).valueOf())});
                   }
                 });
-              }
-            }else{
-              if(oexists!==undefined){
-                let currentStatus = await sails.helpers.orderState(order.Statuses.Status);
-                await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order.UpdatedAt).valueOf()),currentstatus:currentStatus});
-                await OrderHistory.create({
-                  order:oexists.id,
-                  state:currentStatus
-                });
-              }
+            }
+          }else{
+            if(oexists!==undefined){
+              let currentStatus = await sails.helpers.orderState(order.Statuses.Status);
+              await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order.UpdatedAt).valueOf()),currentstatus:currentStatus});
+              await OrderHistory.create({
+                order:oexists.id,
+                state:currentStatus
+              });
             }
           }
-      }).catch((e)=>console.log("error", e));
-      
-      return exits.success(true);
-    }
-  };
-  
-  
+        }
+      }).catch((e)=>console.log('error', e));
+
+    return exits.success(data);
+  }
+};
+
