@@ -13,7 +13,7 @@ module.exports.bootstrap = async function() {
   const { ORDER_STATUS_CHANGED } = require('../api/graphql/subscriptions/');
 
   sails.on('lifted', async ()=>{
-      await sails.helpers.subscription({ subscription : ORDER_STATUS_CHANGED, callback : async (response)=>{
+      /*await sails.helpers.subscription({ subscription : ORDER_STATUS_CHANGED, callback : async (response)=>{
           let incomingOrder = response.data.OrderStatusChanged;
           if(incomingOrder.status == '4'){
             let state = await OrderState.findOne({name: 'empacado'});
@@ -24,7 +24,7 @@ module.exports.bootstrap = async function() {
               await OrderHistory.create({order: order.id, state: state});
             }
           }
-      }});
+      }});*/
   });
 
   // By convention, this is a good place to set up fake data during development.
