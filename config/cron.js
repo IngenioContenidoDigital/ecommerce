@@ -56,7 +56,7 @@ module.exports.cron = {
                 if(order.currentstatus.id != state.id){
                   let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
     
-                  if(updatedOrder.tracking===''){
+                  if(!updatedOrder.tracking){
                     await sails.helpers.carrier.shipment(order.id);
                     await OrderHistory.create({order: order.id, state: state});
                   }
