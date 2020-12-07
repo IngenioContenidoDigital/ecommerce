@@ -9,7 +9,7 @@
  */
 //IMPORT_MICROSERVICE  : 'https://import.1ecommerce.app:9000/graphql',
 module.exports.custom = {
-  IMPORT_MICROSERVICE  : process.env.IMPORT_MICROSERVICE ? process.env.IMPORT_MICROSERVICE : 'http://localhost:9000/graphql',
+  IMPORT_MICROSERVICE  : process.env.IMPORT_MICROSERVICE ? process.env.IMPORT_MICROSERVICE : 'https://import.1ecommerce.app:9000/graphql',
   PRODUCT_TYPE: 'Product',
   PRODUCT_VARIATION: 'Variations',
   IMAGE_TYPE: 'ProductImage',
@@ -23,6 +23,8 @@ module.exports.custom = {
   PRESTASHOP_PAGESIZE : 50,
   PRESTASHOP_CHANNEL : 'prestashop',
   DEFAULTPAGE: 300,
+  APP_ID_ML: '376091216963139',
+  SECRET_KEY_ML: 'eP3O9LD9hxTBooRGmYSj0EiuC1c48LbS'
   /***************************************************************************
   *                                                                          *
   * Any other custom config this Sails app should use during development.    *

@@ -88,7 +88,7 @@ module.exports = {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle' }
-      if(p.active && (p.stock<1 || p.images.length <1)){ /*await sails.helpers.tools.productState(p.id,false);*/ cl = 'bx-x-circle';}
+      if(p.active && (p.stock<1 || p.images.length <1)){ await sails.helpers.tools.productState(p.id,false); cl = 'bx-x-circle';}
       let published = '';
       if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
       if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
@@ -466,17 +466,32 @@ module.exports = {
       } else {
         action = 'Post';
       }
-      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre,status);
-      if (response) {
-        console.log(response);
-        await Product.updateOne({ id: req.param('product') }).set({
+      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre,status)
+      .intercept(async (err) => {
+        await Product.updateOne({ id: product.id }).set({
           ml: true,
-          mlstatus: (req.body.status) ? true : false,
-          mlid: response.id,
-          mlprice: req.body.pricemercadolibre,
+          mlstatus: false,
+          mlid: '',
+          mlprice:0
         });
+        return err;
+      });
+      if(response && response.id){
+          await Product.updateOne({ id: product.id }).set({
+            ml: true,
+            mlstatus: true,
+            mlid: response.id
+          });
+          return res.send(response);
+      }else{
+        await Product.updateOne({ id: product.id }).set({
+          ml: false,
+          mlstatus: false,
+          mlid: '',
+          mlprice:0
+        });
+        throw new Error('Error en la creación del Producto');    
       }
-      return res.send(response);
     } catch (err) {
       return res.send(err);
     }
@@ -1233,22 +1248,24 @@ module.exports = {
         let products = await Product.find(params);
         if (products.length > 0) {
           for (let pl of products) {
-            await sails.helpers.channel.mercadolibre.product(pl.id, action)
-              .then(async result => {
-                response.items.push(result);
+            let result = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
+            .tolerate(async (err) => {
+              await Product.updateOne({ id: pl.id }).set({
+                ml: true,
+                mlstatus: false,
+                mlid: '',
+                mlprice:0
+              });
+              response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
+            });
+            if(result && result.id){
+              response.items.push(result);
                 await Product.updateOne({ id: pl.id }).set({
                   ml: true,
                   mlstatus: true,
                   mlid: result.id
                 });
-              })
-              .catch(async err => {
-                response.errors.push(err.message);
-                await Product.updateOne({ id: pl.id }).set({
-                  ml: true,
-                  mlstatus: false
-                });
-              });
+            }
           }
         } else {
           throw new Error('Sin Productos para Procesar');
