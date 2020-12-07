@@ -35,7 +35,7 @@ module.exports.cron = {
     timezone: 'America/Bogota'
   },
   SiesaOrdersStatusChanged: {
-    schedule: '50 * * * * *',
+    schedule: '05 25 * * * *',
     onTick: async () => {
       console.log('Iniciando Rastreo de Pedidos Siesa');
       let moment = require('moment');
@@ -50,15 +50,17 @@ module.exports.cron = {
       for (let index = 0; index < orders.length; index++) {
             const incomingOrder = orders[index];
             let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
-
-            if(order.currentstatus.id != state.id){
-              let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
-
-              if(updatedOrder.tracking===''){
-                await sails.helpers.carrier.shipment(order.id);
-                await OrderHistory.create({order: order.id, state: state});
+            
+            if(order){
+              if(order.currentstatus.id != state.id){
+                let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
+  
+                if(updatedOrder.tracking===''){
+                  await sails.helpers.carrier.shipment(order.id);
+                  await OrderHistory.create({order: order.id, state: state});
+                }
+  
               }
-
             }
         }
     },
