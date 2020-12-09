@@ -1,13 +1,7 @@
-const { log } = require("grunt");
-
 module.exports = {
   friendlyName: 'Find category',
   description: 'Find corresponding Mercadolibre Category',
   inputs: {
-    ml:{
-      type:'ref',
-      required:true,
-    },
     categories:{
       type:'string',
       required:true
@@ -22,7 +16,10 @@ module.exports = {
     }
   },
   fn: async function (inputs,exits) {
-    inputs.ml.get('sites/MCO/domain_discovery/search?limit=1&q='+encodeURIComponent(inputs.categories), (error,response) =>{
+    const meli = require('mercadolibre-nodejs-sdk');
+    
+    let mercadolibre = new meli.RestClientApi();
+    mercadolibre.resourceGet('sites/MCO/domain_discovery/search?limit=1&q='+encodeURIComponent(inputs.categories), (error, data, response) => {
       if(error || response.length<1){ return exits.noCategory(); }
       return exits.success(response[0].category_id);
     });

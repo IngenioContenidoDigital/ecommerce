@@ -2,16 +2,12 @@ module.exports = {
   friendlyName: 'Find order',
   description: '',
   inputs: {
-    meli:{
-      type:'ref',
+    resource:{
+      type:'string',
       required:true,
     },
     params:{
       type:'ref',
-      required:true,
-    },
-    resource:{
-      type:'string',
       required:true,
     }
   },
@@ -21,7 +17,10 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    inputs.meli.get(inputs.resource, inputs.params, async (err, result) => {
+    const meli = require('mercadolibre-nodejs-sdk');
+    
+    let mercadolibre = new meli.RestClientApi();
+    mercadolibre.resourceGet(inputs.resource, inputs.params, async (err, result) => {
       if(err){throw new Error(err.message);}
       return exits.success(result);
     });

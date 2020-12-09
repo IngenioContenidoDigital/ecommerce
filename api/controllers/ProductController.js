@@ -458,6 +458,8 @@ module.exports = {
       return res.badRequest();
     }
     try {
+      const meli = require('mercadolibre-nodejs-sdk');
+      let mercadolibre = new meli.RestClientApi();
       let action = null;
       let status = req.body.status ? 'active' : 'paused';
       let product = await Product.findOne({ id: req.body.product });
@@ -466,33 +468,35 @@ module.exports = {
       } else {
         action = 'Post';
       }
-      let response = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre,status)
-      .intercept(async (err) => {
-        await Product.updateOne({ id: product.id }).set({
-          ml: true,
-          mlstatus: false,
-          mlid: '',
-          mlprice:0
-        });
-        return err;
-      });
-      if(response && response.id){
-          await Product.updateOne({ id: product.id }).set({
-            ml: true,
-            mlstatus: true,
-            mlid: response.id
+      let integration = await sails.helpers.channel.mercadolibre.sign(product.seller);
+      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre,status)
+      .intercept((err) => {return new Error(err.message);});
+      if(body){
+        if(action=='Update'){
+          mercadolibre.resourcePut('items/'+product.mlid, integration.secret, body, (error, result) =>{
+            if(error){throw new Error(error.message);}
+            return res.send(result);
           });
-          return res.send(response);
-      }else{
-        await Product.updateOne({ id: product.id }).set({
-          ml: false,
-          mlstatus: false,
-          mlid: '',
-          mlprice:0
-        });
-        throw new Error('Error en la creación del Producto');    
+        }
+        if(action=='Post'){
+          mercadolibre.resourcePost('items', integration.secret, body, (error, result) =>{
+            if(error){throw new Error(error.message);}
+            await Product.updateOne({ id: product.id }).set({
+              ml: true,
+              mlstatus: true,
+              mlid: result.id
+            });
+            return res.send(result);
+          });
+        }
       }
     } catch (err) {
+      await Product.updateOne({ id: product.id }).set({
+        ml: true,
+        mlstatus: false,
+        mlid: '',
+        mlprice:0
+      });
       return res.send(err);
     }
   },
@@ -1225,6 +1229,8 @@ module.exports = {
         }
       }
       if (channel === 'mercadolibre') {
+        const meli = require('mercadolibre-nodejs-sdk');
+        let mercadolibre = new meli.RestClientApi();
         let action = '';
         switch (req.body.action) {
           case 'ProductCreate':
@@ -1248,7 +1254,7 @@ module.exports = {
         let products = await Product.find(params);
         if (products.length > 0) {
           for (let pl of products) {
-            let result = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
+            let body = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
             .tolerate(async (err) => {
               await Product.updateOne({ id: pl.id }).set({
                 ml: true,
@@ -1258,13 +1264,24 @@ module.exports = {
               });
               response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
             });
-            if(result && result.id){
-              response.items.push(result);
-                await Product.updateOne({ id: pl.id }).set({
-                  ml: true,
-                  mlstatus: true,
-                  mlid: result.id
+            if(body){
+              if(action=='Update'){
+                mercadolibre.resourcePut('items/'+pl.mlid, integration.secret, body, (error, result) =>{
+                  if(error){return new Error(error.message);}
+                  response.items.push(body);
                 });
+              }
+              if(action=='Post'){
+                mercadolibre.resourcePost('items', integration.secret, body, (error, result) =>{
+                  if(error){return new Error(error.message);}
+                  await Product.updateOne({ id: pl.id }).set({
+                    ml: true,
+                    mlstatus: true,
+                    mlid: result.id
+                  });
+                  response.items.push(body);
+                });
+              }
             }
           }
         } else {

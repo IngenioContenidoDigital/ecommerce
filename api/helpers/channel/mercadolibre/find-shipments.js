@@ -2,10 +2,6 @@ module.exports = {
   friendlyName: 'Find shipments',
   description: '',
   inputs: {
-    meli:{
-      type:'ref',
-      required:true
-    },
     token:{
       type:'string',
       required:true
@@ -21,7 +17,10 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    inputs.meli.get('shipments/'+inputs.id,{'x-format-new':true,access_token:inputs.token},async (err, result) => {
+    const meli = require('mercadolibre-nodejs-sdk');
+    
+    let mercadolibre = new meli.RestClientApi();
+    mercadolibre.resourceGet('shipments/'+inputs.id,{'x-format-new':true,access_token:inputs.token},async (err, result) => {
       if(err){throw new Error(err.message);}
       return exits.success(result);
     })

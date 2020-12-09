@@ -21,8 +21,11 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let mercadolibre = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
-    mercadolibre.get(inputs.resource, {access_token: inputs.secret}, (error, response) =>{
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+    const meli = require('mercadolibre-nodejs-sdk');
+    
+    let mercadolibre = new meli.RestClientApi();
+    mercadolibre.resourceGet(inputs.resource, integration.secret, (error, response) =>{
       if(error){return exits.error(error);}
       return exits.success(response);
     });

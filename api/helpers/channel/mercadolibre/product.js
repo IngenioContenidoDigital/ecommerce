@@ -155,16 +155,15 @@ module.exports = {
         categories.push(product.categories[c].name);
       }
       categories = categories.join(' ');
-      let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
-      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories)
+      let integration = await sails.helpers.channel.mercadolibre.sign(product.seller);
+      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(categories)
       .intercept((err)=>{
         return err;
       });
-      let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
+      //let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
       let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
       if(storeid>0){body['official_store_id']=storeid;}
-      switch(inputs.action){
-        case 'Update':
+      if(inputs.action==='ProductUpdate' || inputs.action==='Update'){
           body['status']=status;
           //if(product.ml && !product.mlstatus){
             delete body['title'];
@@ -196,24 +195,12 @@ module.exports = {
                 return exits.success(result);
               });
             }*/
-          mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
+          /*mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
             if(error){return exits.error(error);}
             return exits.success(result);
-          });
-          break;
-        case 'Post':
-          mercadolibre.post('items',body,{'access_token':integration.secret},(error,result) =>{
-            if(error){return exits.error(error);}
-            return exits.success(result);
-          });
-          break;
-        default:
-          mercadolibre.get('items/'+inputs.mlid,{'access_token':integration.secret},(error,result) =>{
-            if(error){return exits.error(error);}
-            return exits.success(result);
-          });
-          break;
+          });*/
       }
+      return exits.success(body);
     }catch(err){
       return exits.error(err);
     }

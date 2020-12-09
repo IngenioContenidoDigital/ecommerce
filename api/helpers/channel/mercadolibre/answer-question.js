@@ -25,12 +25,16 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let mercadolibre = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+    
+    const meli = require('mercadolibre-nodejs-sdk');
+    
+    let mercadolibre = new meli.RestClientApi();
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
     let body = {
       'question_id': inputs.questionId,
       'text': inputs.text
     };
-    mercadolibre.post('/answers', body ,{access_token: inputs.secret}, (error, response) =>{
+    mercadolibre.resourcePost('/answers', {access_token: integration.secret}, body, (error, response) =>{
       if(error){return exits.error(error);}
       return exits.success(response);
     });
