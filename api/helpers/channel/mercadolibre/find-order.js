@@ -6,8 +6,8 @@ module.exports = {
       type:'string',
       required:true,
     },
-    params:{
-      type:'ref',
+    token:{
+      type:'string',
       required:true,
     }
   },
@@ -16,14 +16,13 @@ module.exports = {
       description: 'All done.',
     },
   },
-  fn: async function (inputs,exits) {
-    const meli = require('mercadolibre-nodejs-sdk');
-    
-    let mercadolibre = new meli.RestClientApi();
-    mercadolibre.resourceGet(inputs.resource, inputs.params, async (err, result) => {
-      if(err){throw new Error(err.message);}
-      return exits.success(result);
-    });
+  fn: async function (inputs,exits) {    
+    try{
+      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource+'?access_token='+inputs.token);      
+      if(response){return exits.success(response);}
+    }catch(err){
+      return exits.error(err.message);
+    } 
   }
 };
 

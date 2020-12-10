@@ -27,10 +27,7 @@ module.exports = {
 
     let result = await sails.helpers.channel.mercadolibre.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
     if(result.id){
-      let parameters = {};
-      parameters.seller = result.id;
-      parameters['access_token'] = inputs.secret;
-      let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, parameters).catch(err =>{return exits.error(err.message);});
+      let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret).catch(err =>{return exits.error(err.message);});
       if(order){
         try{
           let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});

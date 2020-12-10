@@ -16,9 +16,9 @@ module.exports = {
     const meli = require('mercadolibre-nodejs-sdk');
     
     let mercadolibre = new meli.RestClientApi();
-    mercadolibre.resourceGet('users/me', {access_token:inputs.token}, (error, data, response) => {
-      if(error){ throw new Error(err.message); }
-      return exits.success(response);
+    mercadolibre.resourceGet('users/me', inputs.token, (error, data, response) => {
+      if(error){ return exits.error(error.message); }
+      return exits.success(response.body);
     });
 
   }

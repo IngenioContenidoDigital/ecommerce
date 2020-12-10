@@ -13,17 +13,15 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    const meli = require('mercadolibre-nodejs-sdk');
-    let integrations = await sails.helpers.channel.mercadolibre.sign(inputs.order.seller);
-    
-    let mercadolibre = new meli.RestClientApi();
-    mercadolibre.resourceGet('shipment_labels', {shipment_ids:inputs.order.tracking,access_token:integrations.secret}, (error, data, response) => {
-      if (error) {
-        return exits.error(err);
-      } else {
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.order.seller);
+    try{
+      let response = await sails.helpers.channel.mercadolibre.request('shipment_labels?shipment_ids='+inputs.order.tracking+'&access_token='+integration.secret,{responseType: 'arraybuffer'});
+      if(response){
         return exits.success(response.toString('base64'));
       }
-    });
+    }catch(err){
+      return exits.error('Guia No Localizada');
+    }
   }
 
 

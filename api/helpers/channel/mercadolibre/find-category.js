@@ -17,11 +17,10 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     const meli = require('mercadolibre-nodejs-sdk');
-    
-    let mercadolibre = new meli.RestClientApi();
-    mercadolibre.resourceGet('sites/MCO/domain_discovery/search?limit=1&q='+encodeURIComponent(inputs.categories), (error, data, response) => {
-      if(error || response.length<1){ return exits.noCategory(); }
-      return exits.success(response[0].category_id);
+    let mercadolibre = new meli.CategoriesApi();
+    mercadolibre.sitesSiteIdDomainDiscoverySearchGet('MCO', encodeURIComponent(inputs.categories), 1, (error, data, response) => {
+      if(error || response.body.length<1){ return exits.noCategory(); }
+      return exits.success(response.body[0].category_id);
     });
   }
 };

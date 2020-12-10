@@ -22,12 +22,13 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
-    const meli = require('mercadolibre-nodejs-sdk');
-    
-    let mercadolibre = new meli.RestClientApi();
-    mercadolibre.resourceGet(inputs.resource, integration.secret, (error, response) =>{
-      if(error){return exits.error(error);}
-      return exits.success(response);
-    });
+    try{
+      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource+'?&access_token='+integration.secret);
+      if(response){
+        return exits.success(response);
+      }
+    }catch(err){
+      return exits.error(err.message);
+    }
   }
 };

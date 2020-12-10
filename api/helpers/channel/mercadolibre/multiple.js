@@ -17,10 +17,9 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    const meli = require('mercadolibre-nodejs-sdk');
-    let mercadolibre = new meli.RestClientApi();
     let mlstate = false;
     let products = null;
+    let result = null;
     let response = {Request:[], Errors:[]};
     if(inputs.action==='ProductUpdate'){mlstate = true;}
     if(inputs.action==='ProductCreate' || inputs.action==='ProductUpdate') {
@@ -41,23 +40,27 @@ module.exports = {
             if(body){
               switch(inputs.action) {
                 case 'ProductUpdate':
-                  mercadolibre.resourcePut('items/'+product.mlid, integration.secret, body, (error, result) =>{
-                    if(error){response.Errors.push({REF:'NOCTG',ERR:error.message});return;}
-                    response.Request.push({REF:product.reference,MSJ:'Procesado Exitosamente'});
-                  });
+                  result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid+'?access_token='+integration.secret, body,'PUT')
+                  .tolerate((err)=>{
+                    response.Errors.push({REF:'NOCTG',ERR:err.message});
+                    return;
+                  }); 
+                  if(result){ response.Request.push({REF:product.reference,MSJ:'Procesado Exitosamente'});}
                   break;
                 case 'ProductCreate':
-                  mercadolibre.resourcePost('items',integration.secret, body, async (error, result) =>{
-                    if(error){response.Errors.push({REF:'NOCTG',ERR:error.message});return;}
-                    if(result.id.length>0){
-                      await Product.updateOne({id: product.id}).set({
-                        ml: true,
-                        mlstatus: true,
-                        mlid: result.id
-                      });
-                      response.Request.push({REF:product.reference,MSJ:'Procesado Exitosamente'});
-                    }
-                  });
+                  result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+                  .tolerate((err)=>{
+                    response.Errors.push({REF:'NOCTG',ERR:err.message});
+                    return;
+                  }); 
+                  if(result.id.length>0){
+                    await Product.updateOne({id: product.id}).set({
+                      ml: true,
+                      mlstatus: true,
+                      mlid: response.id
+                    });
+                    response.Request.push({REF:product.reference,MSJ:'Procesado Exitosamente'});
+                  }
                   break;
               }
             }

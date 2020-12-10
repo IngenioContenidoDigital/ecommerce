@@ -5,6 +5,10 @@ module.exports = {
     integration:{
       type:'ref',
       required:true
+    },
+    brand:{
+      type:'string',
+      requiered:'true',
     }
   },
   exits: {
@@ -13,17 +17,21 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    const meli = require('mercadolibre-nodejs-sdk');
-    let mercadolibre = new meli.RestClientApi();
-    let result = await sails.helpers.channel.mercadolibre.findUser(inputs.integration.secret);
-    if(result['user_type']==='brand'){
-      mercadolibre.resourceGet('users/'+result.id+'/brands',{access_token:inputs.integration.secret}, (err, result) =>{
-        if(err){console.log(err);return exits.error(err);}
-        return exits.success(result.brands[0].official_store_id);
-      });
-    }else{
-      return exits.success(0);
-    }
+    try{
+      let response = await sails.helpers.channel.mercadolibre.request('users/'+inputs.integration.useridml+'/brands?access_token='+inputs.integration.secret);
+      if(response && response.brands.length>0){
+        for(let brand of response.brands){
+          if(brand.name.toLowerCase()===inputs.brand.toLowerCase()){
+            return exits.success(brand.official_store_id);
+          }
+        }
+        return exits.success(response.brands[0].official_store_id);
+      }else{
+        return exits.success(0);
+      }
+    }catch(err){
+      throw new Error(err.message);
+    }    
   }
 
 

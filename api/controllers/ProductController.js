@@ -230,7 +230,7 @@ module.exports = {
           weight: req.body.weight
         });
         await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
-        await sails.helpers.tools.productState(product.id,product.active);
+        await sails.helpers.tools.productState(product.id,product.active,true);
       }
       product.priceWt = product.price * (1 + ((await Tax.findOne({ id: product.tax })).value / 100));
       if((await ProductVariation.count({product:product.id}))>0){
@@ -330,7 +330,7 @@ module.exports = {
           }
         });
     }
-    await sails.helpers.tools.productState(product.id,product.active);
+    await sails.helpers.tools.productState(product.id,product.active,true);
 
     return res.send('ok');
   },
@@ -376,7 +376,7 @@ module.exports = {
     }
     var id = req.param('id');
     var state = req.param('active');    
-    await sails.helpers.tools.productState(id,state);
+    await sails.helpers.tools.productState(id,state,true);
     return res.send(state);
   },
   dafitiadd: async (req, res) => {
@@ -454,45 +454,45 @@ module.exports = {
     return res.send(JSON.stringify(response));
   },
   mercadolibreadd: async (req, res) => {
-    if (!req.isSocket) {
-      return res.badRequest();
-    }
+    if (!req.isSocket) {return res.badRequest();}
+    let product = await Product.findOne({ id: req.body.product });
     try {
-      const meli = require('mercadolibre-nodejs-sdk');
-      let mercadolibre = new meli.RestClientApi();
       let action = null;
+      let result = null;
       let status = req.body.status ? 'active' : 'paused';
-      let product = await Product.findOne({ id: req.body.product });
       if (product.ml) {
         action = 'Update';
       } else {
         action = 'Post';
       }
       let integration = await sails.helpers.channel.mercadolibre.sign(product.seller);
-      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, req.body.pricemercadolibre,status)
+      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, parseFloat(req.body.pricemercadolibre),status)
       .intercept((err) => {return new Error(err.message);});
-      if(body){
-        if(action=='Update'){
-          mercadolibre.resourcePut('items/'+product.mlid, integration.secret, body, (error, result) =>{
-            if(error){throw new Error(error.message);}
-            return res.send(result);
+      if(body){        
+        if(action==='Update'){
+          result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'PUT')
+          .intercept((err)=>{
+            return new Error(err.message);
           });
         }
-        if(action=='Post'){
-          mercadolibre.resourcePost('items', integration.secret, body, (error, result) =>{
-            if(error){throw new Error(error.message);}
-            await Product.updateOne({ id: product.id }).set({
+        if(action==='Post'){
+          result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+          .intercept((err)=>{
+            return new Error(err.message);
+          }); 
+          if(result.id.length>0){
+            await Product.updateOne({id: product.id}).set({
               ml: true,
               mlstatus: true,
               mlid: result.id
             });
-            return res.send(result);
-          });
+          }
         }
+        return res.send(result);
       }
     } catch (err) {
       await Product.updateOne({ id: product.id }).set({
-        ml: true,
+        ml: false,
         mlstatus: false,
         mlid: '',
         mlprice:0
@@ -1229,8 +1229,6 @@ module.exports = {
         }
       }
       if (channel === 'mercadolibre') {
-        const meli = require('mercadolibre-nodejs-sdk');
-        let mercadolibre = new meli.RestClientApi();
         let action = '';
         switch (req.body.action) {
           case 'ProductCreate':
@@ -1253,6 +1251,7 @@ module.exports = {
         }
         let products = await Product.find(params);
         if (products.length > 0) {
+          let integration = await sails.helpers.channel.mercadolibre.sign(products[0].seller);
           for (let pl of products) {
             let body = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
             .tolerate(async (err) => {
@@ -1265,22 +1264,22 @@ module.exports = {
               response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
             });
             if(body){
-              if(action=='Update'){
-                mercadolibre.resourcePut('items/'+pl.mlid, integration.secret, body, (error, result) =>{
-                  if(error){return new Error(error.message);}
-                  response.items.push(body);
-                });
+              if(action==='Update'){
+                result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'PUT')
+                .tolerate((err)=>{return;});
+                if(result){response.items.push(body);}
               }
-              if(action=='Post'){
-                mercadolibre.resourcePost('items', integration.secret, body, (error, result) =>{
-                  if(error){return new Error(error.message);}
-                  await Product.updateOne({ id: pl.id }).set({
+              if(action==='Post'){
+                result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+                .tolerate((err)=>{return;}); 
+                if(result.id.length>0){
+                  await Product.updateOne({id: product.id}).set({
                     ml: true,
                     mlstatus: true,
                     mlid: result.id
                   });
                   response.items.push(body);
-                });
+                }
               }
             }
           }

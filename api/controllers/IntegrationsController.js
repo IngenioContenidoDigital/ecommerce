@@ -36,7 +36,7 @@ module.exports = {
         let redirectUri = 'https://'+req.hostname+'/mlauth/'+integration.user; // String | 
         mercadolibre.auth('code', clientId, redirectUri, async (error, data, result) => {
             if(error){ return res.redirect('/sellers?error='+err);}
-            let updated = await Integrations.updateOne({id:integration.id}).set({url:result['refresh_token'],secret:result['access_token'],useridml:result['user_id']});
+            let updated = await Integrations.updateOne({id:integration.id}).set({url:result.body['refresh_token'],secret:result.body['access_token'],useridml:result.body['user_id']});
             if(updated){
                 return res.redirect('/sellers?success=Integración Habilitada Exitosamente');
             }else{

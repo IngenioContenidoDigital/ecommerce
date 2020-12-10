@@ -26,10 +26,10 @@ module.exports = {
       'refreshToken': integration.url // String | 
     };
     mercadolibre.getToken(opts, async (error, data, response) => {
-      if(error){ return exits.error(error);}
+      if(error){ console.log(error); return exits.error(error);}
       let updated = await Integrations.updateOne({id:integration.id}).set({
-        url:response['refresh_token'],
-        secret:response['access_token'],
+        url:response.body['refresh_token'],
+        secret:response.body['access_token'],
       });
       return exits.success(updated);
     });
