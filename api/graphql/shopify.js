@@ -81,22 +81,24 @@ module.exports = {
   PRODUCTID :
     `query ShopifyProductIdQuery($productId: String) {
       ShopifyProductId(productId: $productId) {
-        name
-        externalId
-        description
-        reference
-        descriptionShort
-        active
-        price
-        tax{
+        product{
           name
-          rate
+          externalId
+          description
+          reference
+          descriptionShort
+          active
+          price
+          tax{
+            name
+            rate
+          }
+          manufacturer
+          width
+          weight
+          height
+          length
         }
-        manufacturer
-        width
-        weight
-        height
-        length
         productVariations{
           discount{
             name

@@ -2,7 +2,7 @@ module.exports = {
   friendlyName: 'Create product',
   description: 'Proceso para crear producto webhook',
   inputs: {
-    product: {type:'json'},
+    shopifyProduct: {type:'json'},
     seller: {type : 'string'}
   },
   exits: {
@@ -15,7 +15,9 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     let seller = inputs.seller;
-    let product = inputs.product;
+    let product = inputs.shopifyProduct.product;
+    let variations = inputs.shopifyProduct.productVariations;
+    let images = inputs.shopifyProduct.productImages;
     try {
       let pro = await sails.helpers.checkProducts(product, seller);
 
@@ -23,13 +25,13 @@ module.exports = {
         let exists = await Product.findOne({reference: pro.reference, seller: pro.seller});
         if (!exists) {
           await Product.create(pro).fetch();
-          await sails.helpers.marketplaceswebhooks.variations(product.productVariations, pro.reference, seller);
-          await sails.helpers.marketplaceswebhooks.images(product.productImages, pro.reference, seller);
+          await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
+          await sails.helpers.marketplaceswebhooks.images(images, pro.reference, seller);
         } else {
           delete pro.mainCategory;
           delete pro.categories;
           await Product.updateOne({id: exists.id}).set(pro);
-          await sails.helpers.marketplaceswebhooks.variations(product.productVariations, pro.reference, seller);
+          await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
         }
       }
     } catch (error) {

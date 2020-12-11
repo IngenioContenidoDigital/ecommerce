@@ -1,9 +1,9 @@
 const gql = require('graphql-tag');
 
 module.exports = {
-  SHOPIFY_PRODUCT_CREATED : gql`
+  SHOPIFY_PRODUCTS : gql`
     subscription{
-        ShopifyProductCreated{
+        ShopifyProducts{
             productId,
             key,
             channel

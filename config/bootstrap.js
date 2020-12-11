@@ -10,13 +10,13 @@
  */
 
 module.exports.bootstrap = async function() {
-  const { SHOPIFY_PRODUCT_CREATED } = require('../api/graphql/subscriptions/shopify');
+  const { SHOPIFY_PRODUCTS } = require('../api/graphql/subscriptions/shopify');
 
   sails.on('lifted', async ()=>{
-    await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCT_CREATED, callback : async (response)=>{
-      if (response.data.ShopifyProductCreated) {
-        let result = response.data.ShopifyProductCreated;
-        let integration = await Integrations.findOne({ channel: result.channel, key: result.key});
+    await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCTS, callback : async (response)=>{
+      if (response.data.ShopifyProducts) {
+        let result = response.data.ShopifyProducts;
+        let integration = await Integrations.findOne({channel: result.channel, key: result.key});
         if (integration) {
           let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
             integration.channel,
