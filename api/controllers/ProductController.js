@@ -438,7 +438,7 @@ module.exports = {
       items: [],
       errors: []
     }
-    let params = { channel: 'linio' };
+    let params = { channel: 'dafiti' };
     if(req.param('seller')){params.seller=req.param('seller');}
     let integrationSellers = await Integrations.find(params);
     for (let s of integrationSellers) {
@@ -1123,17 +1123,16 @@ module.exports = {
           case 'ProductCreate':
             params.dafiti = false;
             params.active = true;
-            params.dafitiqc = false;
             break;
           case 'ProductUpdate':
             params.dafiti = true;
-            params.dafitistatus = true;
-            params.active = true;
+            /*params.dafitistatus = true;
+            params.active = true;*/
             break;
           case 'Image':
             params.dafiti = true;
-            params.dafitistatus = true;
-            params.dafitiqc = true;
+            params.dafitistatus = false;
+            params.dafitiqc = false;
             params.active = true;
             break;
         }
@@ -1182,8 +1181,8 @@ module.exports = {
             break;
           case 'ProductUpdate':
             params.linio = true;
-            params.liniostatus = true;
-            params.active = true;
+            /*params.liniostatus = true;
+            params.active = true;*/
             break;
           case 'Image':
             params.linio = true;
@@ -1240,7 +1239,7 @@ module.exports = {
             action = 'Update';
             params.ml = true;
             params.mlid = { '!=': '' };
-            params.active = true;
+            /*params.active = true;*/
             break;
           case 'Image':
             action = 'Update';
