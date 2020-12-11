@@ -10,7 +10,30 @@
  */
 
 module.exports.bootstrap = async function() {
+  const { SHOPIFY_PRODUCT_CREATED } = require('../api/graphql/subscriptions/shopify');
 
+  sails.on('lifted', async ()=>{
+    await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCT_CREATED, callback : async (response)=>{
+      if (response.data.ShopifyProductCreated) {
+        let result = response.data.ShopifyProductCreated;
+        let integration = await Integrations.findOne({ channel: result.channel, key: result.key});
+        if (integration) {
+          let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+            integration.channel,
+            integration.key,
+            integration.secret,
+            integration.url,
+            integration.version,
+            'PRODUCTID',
+            result.productId
+          ).catch((e) => console.log(e));
+          if (product) {
+            await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
+          }
+        }
+      }
+    }});
+  });
   // By convention, this is a good place to set up fake data during development.
   if (await Profile.count() < 1) {
     await Profile.createEach([
