@@ -25,14 +25,16 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let mercadolibre = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
-    let body = {
-      'question_id': inputs.questionId,
-      'text': inputs.text
-    };
-    mercadolibre.post('/answers', body ,{access_token: inputs.secret}, (error, response) =>{
-      if(error){return exits.error(error);}
-      return exits.success(response);
-    });
+    try{
+      let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+      let body = {
+        'question_id': inputs.questionId,
+        'text': inputs.text
+      };
+      let response = await sails.helpers.channel.mercadolibre.request('answers?access_token='+integration.secret, body,'POST');
+      if(response){return exits.success(response);}
+    }catch(err){
+      return exits.error(err.message);
+    }
   }
 };

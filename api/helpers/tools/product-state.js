@@ -9,6 +9,10 @@ module.exports = {
     status:{
       type:'boolean',
       required:true
+    },
+    sync:{
+      type:'boolean',
+      defaultsTo:false
     }
   },
   exits: {
@@ -25,7 +29,9 @@ module.exports = {
     }else{
       updated = await Product.updateOne({ id: inputs.product }).set({ active: false });
     }
-    //await sails.helpers.channel.channelSync(updated);
+    if(inputs.sync){
+      await sails.helpers.channel.channelSync(updated);
+    }
   }
 };
 

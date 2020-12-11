@@ -355,7 +355,7 @@ module.exports = {
             sails.sockets.blast('notificationml', {questions: questio + 1, questionsSeller: questionsSeller, seller});
             break;
           case 'orders_v2':
-            await sails.helpers.channel.mercadolibre.orders(seller, integration.secret, resource);
+            await sails.helpers.channel.mercadolibre.orders(seller, resource);
             break;
           default:
             break;

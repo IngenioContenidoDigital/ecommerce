@@ -6,10 +6,6 @@ module.exports = {
       type:'string',
       required:true
     },
-    secret: {
-      type: 'string',
-      required: true
-    },
     resource: {
       type: 'string',
       required: true
@@ -24,22 +20,19 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    let mercadolibre = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
 
     let profile = await Profile.findOne({name:'customer'});
     let moment = require('moment');
 
-    let result = await sails.helpers.channel.mercadolibre.findUser(mercadolibre, inputs.secret).catch(err =>{return exits.error(err.message);});
+    let result = await sails.helpers.channel.mercadolibre.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
     if(result.id){
-      let parameters = {};
-      parameters.seller = result.id;
-      parameters['access_token'] = inputs.secret;
-      let order = await sails.helpers.channel.mercadolibre.findOrder(mercadolibre, parameters, inputs.resource).catch(err =>{return exits.error(err.message);});
+      let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret).catch(err =>{return exits.error(err.message);});
       if(order){
         try{
           let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});
           if(oexists===undefined && order.status==='paid'){
-            let shipping = await sails.helpers.channel.mercadolibre.findShipments(mercadolibre,inputs.secret,order.shipping.id).catch(err=>{
+            let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id).catch(err=>{
               return exits.error(err.message);
             });
             if(shipping){

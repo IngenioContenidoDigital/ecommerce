@@ -2,10 +2,6 @@ module.exports = {
   friendlyName: 'Find user',
   description: 'Find Mercadolibre Logged In Usr',
   inputs: {
-    meli:{
-      type:'ref',
-      required:true,
-    },
     token:{
       type:'string',
       required:true,
@@ -17,10 +13,14 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    inputs.meli.get('users/me',{access_token:inputs.token},async (err, result) =>{
-      if(err){throw new Error(err.message);}
-      return exits.success(result);
+    const meli = require('mercadolibre-nodejs-sdk');
+    
+    let mercadolibre = new meli.RestClientApi();
+    mercadolibre.resourceGet('users/me', inputs.token, (error, data, response) => {
+      if(error){ return exits.error(error.message); }
+      return exits.success(response.body);
     });
+
   }
 };
 

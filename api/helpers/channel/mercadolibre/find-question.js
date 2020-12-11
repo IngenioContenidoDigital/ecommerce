@@ -21,10 +21,14 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let mercadolibre = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
-    mercadolibre.get(inputs.resource, {access_token: inputs.secret}, (error, response) =>{
-      if(error){return exits.error(error);}
-      return exits.success(response);
-    });
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+    try{
+      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource+'?&access_token='+integration.secret);
+      if(response){
+        return exits.success(response);
+      }
+    }catch(err){
+      return exits.error(err.message);
+    }
   }
 };

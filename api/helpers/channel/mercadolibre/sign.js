@@ -13,17 +13,28 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    const meli = require('mercadolibre');
+    const meli = require('mercadolibre-nodejs-sdk');
     let integration = await Integrations.findOne({channel:'mercadolibre',seller:inputs.seller});
-    let mercadolibre = new meli.Meli(integration.user, integration.key, integration.secret,integration.url);
-    mercadolibre.refreshAccessToken(async (error,callback)=>{
-      if(error){ return exits.error(error);}
-      await Integrations.updateOne({id:integration.id}).set({
-        url:callback['refresh_token'],
-        secret:callback['access_token'],
+    let mercadolibre = new meli.OAuth20Api();
+
+    let opts = {
+      'grantType': "refresh_token", // "authorization_code" | 
+      'clientId': integration.user, // String | 
+      'clientSecret': integration.key, // String | 
+      //'redirectUri': "redirectUri_example", // String | 
+      'code': integration.secret, // String | 
+      'refreshToken': integration.url // String | 
+    };
+    mercadolibre.getToken(opts, async (error, data, response) => {
+      if(error){ console.log(error); return exits.error(error);}
+      let updated = await Integrations.updateOne({id:integration.id}).set({
+        url:response.body['refresh_token'],
+        secret:response.body['access_token'],
       });
-      return exits.success(mercadolibre);
+      return exits.success(updated);
     });
+
+
   }
 
 
