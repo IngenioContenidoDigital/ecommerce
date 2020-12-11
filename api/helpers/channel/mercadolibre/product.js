@@ -50,7 +50,6 @@ module.exports = {
       let price = 0;
       let padj = inputs.mlprice ? parseFloat(inputs.mlprice) : product.mlprice;
       
-
       let productimages = await ProductImage.find({product:product.id});
       productimages.forEach(image =>{
         images.push({'source':sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file});
@@ -94,6 +93,21 @@ module.exports = {
         variations.push(v);
       });
       
+      let brand = null;
+      switch(product.manufacturer.name){
+        case 'Rosé Pistol':
+          brand = 'rose pistol';
+          break;
+        case '7 de color siete':
+          brand = 'color siete';
+          break;
+        case 'color siete care':
+          brand = 'color siete';
+          break;
+        default:
+          brand = product.manufacturer.name;
+          break;
+      }
 
       body ={
         'title':product.name.substring(0,59),
@@ -119,7 +133,7 @@ module.exports = {
         'attributes':[
           {
             'id':'BRAND',
-            'value_name':product.manufacturer.name
+            'value_name':brand
           },
           {
             'id':'MODEL',
@@ -155,16 +169,17 @@ module.exports = {
         categories.push(product.categories[c].name);
       }
       categories = categories.join(' ');
-      let mercadolibre = await sails.helpers.channel.mercadolibre.sign(product.seller);
-      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(mercadolibre,categories)
-      .intercept((err)=>{
-        return err;
-      });
       let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
-      let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration);
+      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(categories)
+      .intercept((err)=>{
+        return new Error(err.message);
+      });
+      let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration, brand)
+      .intercept((err)=>{
+        return new Error(err.message);
+      });      
       if(storeid>0){body['official_store_id']=storeid;}
-      switch(inputs.action){
-        case 'Update':
+      if(inputs.action==='ProductUpdate' || inputs.action==='Update'){
           body['status']=status;
           //if(product.ml && !product.mlstatus){
             delete body['title'];
@@ -196,25 +211,14 @@ module.exports = {
                 return exits.success(result);
               });
             }*/
-          mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
+          /*mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
             if(error){return exits.error(error);}
             return exits.success(result);
-          });
-          break;
-        case 'Post':
-          mercadolibre.post('items',body,{'access_token':integration.secret},(error,result) =>{
-            if(error){return exits.error(error);}
-            return exits.success(result);
-          });
-          break;
-        default:
-          mercadolibre.get('items/'+inputs.mlid,{'access_token':integration.secret},(error,result) =>{
-            if(error){return exits.error(error);}
-            return exits.success(result);
-          });
-          break;
+          });*/
       }
+      return exits.success(body);
     }catch(err){
+      console.log(err);
       return exits.error(err);
     }
   }

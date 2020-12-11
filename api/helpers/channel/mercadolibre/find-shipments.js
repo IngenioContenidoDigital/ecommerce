@@ -2,10 +2,6 @@ module.exports = {
   friendlyName: 'Find shipments',
   description: '',
   inputs: {
-    meli:{
-      type:'ref',
-      required:true
-    },
     token:{
       type:'string',
       required:true
@@ -21,10 +17,14 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    inputs.meli.get('shipments/'+inputs.id,{'x-format-new':true,access_token:inputs.token},async (err, result) => {
-      if(err){throw new Error(err.message);}
-      return exits.success(result);
-    })
+    try{
+      let response = await sails.helpers.channel.mercadolibre.request('shipments/'+inputs.id+'?x-format-new=true&access_token='+inputs.token);      
+      if(response){
+        return exits.success(response);
+      }
+    }catch(err){
+      return exits.error(err.message);
+    }
   }
 };
 

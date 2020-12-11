@@ -6,7 +6,7 @@ module.exports = {
   inputs: {
     product:{
       type:'ref',
-      requiered:true
+      required:true
     }
   },
   exits: {
@@ -24,8 +24,13 @@ module.exports = {
     }
     if (inputs.product.ml && inputs.product.mlid ) { 
       let mlstatus = inputs.product.mlstatus ? 'active' : 'paused';
-      await sails.helpers.channel.mercadolibre.product(inputs.product.id, 'Update', inputs.product.mlprice,mlstatus)
+      let body =  await sails.helpers.channel.mercadolibre.product(inputs.product.id, 'Update', inputs.product.mlprice,mlstatus)
       .tolerate(()=>{ return;});
+      if(body){
+        let integration = await sails.helpers.channel.mercadolibre.sign(inputs.product.seller);
+        await sails.helpers.channel.mercadolibre.request('items/'+inputs.product.mlid+'?access_token='+integration.secret,body,'PUT')
+        .tolerate(()=>{return;});
+      }
     }
     if (inputs.product.linio) {
       let result = await sails.helpers.channel.linio.product([inputs.product], inputs.product.linioprice);
