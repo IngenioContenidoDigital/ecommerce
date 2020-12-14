@@ -100,8 +100,7 @@ module.exports = {
                 data.Product.ProductData.Intencity = 'Eau de Toilette';
               }
             }
-            if(categories.includes('15215')/** Hogar*/){ delete data.Product.ProductData.Gender; }
-            if(categories.includes('12792')/** Deportes*/){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('15215')/** Hogar*/ || categories.includes('11496') /** Libros y Peliculas */ || categories.includes('12792')/** Deportes*/){ delete data.Product.ProductData.Gender; }
             if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
 
             if(i>0 && productvariation.length>1){
