@@ -30,7 +30,7 @@ module.exports = {
         return exits.success(0);
       }
     }catch(err){
-      throw new Error(err.message);
+      return exits.success(0);
     }    
   }
 

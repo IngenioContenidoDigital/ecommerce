@@ -175,9 +175,6 @@ module.exports = {
         return new Error(err.message);
       });
       let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration, brand)
-      .intercept((err)=>{
-        return new Error(err.message);
-      });      
       if(storeid>0){body['official_store_id']=storeid;}
       if(inputs.action==='ProductUpdate' || inputs.action==='Update'){
           body['status']=status;
@@ -218,7 +215,6 @@ module.exports = {
       }
       return exits.success(body);
     }catch(err){
-      console.log(err);
       return exits.error(err);
     }
   }

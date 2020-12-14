@@ -58,24 +58,6 @@ module.exports = {
             }
           }
 
-          let brand = null;
-          switch(product.manufacturer.name){
-            case 'Rosé Pistol':
-              brand = 'Rose Pistol';
-              break;
-            case '7 de color siete':
-              brand = 'color siete';
-              break;
-            case 'color siete care':
-              brand = 'color siete';
-              break;
-            default:
-              brand = product.manufacturer.name;
-              break;
-          }
-
-          brand = await sails.helpers.channel.linio.checkBrand(brand,product.seller);
-
           let i = 0;
           for(let pv of productvariation){
             let data = {
@@ -88,7 +70,7 @@ module.exports = {
                 PrimaryCategory: product.mainCategory.linio.split(',')[0],
                 Categories: categories.join(','),
                 Description: jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
-                Brand: brand,
+                Brand: product.manufacturer.linioname ? product.manufacturer.linioname : product.manufacturer.name,
                 Price: (Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(2),
                 Quantity: pv.quantity < 0 ? '0' : pv.quantity.toString(),
                 TaxClass: product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%',

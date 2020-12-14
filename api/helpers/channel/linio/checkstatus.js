@@ -35,10 +35,8 @@ module.exports = {
           let state = result.SuccessResponse.Body.Status.State.Status ? result.SuccessResponse.Body.Status.State.Status : result.SuccessResponse.Body.Status.State[0].Status
           if(state==='approved'){
             await Product.updateOne({id:inputs.product}).set({linio:true,linioqc:true});
-          }else if(state==='pending'){
-            await Product.updateOne({id:inputs.product}).set({linio:true,linioqc:false});
           }else{
-            await Product.updateOne({id:inputs.product}).set({linio:false,linioqc:false});
+            await Product.updateOne({id:inputs.product}).set({linio:true,linioqc:false});
           } 
           return exits.success(state);
         }else{
