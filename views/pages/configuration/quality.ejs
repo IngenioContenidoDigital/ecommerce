@@ -35,6 +35,7 @@
 
   let channel = '<%= channel %>';
   let products = <%- JSON.stringify(products) %>;
+  let mensaje = document.querySelector('#report');
   let checkProducts = (products) =>{ 
     if(products && products.length>0){
         for(let product of products){
@@ -56,11 +57,9 @@
                 }
             });
         }
-        let mensaje = document.querySelector('#report');
         mensaje.innerHTML='Proceso Finalizado';
         document.querySelector('.loading').innerHTML='';
     }else{
-        let mensaje = document.querySelector('#report');
         mensaje.innerHTML='Sin Productos para Procesar';
         document.querySelector('.loading').innerHTML='';
     }
@@ -68,6 +67,11 @@
 
   let loading = document.querySelector('.loading');
   loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-  checkProducts(products);
+  if(products){
+    checkProducts(products);
+  }else{
+    mensaje.innerHTML='Sin Productos para Procesar';
+    document.querySelector('.loading').innerHTML='';
+  }
 
   </script>
