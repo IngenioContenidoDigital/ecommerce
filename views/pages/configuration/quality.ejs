@@ -1,0 +1,73 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <h4 class="title is-4">Revisión de Productos en <%=channel%></h4>
+    <hr>
+    <h6 id="report" class="title is-6">Espera un momento por favor ...</h6>
+    <br>
+    <div class="loading"></div>
+    <hr>
+    <div class="columns is-gapless">
+        <div class="column">
+            <div id="items-block" class="notification is-primary">
+                <p>Hemos procesado <span id="items">0</span> producto(s).</p>
+                <br>
+                <ol id="items-list">
+                </ol>
+            </div>
+        </div>
+        <div class="column">    
+            <div id="errors-block" class="notification is-danger">
+                <p>Hemos identificado <span id="errors">0</span> error(es).</p>
+                <br>
+                <div class="container is-fluid">
+                    <ol id="error-list">
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+  <script>
+
+  let channel = '<%= channel %>';
+  let products = <%- JSON.stringify(products) %>;
+  let checkProducts = (products) =>{ 
+    if(products.length>0){
+        for(let product of products){
+            io.socket.post('/quality',{channel:channel, product:product},resData =>{
+                if(resData.items.length>=1){
+                let items = document.querySelector('#items')
+                items.innerHTML=parseInt(items.innerHTML)+resData.items.length;
+                }
+
+                if(resData.errors.length>=1){
+                    let errors = document.querySelector('#errors')
+                    errors.innerHTML=parseInt(errors.innerHTML)+resData.errors.length;
+                    let errorlist = document.querySelector('#error-list');
+                    for(let e of resData.errors){
+                        let err = document.createElement('li');
+                        err.innerHTML=e.code+' - '+e.message;
+                        errorlist.appendChild(err);
+                    }
+                }
+            });
+        }
+        let mensaje = document.querySelector('#report');
+        mensaje.innerHTML='Proceso Finalizado';
+        document.querySelector('.loading').innerHTML='';
+    }else{
+        let mensaje = document.querySelector('#report');
+        mensaje.innerHTML='Sin Productos para Procesar';
+        document.querySelector('.loading').innerHTML='';
+    }
+  }
+
+  let loading = document.querySelector('.loading');
+  loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+  checkProducts(products);
+
+  </script>

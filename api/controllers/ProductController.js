@@ -428,31 +428,6 @@ module.exports = {
       return res.send(err.message);
     }
   },
-  dafiticheck: async (req, res) => {
-    req.setTimeout(900000);
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
-      throw 'forbidden';
-    }
-    let response = {
-      items: [],
-      errors: []
-    }
-    let params = { channel: 'dafiti' };
-    if(req.param('seller')){params.seller=req.param('seller');}
-    let integrationSellers = await Integrations.find(params);
-    for (let s of integrationSellers) {
-      let products = await Product.find({ seller: s.seller, dafiti: true, dafitiqc: false })
-      for (let p of products) {
-        let result = await sails.helpers.channel.dafiti.checkstatus(p.id)
-        .tolerate('notFound', () => {response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });});
-        if (result) {response.items.push({ code: 'DAFITI', message: 'REF: '+p.reference+' - '+result });}else{
-          response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });
-        }
-      }
-    }
-    return res.send(JSON.stringify(response));
-  },
   mercadolibreadd: async (req, res) => {
     if (!req.isSocket) {return res.badRequest();}
     let product = await Product.findOne({ id: req.body.product });
@@ -547,30 +522,53 @@ module.exports = {
       return res.send(err.message);
     }
   },
-  liniocheck: async (req, res) => {
-    req.setTimeout(900000);
+  qualitycheck: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
       throw 'forbidden';
     }
-    let response = {
-      items: [],
-      errors: []
-    }
-    let params = { channel: 'linio' };
+    let params={};
+    let error = null;
+    let channel = req.param('channel');
     if(req.param('seller')){params.seller=req.param('seller');}
-    let integrationSellers = await Integrations.find(params);
-    for (let s of integrationSellers) {
-      let products = await Product.find({ seller: s.seller, linio: true, linioqc: false })
-      for (let p of products) {
-        let result = await sails.helpers.channel.linio.checkstatus(p.id)
-        .tolerate('notFound', () => {response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });});
-        if (result) {response.items.push({ code: 'LINIO', message: 'REF: '+p.reference+' - '+result });}else{
-          response.errors.push({ code: 'ERR', message: 'REF: '+p.reference });
-        }
-      }
+    switch(channel){
+      case 'linio':
+        params.linio=true;
+        params.linioqc=false;
+        break;
+      case 'dafiti':
+        params.dafiti=true;
+        params.dafitiqc=false;
+        break;
     }
-    return res.send(JSON.stringify(response));
+    let products = await Product.find({
+      where:params,
+      select: ['id','reference']
+    });
+    return res.view('pages/configuration/quality', { layout: 'layouts/admin', error: error, channel: channel, products: products});
+  },
+  qualityexecute: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
+      throw 'forbidden';
+    }
+    if (!req.isSocket) { return res.badRequest(); }
+    let response = {items: [],errors: []}
+    let result = null;
+    try{
+      switch(req.body.channel){
+        case 'linio':
+          result = await sails.helpers.channel.linio.checkstatus(req.body.product.id);
+          break;
+        case 'dafiti':
+          result = await sails.helpers.channel.dafiti.checkstatus(req.body.product.id)
+          break;
+      }
+      if (result) {response.items.push({ code: 'REF:'+p.reference, message: result });}
+    }catch(err){
+      response.errors.push({ code: 'REF:'+p.reference, message: 'No Localizado' });
+    }
+    return res.send(response);
   },
   import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -914,7 +912,6 @@ module.exports = {
     }
     return res.send(result);
   },
-
   checkProductFromProvider: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
 
@@ -1031,7 +1028,6 @@ module.exports = {
     return res.send(result);
 
   },
-
   searchindex: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'updateindex')) {
@@ -1404,7 +1400,6 @@ module.exports = {
       page++;
     } while ((!isEmpty));
   },
-
   importImages: async (req, res) => {
     if (!req.isSocket) {
       return res.badRequest();
@@ -1502,7 +1497,6 @@ module.exports = {
 
     } while ((!isEmpty));
   },
-
   importVariations: async (req, res) => {
     if (!req.isSocket) {
       return res.badRequest();
