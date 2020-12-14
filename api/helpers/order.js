@@ -97,7 +97,10 @@ module.exports = {
             });
             let pv = await ProductVariation.findOne({id:cp.productvariation.id});
             if(pv){
-              await ProductVariation.updateOne({id:pv.id}).set({quantity:pv.quantity-=1});
+              let quantity = pv.quantity-=1;
+              let updated = await ProductVariation.updateOne({id:pv.id}).set({quantity: quantity < 0 ? 0 : quantity});
+              let uproduct = await Product.findOne({id:updated.product});
+              await sails.helpers.channel.channelSync(uproduct);
             }
           }
         }catch(err){
