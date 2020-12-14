@@ -11,11 +11,32 @@
 
 module.exports.bootstrap = async function() {
   const { SHOPIFY_PRODUCTS } = require('../api/graphql/subscriptions/shopify');
+  const { VTEX_PRODUCTS } = require('../api/graphql/subscriptions/vtex');
 
   sails.on('lifted', async ()=>{
     await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCTS, callback : async (response)=>{
       if (response.data.ShopifyProducts) {
         let result = response.data.ShopifyProducts;
+        let integration = await Integrations.findOne({channel: result.channel, key: result.key});
+        if (integration) {
+          let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+            integration.channel,
+            integration.key,
+            integration.secret,
+            integration.url,
+            integration.version,
+            'PRODUCTID',
+            result.productId
+          ).catch((e) => console.log(e));
+          if (product) {
+            await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
+          }
+        }
+      }
+    }});
+    await sails.helpers.subscription({ subscription : VTEX_PRODUCTS, callback : async (response)=>{
+      if (response.data.VtexProducts) {
+        let result = response.data.VtexProducts;
         let integration = await Integrations.findOne({channel: result.channel, key: result.key});
         if (integration) {
           let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
