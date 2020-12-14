@@ -564,9 +564,9 @@ module.exports = {
           result = await sails.helpers.channel.dafiti.checkstatus(req.body.product.id)
           break;
       }
-      if (result) {response.items.push({ code: 'REF:'+p.reference, message: result });}
+      if (result) {response.items.push({ code: 'REF:'+req.body.product.reference, message: result });}
     }catch(err){
-      response.errors.push({ code: 'REF:'+p.reference, message: 'No Localizado' });
+      response.errors.push({ code: 'REF:'+req.body.product.reference, message: 'No Localizado' });
     }
     return res.send(response);
   },

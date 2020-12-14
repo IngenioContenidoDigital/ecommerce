@@ -41,8 +41,8 @@
         for(let product of products){
             io.socket.post('/quality',{channel:channel, product:product},resData =>{
                 if(resData.items.length>=1){
-                let items = document.querySelector('#items')
-                items.innerHTML=parseInt(items.innerHTML)+resData.items.length;
+                    let items = document.querySelector('#items')
+                    items.innerHTML=parseInt(items.innerHTML)+resData.items.length;
                 }
 
                 if(resData.errors.length>=1){
