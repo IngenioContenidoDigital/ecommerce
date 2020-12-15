@@ -11,6 +11,7 @@
 
 module.exports.bootstrap = async function() {
   const { SHOPIFY_PRODUCTS } = require('../api/graphql/subscriptions/shopify');
+  const { WOOCOMMERCE_PRODUCTS } = require('../api/graphql/subscriptions/woocommerce');
 
   sails.on('lifted', async ()=>{
     await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCTS, callback : async (response)=>{
@@ -29,6 +30,27 @@ module.exports.bootstrap = async function() {
           ).catch((e) => console.log(e));
           if (product) {
             await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
+          }
+        }
+      }
+    }});
+
+    await sails.helpers.subscription({ subscription : WOOCOMMERCE_PRODUCTS, callback : async (response)=>{
+      if (response.data.WoocommerceProducts) {
+        let result = response.data.WoocommerceProducts;
+        let integration = await Integrations.findOne({channel: result.channel, key: result.key});
+        if (integration) {
+          let response = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+            integration.channel,
+            integration.key,
+            integration.secret,
+            integration.url,
+            integration.version,
+            'PRODUCTID',
+            result.productId
+          ).catch((e) => console.log(e));
+          if (response) {
+            await sails.helpers.marketplaceswebhooks.woocommerceProduct(response.product, integration.seller).catch((e)=>console.log(e));
           }
         }
       }
