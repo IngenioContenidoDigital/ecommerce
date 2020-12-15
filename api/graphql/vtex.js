@@ -72,5 +72,52 @@ module.exports = {
         }
       }
     }
-  }`
+  }`,
+
+  PRODUCTID :
+    `query VtexProductIdQuery($productId: String) {
+      VtexProductId(productId: $productId) {
+        product{
+          name
+          externalId
+          description
+          reference
+          descriptionShort
+          active
+          price
+          textLink
+          tax{
+            name
+            rate
+          }
+          manufacturer
+          width
+          weight
+          height
+          length
+        }
+        productVariations{
+          discount{
+            name
+            from
+            to
+            type
+            value
+          }
+          variations{
+            reference
+            talla
+            price
+            quantity
+            ean13
+          }
+        }
+        productImages{
+          images{
+            file
+            src
+          }
+        }
+      }
+    }`
 };
