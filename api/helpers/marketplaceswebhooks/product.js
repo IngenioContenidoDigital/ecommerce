@@ -2,7 +2,7 @@ module.exports = {
   friendlyName: 'Create product',
   description: 'Proceso para crear producto webhook',
   inputs: {
-    shopifyProduct: {type:'json'},
+    product: {type:'json'},
     seller: {type : 'string'}
   },
   exits: {
@@ -15,9 +15,9 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     let seller = inputs.seller;
-    let product = inputs.shopifyProduct.product;
-    let variations = inputs.shopifyProduct.productVariations;
-    let images = inputs.shopifyProduct.productImages;
+    let product = inputs.product.product;
+    let variations = inputs.product.productVariations;
+    let images = inputs.product.productImages;
     try {
       let pro = await sails.helpers.checkProducts(product, seller);
 
