@@ -12,6 +12,7 @@
 module.exports.bootstrap = async function() {
   const { SHOPIFY_PRODUCTS } = require('../api/graphql/subscriptions/shopify');
   const { VTEX_PRODUCTS } = require('../api/graphql/subscriptions/vtex');
+  const { PRESTASHOP_PRODUCTS } = require('../api/graphql/subscriptions/prestashop');
 
   sails.on('lifted', async ()=>{
     await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCTS, callback : async (response)=>{
@@ -52,6 +53,27 @@ module.exports.bootstrap = async function() {
             await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
           }
         }
+      }
+    }});
+    await sails.helpers.subscription({ subscription : PRESTASHOP_PRODUCTS, callback : async (response)=>{
+      if (response.data.PrestashopProducts) {
+        let result = response.data.PrestashopProducts;
+        let integration = await Integrations.findOne({channel: result.channel, key: result.key});
+        console.log(result);
+        // if (integration) {
+        //   let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+        //     integration.channel,
+        //     integration.key,
+        //     integration.secret,
+        //     integration.url,
+        //     integration.version,
+        //     'PRODUCTID',
+        //     result.productId
+        //   ).catch((e) => console.log(e));
+        //   if (product) {
+        //     await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
+        //   }
+        // }
       }
     }});
   });
