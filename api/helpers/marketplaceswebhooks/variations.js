@@ -34,14 +34,14 @@ module.exports = {
         });
         if (disc.length > 0) {
           await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-            from: moment(productVariation.discount[0].from).valueOf(),
-            to: moment(productVariation.discount[0].to).valueOf()
+            from: moment(new Date(productVariation.discount[0].from) ).valueOf(),
+            to: moment(new Date(productVariation.discount[0].to)).valueOf()
           });
         } else {
           let discount = await CatalogDiscount.create({
             name: productVariation.discount[0].name.trim().toLowerCase(),
-            from: moment(productVariation.discount[0].from).valueOf(),
-            to: moment(productVariation.discount[0].to).valueOf(),
+            from: moment(new Date(productVariation.discount[0].from)).valueOf(),
+            to: moment(new Date(productVariation.discount[0].to)).valueOf(),
             type: productVariation.discount[0].type,
             value: parseFloat(productVariation.discount[0].value),
             seller: pro.seller
@@ -52,18 +52,18 @@ module.exports = {
       try {
         if(pro.categories[0] && productVariation.variations && productVariation.variations.length > 0){
           for(let vr of productVariation.variations){
-            let variation = await Variation.findOne({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, category: pro.categories[0].id});
+            let variation = await Variation.find({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, category: pro.categories[0].id});
             let discountHandled = false;
 
-            if(!variation){
+            if(!variation || variation.length == 0){
               variation = await Variation.create({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, category: pro.categories[0].id}).fetch();
             }
             let pvs = await ProductVariation.find({product: pro.id, supplierreference: pro.reference}).populate('variation');
-            let pv = pvs.find(pv=> pv.variation.name === variation.name);
+            let pv = pvs.find(pv=> pv.variation.name === variation[0].name);
             if (!pv) {
               await ProductVariation.create({
                 product: pro.id,
-                variation: variation.id,
+                variation: variation[0].id,
                 reference: vr.reference ? vr.reference : '',
                 supplierreference: pro.reference,
                 ean13: vr.ean13 ? vr.ean13.toString() : '',
@@ -75,7 +75,7 @@ module.exports = {
             } else {
               await ProductVariation.updateOne({ id: pv.id }).set({
                 price: vr.price,
-                variation: variation.id,
+                variation: variation[0].id,
                 quantity: vr.quantity ? vr.quantity : 0,
               });
             }
@@ -93,14 +93,14 @@ module.exports = {
                 });
                 if (disc.length > 0) {
                   await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                    from: moment(vr.discount[0].from).valueOf(),
-                    to: moment(vr.discount[0].to).valueOf()
+                    from: moment(new Date( vr.discount[0].from)).valueOf(),
+                    to: moment(new Date(vr.discount[0].to)).valueOf()
                   });
                 } else {
                   let discount = await CatalogDiscount.create({
                     name: (vr.discount && vr.discount[0].name) ? vr.discount[0].name.trim().toLowerCase() : pro.name,
-                    from: moment(vr.discount[0].from).valueOf(),
-                    to: moment(vr.discount[0].to).valueOf(),
+                    from: moment(new Date(vr.discount[0].from)).valueOf(),
+                    to: moment(new Date(vr.discount[0].to)).valueOf(),
                     type: vr.discount[0].type,
                     value: parseFloat(vr.discount[0].value),
                     seller: pro.seller

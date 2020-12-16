@@ -49,8 +49,8 @@ module.exports = {
       }else{
         throw new Error('Error en la Petición');
       }
-    }catch(err){      
-      return exits.error(err.message);
+    }catch(err){
+      throw new Error(err.message);
     }
   }
 };
