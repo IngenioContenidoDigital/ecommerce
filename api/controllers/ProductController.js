@@ -435,7 +435,7 @@ module.exports = {
       let action = null;
       let result = null;
       let status = req.body.status ? 'active' : 'paused';
-      if (product.ml) {
+      if (product.ml && product.mlid) {
         action = 'Update';
       } else {
         action = 'Post';
@@ -445,9 +445,13 @@ module.exports = {
       .intercept((err) => {return new Error(err.message);});
       if(body){        
         if(action==='Update'){
-          result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'PUT')
+          result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid+'?access_token='+integration.secret, body,'PUT')
           .intercept((err)=>{
             return new Error(err.message);
+          });
+          await Product.updateOne({id: product.id}).set({
+            mlstatus: req.body.status ? true : false,
+            mlprice: req.body.pricemercadolibre ? parseFloat(req.body.pricemercadolibre) : 0
           });
         }
         if(action==='Post'){
@@ -455,11 +459,12 @@ module.exports = {
           .intercept((err)=>{
             return new Error(err.message);
           }); 
-          if(result.id.length>0){
+          if(result.id){
             await Product.updateOne({id: product.id}).set({
               ml: true,
               mlstatus: true,
-              mlid: result.id
+              mlid: result.id,
+              mlprice: req.body.pricemercadolibre ? parseFloat(req.body.pricemercadolibre) : 0
             });
           }
         }
@@ -1251,7 +1256,7 @@ module.exports = {
             let body = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
             .tolerate(async (err) => {
               await Product.updateOne({ id: pl.id }).set({
-                ml: true,
+                ml: false,
                 mlstatus: false,
                 mlid: '',
                 mlprice:0
@@ -1260,9 +1265,16 @@ module.exports = {
             });
             if(body){
               if(action==='Update'){
-                result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'PUT')
+                result = await sails.helpers.channel.mercadolibre.request('items/'+pl.mlid+'?access_token='+integration.secret, body,'PUT')
                 .tolerate((err)=>{return;});
-                if(result){response.items.push(body);}
+                if(result){
+                  response.items.push(body);
+                  await Product.updateOne({ id: pl.id }).set({
+                    ml: true,
+                    mlstatus: pl.mlstatus,
+                    mlprice:parseFloat(pl.mlprice)
+                  });
+                }
               }
               if(action==='Post'){
                 result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
@@ -1271,7 +1283,8 @@ module.exports = {
                   await Product.updateOne({id: product.id}).set({
                     ml: true,
                     mlstatus: true,
-                    mlid: result.id
+                    mlid: result.id,
+                    mlprice: parseFloat(pl.mlprice)
                   });
                   response.items.push(body);
                 }
