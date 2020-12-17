@@ -87,7 +87,6 @@ module.exports = {
             if (response.data.PrestashopProducts) {
               let result = response.data.PrestashopProducts;
               let integration = await Integrations.findOne({channel: result.channel, key: result.key});
-              console.log(result);
               if (integration) {
                 let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                   integration.channel,

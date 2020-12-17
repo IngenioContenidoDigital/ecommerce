@@ -23,18 +23,16 @@ module.exports = {
 
       if(typeof(pro) === 'object'){
         let exists = await Product.findOne({reference: pro.reference, seller: pro.seller});
-        // console.log(exists);
-        // console.log(pro);
-        // if (!exists) {
-        //   await Product.create(pro).fetch();
-        //   await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
-        //   await sails.helpers.marketplaceswebhooks.images(images, pro.reference, seller);
-        // } else {
-        //   delete pro.mainCategory;
-        //   delete pro.categories;
-        //   await Product.updateOne({id: exists.id}).set(pro);
-        //   await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
-        // }
+        if (!exists) {
+          await Product.create(pro).fetch();
+          await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
+          await sails.helpers.marketplaceswebhooks.images(images, pro.reference, seller);
+        } else {
+          delete pro.mainCategory;
+          delete pro.categories;
+          await Product.updateOne({id: exists.id}).set(pro);
+          await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
+        }
       }
     } catch (error) {
       return exits.error(error);
