@@ -15,6 +15,7 @@
     "axios": "^0.19.2",
     "bulma": "^0.8.0",
     "bulma-calendar": "^6.0.7",
+    "bulma-modal-fx": "^1.1.1",
     "crypto-js": "^4.0.0",
     "csvtojson": "^2.0.10",
     "epayco-node": "0.0.7",

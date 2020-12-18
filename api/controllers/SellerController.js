@@ -34,11 +34,11 @@ module.exports = {
         .populate('city');
       }
       integrations = await Integrations.find({
-        where:{seller:id, channel:{'!=':['dafiti','linio','mercadolibre']}},
+        where:{seller:id},
       });
     }
     let countries = await Country.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries, integrations : integrations});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries, integrations: integrations, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -86,31 +86,13 @@ module.exports = {
       let address = await Address.findOrCreate({name:addData.name,addressline1:addData.addressline1},addData);
 
       if(address){sellerData.mainAddress = address.id;}
-      
+
       let seller = await Seller.findOrCreate({dni:sellerData.dni},sellerData);
-      let integration = {
-        channel:req.body.channel,
-        url:req.body.apiUrl,
-        key:req.body.key,
-        secret:req.body.secret ? req.body.secret : '',
-        seller:seller.id
-      };
-
-      if(integration.channel && integration.url && integration.key && integration.secret){
-
-        if(req.body.user){integration.user = req.body.user;}
-        if(req.body.version){integration.version = req.body.version;}
-    
-        Integrations.findOrCreate({ seller: seller.id, channel:integration.channel}, integration, async (err, record , created )=>{
-          if(err){error = err;}
-          if(!created){await Integrations.updateOne({id:record.id}).set(updateIntegration);}
-        });
-      }
+      return res.redirect('/sellers/edit/'+seller.id);
     }catch(err){
       console.log(err);
       return res.redirect('/sellers?error='+err.message);
     }
-    return res.redirect('/sellers');
   },
   editseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -164,28 +146,6 @@ module.exports = {
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp});
 
-        if(req.body.secret && req.body.key && req.body.version && req.body.apiurl){
-            integration = {
-              channel:req.body.channel,
-              url:req.body.apiurl,
-              key:req.body.key,
-              user: req.body.user ? req.body.user : '',
-              secret:req.body.secret ? req.body.secret : '',
-              version:req.body.version ? req.body.version : '',
-              seller:seller.id
-            };
-            Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
-              if(err){console.log(err); error = err;}
-        
-              if(!created){
-                delete integration.id;
-                delete integration.createdAt;
-                delete integration.updatedAt;
-                await Integrations.updateOne({id:record.id}).set(integration);
-              }
-            });
-        }
-
     }catch(err){      
       error=err;
       if(err.code==='badRequest'){
@@ -227,7 +187,7 @@ module.exports = {
       }
     }
     if (error===undefined || error===null || error.code==='badRequest'){
-      return res.redirect('/sellers');
+      return res.redirect('/sellers/edit/'+id);
     }else{
       return res.redirect('/sellers?error='+error);
     }
@@ -265,6 +225,7 @@ module.exports = {
       user:req.body.user,
       key:req.body.key,
       secret:req.body.secret ? req.body.secret : '',
+      version:req.body.version ? req.body.version : '',
       seller:seller
     }).exec(async (err, record, created)=>{
       if(err){return res.redirect('/sellers?error='+err);}
@@ -275,6 +236,7 @@ module.exports = {
           user:req.body.user,
           key:req.body.key,
           secret:req.body.secret ? req.body.secret : '',
+          version:req.body.version ? req.body.version : '',
           seller:seller
         });
       }
@@ -282,7 +244,7 @@ module.exports = {
       if(record.channel=='mercadolibre'){
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+seller+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
-        return res.redirect('/sellers');
+        return res.redirect('/sellers/edit/'+seller);
       }
     });
   },
