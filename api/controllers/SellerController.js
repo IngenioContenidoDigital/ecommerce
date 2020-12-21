@@ -14,10 +14,12 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showsellers')){
       throw 'forbidden';
     }
+    let moment = require('moment');
     let error= req.param('error') ? req.param('error') : null;
     let success= req.param('success') ? req.param('success') : null;
     let seller = null;
     let integrations = null;
+    let commissiondiscount = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(rights.name!=='superadmin' && rights.name!=='admin'){
@@ -36,9 +38,12 @@ module.exports = {
       integrations = await Integrations.find({
         where:{seller:id},
       });
+      commissiondiscount = await CommissionDiscount.find({
+        where:{seller:id},
+      });
     }
     let countries = await Country.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries, integrations: integrations, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries, integrations, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -105,7 +110,6 @@ module.exports = {
     let id = req.param('id');
     let seller = await Seller.findOne({id:id});
     let address = null;
-    let integration = null;
     if(seller.mainAddress!==null){
       address = await Address.updateOne({id:seller.mainAddress}).set({
         addressline1:req.body.addressline1,
@@ -162,34 +166,81 @@ module.exports = {
           salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           integrationErp});
-        
-        if(req.body.secret && req.body.key && req.body.version && req.body.apiurl){
-            integration = {
-              channel:req.body.channel,
-              url:req.body.apiurl,
-              key:req.body.key,
-              user: req.body.user ? req.body.user : '',
-              secret:req.body.secret ? req.body.secret : '',
-              version:req.body.version ? req.body.version : '',
-              seller:seller.id
-            };
-            Integrations.findOrCreate({ seller: integration.seller, channel:integration.channel}, integration, async (err, record , created )=>{
-              if(err){console.log(error); error = err;}
-              if(!created){
-                delete integration.id;
-                delete integration.createdAt;
-                delete integration.updatedAt;
-                await Integrations.updateOne({id:record.id}).set(integration);
-              }
-            });
-        }
-
       }
     }
     if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/sellers/edit/'+id);
     }else{
-      return res.redirect('/sellers?error='+error);
+      return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
+  setcommission:async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let id = req.param('seller');
+    try{
+      await Seller.updateOne({id: id}).set({
+        salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
+        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0
+      });
+    }catch(err){
+      error=err;
+      if(err.code==='badRequest'){
+        await Seller.updateOne({id:id}).set({
+          salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
+          skuPrice: req.body.skuPrice ? req.body.skuPrice : 0
+        });
+      }
+    }
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/sellers/edit/'+id+'?success=Se Actualizó Correctamente.');
+    }else{
+      return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
+  createcommissiondiscount:async (req, res)=>{
+    const moment = require('moment');
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let id = req.param('seller');
+    try{
+      const range = req.body.range.split(' - ');
+      await CommissionDiscount.create({
+        from: moment(range[0]).valueOf(),
+        to: moment(range[1]).valueOf(),
+        value: req.body.commission,
+        seller: id
+      });
+    }catch(err){
+      error=err;
+    }
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/sellers/edit/'+id+'?success=Se Agrego Correctamente el Descuento.');
+    }else{
+      return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
+  removecommissiondiscount: async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    try{
+      let discountId = req.body.id;
+      await CommissionDiscount.destroyOne({id: discountId});
+      return res.send('ok');
+    }catch(err){
+      console.log(err);
+      return res.send(err.message);
     }
   },
   sellerstate: async function(req, res){
@@ -244,7 +295,7 @@ module.exports = {
       if(record.channel=='mercadolibre'){
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+seller+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
-        return res.redirect('/sellers/edit/'+seller);
+        return res.redirect('/sellers/edit/'+seller+'?success=Se Agrego Correctamente la Integración.');
       }
     });
   },

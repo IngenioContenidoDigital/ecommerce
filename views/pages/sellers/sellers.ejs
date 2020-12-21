@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="https://unpkg.com/bulma-modal-fx/dist/css/modal-fx.min.css" />
-<script type="text/javascript" src="https://unpkg.com/bulma-modal-fx/dist/js/modal-fx.min.js"></script>
 <div class="container">
   <% if (error != undefined || error != null) { %>
     <div class="notification is-danger is-light" id="error">
@@ -243,20 +241,18 @@
             <% } %>
           </tbody>
         </table>
-        <div id="modal-integration" class="modal modal-fx-fadeInScale">
+        <div id="modal-integration" class="modal">
           <div class="modal-background"></div>
-          <div class="modal-content">
-            <div class="box">
-              <div class="card" id="setup-panel">
-                <div class="card-content">
-                  <div class="field">
-                    <label class="label">Integración</label>
-                    <div id="img-integrations"></div>
-                  </div>
-                  <div class="setup is-hidden" id="form-integration"></div>
+          <div class="modal-card">
+            <section class="modal-card-body">
+              <div class="box">
+                <div class="field">
+                  <label class="label">Integración</label>
+                  <div id="img-integrations"></div>
                 </div>
+                <div class="setup is-hidden" id="form-integration"></div>
               </div>
-            </div>
+            </section>
           </div>
           <button class="modal-close is-large" aria-label="close"></button>
         </div>
@@ -387,7 +383,7 @@
                   </div>
                   <br>
                   <div class="control is-left">
-                    <button type="submit" class="button is-primary">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
+                    <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
                   </div>
                 </div>
               </form>`
@@ -424,7 +420,7 @@
                   </div>
                   <br>
                   <div class="control is-right">
-                    <button type="submit" class="button is-info">Autorizar Acceso</button>
+                    <button type="submit" class="button is-info is-small">Autorizar Acceso</button>
                   </div>
                 </div>
               </form>`:
@@ -459,7 +455,7 @@
                   </div>
                   <br>
                   <div class="control is-right">
-                    <button type="submit" class="button is-primary">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
+                    <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
                   </div>
                 </div>
               </form>`
@@ -563,45 +559,150 @@
         </script>
       </div>
       <div class="is-hidden" id="commissions">
-        <div class="columns">
-          <div class="column">
-            <div class="field">
-              <label class="label is-size-7">Comisión por venta </label>
-              <div class="control has-icons-left">
-                <input class="input is-size-7" type="number" name="salesCommission" placeholder="Comisión por venta" <% if(action=='edit'){ %>value="<%= seller.salesCommission %>"<% }%>/>
-                <span class="icon-input-left is-small is-left">
-                  <i class="bx bxs-offer "></i>
-                </span>
+        <p style="text-align: right;font-size: 15px; margin-right: 5px;">            
+          <a href="#" class="has-text-primary" id="add-commission"><i class="is-size-4 bx bxs-plus-square"></i></a>
+        </p>
+        <%if(action==='edit'){%>
+          <form method="POST" action="/commission/set/<%=seller.id%>">
+            <div class="columns">
+              <div class="column">
+                <div class="field">
+                  <label class="label is-size-7">Comisión por Venta</label>
+                  <div class="control has-icons-left">
+                    <input class="input is-size-7" type="number" name="salesCommission" placeholder="Comisión por Venta" <% if(action=='edit'){ %>value="<%= seller.salesCommission %>"<% }%>/>
+                    <span class="icon-input-left is-small is-left">
+                      <i class="bx bxs-offer "></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label is-size-7">Costo por SKU</label>
+                  <div class="control has-icons-left">
+                    <input class="input is-size-7" type="number" name="skuPrice" placeholder="Costo por SKU" <% if(action=='edit'){ %>value="<%= seller.skuPrice %>"<% }%>/>
+                    <span class="icon-input-left is-small is-left">
+                      <i class="bx bxs-badge-dollar"></i>
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="column">
-            <div class="field">
-              <label class="label is-size-7">Costo por sku</label>
-              <div class="control has-icons-left">
-                <input class="input is-size-7" type="number" name="skuPrice" placeholder="Costo por sku" <% if(action=='edit'){ %>value="<%= seller.skuPrice %>"<% }%>/>
-                <span class="icon-input-left is-small is-left">
-                  <i class="bx bxs-badge-dollar"></i>
-                </span>
-              </div>
+            <div class="control buttons is-right">
+              <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Comisión</button>
             </div>
+          </form>
+          <br><br>
+          <div id="discount-container">
+            <table class="table is-hoverable is-size-6 is-fullwidth">
+              <thead>
+                <tr>
+                  <th><small>Fecha</small></th>
+                  <th><small>Comisión x Venta</small></th>
+                  <th><small>Opciones</small></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if(commissiondiscount){%>
+                  <% commissiondiscount.forEach(discount => { %>
+                    <tr>
+                      <td><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss'); %> - <%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
+                      <td>
+                        <%= discount.value %>%
+                      </td>
+                      <td>
+                        <a href="#" class="has-text-info" id="delete-discount" discountId="<%= discount.id %>"><i class="is-size-4 bx bx-trash"></i></a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                <% } %>
+              </tbody>
+            </table>        
           </div>
-        </div>
-        <table class="table is-hoverable is-size-6 is-mediumwidth">
-          <thead>
-            <tr>
-              <th><small>Fecha</small></th>
-              <th><small>Comisión x Venta</small></th>
-            </tr>
-          </thead>
-          <tbody>
-            
-          </tbody>
-        </table>
-        <br>
-        <div class="control buttons is-right">
-          <button type="submit" class="button is-primary"><i class="bx bxs-plus-circle"></i>&nbsp;Agregar Comisión</button>
-        </div>
+          <div id="modal-commission" class="modal">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+              <section class="modal-card-body">
+                <form method="POST" action="/commissiondiscount/create/<%=seller.id%>">
+                  <div class="box">
+                    <div class="field">
+                      <label class="label is-size-7">Comisión por Venta</label>
+                      <div class="control has-icons-left">
+                        <input class="input is-size-7" type="number" name="commission" placeholder="Comisión por venta"/>
+                        <span class="icon-input-left is-small is-left">
+                          <i class="bx bxs-offer"></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label is-size-7">Intervalo de Fecha</label>
+                      <div class="is-right input-datepiker">
+                        <input class="input" type="date" name="range"/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="control buttons is-right">
+                    <button type="submit" class="button is-primary is-small"><i class="bx bx-plus-circle"></i>&nbsp;Agregar Comisión</button>
+                  </div>
+                </form>
+              </section>
+            </div>
+            <button class="modal-close is-large" id="close-modal"></button>
+          </div>
+        <% } %>
+        <script>
+          live('#add-commission','click',function(e){
+            e.preventDefault();
+            let modal = document.querySelector('#modal-commission');
+            addClass(modal,'is-active');
+          });
+
+          live('#close-modal','click',function(e){
+            e.preventDefault();
+            let modal = document.querySelector('#modal-commission');
+            removeClass(modal,'is-active');
+          });
+
+          live('#delete-discount','click', e =>{
+            e.preventDefault();
+            let elm = e.target;
+            if(e.target.tagName=='I'){
+              elm = e.target.parentNode;
+            }
+            let id = elm.getAttribute('discountId');
+            io.socket.put('/removecommissiondiscount',{id},resData =>{
+              if(resData=='ok'){
+                let row = elm.parentNode.parentNode;
+                let table = document.getElementById('discount-container').querySelector('.table')          
+                table.deleteRow(row.rowIndex);
+              }
+            });
+          });
+
+           // Initialize all input of date type.
+          const calendars = bulmaCalendar.attach('[type="date"]', {
+            type:'datetime',
+            isRange: true,
+            allowSameDayRange: true,
+            dateFormat:'YYYY-MM-DD',
+            timeFormat:'HH:mm:ss',
+            displayMode:'dialog',
+            cancelLabel:'Cancelar',
+            clearLabel:'Limpiar',
+            todayLabel:'Hoy',
+            nowLabel:'Ahora',
+            validateLabel:'Seleccionar',
+            minDate: new Date()
+          });
+
+          // Loop on each calendar initialized
+          calendars.forEach(calendar => {
+            // Add listener to date:selected event
+            calendar.on('date:selected', date => {
+              console.log(date);
+            });
+          });
+        </script>
       </div>
     </div>
     <script>
