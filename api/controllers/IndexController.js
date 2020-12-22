@@ -190,7 +190,7 @@ module.exports = {
 
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
-      items.forEach(async item => {
+      for (const item of items) {
         let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
         let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
         item.id = order.id;
@@ -210,7 +210,7 @@ module.exports = {
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         ordersItem.push(item);
-      });
+      }
     }
     worksheet.addRows(ordersItem);
     const buffer = await workbook.xlsx.writeBuffer();
