@@ -16,7 +16,7 @@ module.exports = {
     let moment = require('moment');
     let soap = require('strong-soap').soap;
     let order = await Order.findOne(inputs.params).populate('customer').populate('currentstatus').populate('addressDelivery');
-    let url = 'http://190.0.46.6:14999/ServiciosWeb/wsGenerarPlano.asmx?wsdl';
+    let url = 'http://190.0.46.6:14997/ServiciosWeb/wsGenerarPlano.asmx?wsdl';
     if (order) {
       let address = await Address.findOne({id: order.addressDelivery.id}).populate('city').populate('region');
       let items = await OrderItem.find({order: order.id}).populate('product').populate('productvariation');
@@ -102,7 +102,7 @@ module.exports = {
             ]]>`,
           Path: 'E:'
         };
-        let options = { endpoint: 'http://190.0.46.6:14999/ServiciosWeb/wsGenerarPlano.asmx'};
+        let options = { endpoint: 'http://190.0.46.6:14997/ServiciosWeb/wsGenerarPlano.asmx'};
         soap.createClient(url, options, (err, client) =>{
           let method = client['ImportarDatosXML'];
           if(err){return exits.error(err);}
