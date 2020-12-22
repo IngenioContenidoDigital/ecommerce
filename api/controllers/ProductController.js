@@ -1565,8 +1565,22 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }) 
-            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 });
+            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
+              where:{
+                to:{'>=':moment().valueOf()},
+                from:{'<=':moment().valueOf()}
+              },
+              sort: 'createdAt DESC',
+              limit: 1
+            })
+            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
+              where:{
+                to:{'>=':moment().valueOf()},
+                from:{'<=':moment().valueOf()}
+              },
+              sort: 'createdAt DESC',
+              limit: 1
+            });
 
             if(!pro){
               throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
@@ -1574,26 +1588,17 @@ module.exports = {
   
             if(pro){
               if (discount && p.discount && p.discount.length > 0) {
-                let disc = await CatalogDiscount.find({
-                  where:{
-                    to:{'>=':moment().valueOf()},
-                    from:{'<=':moment().valueOf()},
-                    value: p.discount[0].value,
-                    type: p.discount[0].type
-                  },
-                  sort: 'createdAt DESC',
-                  limit: 1
-                })
-                if (disc.length > 0) {
-                  await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                    from: moment(p.discount[0].from).valueOf(),
-                    to: moment(p.discount[0].to).valueOf()
+                if (pro.discount.length > 0 && pro.discount[0].value == p.discount[0].value 
+                  && pro.discount[0].type == p.discount[0].type) {
+                  await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+                    from: moment(p.discount[0].from, "YYYY/MM/DD HH:mm:ss").valueOf(),
+                    to: moment(p.discount[0].to, "YYYY/MM/DD HH:mm:ss").valueOf()
                   });
                 } else {
                   let discount = await CatalogDiscount.create({
                     name: p.discount[0].name.trim().toLowerCase(), 
-                    from: moment(p.discount[0].from).valueOf(),
-                    to: moment(p.discount[0].to).valueOf(),
+                    from: moment(p.discount[0].from, "YYYY/MM/DD HH:mm:ss").valueOf(),
+                    to: moment(p.discount[0].to, "YYYY/MM/DD HH:mm:ss").valueOf(),
                     type: p.discount[0].type,
                     value: parseFloat(p.discount[0].value),
                     seller: pro.seller
@@ -1640,26 +1645,17 @@ module.exports = {
 
                     if(!discountHandled){
                       if (discount && vr.discount && vr.discount.length > 0) {
-                        let disc = await CatalogDiscount.find({
-                          where:{
-                            to:{'>=':moment().valueOf()},
-                            from:{'<=':moment().valueOf()},
-                            value: vr.discount[0].value,
-                            type: vr.discount[0].type
-                          },
-                          sort: 'createdAt DESC',
-                          limit: 1
-                        })
-                        if (disc.length > 0) {
-                          await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                            from: moment(vr.discount[0].from).valueOf(),
-                            to: moment(vr.discount[0].to).valueOf()
+                        if (pro.discount.length > 0 && pro.discount[0].value == vr.discount[0].value 
+                          && pro.discount[0].type == vr.discount[0].type) {
+                          await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+                            from: moment(vr.discount[0].from, "YYYY/MM/DD HH:mm:ss").valueOf(),
+                            to: moment(vr.discount[0].to, "YYYY/MM/DD HH:mm:ss").valueOf()
                           });
                         } else {
                           let discount = await CatalogDiscount.create({
                             name: (vr.discount && vr.discount[0].name) ? vr.discount[0].name.trim().toLowerCase() : pro.name,
-                            from: moment(vr.discount[0].from).valueOf(),
-                            to: moment(vr.discount[0].to).valueOf(),
+                            from: moment(vr.discount[0].from, "YYYY/MM/DD HH:mm:ss").valueOf(),
+                            to: moment(vr.discount[0].to, "YYYY/MM/DD HH:mm:ss").valueOf(),
                             type: vr.discount[0].type,
                             value: parseFloat(vr.discount[0].value),
                             seller: pro.seller
