@@ -41,26 +41,30 @@ module.exports.cron = {
       let moment = require('moment');
       let ini = moment().subtract(15,'d').format('YYYYMMDD');
       let end = moment().format('YYYYMMDD');
-      let status = 3;
+      let status = 4;
       let oneCommerceStatus = 'Aceptado';
 
       let orders = await sails.helpers.siesaGetOrders({ini, end, status, oneCommerceStatus});
-      let state = await OrderState.findOne({name: 'empacado'});
+      if(orders.length > 0){
+        let state = await OrderState.findOne({name: 'empacado'});
 
-      for (let index = 0; index < orders.length; index++) {
-            const incomingOrder = orders[index];
-            let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
-
-            if(order.currentstatus.id != state.id){
-              let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
-
-              if(updatedOrder.tracking===''){
-                await sails.helpers.carrier.shipment(order.id);
-                await OrderHistory.create({order: order.id, state: state});
+        for (let index = 0; index < orders.length; index++) {
+              const incomingOrder = orders[index];
+              let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
+              
+              if(order){
+                if(order.currentstatus.id != state.id){
+                  let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
+    
+                  if(!updatedOrder.tracking){
+                    await sails.helpers.carrier.shipment(order.id);
+                    await OrderHistory.create({order: order.id, state: state});
+                  }
+    
+                }
               }
-
-            }
         }
+      }
     },
     timezone: 'America/Bogota'
   },
