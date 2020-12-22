@@ -75,5 +75,52 @@ VARIATIONS : `
                     }
             }
         }
-`
+`,
+PRODUCTID :
+    `query WoocommerceProductIdQuery($productId: String) {
+        WooCommerceProductId(productId: $productId) {
+            product{
+            name
+            externalId
+            description
+            reference
+            descriptionShort
+            active
+            price
+            tax{
+                name
+                rate
+            }
+            discount{
+                name
+                from
+                to
+                type
+                value
+            }
+            variations{
+                reference
+                talla
+                price
+                quantity
+                discount{
+                    name
+                    from
+                    to
+                    type
+                    value
+                }
+            }
+            manufacturer
+            width
+            weight
+            height
+            length
+            images{
+                file
+                src
+            }
+            }
+        }
+    }`
 }

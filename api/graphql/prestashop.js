@@ -71,5 +71,54 @@ module.exports = {
         }
       }
     }
+  }`,
+
+  PRODUCTID :
+  `query PrestashopProductIdQuery($productId: String) {
+    PrestashopProductId(productId: $productId) {
+      product{
+        name
+        externalId
+        description
+        reference
+        descriptionShort
+        active
+        price
+        tax{
+          name
+          rate
+        }
+        manufacturer
+        width
+        weight
+        height
+        length
+        images{
+          file
+          src
+        }
+      }
+      productVariations{
+        discount{
+          name
+          from
+          to
+          type
+          value
+        }
+        variations{
+          reference
+          talla
+          price
+          quantity
+        }
+      }
+      productImages{
+        images{
+          file
+          src
+        }
+      }
+    }
   }`
 };
