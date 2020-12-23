@@ -24,7 +24,7 @@
     "graphql-subscriptions-client": "^0.15.0",
     "graphql-tag": "^2.11.0",
     "grunt": "1.0.4",
-    "html-pdf": "^2.2.0",
+    "html-pdf-node": "^1.0.7",
     "jsontoxml": "^1.0.1",
     "jsonwebtoken": "^8.5.1",
     "mercadolibre-nodejs-sdk": "^3.0.1",
