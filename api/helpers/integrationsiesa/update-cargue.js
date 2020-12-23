@@ -22,7 +22,7 @@ module.exports = {
       user: '1Ecomm',
       password: '1Ec099p32$',
       server: '190.0.46.6',
-      database: 'unoEcommerce_Pruebas',
+      database: 'unoEcommerce_Produccion',
       options: {
         'encrypt': false,
         'enableArithAbort': false

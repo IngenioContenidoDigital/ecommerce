@@ -20,7 +20,7 @@ module.exports = {
       },
     },
     fn: async function (inputs, exits) {
-        let url = 'http://wscnadarpruebas.siesacloud.com:8043/wsunoee/WSUNOEE.asmx?wsdl';
+        let url = 'http://wscnadar.siesacloud.com:8043/wsunoee/WSUNOEE.asmx?wsdl';
 
         let requestArgs={
             'pvstrxmlParametros':
