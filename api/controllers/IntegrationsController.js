@@ -17,12 +17,14 @@ module.exports = {
             'code':code,
             'redirect_uri':redirectUri,
         }
+
         let response = await sails.helpers.channel.mercadolibre.request('oauth/token',params,'POST')
         .intercept((err) =>{
             return res.redirect('/sellers?error='+err.message);
         });
+
         if(response){
-          await Integrations.updateOne({id:integration.id}).set({url:result.body['refresh_token'],secret:result.body['access_token'],useridml:result.body['user_id']});
+          await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token'],useridml:response['user_id']});
           return res.redirect('/sellers?success=Integración Habilitada Exitosamente');
         }
     }
