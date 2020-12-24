@@ -222,7 +222,7 @@ module.exports = {
       throw 'forbidden';
     }
     const moment = require('moment');
-    const pdf = require('html-pdf-node');
+    const convertHTMLToPDF = require('pdf-puppeteer');
     let sellerId = req.param('seller');
     let month = req.param('month');
     let data = await sails.helpers.reportSeller(sellerId, month);
@@ -232,7 +232,6 @@ module.exports = {
       <html lang="en">
         <head>
           <meta charset="utf-8">
-          <title>Template Report</title>
         </head>
         <body>
           <div style="padding: 0rem 1.5rem;">
@@ -328,10 +327,10 @@ module.exports = {
         </body>
       </html>`;
       const options = { format: 'Letter' };
-      const file = { content: html };
-      pdf.generatePdf(file, options).then(pdfBuffer => {
-        return res.send(pdfBuffer);
-      });
+      const callback = function (pdf) {
+        return res.send(pdf);
+      };
+      convertHTMLToPDF(html, callback, options);
     } catch (err) {
       return res.notFound(err);
     }
