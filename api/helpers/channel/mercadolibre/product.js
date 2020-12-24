@@ -164,10 +164,10 @@ module.exports = {
             }
           }
         });*/
-      categories.push(product.name);
-      for(let c in product.categories){
-        categories.push(product.categories[c].name);
-      }
+      categories.push(encodeURIComponent(product.name));
+      /*for(let c in product.categories){
+        categories.push(encodeURIComponent(product.categories[c].name));
+      }*/
       categories = categories.join(' ');
       let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
       body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(categories)
