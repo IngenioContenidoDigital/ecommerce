@@ -9,7 +9,7 @@ module.exports.cron = {
       let moment = require('moment');
       let statesIds = [];
       let packed= await OrderState.find({
-        where:{name:['empacado','enviado']},
+        where:{name:['empacado','enviado','pendiente']},
         select:['id']
       });
       for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
