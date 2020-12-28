@@ -44,11 +44,11 @@ module.exports = {
       }
     });
     let skuPrice = seller.skuPrice || 0;
-    let salesCommission = seller.salesCommission || 0;
     let totalSku = (Math.ceil(totalProducts /100)) * skuPrice * 1.19;
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
       for (const item of items) {
+        const salesCommission = item.commission || 0;
         let commissionFee = item.price * (salesCommission/100);
         totalCommissionFee += commissionFee;
         totalCommissionVat += (commissionFee * 0.19);

@@ -580,7 +580,7 @@
                 <div class="field">
                   <label class="label is-size-7">Costo por SKU</label>
                   <div class="control has-icons-left">
-                    <input class="input is-size-7" type="number" name="skuPrice" placeholder="Costo por SKU" <% if(action=='edit'){ %>value="<%= seller.skuPrice %>"<% }%>/>
+                    <input class="input is-size-7" type="number" step="any" name="skuPrice" placeholder="Costo por SKU" <% if(action=='edit'){ %>value="<%= seller.skuPrice %>"<% }%>/>
                     <span class="icon-input-left is-small is-left">
                       <i class="bx bxs-badge-dollar"></i>
                     </span>
@@ -628,7 +628,7 @@
                     <div class="field">
                       <label class="label is-size-7">Comisión por Venta</label>
                       <div class="control has-icons-left">
-                        <input class="input is-size-7" type="number" name="commission" placeholder="Comisión por venta"/>
+                        <input class="input is-size-7" type="number" step="any" name="commission" placeholder="Comisión por venta"/>
                         <span class="icon-input-left is-small is-left">
                           <i class="bx bxs-offer"></i>
                         </span>

@@ -12,6 +12,9 @@ module.exports = {
     order:{model:'order'},
     product:{model:'product'},
     productvariation:{model:'productvariation'},
+    commission:{
+      type:'number'
+    },
     price:{
       type:'number'
     },
