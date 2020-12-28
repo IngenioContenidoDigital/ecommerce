@@ -44,7 +44,7 @@ module.exports = {
             limit: 1
           });
           let status= inputs.status ? inputs.status : 'active';
-
+          if((product.description.length + product.descriptionShort.length)<=30){throw new Error('Producto sin Descripcion');}
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
           let parent = productvariation[0].id;
@@ -104,7 +104,7 @@ module.exports = {
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }
-
+            i++;
             if(product.discount.length>0){
               let discPrice=0;
               switch(product.discount[0].type){
@@ -120,7 +120,7 @@ module.exports = {
               data.Product.SaleEndDate=moment(product.discount[0].to).format();
             }
             body.Request.push(data);
-            i++;
+            
           }
         }catch(err){
           console.log(err);

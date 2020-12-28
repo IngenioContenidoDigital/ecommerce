@@ -45,6 +45,15 @@ module.exports = {
       case '4':
         name='enviado';
         break;
+      case '3':
+        name='enviado';
+        break;
+      case '2':
+        name='enviado';
+        break;
+      case '1':
+        name='enviado';
+        break;
       case 'delivered':
         name='entregado';
         break;

@@ -190,7 +190,7 @@ module.exports = {
 
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
-      items.forEach(async item => {
+      for (const item of items) {
         let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
         let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
         item.id = order.id;
@@ -210,7 +210,7 @@ module.exports = {
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         ordersItem.push(item);
-      });
+      }
     }
     worksheet.addRows(ordersItem);
     const buffer = await workbook.xlsx.writeBuffer();
@@ -222,175 +222,115 @@ module.exports = {
       throw 'forbidden';
     }
     const moment = require('moment');
-    const pdf = require('html-pdf');
+    const convertHTMLToPDF = require('pdf-puppeteer');
     let sellerId = req.param('seller');
     let month = req.param('month');
-    let date = moment(month, 'MMMM YYYY').subtract(1, 'months').locale('es').format('MMMM YYYY');
     let data = await sails.helpers.reportSeller(sellerId, month);
+    let date = moment(month, 'MMMM YYYY').subtract(1, 'months').locale('es').format('MMMM YYYY');
     try {
       const html = `<!DOCTYPE html>
       <html lang="en">
         <head>
           <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1">
-          <title>Template Report</title>
-          <style>
-            body {
-              font-family: BlinkMacSystemFont,
-              -apple-system,"Segoe UI",
-              Roboto,Oxygen,Ubuntu,Cantarell,
-              "Fira Sans","Droid Sans",
-              "Helvetica Neue",
-              Helvetica,Arial,sans-serif;
-            }
-            .column {
-              float: left;
-              width: 50%;
-            }
-            .column-2 {
-              float: left;
-              width: 28%;
-            }
-            .column-3 {
-              float: left;
-              width: 40.5%;
-            }
-            .row {
-              padding: 0rem 1.5rem;
-            }
-            .row:after {
-              content: "";
-              display: table;
-              clear: both;
-            }
-            .subtitle {
-              color: #4a4a4a;
-              font-size: 1.25rem;
-              font-weight: 400;
-              line-height: 1.25;
-            }
-            .title {
-              color: #4a4a4a;
-              font-size: 1rem;
-              line-height: 1.25;
-              font-weight: bold;
-            }
-            .title-balance {
-              color: #4a4a4a;
-              font-size: 1.6rem;
-              line-height: 1.25;
-              font-weight: bold;
-            }
-            .subtitle.is-6 {
-              font-size: 1rem;
-            }
-            .img{
-              margin-left: 30%;
-              width: 200px;
-            }
-            .text{
-              margin-top: 8px;
-              margin-bottom: 0px;
-            }
-          </style>
         </head>
-      
         <body>
-          <div class="row">
-            <div class="column">
-              <h5 class="subtitle is-6">` + data.seller.name.toUpperCase() + `<br>NIT. ` + data.seller.dni + `</h5>
-              <h5 class="subtitle is-6">`+ data.address.addressline1 +`<br>Tel. `+ data.seller.phone +`<br>`+ data.address.city.name.toUpperCase()+' - '+ data.address.country.name.toUpperCase()+`</h5>
+          <div style="padding: 0rem 1.5rem;">
+            <div style="float: left; width: 50%;">
+              <h5 style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;">`+ data.seller.name.toUpperCase() + `<br>NIT. ` + data.seller.dni + `</h5>
+              <h5 style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;">`+ data.address.addressline1 +`<br>Tel. `+ data.seller.phone +`<br>`+ data.address.city.name.toUpperCase()+' - '+ data.address.country.name.toUpperCase()+`</h5>
             </div>
-            <div class="column">
-              <img class="img" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ data.seller.logo +`">
-            </div>
-          </div>
-          <div class="row">
-            <div class="column">
-              <h5 class="title is-6">BALANCE CON CORTE A:<br>ELABORACIÓN:</h5>
-            </div>
-            <div class="column">
-              <h5 class="title is-6 img">`+ date.toLocaleUpperCase() +`<br>`+ moment().format('L') +`</h5>
+            <div style="float: left; width: 50%;margin-top: 20px;">
+              <img style="margin-left: 30%;width: 200px;" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ data.seller.logo +`">
             </div>
           </div>
-          <div class="row">
-            <div class="column-3">
-              <h5 class="title is-6 text">Ordenes (CR)</h5>
-              <br>
-              <h5 class="title is-6 text" style="margin-top: 255px;">Reembolsos (CAN)</h5>
-              <br><br>
-              <h5 class="title is-6 text" style="margin-top: 20px;">Otros Conceptos</h5>
-              <br>
-              <div style="margin-top: 170px">
-                <h5 class="title is-6 text">Retencion por servicios</h5>
-                <h5 class="title is-6 text">Retencion de Ica 9,66/1000</h5>
-                <h5 class="title is-6 text">Ajuste al peso</h5>
+          <div style="padding: 0rem 1.5rem;">
+            <div style="float: left; width: 50%;display: table;clear: both;">
+              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;">BALANCE CON CORTE A:<br>ELABORACIÓN:</h5>
+            </div>
+            <div style="float: left; width: 50%;">
+              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-left: 30%;width: 200px;">`+ date.toLocaleUpperCase() +`<br>`+ moment().format('L') +`</h5>
+            </div>
+          </div>
+          <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+            <div style="float: left;width: 40.5%;">
+              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ordenes (CR)</h5>
+              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 285px;margin-bottom: 0px;">Reembolsos (CAN)</h5>
+              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 50px;margin-bottom: 0px;">Otros Conceptos</h5>
+              
+              <div style="margin-top: 180px">
+                <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion por servicios</h5>
+                <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion de Ica 9,66/1000</h5>
+                <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ajuste al peso</h5>
               </div>
             </div>
-            <div class="column-2">
-              <h5 class="title is-6 text">Total 1Ecommerce</h5>
-              <p class="subtitle is-6 text">Valor Pedidos Entregados</p>
-              <p class="title is-6 text">Otros Ingresos</p>
-              <p class="subtitle is-6 text">Siniestros</p>
-              <p class="subtitle is-6 text">Ajustes (CC)</p>
-              <br>
-              <p class="title is-6 text">Cargos</p>
-              <p class="subtitle is-6 text">Comisión 1Ecommerce</p>
-              <p class="subtitle is-6 text">Penalidades (PEN)</p>
-              <p class="subtitle is-6 text">Marketplace en siniestros</p>
-              <br><br>
-              <p class="subtitle is-6 text">Ordenes devueltas y/o canceladas</p>
-              <br><br>
-              <p class="subtitle is-6 text">Referencias Activas (SKU)</p>
-              <p class="subtitle is-6 text">Fotografia (FTG)</p>
-              <p class="subtitle is-6 text">Marketing (MKT)</p>
-              <p class="subtitle is-6 text">Serv Envio (ENV)</p>
-              <p class="subtitle is-6 text">Ajustes (CC - CAN)</p>
+            <div style="float: left;width: 28%;">
+              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Total 1Ecommerce</h5>
+              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Valor Pedidos Entregados</p>
+              <p style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Otros Ingresos</p>
+              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Siniestros</p>
+              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC)</p>
+              <div style="margin-top: 45px">
+                <p style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Cargos</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Comisión 1Ecommerce</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Penalidades (PEN)</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketplace en siniestros</p>
+              </div>
+              <div style="margin-top: 40px">
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes devueltas y/o canceladas</p>
+              </div>
+              <div style="margin-top: 40px">
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Referencias Activas (SKU)</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Fotografia (FTG)</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketing (MKT)</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Serv Envio (ENV)</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC - CAN)</p>
+              </div>
             </div>
-            <div class="column-2">
-              <div class="row">
-                <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
+            <div style="float: left;width: 28%;margin-left: 20px;">
+              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+                <div style="margin-left: 110px;float: left;width: 28%;">
+                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
-              <p class="subtitle is-6 text">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
-              <br><br><br><br><br>
-              <div class="row">
-                <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
+              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
+              
+              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+                <div style="margin-left: 110px;float: left;width: 28%;">
+                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 130px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
-              <p class="subtitle is-6 text">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
-              <br><br><br><br>
-              <div class="row">
-                <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">0</p>
+              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
+              
+              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+                <div style="margin-left: 110px;float: left;width: 28%;">
+                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 76px;margin-bottom: 0px;">0</p>
                 </div>
               </div>
-              <p class="subtitle is-6 text">0</p>
-              <br>
-              <div class="row">
-                <div class="column-2" style="margin-left: 110px;">
-                  <p class="subtitle is-6 text">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
+              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">0</p>
+              
+              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+                <div style="margin-left: 110px;float: left;width: 28%;">
+                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 26px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
-              <p class="subtitle is-6 text">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
-
-              <div class="row">
-                <div class="column-2" style="margin-top: 155px; margin-left: 110px;">
-                <p class="subtitle is-6 text">`+ Math.round(data.totalRetFte).toLocaleString('es-CO') +`</p>
-                <p class="subtitle is-6 text">`+ Math.round(data.totalRetIca).toLocaleString('es-CO') +`</p>
+              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 6px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
+      
+              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+                <div style="margin-top: 140px;float: left;width: 28%;margin-left: 110px;">
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetFte).toLocaleString('es-CO') +`</p>
+                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetIca).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
             </div>
           </div>
-          <h2 class="title-balance is-6 text" style="margin-top: 17px;margin-left: 450px;">Balance Total  $`+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
+          <h2 style="color: #4a4a4a;font-size: 1.6rem;line-height: 1.25;font-weight: bold;margin-top: 17px;margin-left: 430px;margin-bottom: 0px;">Balance Total  $`+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
         </body>
       </html>`;
-      pdf.create(html).toBuffer((err, buffer) => {
-        if (err) {return console.log(err);}
-        return res.send(buffer);
-      });
+      const options = { format: 'Letter' };
+      const callback = function (pdf) {
+        return res.send(pdf);
+      };
+      convertHTMLToPDF(html, callback, options);
     } catch (err) {
       return res.notFound(err);
     }

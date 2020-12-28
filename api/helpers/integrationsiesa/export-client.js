@@ -19,7 +19,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let moment = require('moment');
     let soap = require('strong-soap').soap;
-    let url = 'http://190.0.46.6:14999/ServiciosWeb/wsGenerarPlano.asmx?wsdl';
+    let url = 'http://190.0.46.6:14997/ServiciosWeb/wsGenerarPlano.asmx?wsdl';
     let customer = inputs.paramsCustomer;
     let address = inputs.paramsAddress;
     let idDepto = address.city.code.slice(0,2);
@@ -58,7 +58,7 @@ module.exports = {
           </MyDataSet>]]>`,
       Path: 'E:'
     };
-    let options = { endpoint: 'http://190.0.46.6:14999/ServiciosWeb/wsGenerarPlano.asmx'};
+    let options = { endpoint: 'http://190.0.46.6:14997/ServiciosWeb/wsGenerarPlano.asmx'};
     soap.createClient(url, options, (err, client) =>{
       let method = client['ImportarDatosXML'];
       if(err){return exits.error(err);}

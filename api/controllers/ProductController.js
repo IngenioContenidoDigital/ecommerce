@@ -435,7 +435,7 @@ module.exports = {
       let action = null;
       let result = null;
       let status = req.body.status ? 'active' : 'paused';
-      if (product.ml) {
+      if (product.ml && product.mlid) {
         action = 'Update';
       } else {
         action = 'Post';
@@ -445,9 +445,13 @@ module.exports = {
       .intercept((err) => {return new Error(err.message);});
       if(body){        
         if(action==='Update'){
-          result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'PUT')
+          result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid+'?access_token='+integration.secret, body,'PUT')
           .intercept((err)=>{
             return new Error(err.message);
+          });
+          await Product.updateOne({id: product.id}).set({
+            mlstatus: req.body.status ? true : false,
+            mlprice: req.body.pricemercadolibre ? parseFloat(req.body.pricemercadolibre) : 0
           });
         }
         if(action==='Post'){
@@ -455,11 +459,12 @@ module.exports = {
           .intercept((err)=>{
             return new Error(err.message);
           }); 
-          if(result.id.length>0){
+          if(result.id){
             await Product.updateOne({id: product.id}).set({
               ml: true,
               mlstatus: true,
-              mlid: result.id
+              mlid: result.id,
+              mlprice: req.body.pricemercadolibre ? parseFloat(req.body.pricemercadolibre) : 0
             });
           }
         }
@@ -1251,7 +1256,7 @@ module.exports = {
             let body = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
             .tolerate(async (err) => {
               await Product.updateOne({ id: pl.id }).set({
-                ml: true,
+                ml: false,
                 mlstatus: false,
                 mlid: '',
                 mlprice:0
@@ -1260,9 +1265,16 @@ module.exports = {
             });
             if(body){
               if(action==='Update'){
-                result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'PUT')
+                result = await sails.helpers.channel.mercadolibre.request('items/'+pl.mlid+'?access_token='+integration.secret, body,'PUT')
                 .tolerate((err)=>{return;});
-                if(result){response.items.push(body);}
+                if(result){
+                  response.items.push(body);
+                  await Product.updateOne({ id: pl.id }).set({
+                    ml: true,
+                    mlstatus: pl.mlstatus,
+                    mlprice:parseFloat(pl.mlprice)
+                  });
+                }
               }
               if(action==='Post'){
                 result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
@@ -1271,7 +1283,8 @@ module.exports = {
                   await Product.updateOne({id: product.id}).set({
                     ml: true,
                     mlstatus: true,
-                    mlid: result.id
+                    mlid: result.id,
+                    mlprice: parseFloat(pl.mlprice)
                   });
                   response.items.push(body);
                 }
@@ -1552,8 +1565,22 @@ module.exports = {
           let  errors = [];
 
            try {
-            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }) 
-            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 });
+            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
+              where:{
+                to:{'>=':moment().valueOf()},
+                from:{'<=':moment().valueOf()}
+              },
+              sort: 'createdAt DESC',
+              limit: 1
+            })
+            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
+              where:{
+                to:{'>=':moment().valueOf()},
+                from:{'<=':moment().valueOf()}
+              },
+              sort: 'createdAt DESC',
+              limit: 1
+            });
 
             if(!pro){
               throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
@@ -1561,26 +1588,17 @@ module.exports = {
   
             if(pro){
               if (discount && p.discount && p.discount.length > 0) {
-                let disc = await CatalogDiscount.find({
-                  where:{
-                    to:{'>=':moment().valueOf()},
-                    from:{'<=':moment().valueOf()},
-                    value: p.discount[0].value,
-                    type: p.discount[0].type
-                  },
-                  sort: 'createdAt DESC',
-                  limit: 1
-                })
-                if (disc.length > 0) {
-                  await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                    from: moment(p.discount[0].from).valueOf(),
-                    to: moment(p.discount[0].to).valueOf()
+                if (pro.discount.length > 0 && pro.discount[0].value == p.discount[0].value 
+                  && pro.discount[0].type == p.discount[0].type) {
+                  await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+                    from: moment(new Date( p.discount[0].from)).valueOf(),
+                    to: moment(new Date(p.discount[0].to)).valueOf()
                   });
                 } else {
                   let discount = await CatalogDiscount.create({
                     name: p.discount[0].name.trim().toLowerCase(), 
-                    from: moment(p.discount[0].from).valueOf(),
-                    to: moment(p.discount[0].to).valueOf(),
+                    from: moment(new Date(p.discount[0].from)).valueOf(),
+                    to: moment(new Date(p.discount[0].to)).valueOf(),
                     type: p.discount[0].type,
                     value: parseFloat(p.discount[0].value),
                     seller: pro.seller
@@ -1596,19 +1614,20 @@ module.exports = {
                 }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
-                    let variation = await Variation.findOne({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
+
+                    let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
                     let productVariation;
                     let discountHandled = false;
                     
-                    if(!variation){
+                    if(!variation || variation.length == 0){
                       variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                     }
                     let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
-                    let pv = pvs.find(pv=> pv.variation.name == variation.name);
+                    let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
                     if (!pv) {
                       productVariation = await ProductVariation.create({
                         product:pr.id,
-                        variation:variation.id,
+                        variation:variation[0].id,
                         reference: vr.reference ? vr.reference : '',
                         supplierreference:pr.reference,
                         ean13: vr.ean13 ? vr.ean13.toString() : '',
@@ -1620,7 +1639,7 @@ module.exports = {
                     } else {
                       productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
                         price: vr.price,
-                        variation: variation.id,
+                        variation: variation[0].id,
                         quantity: vr.quantity ? vr.quantity : 0,
                       });
                     }
@@ -1639,14 +1658,14 @@ module.exports = {
                         })
                         if (disc.length > 0) {
                           await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                            from: moment(vr.discount[0].from).valueOf(),
-                            to: moment(vr.discount[0].to).valueOf()
+                            from: moment(new Date(vr.discount[0].from)).valueOf(),
+                            to: moment(new Date(vr.discount[0].to)).valueOf()
                           });
                         } else {
                           let discount = await CatalogDiscount.create({
                             name: (vr.discount && vr.discount[0].name) ? vr.discount[0].name.trim().toLowerCase() : pro.name,
-                            from: moment(vr.discount[0].from).valueOf(),
-                            to: moment(vr.discount[0].to).valueOf(),
+                            from: moment(new Date(vr.discount[0].from)).valueOf(),
+                            to: moment(new Date(vr.discount[0].to)).valueOf(),
                             type: vr.discount[0].type,
                             value: parseFloat(vr.discount[0].value),
                             seller: pro.seller
