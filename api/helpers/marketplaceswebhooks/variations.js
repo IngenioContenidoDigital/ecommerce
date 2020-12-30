@@ -19,26 +19,24 @@ module.exports = {
     let seller = inputs.seller;
     let productRef = inputs.productRef;
     let productVariation = inputs.productVariation;
-    let pro = await Product.findOne({reference: productRef.toUpperCase(), seller: seller}).populate('categories', {level:2 });
+    let pro = await Product.findOne({reference: productRef.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
+      where:{
+        to:{'>=':moment().valueOf()},
+        from:{'<=':moment().valueOf()}
+      },
+      sort: 'createdAt DESC',
+      limit: 1
+    });
     if(pro){
       if (productVariation.discount && productVariation.discount.length > 0) {
-        let disc = await CatalogDiscount.find({
-          where:{
-            to:{'>=':moment().valueOf()},
-            from:{'<=':moment().valueOf()},
-            value: productVariation.discount[0].value,
-            type: productVariation.discount[0].type
-          },
-          sort: 'createdAt DESC',
-          limit: 1
-        });
-        if (disc.length > 0) {
-          await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-            from: moment(new Date(productVariation.discount[0].from) ).valueOf(),
+        if (pro.discount.length > 0 && pro.discount[0].value == productVariation.discount[0].value
+          && pro.discount[0].type == productVariation.discount[0].type) {
+          await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+            from: moment(new Date( productVariation.discount[0].from)).valueOf(),
             to: moment(new Date(productVariation.discount[0].to)).valueOf()
           });
         } else {
-          let discount = await CatalogDiscount.create({
+          const discountresult = await CatalogDiscount.create({
             name: productVariation.discount[0].name.trim().toLowerCase(),
             from: moment(new Date(productVariation.discount[0].from)).valueOf(),
             to: moment(new Date(productVariation.discount[0].to)).valueOf(),
@@ -46,7 +44,7 @@ module.exports = {
             value: parseFloat(productVariation.discount[0].value),
             seller: pro.seller
           }).fetch();
-          await CatalogDiscount.addToCollection(discount.id,'products').members([pro.id]);
+          await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
         }
       }
       try {
@@ -81,23 +79,14 @@ module.exports = {
             }
             if(!discountHandled){
               if (vr.discount && vr.discount.length > 0) {
-                let disc = await CatalogDiscount.find({
-                  where:{
-                    to:{'>=':moment().valueOf()},
-                    from:{'<=':moment().valueOf()},
-                    value: vr.discount[0].value,
-                    type: vr.discount[0].type
-                  },
-                  sort: 'createdAt DESC',
-                  limit: 1
-                });
-                if (disc.length > 0) {
-                  await CatalogDiscount.updateOne({ id: disc[0].id }).set({
-                    from: moment(new Date( vr.discount[0].from)).valueOf(),
+                if (pro.discount.length > 0 && pro.discount[0].value == vr.discount[0].value
+                  && pro.discount[0].type == vr.discount[0].type) {
+                  await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+                    from: moment(new Date(vr.discount[0].from)).valueOf(),
                     to: moment(new Date(vr.discount[0].to)).valueOf()
                   });
                 } else {
-                  let discount = await CatalogDiscount.create({
+                  const discountresult = await CatalogDiscount.create({
                     name: (vr.discount && vr.discount[0].name) ? vr.discount[0].name.trim().toLowerCase() : pro.name,
                     from: moment(new Date(vr.discount[0].from)).valueOf(),
                     to: moment(new Date(vr.discount[0].to)).valueOf(),
@@ -105,7 +94,7 @@ module.exports = {
                     value: parseFloat(vr.discount[0].value),
                     seller: pro.seller
                   }).fetch();
-                  await CatalogDiscount.addToCollection(discount.id,'products').members([pro.id]);
+                  await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
                 }
               }
             }
@@ -118,4 +107,3 @@ module.exports = {
     return exits.success(true);
   }
 };
-
