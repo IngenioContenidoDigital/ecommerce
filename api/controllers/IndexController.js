@@ -222,115 +222,115 @@ module.exports = {
       throw 'forbidden';
     }
     const moment = require('moment');
-    const convertHTMLToPDF = require('pdf-puppeteer');
+    const pdf = require('html-pdf');
     let sellerId = req.param('seller');
     let month = req.param('month');
     let data = await sails.helpers.reportSeller(sellerId, month);
     let date = moment(month, 'MMMM YYYY').subtract(1, 'months').locale('es').format('MMMM YYYY');
     try {
-      const html = `<!DOCTYPE html>
-      <html lang="en">
-        <head>
-          <meta charset="utf-8">
-        </head>
-        <body>
-          <div style="padding: 0rem 1.5rem;">
-            <div style="float: left; width: 50%;">
-              <h5 style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;">`+ data.seller.name.toUpperCase() + `<br>NIT. ` + data.seller.dni + `</h5>
-              <h5 style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;">`+ data.address.addressline1 +`<br>Tel. `+ data.seller.phone +`<br>`+ data.address.city.name.toUpperCase()+' - '+ data.address.country.name.toUpperCase()+`</h5>
-            </div>
-            <div style="float: left; width: 50%;margin-top: 20px;">
-              <img style="margin-left: 30%;width: 200px;" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ data.seller.logo +`">
+      const html = `<html lang="en">
+      <head>
+        <meta charset="utf-8">
+        <title>Template Report</title>
+      </head>
+      <body>
+        <div style="padding: 0mm 6.5mm;">
+          <div style="float: left; width: 50%;">
+            <h5 style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;">`+ data.seller.name.toUpperCase() + `<br>NIT. ` + data.seller.dni + `</h5>
+            <h5 style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;">`+ data.address.addressline1 +`<br>Tel. `+ data.seller.phone +`<br>`+ data.address.city.name.toUpperCase()+' - '+ data.address.country.name.toUpperCase()+`</h5>
+          </div>
+          <div style="float: left; width: 50%;margin-top: 7mm;">
+            <img style="margin-left: 30%;width: 45mm;" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ data.seller.logo +`">
+          </div>
+        </div>
+        <div style="padding: 0mm 6.5mm;">
+          <div style="float: left; width: 50%;display: table;clear: both;">
+            <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;">BALANCE CON CORTE A:<br>ELABORACIÓN:</h5>
+          </div>
+          <div style="float: left; width: 50%;">
+            <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-left: 30%;margin-top: 0%;">`+ date.toLocaleUpperCase() +`<br>`+ moment().format('L') +`</h5>
+          </div>
+        </div>
+        <div style="padding: 0mm 6.5mm;display: table;clear: both;">
+          <div style="float: left;width: 40.5%;">
+            <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ordenes (CR)</h5>
+            <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 194px;margin-bottom: 0px;">Reembolsos (CAN)</h5>
+            <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 40px;margin-bottom: 0px;">Otros Conceptos</h5>
+            
+            <div style="margin-top: 130px">
+              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion por servicios</h5>
+              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion de Ica 9,66/1000</h5>
+              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ajuste al peso</h5>
             </div>
           </div>
-          <div style="padding: 0rem 1.5rem;">
-            <div style="float: left; width: 50%;display: table;clear: both;">
-              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;">BALANCE CON CORTE A:<br>ELABORACIÓN:</h5>
+          <div style="float: left;width: 28%;">
+            <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Total 1Ecommerce</h5>
+            <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Valor Pedidos Entregados</p>
+            <p style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Otros Ingresos</p>
+            <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Siniestros</p>
+            <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC)</p>
+            <div style="margin-top: 30px">
+              <p style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Cargos</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Comisión 1Ecommerce</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Penalidades (PEN)</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketplace en siniestros</p>
             </div>
-            <div style="float: left; width: 50%;">
-              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-left: 30%;width: 200px;">`+ date.toLocaleUpperCase() +`<br>`+ moment().format('L') +`</h5>
+            <div style="margin-top: 30px">
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes devueltas y/o canceladas</p>
+            </div>
+            <div style="margin-top: 30px">
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Referencias Activas (SKU)</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Fotografia (FTG)</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketing (MKT)</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Serv Envio (ENV)</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC - CAN)</p>
             </div>
           </div>
-          <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-            <div style="float: left;width: 40.5%;">
-              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ordenes (CR)</h5>
-              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 285px;margin-bottom: 0px;">Reembolsos (CAN)</h5>
-              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 50px;margin-bottom: 0px;">Otros Conceptos</h5>
-              
-              <div style="margin-top: 180px">
-                <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion por servicios</h5>
-                <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion de Ica 9,66/1000</h5>
-                <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ajuste al peso</h5>
+          <div style="float: left;width: 28%;">
+            <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+              <div style="margin-left: 110px;float: left;width: 28%;">
+                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
               </div>
             </div>
-            <div style="float: left;width: 28%;">
-              <h5 style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Total 1Ecommerce</h5>
-              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Valor Pedidos Entregados</p>
-              <p style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Otros Ingresos</p>
-              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Siniestros</p>
-              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC)</p>
-              <div style="margin-top: 45px">
-                <p style="color: #4a4a4a;font-size: 1rem;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Cargos</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Comisión 1Ecommerce</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Penalidades (PEN)</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketplace en siniestros</p>
-              </div>
-              <div style="margin-top: 40px">
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes devueltas y/o canceladas</p>
-              </div>
-              <div style="margin-top: 40px">
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Referencias Activas (SKU)</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Fotografia (FTG)</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketing (MKT)</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Serv Envio (ENV)</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC - CAN)</p>
+            <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
+            
+            <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+              <div style="margin-left: 110px;float: left;width: 28%;">
+                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 91px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
               </div>
             </div>
-            <div style="float: left;width: 28%;margin-left: 20px;">
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
-                </div>
+            <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
+            
+            <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+              <div style="margin-left: 110px;float: left;width: 28%;">
+                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 54px;margin-bottom: 0px;">0</p>
               </div>
-              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
-              
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 130px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
-                </div>
+            </div>
+            <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">0</p>
+            
+            <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+              <div style="margin-left: 110px;float: left;width: 28%;">
+                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 20px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
               </div>
-              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
-              
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 76px;margin-bottom: 0px;">0</p>
-                </div>
-              </div>
-              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">0</p>
-              
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 26px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
-                </div>
-              </div>
-              <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 6px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
-      
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-top: 140px;float: left;width: 28%;margin-left: 110px;">
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetFte).toLocaleString('es-CO') +`</p>
-                <p style="color: #4a4a4a;font-size: 1rem;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetIca).toLocaleString('es-CO') +`</p>
-                </div>
+            </div>
+            <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 5px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
+    
+            <div style="padding: 0rem 1.5rem;display: table;clear: both;">
+              <div style="margin-top: 100px;float: left;width: 28%;margin-left: 110px;">
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetFte).toLocaleString('es-CO') +`</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetIca).toLocaleString('es-CO') +`</p>
               </div>
             </div>
           </div>
-          <h2 style="color: #4a4a4a;font-size: 1.6rem;line-height: 1.25;font-weight: bold;margin-top: 17px;margin-left: 430px;margin-bottom: 0px;">Balance Total  $`+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
-        </body>
-      </html>`;
+        </div>
+        <h2 style="color: #4a4a4a;font-size: 110%;line-height: 1.25;font-weight: bold;margin-top: 22px;margin-left: 306px;">Balance Total  $`+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
+      </body>
+    </html>`;
       const options = { format: 'Letter' };
-      const callback = function (pdf) {
-        return res.send(pdf);
-      };
-      convertHTMLToPDF(html, callback, options);
+      pdf.create(html, options).toBuffer((err, buffer) => {
+        if (err) {return console.log(err);}
+        return res.send(buffer);
+      });
     } catch (err) {
       return res.notFound(err);
     }
@@ -1240,7 +1240,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           let resultState = state.name === 'en procesamiento' ? 'En procesa' : state.name === 'reintegrado' ? 'Reintegrad' : state.name.charAt(0).toUpperCase() + state.name.slice(1);
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
-        break
+        break;
       default:
         break;
     }
@@ -1283,7 +1283,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           let resultState = state.name === 'en procesamiento' ? 'En procesa' : state.name === 'reintegrado' ? 'Reintegrad' : state.name.charAt(0).toUpperCase() + state.name.slice(1);
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
-        break
+        break;
       default:
         break;
     }
