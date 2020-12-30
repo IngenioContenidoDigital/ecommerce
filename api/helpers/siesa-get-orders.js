@@ -21,12 +21,11 @@ module.exports = {
     },
     fn: async function (inputs, exits) {
         let url = 'http://wscnadar.siesacloud.com:8043/wsunoee/WSUNOEE.asmx?wsdl';
-
         let requestArgs={
             'pvstrxmlParametros':
                 `<![CDATA[
                     <Consulta>
-                        <NombreConexion>UnoEE_Cnadar_Pruebas</NombreConexion>
+                        <NombreConexion>UnoEE_Cnadar_Real</NombreConexion>
                         <IdCia>1</IdCia>
                         <IdProveedor>WS</IdProveedor>
                         <IdConsulta>Pedidos</IdConsulta>
