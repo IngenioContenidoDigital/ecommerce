@@ -99,6 +99,13 @@ module.exports = {
               }
             }
           }
+        } else {
+          let pvs = await ProductVariation.find({product: pro.id, supplierreference: pro.reference});
+          for (const pv of pvs) {
+            await ProductVariation.updateOne({ id: pv.id }).set({
+              quantity: 0
+            });
+          }
         }
       } catch (e) {
         console.log(e);
