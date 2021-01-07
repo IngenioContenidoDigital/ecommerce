@@ -367,6 +367,9 @@ module.exports = {
             let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
             sails.sockets.blast('notificationml', {questions: questio + 1, questionsSeller: questionsSeller, seller});
             break;
+          case 'shipments':
+            await sails.helpers.channel.mercadolibre.statusOrder(seller, resource);
+            break;
           case 'orders_v2':
             await sails.helpers.channel.mercadolibre.orders(seller, resource);
             break;
