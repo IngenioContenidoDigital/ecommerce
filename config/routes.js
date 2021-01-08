@@ -24,7 +24,6 @@ module.exports.routes = {
   'GET /inicio': {controller:'IndexController',action:'admin'},
   'POST /filter/dashboard': {controller:'IndexController', action:'filterDashboard'},
   'POST /generatereport': {controller:'IndexController', action:'generateReport'},
-  'GET /reports/' : {controller:'IndexController',action:'showreports'},
   'POST /reportseller': {controller:'IndexController', action:'generateReportSeller'},
   'GET /showreport/:seller': {controller:'IndexController', action:'showreport'},
   'GET /login' : {view:'pages/configuration/login', locals:{error:null}},

@@ -335,32 +335,6 @@ module.exports = {
       return res.notFound(err);
     }
   },
-  showreports: async function(req, res){
-    const moment = require('moment');
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
-      throw 'forbidden';
-    }
-    let months = [];
-    let sellers;
-    let seller;
-    let currentDay =  moment().format('DD');
-    let availableOptions = false;
-    if(rights.name !== 'superadmin' && rights.name !== 'admin'){
-      seller = req.session.user.seller || '';
-    } else {
-      sellers = await Seller.find({});
-    }
-    for (let i = 14; i >= 0; i--) {
-      let month = moment().subtract(i+1, 'months').locale('es').format('MMMM YYYY');
-      let available = moment().subtract(i, 'months').locale('es').format('MMMM YYYY');
-      if (i === 0 && currentDay < 20) {
-        availableOptions = true;
-      }
-      months.push({month, available, availableOptions});
-    }
-    res.view('pages/sellers/reports', {layout:'layouts/admin', sellers, months, seller});
-  },
   showreport: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
