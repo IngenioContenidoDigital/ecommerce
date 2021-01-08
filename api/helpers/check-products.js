@@ -29,8 +29,10 @@ module.exports = {
                 pro.reference = inputs.product.reference.toUpperCase().trim();
                 pro.description = inputs.product.description.toLowerCase().trim();
                 pro.descriptionShort = inputs.product.descriptionShort.toLowerCase().trim();
+                pro.color  = inputs.product.color || '';
                 let textPredictor = inputs.product.textLink ? inputs.product.textLink : inputs.product.name+' '+inputs.product.reference;
                 let cats = await sails.helpers.tools.findCategory(textPredictor);
+                
                 if(cats.length>0){
                     pro.categories = cats;
                     let main = await Category.find({id:cats}).sort('level DESC');
@@ -50,7 +52,7 @@ module.exports = {
                     throw new Error(`Ref: ${pro.reference} : ${pro.name} sin marca`);
                 }
 
-                let color = await sails.helpers.tools.findColor(textPredictor);
+                let color = await sails.helpers.tools.findColor(`${pro.color ? (textPredictor + ' ' + pro.color) : textPredictor}`);
 
                 if(color && color.length > 0){
                     pro.mainColor = color[0];
@@ -84,6 +86,7 @@ module.exports = {
                 pro.length = (inputs.product.length === undefined || inputs.product.length === null || inputs.product.length < 1) ? 32 : inputs.product.length;
                 pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : inputs.product.weight;
                 pro.price =  inputs.product.price;
+                pro.product_weight =  inputs.product.product_weight;
 
                 return exits.success(pro);
           
