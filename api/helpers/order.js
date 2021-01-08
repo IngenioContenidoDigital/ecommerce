@@ -13,6 +13,7 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
+    let moment = require('moment');
     let address = inputs.data.address;
     let user = inputs.data.user;
     let cart = inputs.data.cart;
@@ -81,8 +82,17 @@ module.exports = {
           });
 
           order.currentstatus = await OrderState.findOne({id:order.currentstatus});
-          order.seller = await Seller.findOne({id:order.seller});
-
+          const resultseller = await Seller.findOne({id:order.seller});
+          order.seller = resultseller;
+          const commissionDiscount = await CommissionDiscount.find({
+            where:{
+              to:{'>=':moment().valueOf()},
+              from:{'<=':moment().valueOf()},
+              seller: seller
+            },
+            sort: 'createdAt DESC',
+            limit: 1
+          });
           orders.push(order);
 
           for(let cp of sellerproducts){
@@ -93,7 +103,8 @@ module.exports = {
               price:cp.totalPrice,
               discount:cp.totalDiscount,
               originalPrice:cp.productvariation.price,
-              externalReference:cp.externalReference
+              externalReference:cp.externalReference,
+              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : resultseller.salesCommission
             });
             let pv = await ProductVariation.findOne({id:cp.productvariation.id});
             if(pv){
