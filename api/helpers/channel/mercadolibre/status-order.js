@@ -30,18 +30,18 @@ module.exports = {
       });
       if (shipping){
         try{
-          let oexists = await Order.findOne({channel:'mercadolibre',channelref:shipping.order_id});
-          if(oexists!==undefined){
+          let oexists = await Order.find({channel:'mercadolibre',channelref: order.id});
+          if(oexists.length > 0){
             let currentStatus = await sails.helpers.orderState(shipping.status);
-            await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus});
-            await OrderHistory.create({
-              order:oexists.id,
-              state:currentStatus
-            });
+            for (const ord of oexists) {
+              await Order.updateOne({id:ord.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus});
+              await OrderHistory.create({
+                order:ord.id,
+                state:currentStatus
+              });
+            }
           }
-
         }catch(err){
-          console.log(err);
           return exits.error(err);
         }
         return exits.success();
