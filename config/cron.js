@@ -1,9 +1,7 @@
-const { months } = require('moment');
-
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
   meliOrders:{
-    schedule: '00 40 */3 * *',
+    schedule: '00 40 */3 * * *',
     onTick: async () =>{
       console.log('Iniciando Captura de Ordenes Mercadolibre');
       let status = await OrderState.findOne({name:'aceptado'});
