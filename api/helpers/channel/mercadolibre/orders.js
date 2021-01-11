@@ -30,8 +30,8 @@ module.exports = {
       let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret).catch(err =>{return exits.error(err.message);});
       if(order){
         try{
-          let oexists = await Order.findOne({channel:'mercadolibre',channelref:order.id});
-          if(oexists===undefined && order.status==='paid'){
+          let oexists = await Order.find({channel:'mercadolibre', channelref:order.id});
+          if(oexists.length === 0 && order.status==='paid'){
             let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id).catch(err=>{
               return exits.error(err.message);
             });
@@ -70,6 +70,7 @@ module.exports = {
                     channelref:order.id
                   }
                 };
+
                 payment.data['ref_payco'] = order.id;
                 let cart = await Cart.create().fetch();
                 for(let item of order['order_items']){
@@ -99,13 +100,18 @@ module.exports = {
               }
             }
           }else{
-            if(oexists!==undefined){
-              let currentStatus = await sails.helpers.orderState(order.status);
-              await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order['last_updated']).valueOf()),currentstatus:currentStatus});
-              await OrderHistory.create({
-                order:oexists.id,
-                state:currentStatus
-              });
+            if(oexists.length > 0){
+              for (const ord of oexists) {
+                let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id).catch(err=>{
+                  return exits.error(err.message);
+                });
+                let currentStatus = await sails.helpers.orderState(shipping.status);
+                await Order.updateOne({id:ord.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus});
+                await OrderHistory.create({
+                  order:ord.id,
+                  state:currentStatus
+                });
+              }
             }
           }
         }catch(err){

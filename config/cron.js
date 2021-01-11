@@ -2,6 +2,23 @@ const { months } = require('moment');
 
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
+  meliOrders:{
+    schedule: '00 40 */3 * *',
+    onTick: async () =>{
+      console.log('Iniciando Captura de Ordenes Mercadolibre');
+      let status = await OrderState.findOne({name:'aceptado'});
+      let orders = await Order.find({channel:'mercadolibre', currentstatus: status.id});
+      for(let order of orders){
+        try{
+          await sails.helpers.channel.mercadolibre.updateOrders(order);
+        }catch(err){
+          console.log(err);
+        };
+      }
+      console.log('Captura de Ordenes Mercadolibre Finalizada');
+    },
+    timezone: 'America/Bogota'
+  },
   trackingCoordinadora: {
     schedule: '00 12 */3 * * *',
     onTick: async () => {
@@ -68,22 +85,6 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },
-  // meliOrders:{
-  //   schedule: '05 25 * * * *',
-  //   onTick: async () =>{
-  //     console.log('Iniciando Captura de Ordenes Mercadolibre');
-  //     let integrations = await Integrations.find({channel:'mercadolibre'});
-  //     for(let integration of integrations){
-  //       try{
-  //         await sails.helpers.channel.mercadolibre.orders(integration.seller);
-  //       }catch(err){
-  //         console.log(err);
-  //       };
-  //     }
-  //     console.log('Captura de Ordenes Mercadolibre Finalizada');
-  //   },
-  //   timezone: 'America/Bogota'
-  // },
   /*linioOrders:{
     schedule: '05 45 * * * *',
     onTick: async () =>{
