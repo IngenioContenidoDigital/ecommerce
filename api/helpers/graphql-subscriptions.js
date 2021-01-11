@@ -55,7 +55,7 @@ module.exports = {
                   'PRODUCTID',
                   result.productId
                 ).catch((e) => console.log(e));
-                if (response) {
+                if (product) {
                   await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
                 }
               }

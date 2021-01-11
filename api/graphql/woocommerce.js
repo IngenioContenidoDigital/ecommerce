@@ -14,6 +14,7 @@ module.exports = {
                 pagesCount
                 data{
                     name
+                    simple
                     externalId
                     description
                     reference
@@ -25,6 +26,7 @@ module.exports = {
                         name
                         rate
                     }
+                    product_weight
                     width
                     weight
                     height
@@ -64,6 +66,8 @@ VARIATIONS : `
                             reference
                             talla
                             price
+                            color
+                            weight
                             discount{
                                 name
                                 from
