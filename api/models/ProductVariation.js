@@ -22,8 +22,8 @@ module.exports = {
     ean13:{type:'string'},
     upc:{type:'number', max:9999999999999, isInteger:true},
     price:{type:'number'},
+    weight : {type:'string' , allowNull: true},
     quantity:{type:'number', /*min:0,*/isInteger:true, defaultsTo:0}
-
   },
 
 };
