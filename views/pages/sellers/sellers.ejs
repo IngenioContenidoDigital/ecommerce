@@ -911,6 +911,11 @@
                         <i class='bx bx-scan'></i>
                       </span>
                     </a>
+                    <a id="productsdownload" sellerid="<%= seller.id %>" sellername="<%= seller.name %>" href="#" class="button is-small">
+                      <span class="icon">
+                        <i class='bx bxs-spreadsheet'></i>
+                      </span>
+                    </a>
                     </td>
                 </tr>
               <% }); %>
@@ -930,6 +935,16 @@
             info: "Mostrando {start} a {end} de {rows} registros",
         }
         });  
+      });
+
+      live('#productsdownload','click', function(){
+        let seller = this.getAttribute('sellerid');
+        let name =  this.getAttribute('sellername');
+        io.socket.post('/products/download', {seller}, (resData, jwRes) =>{
+          if(jwRes.statusCode == 200) {
+            saveAs(new Blob([resData],{type:"application/octet-stream"}), `Inventario ${name}.xlsx`);
+          }
+        });
       });
     </script>
   <% } %>

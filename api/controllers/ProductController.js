@@ -55,6 +55,45 @@ module.exports = {
       moment: moment
     });
   },
+  downloadproducts: async function (req, res) {
+    const Excel = require('exceljs');
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    let seller = null;
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
+      throw 'forbidden';
+    }
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      seller = req.session.user.seller;
+    }else if(req.param('seller')){
+      seller = req.param('seller');
+    }
+    let products = [];
+    let productsVariations = await ProductVariation.find({
+      where: {
+        seller: seller
+      }
+    }).populate('product');
+    let workbook = new Excel.Workbook();
+    let worksheet = workbook.addWorksheet('Inventario');
+    worksheet.columns = [
+      { header: 'Id', key: 'id', width: 26 },
+      { header: 'Nombre', key: 'name', width: 55 },
+      { header: 'Referencia del Proveedor', key: 'supplierreference', width: 25 },
+      { header: 'Referencia', key: 'reference', width: 20 },
+      { header: 'Ean', key: 'ean13', width: 16 },
+      { header: 'Cantidad 1Ecommerce', key: 'quantity', width: 20 },
+    ];
+    worksheet.getRow(1).font = { bold: true };
+
+    for (const variation of productsVariations) {
+      variation.name = variation.product.name;
+      products.push(variation);
+    }
+
+    worksheet.addRows(products);
+    const buffer = await workbook.xlsx.writeBuffer();
+    return res.send(buffer);
+  },
   findcatalog: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'showproducts')) {
