@@ -871,6 +871,11 @@
       });
     </script>
   <% } else { %>
+    <div id="loading-donwload" class="notification is-hidden">
+      <i class="fas fa-sync fa-spin"></i>
+        Descargando archivo...
+        <progress class="progress is-small is-primary" max="100">15%</progress>
+    </div>
     <p style="text-align: right;font-size: 20px; margin-right: 5px;">
       <a href="/sellers/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
     </p>
@@ -940,9 +945,12 @@
       live('#productsdownload','click', function(){
         let seller = this.getAttribute('sellerid');
         let name =  this.getAttribute('sellername');
+        let loadingBlock = document.querySelector('#loading-donwload');
+        if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
         io.socket.post('/products/download', {seller}, (resData, jwRes) =>{
           if(jwRes.statusCode == 200) {
             saveAs(new Blob([resData],{type:"application/octet-stream"}), `Inventario ${name}.xlsx`);
+            addClass(loadingBlock,'is-hidden');
           }
         });
       });
