@@ -6,6 +6,9 @@ module.exports = {
       type:'string',
       required:true
     },
+    secret:{
+      type:'string'
+    },
     params:{
       type:'ref',
     },
@@ -21,27 +24,32 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    const axios = require("axios");
-    const apiUrl = 'https://api.mercadolibre.com/'
-    inputs.resource = inputs.resource.replace(/^\//, "");    
+    const axios = require('axios');
+    const apiUrl = 'https://api.mercadolibre.com/';
+    inputs.resource = inputs.resource.replace(/^\//, '');
+    let headers = {
+      headers: {
+        Authorization: `Bearer ${inputs.secret}`
+      }
+    };
     let response = null;
     try{
       switch(inputs.method){
         case 'POST':
-          response = await axios.post(apiUrl+inputs.resource,inputs.params);
+          response = inputs.secret === 'auth' ? await axios.post(apiUrl+inputs.resource,inputs.params) : await axios.post(apiUrl+inputs.resource,inputs.params,headers);
           break;
         case 'PUT':
-          response = await axios.put(apiUrl+inputs.resource,inputs.params);
+          response = await axios.put(apiUrl+inputs.resource,inputs.params,headers);
           break;
         case 'DELETE':
-          response = await axios.delete(apiUrl+inputs.resource);
+          response = await axios.delete(apiUrl+inputs.resource,headers);
           break;
         default:
           /*let params = null;
           if(inputs.params){
             params.params=inputs.params;
           }*/
-          response = await axios.get(apiUrl+inputs.resource,inputs.params);
+          response = await axios.get(apiUrl+inputs.resource,headers);
           break;
       }
       if(response){
@@ -50,6 +58,8 @@ module.exports = {
         throw new Error('Error en la Petición');
       }
     }catch(err){
+      console.log(err);
+
       throw new Error(err.message);
     }
   }

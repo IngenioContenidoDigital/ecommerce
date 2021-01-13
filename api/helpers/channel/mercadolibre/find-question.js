@@ -23,7 +23,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
     try{
-      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource+'?&access_token='+integration.secret);
+      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource, integration.secret);
       if(response){
         return exits.success(response);
       }

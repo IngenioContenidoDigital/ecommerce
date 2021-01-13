@@ -485,7 +485,7 @@ module.exports = {
       .intercept((err) => {return new Error(err.message);});
       if(body){        
         if(action==='Update'){
-          result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid+'?access_token='+integration.secret, body,'PUT')
+          result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid,integration.secret, body,'PUT')
           .intercept((err)=>{
             return new Error(err.message);
           });
@@ -495,7 +495,7 @@ module.exports = {
           });
         }
         if(action==='Post'){
-          result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+          result = await sails.helpers.channel.mercadolibre.request('items',integration.secret, body,'POST')
           .intercept((err)=>{
             return new Error(err.message);
           }); 
@@ -1305,7 +1305,7 @@ module.exports = {
             });
             if(body){
               if(action==='Update'){
-                result = await sails.helpers.channel.mercadolibre.request('items/'+pl.mlid+'?access_token='+integration.secret, body,'PUT')
+                result = await sails.helpers.channel.mercadolibre.request('items/'+pl.mlid,integration.secret, body,'PUT')
                 .tolerate((err)=>{return;});
                 if(result){
                   response.items.push(body);
@@ -1317,7 +1317,7 @@ module.exports = {
                 }
               }
               if(action==='Post'){
-                result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+                result = await sails.helpers.channel.mercadolibre.request('items',integration.secret, body,'POST')
                 .tolerate((err)=>{return;}); 
                 if(result.id.length>0){
                   await Product.updateOne({id: product.id}).set({
