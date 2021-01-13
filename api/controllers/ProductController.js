@@ -1719,8 +1719,18 @@ module.exports = {
                       }
                     }
                   }  
+                } else {
+                  let pvs = await ProductVariation.find({product: pro.id, supplierreference: pro.reference});
+                  for (const pv of pvs) {
+                    let productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
+                      quantity: 0
+                    });
+                    if(productVariation){
+                      result.push(productVariation);
+                      sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
+                    }
+                  }
                 }
-
               } catch (e) {
                   errors.push({ name:'ERRDATA', message:e.message });
                   sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
