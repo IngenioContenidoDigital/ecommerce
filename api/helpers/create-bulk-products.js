@@ -28,7 +28,7 @@ module.exports = {
         let errors = [];
         let result = [];
 
-        if(product.reference == 'EVKB2S10'){
+        if(product.reference == 'EVWW1S40'){
             console.log(product);
         }
 
@@ -62,14 +62,43 @@ module.exports = {
                     ean13: pr.ean13 ? pr.ean13.toString() : '',
                     upc: pr.upc ? pr.upc : 0,
                     price: pr.price,
-                    quantity: pr.quantity ? pr.quantity : 0,
+                    quantity: product.quantity ? product.quantity : 0,
                     seller:pr.seller
                   }).fetch();
                 } else {
                   productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
                     price: pr.price,
                     variation: variation.length > 0  ? variation[0].id : variation.id,
-                    quantity: pr.quantity ? pr.quantity : 0,
+                    quantity: product.quantity ? product.quantity : 0,
+                  });
+                }
+              }else{
+                let variation = await Variation.find({ name:'unica', gender:pr.gender,category:pr.mainCategory});
+                
+                if(!variation || variation.length == 0){
+                   variation = await Variation.create({name:'unica',gender:pr.gender,category:pr.mainCategory}).fetch();
+                }
+
+                let pvs = await ProductVariation.find({ product:pr.id, supplierreference:pr.reference}).populate('variation');
+                let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
+               
+                if (!pv) {
+                  productVariation = await ProductVariation.create({
+                    product:pr.id,
+                    variation:variation.length > 0  ? variation[0].id : variation.id,
+                    reference: pr.reference,
+                    supplierreference:pr.reference,
+                    ean13: pr.ean13 ? pr.ean13.toString() : '',
+                    upc: pr.upc ? pr.upc : 0,
+                    price: pr.price,
+                    quantity: product.quantity ? product.quantity : 0,
+                    seller:pr.seller
+                  }).fetch();
+                } else {
+                  productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
+                    price: pr.price,
+                    variation: variation.length > 0  ? variation[0].id : variation.id,
+                    quantity: product.quantity ? product.quantity : 0,
                   });
                 }
               }
