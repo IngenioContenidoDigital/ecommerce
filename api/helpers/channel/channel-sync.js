@@ -28,7 +28,7 @@ module.exports = {
       .tolerate(()=>{ return;});
       if(body){
         let integration = await sails.helpers.channel.mercadolibre.sign(inputs.product.seller);
-        await sails.helpers.channel.mercadolibre.request('items/'+inputs.product.mlid+'?access_token='+integration.secret,body,'PUT')
+        await sails.helpers.channel.mercadolibre.request('items/'+inputs.product.mlid,integration.secret,body,'PUT')
         .tolerate(()=>{return;});
       }
     }

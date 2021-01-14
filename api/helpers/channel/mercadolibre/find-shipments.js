@@ -18,7 +18,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     try{
-      let response = await sails.helpers.channel.mercadolibre.request('shipments/'+inputs.id+'?x-format-new=true&access_token='+inputs.token);      
+      let response = await sails.helpers.channel.mercadolibre.request('shipments/'+inputs.id+'?x-format-new=true', inputs.token);      
       if(response){
         return exits.success(response);
       }

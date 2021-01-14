@@ -30,7 +30,7 @@ module.exports = {
       });
       if (shipping){
         try{
-          let oexists = await Order.find({channel:'mercadolibre',channelref: order.id});
+          let oexists = await Order.find({channel:'mercadolibre',channelref: shipping.order_id});
           if(oexists.length > 0){
             let currentStatus = await sails.helpers.orderState(shipping.status);
             for (const ord of oexists) {
