@@ -684,7 +684,7 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: [], integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, discount: false, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: [], integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, discount: false, asProduct: false, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.PRODUCT_VARIATION:
             let paginationVariation = await sails.helpers.commerceImporter(
@@ -697,7 +697,8 @@ module.exports = {
               { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
             let discount = req.body.discount && req.body.discount == 'on' ? true : false
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, discount, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            let asProduct = req.body.asProduct && req.body.asProduct == 'on' ? true : false
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, discount, asProduct, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.IMAGE_TYPE:
             req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
@@ -711,7 +712,7 @@ module.exports = {
               { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
 
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationImage, pageSize, discount: false, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationImage, pageSize, discount: false, asProduct : false, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         default:
           break;
@@ -1565,6 +1566,7 @@ module.exports = {
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
     let discount = req.body.discount;
+    let asProduct = req.body.asProduct;
     let lastPage;
     let next;
 
@@ -1655,7 +1657,7 @@ module.exports = {
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
 
-                    if(vr.color){
+                    if(asProduct && vr.color){
                       await sails.helpers.createProductFromVariation(vr, pr);
                     }else{
 

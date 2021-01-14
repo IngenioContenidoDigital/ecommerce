@@ -101,6 +101,13 @@
                                       <label for="discount"></label>
                                     </div>
                                   </div>
+                                  <div id="fieldVariationAsProduct" class="field is-hidden">
+                                    <div class="control">
+                                      <label class="label">Crear productos a partir de variaciones con color.</label>
+                                      <input id="variationAsProduct" type="checkbox" name="asProduct" class="switch is-success">
+                                      <label for="variationAsProduct"></label>
+                                    </div>
+                                  </div>
                                   <div class="field">
                                       <div class="control">
                                         <label class="label">Proveedor</label>
@@ -184,10 +191,12 @@
         let seller = '<%= seller %>';
         let importType = '<%= importType %>';
         let processed = 1;
+
         args.page = 1;
         args.pageSize = <%- pageSize %>;
         args.seller = seller;
         args.discount = <%- discount %>;
+        args.asProduct = <%- asProduct %>;
         
         let paginationData =<%- JSON.stringify(pagination)%>;
         let pages = paginationData.pagesCount;
@@ -368,8 +377,11 @@
 
     live('select[name="importType"]','change', e=>{
       let field = document.querySelector('#fieldDiscount');
+      let variationAsProduct = document.querySelector('#fieldVariationAsProduct');
       let value =  e.target.value;
+
       value === 'Variations' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
+      value === 'Variations' ? removeClass(variationAsProduct, 'is-hidden') : addClass(variationAsProduct, 'is-hidden');
     });
 
     live('#process','click',e=>{

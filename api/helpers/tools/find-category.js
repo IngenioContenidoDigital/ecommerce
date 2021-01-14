@@ -39,7 +39,7 @@ module.exports = {
     let buildTree = async (ct) => {
       let cat = await Category.findOne({id:ct});
 
-      if(cat.level>1 && !results.includes(cat.id)){
+      if(cat && cat.level>1 && !results.includes(cat.id)){
         results.push(cat.id);
         await buildTree(cat.parent);
       }else{
