@@ -95,7 +95,7 @@ module.exports.routes = {
   'POST /productcheck' : {controller:'ProductController',action:'checkdata'},
   'POST /check-product-provider' : {controller:'ProductController',action:'checkProductFromProvider'},
 
-  'GET /multiple' : {controller:'ProductController',action:'multiple'},
+  'GET /multiple/:seller' : {controller:'ProductController',action:'multiple'},
   'POST /multiple' : {controller:'ProductController',action:'multipleexecute'},
 
   'POST /product/create' : {controller:'ProductController',action:'createproduct'},

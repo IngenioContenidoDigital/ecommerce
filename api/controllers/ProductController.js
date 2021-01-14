@@ -1141,10 +1141,10 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let seller = req.session.user.seller ? req.session.user.seller : '';
-    let data = await sails.helpers.checkChannels(rights.name, seller);
+    let seller = req.param('seller') ? req.param('seller') : req.session.user.seller;
+    let data = await sails.helpers.checkChannels(seller);
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/multiple', { layout: 'layouts/admin', error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre });
+    return res.view('pages/configuration/multiple', { layout: 'layouts/admin', seller, error: error, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre });
   },
   multipleexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

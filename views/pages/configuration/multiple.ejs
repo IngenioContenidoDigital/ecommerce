@@ -1,27 +1,14 @@
 <div class="container">
     <% if (error != undefined || error != null) { %>
-      <div class="notification is-danger is-light" id="error">
-          <%= error %>
-      </div>
+        <div class="notification is-danger is-light" id="error">
+            <%= error %>
+        </div>
     <% } %>
     <h4 class="title is-4">Procesamiento Multiple de Productos</h4>
     <hr>
     <div class="columns is-gapless">
         <div class="column">
             <div class="box">
-                <%if(sellers!==null){%>
-                    <div class="field">
-                        <label class="label is-size-7">Elegir Seller</label>
-                        <div class="select is-fullwidth">
-                            <select class="is-capitalized" name="seller" id="selectSeller" required>
-                                <option class="is-capitalized" value="">-- Elegir Seller --</option>
-                                <% sellers.forEach(seller =>{ %>
-                                    <option class="is-capitalized" value="<%=seller.id%>" channeldafiti="<%= seller.channelDafiti %>" channellinio="<%= seller.channelLinio %>" channelmercadolibre="<%= seller.channelMercadolibre %>"><%=seller.name%></option>
-                                <%})%>
-                            </select>
-                        </div>
-                    </div>
-                <%}%>
                 <div class="field">
                     <br>
                     <label class="label is-size-7">Tipo de Proceso</label>
@@ -45,7 +32,7 @@
                 <br>
                 <div class="buttons is-right is-fixed-bottom">
                     <br><br><br>
-                    <button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Procesar Productos</button>
+                    <button id="process" type="submit" class="button is-primary"><i class="bx bx-cloud-upload"></i>&nbsp;Procesar Productos</button>
                 </div>
             </div>
         </div>
@@ -55,77 +42,54 @@
                 <br>
                 <h6 class="title is-6">Espera un momento por favor ...</h6>
                 <hr>
-                    <div id="items" class="notification is-primary">
+                <div id="items" class="notification is-primary">
+                </div>
+                <div class="notification is-danger">
+                    <p>Hemos identificado <span id="errors">0</span> error(es).</p>
+                    <br>
+                    <div class="container is-fluid">
+                        <ol id="error-list">
+                        </ol>
                     </div>
-                    <div class="notification is-danger">
-                        <p>Hemos identificado <span id="errors">0</span> error(es).</p>
-                        <br>
-                        <div class="container is-fluid">
-                            <ol id="error-list">
-                            </ol>
-                        </div>
-                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-  <script>
-
-    <%if(sellers === null){%>
+<script>
+    <%if(seller !== null){%>
         let dafiti = document.querySelector('#dafiti');
         let linio = document.querySelector('#linio');
         let mercadolibre = document.querySelector('#mercadolibre');
         <%- channelDafiti %> ? removeClass(dafiti, 'is-hidden') : addClass(dafiti, 'is-hidden');
         <%- channelLinio %> ? removeClass(linio, 'is-hidden') : addClass(linio, 'is-hidden');
         <%- channelMercadolibre %> ? removeClass(mercadolibre, 'is-hidden') : addClass(mercadolibre, 'is-hidden');
-    <%}else{%>
-        const selectSeller = document.querySelector('#selectSeller');
-        selectSeller.onchange = changeSelect;
     <%}%>
-  
-    function changeSelect(){
-        let channel = document.querySelector('input[name="channel"]');
-        let images = document.querySelectorAll('.menu-title');
-        let selectSeller = document.querySelector('#selectSeller');
-        let dafiti = selectSeller.options[selectSeller.selectedIndex].getAttribute('channeldafiti');
-        let linio = selectSeller.options[selectSeller.selectedIndex].getAttribute('channellinio');
-        let mercadolibre = selectSeller.options[selectSeller.selectedIndex].getAttribute('channelmercadolibre');
-        let imgDafiti = document.querySelector('#dafiti');
-        let imgLinio = document.querySelector('#linio');
-        let imgMercadolibre = document.querySelector('#mercadolibre');
-        channel.value = '';
-        images.forEach(img =>{
-            removeClass(img, 'img-multiple');
-        });
-        dafiti === 'true' ? removeClass(imgDafiti, 'is-hidden') : addClass(imgDafiti, 'is-hidden');
-        linio === 'true' ? removeClass(imgLinio, 'is-hidden') : addClass(imgLinio, 'is-hidden');
-        mercadolibre === 'true' ? removeClass(imgMercadolibre, 'is-hidden') : addClass(imgMercadolibre, 'is-hidden');
-    }
 
     live('#process','click',e=>{
         e.preventDefault();
         let channel = document.querySelector('#channel').value
         let action = document.querySelector('#action').value
-        let seller = document.querySelector('#selectSeller').value
+        let seller = '<%- seller %>';
         let loading = document.querySelector('.loading');
         loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
         let report = document.querySelector('#report');
         if(hasClass(report),'is-hidden'){removeClass(report,'is-hidden');}
         io.socket.post('/multiple',{channel:channel, action:action,seller:seller},resData =>{
             if(resData.items.length>=1){
-              let items = document.querySelector('#items');
-              items.innerHTML='Petición Enviada:'+ resData.items[0];
+                let items = document.querySelector('#items');
+                items.innerHTML='Petición Enviada:'+ resData.items[0];
             }
 
             if(resData.errors.length>=1){
-              let errors = document.querySelector('#errors')
-              errors.innerHTML=resData.errors.length;
-              let errorlist = document.querySelector('#error-list');
-              for(let e of resData.errors){
+                let errors = document.querySelector('#errors')
+                errors.innerHTML=resData.errors.length;
+                let errorlist = document.querySelector('#error-list');
+                for(let e of resData.errors){
                 let err = document.createElement('li');
                 err.innerHTML=e;
                 errorlist.appendChild(err);
-              }
+                }
             }
 
             let mensaje = document.querySelector('#report > .title');
@@ -133,13 +97,6 @@
             loading.innerHTML='';
 
         });
-        /*let form = document.querySelector('#multiple-form');
-        if(validateForm(form)){
-            let box = document.querySelector('.box').parentNode;
-            addClass(box,'is-hidden');
-            document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-            form.submit();
-        }*/
     });
 
     live('.menu-title', 'click', e =>{
@@ -152,5 +109,4 @@
         });
         addClass(e.target,'img-multiple');
     });
-
-  </script>
+</script>
