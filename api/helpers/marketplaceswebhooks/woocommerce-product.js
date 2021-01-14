@@ -2,7 +2,7 @@ module.exports = {
     friendlyName: 'Create product',
     description: 'Proceso para crear producto woocommerce webhook',
     inputs: {
-      product: {type:'ref'},
+      product: {type:'json'},
       seller: {type : 'string'}
     },
     exits: {
@@ -33,7 +33,6 @@ module.exports = {
             delete pro.categories;
             await Product.updateOne({id: exists.id}).set(pro);
             await sails.helpers.marketplaceswebhooks.variations({variations}, pro.reference, seller);
-            await sails.helpers.channel.channelSync(exists);
           }
         }
       } catch (error) {
