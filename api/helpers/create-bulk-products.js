@@ -37,7 +37,7 @@ module.exports = {
 
           if(typeof(pro) === 'object'){
             let pr;
-            let exists = await Product.findOne({ reference:pro.reference, seller:pro.seller });
+            let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller });
             if (!exists) {
               pr = await Product.create(pro).fetch();
 

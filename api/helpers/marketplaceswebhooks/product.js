@@ -22,7 +22,7 @@ module.exports = {
       let pro = await sails.helpers.checkProducts(product, seller);
 
       if(typeof(pro) === 'object'){
-        let exists = await Product.findOne({reference: pro.reference, seller: pro.seller});
+        let exists = await Product.findOne({externalId: pro.externalId, seller: pro.seller});
         if (!exists) {
           await Product.create(pro).fetch();
           await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);

@@ -1510,37 +1510,37 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+          let products = await Product.find({ externalId : p.externalId, seller:seller}).populate('images');
+          let product = products[0];
           if(product && product.images.length === 0){
             for (let im of p.images) {
               try {
                 let url = (im.src.split('?'))[0];
                 let file = (im.file.split('?'))[0];
-                
-                  let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                    throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                  });
-                  if (uploaded) {
-                    let cover = 1;
-                    let totalimg = await ProductImage.count({ product: product.id});
-                    totalimg += 1;
-                    if (totalimg > 1) { cover = 0; }
-                    
-                    let rs = await ProductImage.create({
-                      file: file,
-                      position: totalimg,
-                      cover: cover,
-                      product: product.id
-                    }).fetch();
-    
-                    if(typeof(rs) === 'object'){
-                        result.push(rs);
-                    }
-                    sails.sockets.broadcast(sid, 'product_images_processed',  {result});
+                let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                  throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                });
+                if (uploaded) {
+                  let cover = 1;
+                  let totalimg = await ProductImage.count({ product: product.id});
+                  totalimg += 1;
+                  if (totalimg > 1) { cover = 0; }
+                  
+                  let rs = await ProductImage.create({
+                    file: file,
+                    position: totalimg,
+                    cover: cover,
+                    product: product.id
+                  }).fetch();
+  
+                  if(typeof(rs) === 'object'){
+                      result.push(rs);
+                  }
+                  sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                 }
               } catch (err) {
-                  errors.push(err)
-                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
+                errors.push({ name:'ERRDATA', message:err.message });
+                sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
               }
             }
           }
