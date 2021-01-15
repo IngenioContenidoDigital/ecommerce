@@ -30,7 +30,7 @@ module.exports = {
         
         let color = await sails.helpers.tools.findColor(`${vr.color ? (textPredictor + ' ' + vr.color) : textPredictor}`);
         
-        if(vr.reference == 'P00002023'){
+        if(!color || color.length == 0){
           console.log(vr);
         }
 
@@ -70,17 +70,29 @@ module.exports = {
               variation = await Variation.create({name:variation.toLowerCase().replace(',','.'),gender:variacionAsProduct.gender,category:categories[0].id}).fetch();
           }
 
-          let pvariation = await ProductVariation.create({
-            product:vp.id,
-            variation:(variation.length > 0) ?  variation[0].id : variation.id,
-            reference: variacionAsProduct.reference,
-            supplierreference:vr.reference,
-            ean13: vr.ean13 ? vr.ean13.toString() : '',
-            upc: vr.upc ? vr.upc : 0,
-            price: variacionAsProduct.price,
-            quantity: vr.quantity ? vr.quantity : 0,
-            seller:variacionAsProduct.seller
-          }).fetch();
+          let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
+          let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
+          let pvariation;
+
+          if (!pv) {
+              pvariation =  await ProductVariation.create({
+              product:vp.id,
+              variation:(variation.length > 0) ?  variation[0].id : variation.id,
+              reference: variacionAsProduct.reference,
+              supplierreference:vr.reference,
+              ean13: vr.ean13 ? vr.ean13.toString() : '',
+              upc: vr.upc ? vr.upc : 0,
+              price: variacionAsProduct.price,
+              quantity: vr.quantity ? vr.quantity : 0,
+              seller:variacionAsProduct.seller
+            }).fetch();
+          } else {
+            pvariation =  await ProductVariation.updateOne({ id: pv.id }).set({
+              price: vr.price,
+              variation: variation[0].id,
+              quantity: vr.quantity ? vr.quantity : 0,
+            });
+          }
 
           exits.success(pvariation);
 

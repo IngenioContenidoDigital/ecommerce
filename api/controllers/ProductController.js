@@ -1671,8 +1671,10 @@ module.exports = {
                       if(!variation || variation.length == 0){
                         variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                       }
+
                       let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
                       let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
+                      
                       if (!pv) {
                         productVariation = await ProductVariation.create({
                           product:pr.id,

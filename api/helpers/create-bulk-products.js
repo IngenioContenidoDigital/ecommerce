@@ -28,7 +28,7 @@ module.exports = {
         let errors = [];
         let result = [];
 
-        if(product.reference == 'EVWW1S40'){
+        if(product.reference == '2226'){
             console.log(product);
         }
 
