@@ -106,6 +106,7 @@ module.exports = {
               data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
             }
             if(categories.length<2){delete data.Product.Categories;}
+            if(categories.includes('2')/** Accesorios */){delete data.Product.ProductData.ShortDescription;}
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }
