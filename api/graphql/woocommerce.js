@@ -23,6 +23,7 @@ module.exports = {
                     price
                     manufacturer
                     quantity
+                    color
                     tax{
                         name
                         rate
