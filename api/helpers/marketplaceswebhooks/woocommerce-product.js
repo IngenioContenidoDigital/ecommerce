@@ -33,7 +33,7 @@ module.exports = {
             delete pro.categories;
             await Product.updateOne({id: exists.id}).set(pro);
             await sails.helpers.marketplaceswebhooks.variations({variations}, pro.reference, seller);
-            await sails.helpers.channel.channeSync(exists);
+            await sails.helpers.channel.channelSync(exists);
           }
         }
       } catch (error) {
