@@ -20,18 +20,12 @@ module.exports = {
   fn: async function (inputs,exits) {
 
     let seller = inputs.seller;
-    let images = [];
     let sid = inputs.socketId;
 
     try {
       for(let product of inputs.products){
         let errors = [];
         let result = [];
-
-        if(product.reference == 'EVKB2S10'){
-            console.log(product);
-        }
-
         try {
           let pro = await sails.helpers.checkProducts(product, seller);
 
