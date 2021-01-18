@@ -18,7 +18,7 @@ module.exports = {
             'redirect_uri':redirectUri,
         }
 
-        let response = await sails.helpers.channel.mercadolibre.request('oauth/token',params,'POST')
+        let response = await sails.helpers.channel.mercadolibre.request('oauth/token','auth',params,'POST')
         .intercept((err) =>{
             return res.redirect('/sellers?error='+err.message);
         });

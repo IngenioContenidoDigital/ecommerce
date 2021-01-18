@@ -31,7 +31,7 @@ module.exports = {
         'question_id': inputs.questionId,
         'text': inputs.text
       };
-      let response = await sails.helpers.channel.mercadolibre.request('answers?access_token='+integration.secret, body,'POST');
+      let response = await sails.helpers.channel.mercadolibre.request('answers',integration.secret,body,'POST');
       if(response){return exits.success(response);}
     }catch(err){
       return exits.error(err.message);

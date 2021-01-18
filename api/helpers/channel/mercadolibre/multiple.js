@@ -40,7 +40,7 @@ module.exports = {
             if(body){
               switch(inputs.action) {
                 case 'ProductUpdate':
-                  result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid+'?access_token='+integration.secret, body,'PUT')
+                  result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid, integration.secret, body,'PUT')
                   .tolerate((err)=>{
                     response.Errors.push({REF:'NOCTG',ERR:err.message});
                     return;
@@ -48,7 +48,7 @@ module.exports = {
                   if(result){ response.Request.push({REF:product.reference,MSJ:'Procesado Exitosamente'});}
                   break;
                 case 'ProductCreate':
-                  result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+                  result = await sails.helpers.channel.mercadolibre.request('items', integration.secret, body,'POST')
                   .tolerate((err)=>{
                     response.Errors.push({REF:'NOCTG',ERR:err.message});
                     return;

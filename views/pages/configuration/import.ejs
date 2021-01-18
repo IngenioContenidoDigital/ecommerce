@@ -75,7 +75,14 @@
 												<input id="discount" type="checkbox" name="discount" class="switch is-success">
 												<label for="discount"></label>
 											</div>
-										</div>
+                    </div>
+                    <div id="fieldVariationAsProduct" class="field is-hidden">
+                      <div class="control">
+                        <label class="label">Crear productos a partir de variaciones con color.</label>
+                        <input id="variationAsProduct" type="checkbox" name="asProduct" class="switch is-success">
+                        <label for="variationAsProduct"></label>
+                      </div>
+                    </div>
 										<div class="field">
 											<div class="control">
 												<label class="label">Proveedor</label>
@@ -250,13 +257,14 @@
 		if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
 	}
 
-	function responseIntegration(credentials, seller, importType, pageSize, discount, pagination) {
+	function responseIntegration(credentials, seller, importType, pageSize, discount, asProduct, pagination) {
 		if(typeof pagination ==='object' && pagination!== null ){
 			let args = credentials
 			args.page = 1;
 			args.pageSize = pageSize;
 			args.seller = seller;
-			args.discount = discount;
+      args.discount = discount;
+      args.asProduct = asProduct;
 			let report = document.querySelector('#report');
 			if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
 	
@@ -323,9 +331,11 @@
 	};
 
 	live('select[name="importType"]','change', e=>{
-		let field = document.querySelector('#fieldDiscount');
+    let field = document.querySelector('#fieldDiscount');
+    let variationAsProduct = document.querySelector('#fieldVariationAsProduct');
 		let value =  e.target.value;
-		value === 'Variations' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
+    value === 'Variations' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
+    value === 'Variations' ? removeClass(variationAsProduct, 'is-hidden') : addClass(variationAsProduct, 'is-hidden');
 	});
 
 	live('#process','click',e=>{
@@ -342,7 +352,8 @@
 		e.preventDefault();
 		let box = document.querySelector('.box').parentNode;
 		const importType = document.querySelector('select[name="importType"]').value;
-		const discount = document.querySelector('input[name="discount"]').checked;
+    const discount = document.querySelector('input[name="discount"]').checked;
+    const asProduct = document.querySelector('input[name="asProduct"]').checked;
 		const channel = document.querySelector('input[name="channel"]').value;
 		const apiUrl = document.querySelector('input[name="apiUrl"]').value;
 		const pk = document.querySelector('input[name="pk"]').value;
@@ -352,11 +363,11 @@
 		addClass(box,'is-hidden');
 		addDivReport();
 		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-		io.socket.post('/import',{importType, discount, channel, apiUrl, pk, sk, version, seller}, (resData, jwRes) =>{
+		io.socket.post('/import',{importType, discount, asProduct, channel, apiUrl, pk, sk, version, seller}, (resData, jwRes) =>{
 			if(jwRes.statusCode==200){
 				removeClass(box,'is-hidden');
 				document.querySelector('.loading').innerHTML='';
-				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.pagination)
+				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asProduct, resData.pagination)
 			}
 		});
 	});

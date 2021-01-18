@@ -18,7 +18,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {    
     try{
-      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource+'?access_token='+inputs.token);      
+      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource, inputs.token);      
       if(response){return exits.success(response);}
     }catch(err){
       return exits.error(err.message);

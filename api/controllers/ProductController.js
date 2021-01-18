@@ -72,21 +72,24 @@ module.exports = {
       where: {
         seller: seller
       }
-    }).populate('product');
+    }).populate('product').populate('variation');
     let workbook = new Excel.Workbook();
     let worksheet = workbook.addWorksheet('Inventario');
     worksheet.columns = [
-      { header: 'Id', key: 'id', width: 26 },
-      { header: 'Nombre', key: 'name', width: 55 },
-      { header: 'Referencia del Proveedor', key: 'supplierreference', width: 25 },
-      { header: 'Referencia', key: 'reference', width: 20 },
-      { header: 'Ean', key: 'ean13', width: 16 },
-      { header: 'Cantidad 1Ecommerce', key: 'quantity', width: 20 },
+      { header: 'id', key: 'id', width: 26 },
+      { header: 'name', key: 'name', width: 45 },
+      { header: 'reference', key: 'supplierreference', width: 25 },
+      { header: 'reference2', key: 'reference', width: 20 },
+      { header: 'ean13', key: 'ean13', width: 16 },
+      { header: 'upc', key: 'upc', width: 13 },
+      { header: 'variation', key: 'variation', width: 10 },
+      { header: 'quantity', key: 'quantity', width: 10 },
     ];
     worksheet.getRow(1).font = { bold: true };
 
     for (const variation of productsVariations) {
       variation.name = variation.product.name;
+      variation.variation = variation.variation.col;
       products.push(variation);
     }
 
@@ -485,7 +488,7 @@ module.exports = {
       .intercept((err) => {return new Error(err.message);});
       if(body){        
         if(action==='Update'){
-          result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid+'?access_token='+integration.secret, body,'PUT')
+          result = await sails.helpers.channel.mercadolibre.request('items/'+product.mlid,integration.secret, body,'PUT')
           .intercept((err)=>{
             return new Error(err.message);
           });
@@ -495,7 +498,7 @@ module.exports = {
           });
         }
         if(action==='Post'){
-          result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+          result = await sails.helpers.channel.mercadolibre.request('items',integration.secret, body,'POST')
           .intercept((err)=>{
             return new Error(err.message);
           }); 
@@ -640,6 +643,7 @@ module.exports = {
     let imageItems = [];
     let type = req.body.entity ? req.body.entity : null;
     let discount = req.body.discount;
+    let asProduct = req.body.asProduct;
 
     if (req.body.channel) {
       let page = 1;
@@ -661,7 +665,7 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, asProduct, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.PRODUCT_VARIATION:
           let paginationVariation = await sails.helpers.commerceImporter(
@@ -673,7 +677,7 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, asProduct, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.IMAGE_TYPE:
           let paginationImage = await sails.helpers.commerceImporter(
@@ -686,7 +690,7 @@ module.exports = {
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
 
-          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, asProduct, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         default:
           break;
@@ -1277,7 +1281,7 @@ module.exports = {
             });
             if(body){
               if(action==='Update'){
-                result = await sails.helpers.channel.mercadolibre.request('items/'+pl.mlid+'?access_token='+integration.secret, body,'PUT')
+                result = await sails.helpers.channel.mercadolibre.request('items/'+pl.mlid,integration.secret, body,'PUT')
                 .tolerate((err)=>{return;});
                 if(result){
                   response.items.push(body);
@@ -1289,7 +1293,7 @@ module.exports = {
                 }
               }
               if(action==='Post'){
-                result = await sails.helpers.channel.mercadolibre.request('items?access_token='+integration.secret, body,'POST')
+                result = await sails.helpers.channel.mercadolibre.request('items',integration.secret, body,'POST')
                 .tolerate((err)=>{return;}); 
                 if(result.id.length>0){
                   await Product.updateOne({id: product.id}).set({
@@ -1477,37 +1481,37 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+          let products = await Product.find({ externalId : p.externalId, seller:seller}).populate('images');
+          let product = products[0];
           if(product && product.images.length === 0){
             for (let im of p.images) {
               try {
                 let url = (im.src.split('?'))[0];
                 let file = (im.file.split('?'))[0];
-                
-                  let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                    throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                  });
-                  if (uploaded) {
-                    let cover = 1;
-                    let totalimg = await ProductImage.count({ product: product.id});
-                    totalimg += 1;
-                    if (totalimg > 1) { cover = 0; }
-                    
-                    let rs = await ProductImage.create({
-                      file: file,
-                      position: totalimg,
-                      cover: cover,
-                      product: product.id
-                    }).fetch();
-    
-                    if(typeof(rs) === 'object'){
-                        result.push(rs);
-                    }
-                    sails.sockets.broadcast(sid, 'product_images_processed',  {result});
+                let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                  throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                });
+                if (uploaded) {
+                  let cover = 1;
+                  let totalimg = await ProductImage.count({ product: product.id});
+                  totalimg += 1;
+                  if (totalimg > 1) { cover = 0; }
+                  
+                  let rs = await ProductImage.create({
+                    file: file,
+                    position: totalimg,
+                    cover: cover,
+                    product: product.id
+                  }).fetch();
+  
+                  if(typeof(rs) === 'object'){
+                      result.push(rs);
+                  }
+                  sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                 }
               } catch (err) {
-                  errors.push(err)
-                  sails.sockets.broadcast(sid, 'product_images_processed',  {result});
+                errors.push({ name:'ERRDATA', message:err.message });
+                sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
               }
             }
           }
@@ -1536,8 +1540,10 @@ module.exports = {
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
     let discount = req.body.discount;
+    let asProduct = req.body.asProduct;
     let lastPage;
     let next;
+    
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
     } else {
@@ -1625,7 +1631,7 @@ module.exports = {
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
 
-                    if(vr.color){
+                    if(asProduct && vr.color){
                       await sails.helpers.createProductFromVariation(vr, pr);
                     }else{
 
@@ -1636,8 +1642,10 @@ module.exports = {
                       if(!variation || variation.length == 0){
                         variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                       }
+
                       let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
                       let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
+                      
                       if (!pv) {
                         productVariation = await ProductVariation.create({
                           product:pr.id,
