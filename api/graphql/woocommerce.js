@@ -46,6 +46,7 @@ IMAGES : `
                 pagesCount
                 data{
                         externalId
+                        reference
                         images{
                             file
                             src

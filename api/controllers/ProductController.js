@@ -1510,7 +1510,7 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          let product = await Product.findOne({ externalId : p.externalId, seller:seller}).populate('images');
+          let product = await Product.findOne({ externalId : p.externalId, seller:seller, reference : p.reference}).populate('images');
           if(product && product.images.length === 0){
             for (let im of p.images) {
               try {
