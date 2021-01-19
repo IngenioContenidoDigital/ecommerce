@@ -24,15 +24,21 @@ module.exports = {
       if(typeof(pro) === 'object'){
         let exists = await Product.findOne({externalId: pro.externalId, seller: pro.seller});
         if (!exists) {
-          await Product.create(pro).fetch();
-          await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
-          await sails.helpers.marketplaceswebhooks.images(images, pro.reference, seller);
+          if (variations.variations.length > 0) {
+            const createdProduct = await Product.create(pro).fetch();
+            if (createdProduct) {
+              await sails.helpers.marketplaceswebhooks.variations(variations, createdProduct.id, seller);
+              await sails.helpers.marketplaceswebhooks.images(images, createdProduct.id, seller);
+            }
+          }
         } else {
           delete pro.mainCategory;
           delete pro.categories;
-          await Product.updateOne({id: exists.id}).set(pro);
-          await sails.helpers.marketplaceswebhooks.variations(variations, pro.reference, seller);
-          await sails.helpers.channel.channelSync(exists);
+          const updatedProduct = await Product.updateOne({id: exists.id}).set(pro);
+          if (updatedProduct) {
+            await sails.helpers.marketplaceswebhooks.variations(variations, updatedProduct.id, seller);
+            await sails.helpers.channel.channelSync(exists);
+          }
         }
       }
     } catch (error) {

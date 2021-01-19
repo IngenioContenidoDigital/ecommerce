@@ -3,7 +3,7 @@ module.exports = {
   description: 'Proceso para crear las variaciones de un producto webhook',
   inputs: {
     productVariation: {type: 'json'},
-    productRef: {type : 'string'},
+    productId: {type : 'string'},
     seller: {type : 'string'}
   },
   exits: {
@@ -17,9 +17,9 @@ module.exports = {
   fn: async function (inputs, exits) {
     let moment = require('moment');
     let seller = inputs.seller;
-    let productRef = inputs.productRef;
+    let productId = inputs.productId;
     let productVariation = inputs.productVariation;
-    let pro = await Product.findOne({reference: productRef.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
+    let pro = await Product.findOne({id: productId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
       where:{
         to:{'>=':moment().valueOf()},
         from:{'<=':moment().valueOf()}
@@ -56,8 +56,8 @@ module.exports = {
             if(!variation || variation.length == 0){
               variation = await Variation.create({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, category: pro.categories[0].id}).fetch();
             }
-            let pvs = await ProductVariation.find({product: pro.id, supplierreference: pro.reference}).populate('variation');
-            let pv = pvs.find(pv=> pv.variation.name === variation[0].name);
+            let pvs = await ProductVariation.find({product: pro.id}).populate('variation');
+            let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
             if (!pv) {
               await ProductVariation.create({
                 product: pro.id,
@@ -70,7 +70,7 @@ module.exports = {
                 quantity: vr.quantity ? vr.quantity : 0,
                 seller: pro.seller
               }).fetch();
-            } else {
+            } else if(pv){
               await ProductVariation.updateOne({ id: pv.id }).set({
                 price: vr.price,
                 variation: variation[0].id,
@@ -100,11 +100,13 @@ module.exports = {
             }
           }
         } else {
-          let pvs = await ProductVariation.find({product: pro.id, supplierreference: pro.reference});
-          for (const pv of pvs) {
-            await ProductVariation.updateOne({ id: pv.id }).set({
-              quantity: 0
-            });
+          let pvs = await ProductVariation.find({product: pro.id});
+          if (pvs.length > 0) {
+            for (const pv of pvs) {
+              await ProductVariation.updateOne({ id: pv.id }).set({
+                quantity: 0
+              });
+            }
           }
         }
       } catch (e) {

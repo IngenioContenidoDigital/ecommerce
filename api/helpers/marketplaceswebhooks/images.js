@@ -3,7 +3,7 @@ module.exports = {
   description: 'Proceso para crear las variaciones de un producto webhook',
   inputs: {
     productImages: {type: 'json'},
-    productRef: {type : 'string'},
+    productId: {type : 'string'},
     seller: {type : 'string'}
   },
   exits: {
@@ -16,9 +16,9 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     let seller = inputs.seller;
-    let productRef = inputs.productRef;
+    let productId = inputs.productId;
     let productImages = inputs.productImages;
-    let product = await Product.findOne({reference: productRef, seller:seller}).populate('images');
+    let product = await Product.findOne({id: productId, seller:seller}).populate('images');
     if(product && product.images.length === 0){
       for (let im of productImages.images) {
         try {
