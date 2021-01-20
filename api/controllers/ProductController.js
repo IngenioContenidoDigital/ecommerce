@@ -967,8 +967,8 @@ module.exports = {
       }
 
       prod.reference = req.body.product.reference.toUpperCase().trim();
-      prod.description = req.body.product.description.toLowerCase().trim();
-      prod.descriptionShort = req.body.product.descriptionShort.toLowerCase().trim();
+      prod.description = req.body.product.description.trim();
+      prod.descriptionShort = req.body.product.descriptionShort.trim();
       let cats = await sails.helpers.tools.findCategory(req.body.product.name+' '+req.body.product.reference);
       if(cats.length>0){
           prod.categories = cats;
