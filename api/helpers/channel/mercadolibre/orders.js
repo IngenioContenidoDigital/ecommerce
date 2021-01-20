@@ -39,7 +39,8 @@ module.exports = {
               let cityname = shipping['receiver_address'].city.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
               if(cityname==='Bogotá D.C.'){cityname='Bogota';}
               let city = await City.find({name:cityname.toLowerCase().trim()}).populate('region');
-              if(city && oexists===undefined){
+
+              if(city && oexists.length === 0){
                 let user = await User.findOrCreate({emailAddress:order.buyer.email},{
                   emailAddress:order.buyer.email,
                   emailStatus:'confirmed',
