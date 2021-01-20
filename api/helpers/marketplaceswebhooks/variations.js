@@ -29,22 +29,24 @@ module.exports = {
     });
     if(pro){
       if (productVariation.discount && productVariation.discount.length > 0) {
-        if (pro.discount.length > 0 && pro.discount[0].value == productVariation.discount[0].value
-          && pro.discount[0].type == productVariation.discount[0].type) {
-          await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
-            from: moment(new Date( productVariation.discount[0].from)).valueOf(),
-            to: moment(new Date(productVariation.discount[0].to)).valueOf()
-          });
-        } else {
-          const discountresult = await CatalogDiscount.create({
-            name: productVariation.discount[0].name.trim().toLowerCase(),
-            from: moment(new Date(productVariation.discount[0].from)).valueOf(),
-            to: moment(new Date(productVariation.discount[0].to)).valueOf(),
-            type: productVariation.discount[0].type,
-            value: parseFloat(productVariation.discount[0].value),
-            seller: pro.seller
-          }).fetch();
-          await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
+        for (const disc of productVariation.discount) {
+          if (pro.discount.length > 0 && pro.discount[0].value == disc.value
+            && pro.discount[0].type == disc.type) {
+            await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+              from: moment(new Date( disc.from)).valueOf(),
+              to: moment(new Date(disc.to)).valueOf()
+            });
+          } else {
+            const discountresult = await CatalogDiscount.create({
+              name: disc.name.trim().toLowerCase(),
+              from: moment(new Date(disc.from)).valueOf(),
+              to: moment(new Date(disc.to)).valueOf(),
+              type: disc.type,
+              value: parseFloat(disc.value),
+              seller: pro.seller
+            }).fetch();
+            await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
+          }
         }
       }
       try {
