@@ -69,6 +69,7 @@ module.exports = {
                 ean13: vr.ean13 ? vr.ean13.toString() : '',
                 upc: vr.upc ? vr.upc : 0,
                 price: vr.price,
+                skuId: vr.skuId ? vr.skuId : '',
                 quantity: vr.quantity ? vr.quantity : 0,
                 seller: pro.seller
               }).fetch();

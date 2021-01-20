@@ -1652,6 +1652,7 @@ module.exports = {
                           supplierreference:pr.reference,
                           ean13: vr.ean13 ? vr.ean13.toString() : '',
                           upc: vr.upc ? vr.upc : 0,
+                          skuId: vr.skuId ? vr.skuId : '',
                           price: vr.price,
                           quantity: vr.quantity ? vr.quantity : 0,
                           seller:pr.seller
