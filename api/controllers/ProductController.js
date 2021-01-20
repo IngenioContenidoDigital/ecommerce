@@ -831,7 +831,7 @@ module.exports = {
         }
       }
       if (req.body.type === 'Product') {
-
+        let gen = null;
         prod.reference = req.body.product.reference.trim().toUpperCase();
         prod.name = req.body.product.name.trim().toLowerCase();
         prod.tax = (await Tax.findOne({ value: req.body.product.tax })).id;
@@ -841,7 +841,7 @@ module.exports = {
         let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.trim().toLowerCase() })
         if (brand) { prod.manufacturer = brand.id; } else { throw new Error('No logramos identificar la marca del producto.'); }
         let gender = await sails.helpers.tools.findGender(req.body.product.gender.trim().toLowerCase());
-        if (gender.length > 0) { prod.gender = gender[0]; } else { throw new Error('No logramos identificar el género para este producto.'); }
+        if (gender.length > 0) { prod.gender = gender[0]; gen = await Gender.findOne({id:gender[0]});} else { throw new Error('No logramos identificar el género para este producto.'); }
         let eval = req.body.product.active.toLowerCase().trim();
         prod.active = (eval === 'true' || eval === '1' || eval === 'verdadero' || eval === 'si' || eval === 'sí') ? true : false;;
         prod.width = parseFloat(req.body.product.width.replace(',', '.'));
@@ -854,7 +854,7 @@ module.exports = {
         prod.description = req.body.product.description;
         prod.descriptionShort = req.body.product.descriptionShort;
 
-        let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.gender);
+        let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.reference + ' ' + gen.name + ' ' + brand.name);
         if (categories.length > 0) {
           prod.categories = categories;
           let main = await Category.find({ id: categories }).sort('level DESC');
@@ -969,19 +969,14 @@ module.exports = {
       prod.reference = req.body.product.reference.toUpperCase().trim();
       prod.description = req.body.product.description.trim();
       prod.descriptionShort = req.body.product.descriptionShort.trim();
-      let cats = await sails.helpers.tools.findCategory(req.body.product.name+' '+req.body.product.reference);
-      if(cats.length>0){
-          prod.categories = cats;
-          let main = await Category.find({id:cats}).sort('level DESC');
-          prod.mainCategory = main[0].id;
-      }
 
       if(req.body.product.manufacturer){
-          prod.manufacturer = (await Manufacturer.findOne({ name: req.body.product.manufacturer.toLowerCase() })).id;
+          let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.toLowerCase() });
+          prod.manufacturer = brand.id;
       }else{
           throw new Error('La Marca seleccionada para el producto ' + req.body.product.name + ' no existe');
       }
-
+      let gen = null;
       let color = await sails.helpers.tools.findColor(req.body.product.name+' '+req.body.product.reference);
       
       if(color && color.length > 0){
@@ -997,6 +992,7 @@ module.exports = {
           } else {
               prod.gender = (await Gender.findOne({ name: 'unisex' })).id;
           }
+          gen = await Gender.findOne({id:prod.gender});
       }
       
       if (req.body.product.tax) {
@@ -1021,7 +1017,7 @@ module.exports = {
       prod.descriptionShort = req.body.product.descriptionShort;
       prod.seller = seller;
 
-      let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.gender);
+      let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.reference + ' ' + gen.name + ' ' + brand.name);
       if (categories.length > 0) {
         prod.categories = categories;
         let main = await Category.find({ id: categories }).sort('level DESC');
