@@ -86,7 +86,7 @@ module.exports.routes = {
   'POST /products/download' : {controller:'ProductController',action:'downloadproducts'},
   'GET /catalogquery/:page?/:seller?' : {controller:'ProductController',action:'findcatalog'},
   'GET /product/:action?/:id?' : {controller:'ProductController',action:'productmgt'},
-  'GET /import' : {controller:'ProductController',action:'import'},
+  'GET /import/:seller' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},
   'GET /quality/:channel/:seller' : {controller:'ProductController',action:'qualitycheck'},
   'POST /quality' : {controller:'ProductController',action:'qualityexecute'},
@@ -95,7 +95,7 @@ module.exports.routes = {
   'POST /productcheck' : {controller:'ProductController',action:'checkdata'},
   'POST /check-product-provider' : {controller:'ProductController',action:'checkProductFromProvider'},
 
-  'GET /multiple' : {controller:'ProductController',action:'multiple'},
+  'GET /multiple/:seller' : {controller:'ProductController',action:'multiple'},
   'POST /multiple' : {controller:'ProductController',action:'multipleexecute'},
 
   'POST /product/create' : {controller:'ProductController',action:'createproduct'},

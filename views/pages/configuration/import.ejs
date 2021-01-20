@@ -1,479 +1,426 @@
 <div class="container">
-    <% if (error != undefined || error != null) { %>
-      <div class="notification is-danger is-light" id="error">
-          <%= error %>
-      </div>
-    <% } %>
-    <h4 class="title is-4">Importar Productos</h4>
-    <hr>
-    <div class="columns is-gapless">
-        <div class="column">
-            <div class="box">  
-                <div id="tabs-with-content">
-                    <div class="tabs is-centered">
-                      <ul>
-                        <li><a>CSV</a></li>
-                        <li><a>INTEGRACIONES</a></li>
-                      </ul>
+	<% if (error != undefined || error != null) { %>
+		<div class="notification is-danger is-light" id="error">
+			<%= error %>
+		</div>
+	<% } %>
+	<h4 class="title is-4">Importar Productos</h4>
+	<hr>
+	<div class="columns is-gapless">
+		<div class="column">
+			<div class="box">  
+				<div id="tabs-with-content">
+					<div class="tabs is-centered">
+						<ul>
+							<li><a>CSV</a></li>
+							<li><a>INTEGRACIONES</a></li>
+						</ul>
+					</div>
+					<div>
+						<section class="tab-content">
+              <form action="/import" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="seller" value="" />
+								<div class="field">
+									<label class="label">Tipo de Importación</label>
+									<div class="select is-fullwidth">
+										<select name="entity" required>
+											<option value="Product">Productos</option>
+											<option value="ProductVariation">Variaciones de Producto</option>
+											<option value="ProductImage">Imagenes de Producto</option>
+											<option value="Discount">Descuentos</option>
+										</select>
+									</div>
+								</div>
+								<div class="field">
+									<div id="file-loader" class="file has-name is-fullwidth">
+										<label class="file-label">
+											<input class="file-input" required accept=".csv" type="file" id="file" name="file" />
+											<span class="file-cta">
+												<span class="file-icon">
+													<i class="bx bx-upload"></i>
+												</span>
+												<span class="file-label">
+													Archivo CSV
+												</span>
+											</span>
+											<span class="file-name has-text-grey">
+												Cargar Archivo a Procesar
+											</span>
+										</label>
+									</div>
+								</div> 
+								<div class="control buttons is-right">
+									<button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Archivo</button>
+								</div>  
+							</form>
+						</section>
+						<section class="tab-content">
+							<% provider = null; %>
+							<%if(typeof integrations =='object' && integrations.length>0){%>
+								<% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify' || data.channel == 'vtex' || data.channel == 'prestashop');%>
+								<% if(provider.length > 0){%>
+										<div class="field">
+											<label class="label">Tipo de Importación</label>
+											<div class="select is-fullwidth">
+												<select name="importType" required>
+													<option value="Product">Productos</option>
+													<option value="Variations">Variaciones</option>
+													<option value="ProductImage">Imagenes de Producto</option>
+												</select>
+											</div>
+										</div>
+										<div id="fieldDiscount" class="field is-hidden">
+											<div class="control">
+												<label class="label">Importar Descuentos</label>
+												<input id="discount" type="checkbox" name="discount" class="switch is-success">
+												<label for="discount"></label>
+											</div>
                     </div>
-                    <div>
-                      <section class="tab-content">
-                        <form action="/import" method="POST" enctype="multipart/form-data">
-                        <div class="field">
-                            <label class="label">Tipo de Importación</label>
-                            <div class="select is-fullwidth">
-                                <select name="entity" required>
-                                    <option value="Product">Productos</option>
-                                    <option value="ProductVariation">Variaciones de Producto</option>
-                                    <option value="ProductImage">Imagenes de Producto</option>
-                                    <option value="Discount">Descuentos</option>
-                                </select>
-                            </div>
-                        </div>
-                        <%if( rights== 'superadmin'){%>
-                            <div class="field">
-                              <label class="label">Sellers</label>
-                              <div class="select is-fullwidth">
-                                  <select name="seller" required>
-                                    <% for(var i=0; i<sellers.length; i++) {%>
-                                      <option value="<%=sellers[i].id%>"><%=sellers[i].name%></option>
-                                    <% } %>
-                                  </select>
-                              </div>
-                            </div>
-                          <% } %>
-
-                        <div class="field">
-                            <div id="file-loader" class="file has-name is-fullwidth">
-                            <label class="file-label">
-                                <input class="file-input" required accept=".csv" type="file" id="file" name="file" />
-                                <span class="file-cta">
-                                <span class="file-icon">
-                                    <i class="bx bx-upload"></i>
-                                </span>
-                                <span class="file-label">
-                                    Archivo CSV
-                                </span>
-                                </span>
-                                <span class="file-name has-text-grey">
-                                Cargar Archivo a Procesar
-                                </span>
-                            </label>
-                            </div>
-                        </div> 
-                        <div class="control buttons is-right">
-                            <button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Archivo</button>
-                        </div>  
-                        </form>
-                      </section>
-                      <section class="tab-content">
-                        <% provider = null; %>
-                        <%if(typeof integrations =='object' && integrations.length>0){%>
-                            <% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify' || data.channel == 'vtex' || data.channel == 'prestashop');%>
-                            <% if(provider){%>
-                              <form action="/import" method="POST" enctype="multipart/form-data">
-                                <%if(sellers && sellers.length>0){%>
-                                  <div class="field">
-                                    <label class="label">Seller</label>
-                                    <div class="select is-fullwidth">
-                                        <select name="seller" required>
-                                          <% sellers.forEach(s=>{%> {%>
-                                            <option value="<%=s.id%>"><%=s.name%></option>
-                                           <% }) %>
-                                        </select>
-                                    </div>
-                                  </div>
-                                  <% } %>
-                                  <div class="field">
-                                    <label class="label">Tipo de Importación</label>
-                                    <div class="select is-fullwidth">
-                                        <select name="importType" required>
-                                            <option value="Product">Productos</option>
-                                            <option value="Variations">Variaciones</option>
-                                            <option value="ProductImage">Imagenes de Producto</option>
-                                        </select>
-                                    </div>
-                                  </div>
-                                  <div id="fieldDiscount" class="field is-hidden">
-                                    <div class="control">
-                                      <label class="label">Importar Descuentos</label>
-                                      <input id="discount" type="checkbox" name="discount" class="switch is-success">
-                                      <label for="discount"></label>
-                                    </div>
-                                  </div>
-                                  <div id="fieldVariationAsProduct" class="field is-hidden">
-                                    <div class="control">
-                                      <label class="label">Crear productos a partir de variaciones con color.</label>
-                                      <input id="variationAsProduct" type="checkbox" name="asProduct" class="switch is-success">
-                                      <label for="variationAsProduct"></label>
-                                    </div>
-                                  </div>
-                                  <div class="field">
-                                      <div class="control">
-                                        <label class="label">Proveedor</label>
-                                        <input type="text" id="channelTxt" disabled class="input is-primary" type="text"  placeholder="Primary input" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%> />
-                                        <input type="hidden" name="channel" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%>>
-                                      </div>
-                                  </div>
-                                  <div class="field">
-                                      <div class="control">
-                                        <label class="label">Url</label>
-                                        <input type="text" id="urlTxt" disabled class="input is-primary"  type="text" placeholder="Primary input" <%if(provider!==null){%>value="<%=provider.url%>"<%}%> />
-                                        <input type="hidden" name="apiUrl" <%if(provider!==null){%>value="<%=provider.url%>"<%}%>>
-                                      </div>
-                                  </div>
-                                  <div class="control buttons is-right">
-                                      <input type="hidden" name="pk" <%if(provider!==null){%>value="<%=provider.key%>"<%}%>>
-                                      <input type="hidden" name="sk" <%if(provider!==null){%>value="<%=provider.secret%>"<%}%>>
-                                      <input type="hidden" name="version" <%if(provider!==null){%>value="<%=provider.version%>"<%}%>>
-                                      <button id="process-from-provider" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Productos</button>
-                                  </div> 
-                              </form>
-                            <% }else{ %>
-                              <div class="notification">
-                                <button class="delete"></button>
-                                Para realizar la importacion de catalogo de producto se debe configurar previamente
-                                la plataforma de origen con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
-                              </div>
-                            <%}%>
-                        <%}else {%> 
-                          <div class="notification">
-                            <button class="delete"></button>
-                            Para realizar la importacion de catalogo de producto se debe configurar previamente
-                            la plataforma de origen con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
-                          </div>
-                        <%}%>
-                      </section>
+                    <div id="fieldVariationAsProduct" class="field is-hidden">
+                      <div class="control">
+                        <label class="label">Crear productos a partir de variaciones con color.</label>
+                        <input id="variationAsProduct" type="checkbox" name="asProduct" class="switch is-success">
+                        <label for="variationAsProduct"></label>
+                      </div>
                     </div>
-                  </div>
-                <br>
-            </div>
-        </div>
-        <div class="column">
-            <div class="loading"></div>
-            <div id="report" class="container is-fluid is-hidden">
-                <br>
-                <h6 class="title is-6">Espera un momento....</h6>
-                <hr>
-                <div id="loading-block" class="notification is-hidden">
-                  <i class="fas fa-sync fa-spin"></i>
-                   Estamos sincronizando el catalogo...
-                   <progress class="progress is-small is-primary" max="100">15%</progress>
-                </div>
-                <div id="success-block" class="notification is-primary is-hidden">
-                    Se han procesado un total <span id="items">0</span> de registros.
-                </div>
-                <div id="error-block" class="notification is-danger is-hidden">
-                    <p>Hemos identificado <span id="errors">0</span> error(es).</p>
-                    <br>
-                    <div class="container is-fluid">
-                        <ol id="error-list">
-
-                        </ol>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-  </div>
-  <script>
-    function showReportPane(){
-      if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-      let loadingBlock = document.querySelector('#loading-block');
-      addClass(loadingBlock, 'is-hidden');
-      let successBlock = document.querySelector('#success-block');
-      let errorBlock = document.querySelector('#error-block');
-      if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
-      if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
-    }
-    <% if(typeof pagination ==='object' && pagination!== null ){ %>
-        let args = <%- JSON.stringify(credentials)%>;
-        let seller = '<%= seller %>';
-        let importType = '<%= importType %>';
-        let processed = 1;
-
-        args.page = 1;
-        args.pageSize = <%- pageSize %>;
-        args.seller = seller;
-        args.discount = <%- discount %>;
-        args.asProduct = <%- asProduct %>;
-        
-        let paginationData =<%- JSON.stringify(pagination)%>;
-        let pages = paginationData.pagesCount;
-        let total = paginationData.totalRecords;
-        let start = false;
-
-        let report = document.querySelector('#report');
-        if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-
-        if(paginationData){
-          let loadingBlock = document.querySelector('#loading-block');
-          if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
-        }
-
-        io.socket.on("product_processed", (resData)=>{
-          showReportPane();
-          if(!start){
-            start = true;
-          }
-
-          if(resData.result.length>=1){
-              let items = document.querySelector('#items');
-              items.innerHTML=parseInt(items.innerHTML)+1;
-            }
-            if(resData.errors.length>=1){
-              let errors = document.querySelector('#errors')
-              errors.innerHTML=parseInt(errors.innerHTML)+1;
-              let errorlist = document.querySelector('#error-list');
-              let err = document.createElement('li');
-              err.innerHTML=resData.errors[0].message;
-              errorlist.appendChild(err);
-            }
-
-            processed+=1;
-        });
-
-        io.socket.on("variation_processed", (resData)=>{
-          showReportPane();
-          
-          if(!start){
-            start = true;
-          }
-
-          if(resData.result.length>=1){
-              let items = document.querySelector('#items');
-              items.innerHTML=parseInt(items.innerHTML)+1;
-            }
-            
-            if(resData.errors.length>=1){
-              let errors = document.querySelector('#errors')
-              errors.innerHTML=parseInt(errors.innerHTML)+1;
-              let errorlist = document.querySelector('#error-list');
-              let err = document.createElement('li');
-              err.innerHTML=resData.errors[0].message;
-              errorlist.appendChild(err);
-            }
-
-            processed+=1;
-        });
-
-        io.socket.on("product_images_processed", (resData)=>{
-          showReportPane();
-
-          if(!start){
-            start = true;
-          }
-
-          if(resData.result && resData.result.length>=1){
-              let items = document.querySelector('#items');
-              items.innerHTML=parseInt(items.innerHTML)+1;
-            }
-            if(resData.errors && resData.errors.length>=1){
-              let errors = document.querySelector('#errors')
-              errors.innerHTML=parseInt(errors.innerHTML)+1;
-              let errorlist = document.querySelector('#error-list');
-              let err = document.createElement('li');
-              err.innerHTML=resData.errors[0].message;
-              errorlist.appendChild(err);
-            }
-
-            processed+=1;
-        });
-
-        switch (importType) {
-          case 'Product':
-                io.socket.post('/import-products', args, (response)=>{
-
-                });
-            break;
-            case 'ProductImage':
-                io.socket.post('/import-images', args, (response)=>{
-                  io.socket.on("images_task_ended", (resData)=>{
-                      let mensaje = document.querySelector('#report > .title');
-                      mensaje.innerHTML='Proceso Finalizado';
-                  });
-                });
-            break;
-            case 'Variations':
-                io.socket.post('/import-variations', args, (response)=>{
-                  io.socket.on("variation_task_ended", (resData)=>{
-                      let mensaje = document.querySelector('#report > .title');
-                      mensaje.innerHTML='Proceso Finalizado';
-                  });
-                });
-            break;
-          default:
-            break;
-        }
-
-        io.socket.on("product_task_ended", (resData)=>{
-            let mensaje = document.querySelector('#report > .title');
-            mensaje.innerHTML='Proceso Finalizado';
-        });
-
-        io.socket.on("image_task_ended", (resData)=>{
-            let mensaje = document.querySelector('#report > .title');
-            mensaje.innerHTML='Proceso Finalizado';
-        });
-
-        io.socket.on("variation_task_ended", (resData)=>{
-                let mensaje = document.querySelector('#report > .title');
-                mensaje.innerHTML='Proceso Finalizado';
-        });
-
-    <% } %>
-
-    <% if(typeof resultados ==='object' && resultados!==null && resultados.length>0){ %>
-      let records = <%- JSON.stringify(resultados) %>;
-      let type = '<%= type %>';
-      let seller = '<%= seller %>';
-      let totalrecords = records.length;
-      let processed = 1;
-      let report = document.querySelector('#report');
-      if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-      for(let p of records){  
-        io.socket.post('/productcheck',{type:type,product:p,seller:seller},resData =>{
-            showReportPane();
-            if(resData.items.length>=1){
-              let items = document.querySelector('#items');
-              items.innerHTML=parseInt(items.innerHTML)+1;
-            }
-            if(resData.errors.length>=1){
-              let errors = document.querySelector('#errors')
-              errors.innerHTML=parseInt(errors.innerHTML)+1;
-              let errorlist = document.querySelector('#error-list');
-              let err = document.createElement('li');
-              err.innerHTML=resData.errors[0];
-              errorlist.appendChild(err);
-            }
-            if(processed>=totalrecords){
-              let mensaje = document.querySelector('#report > .title');
-              mensaje.innerHTML='Proceso Finalizado';
-            }else{
-              processed+=1;
-            }
-        });
-      }
-      document.querySelector('.loading').innerHTML='';
-    <%}%>
-
-    function setSellerInfo (){
-      var provider = <%- JSON.stringify(provider) %>;
-      document.getElementById("channelTxt").value = provider[0].channel;
-      document.getElementById("urlTxt").value = provider[0].url;
-      document.getElementsByName("pk")[0].value = provider[0].key;
-      document.getElementsByName("sk")[0].value = provider[0].secret;
-      document.getElementsByName("apiUrl")[0].value = provider[0].url;
-      document.getElementsByName("version")[0].value = provider[0].version;
-      document.getElementsByName("channel")[0].value = provider[0].channel;
-    }
-    const fileInput = document.querySelector('#file-loader input[type=file]');
-    fileInput.onchange = () => {
-      if (fileInput.files.length > 0) {
-        const fileName = document.querySelector('#file-loader .file-name');
-        fileName.textContent = fileInput.files[0].name;
-      }
-    };
-
-    live('select[name="importType"]','change', e=>{
-      let field = document.querySelector('#fieldDiscount');
-      let variationAsProduct = document.querySelector('#fieldVariationAsProduct');
-      let value =  e.target.value;
-
-      value === 'Variations' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
-      value === 'Variations' ? removeClass(variationAsProduct, 'is-hidden') : addClass(variationAsProduct, 'is-hidden');
-    });
-
-    live('#process','click',e=>{
-        let report = document.querySelector('#report');
-        addClass(report,'is-hidden');
-        
-        let box = document.querySelector('.box').parentNode;
-        addClass(box,'is-hidden');
-        document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-    });
-
-    live('#process-from-provider','click',e=>{
-        let box = document.querySelector('.box').parentNode;
-        let report = document.querySelector('#report');
-        addClass(report,'is-hidden');
-        addClass(box,'is-hidden');
-        
-        document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-    });
-
-    live('select[name="entity"]','change',e=>{
-        let elm = document.querySelector('#file');
-        if(e.target.value==='ProductImage'){
-            elm.setAttribute('accept','image/*');
-            elm.setAttribute('multiple','multiple');
-            document.querySelector('span .file-label').innerHTML='Imagenes a Procesar'
-            document.querySelector('.file-name').innerHTML='Cargar Varias Imagenes'
-        }else{
-            elm.setAttribute('accept','.csv');
-            elm.removeAttribute('multiple');
-            document.querySelector('span .file-label').innerHTML='Archivo .CSV'
-            document.querySelector('.file-name').innerHTML='Cargar Archivo .csv a procesar'
-        }
-    })
-
-    live('select[name="seller"]','change',e=>{
-      var providers = <%- JSON.stringify(provider) %>;
-
-      let selected = providers.filter(function(p){
-        return p.seller === e.target.value;
+										<div class="field">
+											<div class="control">
+												<label class="label">Proveedor</label>
+												<input type="text" id="channelTxt" disabled class="input is-primary" type="text"  placeholder="Proveedor" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%> />
+												<input type="hidden" name="channel" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%>>
+											</div>
+										</div>
+										<div class="field">
+											<div class="control">
+												<label class="label">Url</label>
+												<input type="text" id="urlTxt" disabled class="input is-primary"  type="text" placeholder="URL" <%if(provider!==null){%>value="<%=provider.url%>"<%}%> />
+												<input type="hidden" name="apiUrl" <%if(provider!==null){%>value="<%=provider.url%>"<%}%>>
+											</div>
+										</div>
+										<div class="control buttons is-right">
+											<input type="hidden" name="pk" <%if(provider!==null){%>value="<%=provider.key%>"<%}%>>
+											<input type="hidden" name="sk" <%if(provider!==null){%>value="<%=provider.secret%>"<%}%>>
+											<input type="hidden" name="version" <%if(provider!==null){%>value="<%=provider.version%>"<%}%>>
+											<button id="process-from-provider" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Productos</button>
+										</div>
+								<% }else{ %>
+									<div class="notification">
+										<button class="delete"></button>
+										Para realizar la importacion de catalogo de producto se debe configurar previamente
+										la plataforma de origen con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
+									</div>
+								<%}%>
+							<%}else {%> 
+								<div class="notification">
+									<button class="delete"></button>
+									Para realizar la importacion de catalogo de producto se debe configurar previamente
+									la plataforma de origen con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
+								</div>
+							<%}%>
+						</section>
+					</div>
+				</div>
+				<br>
+			</div>
+		</div>
+		<div class="column">
+			<div class="loading"></div>
+			<div id="divreport">
+				
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	<%if(seller !== null){%>
+    const seller = '<%- seller %>';
+		const providers = <%- JSON.stringify(provider) %>;
+    document.querySelector('input[name="seller"]').value = seller;
+		if (providers && providers.length > 0) {
+			let selected = providers.filter(function(p){
+				return p.seller === seller;
       })[0];
+			document.getElementById("channelTxt").value = selected.channel;
+			document.getElementById("urlTxt").value = selected.url;
+			document.getElementsByName("pk")[0].value = selected.key;
+			document.getElementsByName("sk")[0].value = selected.secret;
+			document.getElementsByName("apiUrl")[0].value = selected.url;
+			document.getElementsByName("version")[0].value = selected.version;
+			document.getElementsByName("channel")[0].value = selected.channel;
+		}
+	<%}%>
 
-      document.getElementById("channelTxt").value = selected.channel;
-      document.getElementById("urlTxt").value = selected.url;
+	io.socket.on("product_processed", (resData)=>{
+		showReportPane();
+		if(resData.result.length>=1){
+			let items = document.querySelector('#items');
+			items.innerHTML=parseInt(items.innerHTML)+1;
+		}
+		if(resData.errors.length>=1){
+			let errors = document.querySelector('#errors')
+			errors.innerHTML=parseInt(errors.innerHTML)+1;
+			let errorlist = document.querySelector('#error-list');
+			let err = document.createElement('li');
+			err.innerHTML=resData.errors[0].message;
+			errorlist.appendChild(err);
+		}
+	});
 
-      document.getElementsByName("pk")[0].value = selected.key;
-      document.getElementsByName("sk")[0].value = selected.secret;
-      document.getElementsByName("apiUrl")[0].value = selected.url;
-      document.getElementsByName("version")[0].value = selected.version;
-      document.getElementsByName("channel")[0].value = selected.channel;
-    });
+	io.socket.on("variation_processed", (resData)=>{
+		showReportPane();
+		if(resData.result.length>=1){
+			let items = document.querySelector('#items');
+			items.innerHTML=parseInt(items.innerHTML)+1;
+		}
+		if(resData.errors.length>=1){
+			let errors = document.querySelector('#errors')
+			errors.innerHTML=parseInt(errors.innerHTML)+1;
+			let errorlist = document.querySelector('#error-list');
+			let err = document.createElement('li');
+			err.innerHTML=resData.errors[0].message;
+			errorlist.appendChild(err);
+		}
+	});
 
-    document.addEventListener("DOMContentLoaded", function(event) {
-        let tabsWithContent = (function () {
-  let tabs = document.querySelectorAll('.tabs li');
-  let tabsContent = document.querySelectorAll('.tab-content');
+	io.socket.on("product_images_processed", (resData)=>{
+		showReportPane();
+		if(resData.result && resData.result.length>=1){
+			let items = document.querySelector('#items');
+			items.innerHTML=parseInt(items.innerHTML)+1;
+		}
+		if(resData.errors && resData.errors.length>=1){
+			let errors = document.querySelector('#errors')
+			errors.innerHTML=parseInt(errors.innerHTML)+1;
+			let errorlist = document.querySelector('#error-list');
+			let err = document.createElement('li');
+			err.innerHTML=resData.errors[0].message;
+			errorlist.appendChild(err);
+		}
+	});
 
-  let deactvateAllTabs = function () {
-    tabs.forEach(function (tab) {
-      tab.classList.remove('is-active');
-    });
-  };
+	io.socket.on("product_task_ended", (resData)=>{
+		let mensaje = document.querySelector('#report > .title');
+		mensaje.innerHTML='Proceso Finalizado';
+	});
 
-  let hideTabsContent = function () {
-    tabsContent.forEach(function (tabContent) {
-      tabContent.classList.remove('is-active');
-    });
-  };
+	io.socket.on("image_task_ended", (resData)=>{
+		let mensaje = document.querySelector('#report > .title');
+		mensaje.innerHTML='Proceso Finalizado';
+	});
 
-  let activateTabsContent = function (tab) {
-    tabsContent[getIndex(tab)].classList.add('is-active');
-  };
+	io.socket.on("variation_task_ended", (resData)=>{
+		let mensaje = document.querySelector('#report > .title');
+		mensaje.innerHTML='Proceso Finalizado';
+	});
 
-  let getIndex = function (el) {
-    return [...el.parentElement.children].indexOf(el);
-  };
+  <% if(typeof resultados ==='object' && resultados!==null && resultados.length>0){ %>
+    let records = <%- JSON.stringify(resultados) %>;
+    let type = '<%= type %>';
+    let sell = '<%= seller %>';
+    let totalrecords = records.length;
+    let processed = 1;
+    addDivReport();
+    let report = document.querySelector('#report');
+    if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+    for(let p of records){  
+      io.socket.post('/productcheck',{type:type,product:p,seller:sell},resData =>{
+          showReportPane();
+          if(resData.items.length>=1){
+            let items = document.querySelector('#items');
+            items.innerHTML=parseInt(items.innerHTML)+1;
+          }
+          if(resData.errors.length>=1){
+            let errors = document.querySelector('#errors')
+            errors.innerHTML=parseInt(errors.innerHTML)+1;
+            let errorlist = document.querySelector('#error-list');
+            let err = document.createElement('li');
+            err.innerHTML=resData.errors[0];
+            errorlist.appendChild(err);
+          }
+          if(processed>=totalrecords){
+            let mensaje = document.querySelector('#report > .title');
+            mensaje.innerHTML='Proceso Finalizado';
+          }else{
+            processed+=1;
+          }
+      });
+    }
+    document.querySelector('.loading').innerHTML='';
+  <%}%>
 
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      deactvateAllTabs();
-      hideTabsContent();
-      tab.classList.add('is-active');
-      activateTabsContent(tab);
-    });
-  })
+	function showReportPane(){
+		let loadingBlock = document.querySelector('#loading-block');
+		addClass(loadingBlock, 'is-hidden');
+		let successBlock = document.querySelector('#success-block');
+		let errorBlock = document.querySelector('#error-block');
+		if(hasClass(successBlock,'is-hidden')){removeClass(successBlock, 'is-hidden');}
+		if(hasClass(errorBlock,'is-hidden')){removeClass(errorBlock, 'is-hidden');}
+	}
 
-  tabs[0].click();
-})();
+	function responseIntegration(credentials, seller, importType, pageSize, discount, asProduct, pagination) {
+		if(typeof pagination ==='object' && pagination!== null ){
+			let args = credentials
+			args.page = 1;
+			args.pageSize = pageSize;
+			args.seller = seller;
+      args.discount = discount;
+      args.asProduct = asProduct;
+			let report = document.querySelector('#report');
+			if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+	
+			if(pagination){
+				let loadingBlock = document.querySelector('#loading-block');
+				if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+			}
 
-setSellerInfo();
+			switch (importType) {
+				case 'Product':
+					io.socket.post('/import-products', args, (response)=>{
+					});
+					break;
+				case 'ProductImage':
+					io.socket.post('/import-images', args, (response)=>{
+					});
+					break;
+				case 'Variations':
+					io.socket.post('/import-variations', args, (response)=>{
+					});
+					break;
+				default:
+					break;
+			}
+		}
+	}
 
+	function addDivReport() {
+		document.querySelector('#divreport').innerHTML = '';
+		let html = `
+			<div id="report" class="container is-fluid is-hidden"> 
+				<br>
+				<h6 class="title is-6">Espera un momento....</h6>
+				<hr>
+				<div id="loading-block" class="notification is-hidden">
+					<i class="fas fa-sync fa-spin"></i>
+					Estamos sincronizando el catalogo...
+					<progress class="progress is-small is-primary" max="100">15%</progress>
+				</div>
+				<div id="success-block" class="notification is-primary is-hidden">
+					Se han procesado un total <span id="items">0</span> de registros.
+				</div>
+				<div id="error-block" class="notification is-danger is-hidden">
+					<p>Hemos identificado <span id="errors">0</span> error(es).</p>
+					<br>
+					<div class="container is-fluid">
+						<ol id="error-list">
+						</ol>
+					</div>
+				</div>
+			</div>`;
+		document.querySelector('#divreport').innerHTML = html;
+		document.querySelector('#items').innerHTML = 0;
+		document.querySelector('#errors').innerHTML = 0;
+		document.querySelector('#error-list').innerHTML = '';
+	}
 
-});
+	const fileInput = document.querySelector('#file-loader input[type=file]');
+	fileInput.onchange = () => {
+		if (fileInput.files.length > 0) {
+			const fileName = document.querySelector('#file-loader .file-name');
+			fileName.textContent = fileInput.files[0].name;
+		}
+	};
 
-  </script>
+	live('select[name="importType"]','change', e=>{
+    let field = document.querySelector('#fieldDiscount');
+    let variationAsProduct = document.querySelector('#fieldVariationAsProduct');
+		let value =  e.target.value;
+    value === 'Variations' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
+    value === 'Variations' ? removeClass(variationAsProduct, 'is-hidden') : addClass(variationAsProduct, 'is-hidden');
+	});
+
+	live('#process','click',e=>{
+		let box = document.querySelector('.box').parentNode;
+		const entity = document.querySelector('select[name="entity"]').value;
+		const file = document.querySelector('input[name="file"]').value;
+		const seller = '<%- seller %>';
+		addClass(box,'is-hidden');
+		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+    document.querySelector('#divreport').innerHTML = '';
+  });
+
+	live('#process-from-provider','click',e=>{
+		e.preventDefault();
+		let box = document.querySelector('.box').parentNode;
+		const importType = document.querySelector('select[name="importType"]').value;
+    const discount = document.querySelector('input[name="discount"]').checked;
+    const asProduct = document.querySelector('input[name="asProduct"]').checked;
+		const channel = document.querySelector('input[name="channel"]').value;
+		const apiUrl = document.querySelector('input[name="apiUrl"]').value;
+		const pk = document.querySelector('input[name="pk"]').value;
+		const sk = document.querySelector('input[name="sk"]').value;
+		const version = document.querySelector('input[name="version"]').value;
+		const seller = '<%- seller %>';
+		addClass(box,'is-hidden');
+		addDivReport();
+		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+		io.socket.post('/import',{importType, discount, asProduct, channel, apiUrl, pk, sk, version, seller}, (resData, jwRes) =>{
+			if(jwRes.statusCode==200){
+				removeClass(box,'is-hidden');
+				document.querySelector('.loading').innerHTML='';
+				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asProduct, resData.pagination)
+			}
+		});
+	});
+
+	live('select[name="entity"]','change',e=>{
+		let elm = document.querySelector('#file');
+		if(e.target.value==='ProductImage'){
+			elm.setAttribute('accept','image/*');
+			elm.setAttribute('multiple','multiple');
+			document.querySelector('span .file-label').innerHTML='Imagenes a Procesar'
+			document.querySelector('.file-name').innerHTML='Cargar Varias Imagenes'
+		}else{
+			elm.setAttribute('accept','.csv');
+			elm.removeAttribute('multiple');
+			document.querySelector('span .file-label').innerHTML='Archivo .CSV'
+			document.querySelector('.file-name').innerHTML='Cargar Archivo .csv a procesar'
+		}
+	})
+
+	document.addEventListener("DOMContentLoaded", function(event) {
+    let tabsWithContent = (function () {
+  		let tabs = document.querySelectorAll('.tabs li');
+  		let tabsContent = document.querySelectorAll('.tab-content');
+
+			let deactvateAllTabs = function () {
+				tabs.forEach(function (tab) {
+					tab.classList.remove('is-active');
+				});
+			};
+
+			let hideTabsContent = function () {
+				tabsContent.forEach(function (tabContent) {
+					tabContent.classList.remove('is-active');
+				});
+			};
+
+			let activateTabsContent = function (tab) {
+				tabsContent[getIndex(tab)].classList.add('is-active');
+			};
+
+			let getIndex = function (el) {
+				return [...el.parentElement.children].indexOf(el);
+			};
+
+			tabs.forEach(function (tab) {
+				tab.addEventListener('click', function () {
+					deactvateAllTabs();
+					hideTabsContent();
+					tab.classList.add('is-active');
+					activateTabsContent(tab);
+				});
+			})
+			tabs[0].click();
+		})();
+	});
+</script>

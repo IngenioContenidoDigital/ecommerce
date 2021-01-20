@@ -1,4 +1,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
+
 <div class="container">
   <% if (error != undefined || error != null) { %>
     <div class="notification is-danger is-light" id="error">
@@ -906,21 +908,31 @@
                     </span>
                     </td>
                     <td class="align-middle">
-                    <a href="/sellers/edit/<%= seller.id %>" class="button is-small">
+                      <a href="/sellers/edit/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Configurar Seller">
+                          <span class="icon">
+                          <i class="bx bxs-cog"></i>
+                          </span>
+                      </a>
+                      <a href="/products/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Ver Productos">
                         <span class="icon">
-                        <i class="bx bxs-edit"></i>
+                          <i class='bx bxs-spreadsheet'></i>
                         </span>
-                    </a>
-                    <a href="/products/<%= seller.id %>" class="button is-small">
-                      <span class="icon">
-                        <i class='bx bx-scan'></i>
-                      </span>
-                    </a>
-                    <a id="productsdownload" sellerid="<%= seller.id %>" sellername="<%= seller.name %>" href="#" class="button is-small">
-                      <span class="icon">
-                        <i class='bx bxs-spreadsheet'></i>
-                      </span>
-                    </a>
+                      </a>
+                      <a id="productsdownload" sellerid="<%= seller.id %>" sellername="<%= seller.name %>" href="#" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Descargar Inventario">
+                        <span class="icon">
+                          <i class='bx bxs-file-export'></i>
+                        </span>
+                      </a>
+                      <a href="/multiple/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Procesar productos">
+                        <span class="icon">
+                          <i class='bx bx-cloud-upload'></i>
+                        </span>
+                      </a>
+                      <a href="/import/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Importar productos">
+                        <span class="icon">
+                          <i class='bx bx-import'></i>
+                        </span>
+                      </a>  
                     </td>
                 </tr>
               <% }); %>

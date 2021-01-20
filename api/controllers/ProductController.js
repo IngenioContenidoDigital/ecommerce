@@ -623,20 +623,10 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-
-    let integrations = [];
-    let sellers = [];
-    let seller = req.session.user.seller;
-
-    if (seller) {
-      integrations = await Integrations.find({ seller: seller });
-    } else {
-      integrations = await Integrations.find({});
-      sellers = await Seller.find({});
-    }
-
+    let seller = req.param('seller') ? req.param('seller') : req.session.user.seller;
+    let  integrations = await Integrations.find({ seller: seller });
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, seller: seller, pagination: null });
+    return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, resultados: null, rights: rights.name, seller, integrations, pagination: null });
   },
   importexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -644,40 +634,28 @@ module.exports = {
       throw 'forbidden';
     }
     let axios = require('axios');
-    let seller = null;
-    let integrations = [];
-    let sellers = [];
+    let seller = req.body.seller ? req.body.seller : req.session.user.seller;
+    let integrations = await Integrations.find({ seller: seller });
     let importType = req.body.importType;
-
-    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
-      seller = req.session.user.seller;
-      integrations = await Integrations.find({ seller: seller });
-    } else {
-      seller = req.body.seller;
-      integrations = await Integrations.find();
-      sellers = await Seller.find();
-    }
-
     let result = [];
     let errors = [];
     let imageErrors = [];
     let imageItems = [];
     let type = req.body.entity ? req.body.entity : null;
+    let discount = req.body.discount;
+    let asProduct = req.body.asProduct;
 
     if (req.body.channel) {
       let page = 1;
-      let pageSize = 
-        req.body.channel === constants.WOOCOMMERCE_CHANNEL ? constants.WOOCOMMERCE_PAGESIZE : 
-        req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE : 
+      let pageSize =
+        req.body.channel === constants.WOOCOMMERCE_CHANNEL ? constants.WOOCOMMERCE_PAGESIZE :
+        req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE :
         req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE :
         req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE : 0;
       let next;
 
-      
-      switch (req.body.importType) {
+      switch (importType) {
         case constants.PRODUCT_TYPE:
-          req.setTimeout(constants.TIMEOUT_PRODUCT_TASK);
-
           let pagination = await sails.helpers.commerceImporter(
             req.body.channel,
             req.body.pk,
@@ -687,43 +665,38 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: [], integrations: integrations, sellers: sellers, rights: rights.name, pagination, pageSize, discount: false, asProduct: false, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, asProduct, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.PRODUCT_VARIATION:
-            let paginationVariation = await sails.helpers.commerceImporter(
-              req.body.channel,
-              req.body.pk,
-              req.body.sk,
-              req.body.apiUrl,
-              req.body.version,
-              'PAGINATION',
-              { page, pageSize, next: next || null }
-            ).catch((e) => console.log(e));
-            let discount = req.body.discount && req.body.discount == 'on' ? true : false
-            let asProduct = req.body.asProduct && req.body.asProduct == 'on' ? true : false
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationVariation, pageSize, discount, asProduct, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          let paginationVariation = await sails.helpers.commerceImporter(
+            req.body.channel,
+            req.body.pk,
+            req.body.sk,
+            req.body.apiUrl,
+            req.body.version,
+            'PAGINATION',
+            { page, pageSize, next: next || null }
+          ).catch((e) => console.log(e));
+          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, asProduct, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.IMAGE_TYPE:
-            req.setTimeout(constants.TIMEOUT_IMAGE_TASK);
-            let paginationImage = await sails.helpers.commerceImporter(
-              req.body.channel,
-              req.body.pk,
-              req.body.sk,
-              req.body.apiUrl,
-              req.body.version,
-              'PAGINATION',
-              { page, pageSize, next: next || null }
-            ).catch((e) => console.log(e));
+          let paginationImage = await sails.helpers.commerceImporter(
+            req.body.channel,
+            req.body.pk,
+            req.body.sk,
+            req.body.apiUrl,
+            req.body.version,
+            'PAGINATION',
+            { page, pageSize, next: next || null }
+          ).catch((e) => console.log(e));
 
-            return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: null, integrations: integrations, sellers: sellers, rights: rights.name, pagination: paginationImage, pageSize, discount: false, asProduct : false, seller:seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, asProduct, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         default:
           break;
       }
-
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, sellers: sellers, seller:seller, rights: rights.name, type:type });
+      return res.send({error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, seller, rights: rights.name, type:type });
     }
-    req.setTimeout(600000);
     let route = sails.config.views.locals.imgurl;
     const csv = require('csvtojson');
     let json = [];
@@ -737,10 +710,9 @@ module.exports = {
         let buffer = Buffer.from(response.data, 'utf-8');
         json = await csv({ eol: '\n', delimiter: ';' }).fromString(buffer.toString());
       };
-
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, sellers: sellers, seller: seller, integrations: integrations, resultados: json, rights: rights.name, type: type });
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, seller: seller, integrations: integrations, resultados: json, rights: rights.name, type: type });
     } catch (err) {
-      return res.redirect('/import?error=' + err.message);
+      return res.redirect('/import/'+ seller +'?error=' + err.message);
     }
   },
   checkdata: async (req, res) => {
@@ -859,7 +831,7 @@ module.exports = {
         }
       }
       if (req.body.type === 'Product') {
-
+        let gen = null;
         prod.reference = req.body.product.reference.trim().toUpperCase();
         prod.name = req.body.product.name.trim().toLowerCase();
         prod.tax = (await Tax.findOne({ value: req.body.product.tax })).id;
@@ -869,7 +841,7 @@ module.exports = {
         let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.trim().toLowerCase() })
         if (brand) { prod.manufacturer = brand.id; } else { throw new Error('No logramos identificar la marca del producto.'); }
         let gender = await sails.helpers.tools.findGender(req.body.product.gender.trim().toLowerCase());
-        if (gender.length > 0) { prod.gender = gender[0]; } else { throw new Error('No logramos identificar el género para este producto.'); }
+        if (gender.length > 0) { prod.gender = gender[0]; gen = await Gender.findOne({id:gender[0]});} else { throw new Error('No logramos identificar el género para este producto.'); }
         let eval = req.body.product.active.toLowerCase().trim();
         prod.active = (eval === 'true' || eval === '1' || eval === 'verdadero' || eval === 'si' || eval === 'sí') ? true : false;;
         prod.width = parseFloat(req.body.product.width.replace(',', '.'));
@@ -882,7 +854,7 @@ module.exports = {
         prod.description = req.body.product.description;
         prod.descriptionShort = req.body.product.descriptionShort;
 
-        let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.gender);
+        let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.reference + ' ' + gen.name + ' ' + brand.name);
         if (categories.length > 0) {
           prod.categories = categories;
           let main = await Category.find({ id: categories }).sort('level DESC');
@@ -995,21 +967,16 @@ module.exports = {
       }
 
       prod.reference = req.body.product.reference.toUpperCase().trim();
-      prod.description = req.body.product.description.toLowerCase().trim();
-      prod.descriptionShort = req.body.product.descriptionShort.toLowerCase().trim();
-      let cats = await sails.helpers.tools.findCategory(req.body.product.name+' '+req.body.product.reference);
-      if(cats.length>0){
-          prod.categories = cats;
-          let main = await Category.find({id:cats}).sort('level DESC');
-          prod.mainCategory = main[0].id;
-      }
+      prod.description = req.body.product.description.trim();
+      prod.descriptionShort = req.body.product.descriptionShort.trim();
 
       if(req.body.product.manufacturer){
-          prod.manufacturer = (await Manufacturer.findOne({ name: req.body.product.manufacturer.toLowerCase() })).id;
+          let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.toLowerCase() });
+          prod.manufacturer = brand.id;
       }else{
           throw new Error('La Marca seleccionada para el producto ' + req.body.product.name + ' no existe');
       }
-
+      let gen = null;
       let color = await sails.helpers.tools.findColor(req.body.product.name+' '+req.body.product.reference);
       
       if(color && color.length > 0){
@@ -1025,6 +992,7 @@ module.exports = {
           } else {
               prod.gender = (await Gender.findOne({ name: 'unisex' })).id;
           }
+          gen = await Gender.findOne({id:prod.gender});
       }
       
       if (req.body.product.tax) {
@@ -1049,7 +1017,7 @@ module.exports = {
       prod.descriptionShort = req.body.product.descriptionShort;
       prod.seller = seller;
 
-      let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.gender);
+      let categories = await sails.helpers.tools.findCategory(prod.name + ' ' + prod.reference + ' ' + gen.name + ' ' + brand.name);
       if (categories.length > 0) {
         prod.categories = categories;
         let main = await Category.find({ id: categories }).sort('level DESC');
@@ -1145,10 +1113,10 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let seller = req.session.user.seller ? req.session.user.seller : '';
-    let data = await sails.helpers.checkChannels(rights.name, seller);
+    let seller = req.param('seller') ? req.param('seller') : req.session.user.seller;
+    let data = await sails.helpers.checkChannels(seller);
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/multiple', { layout: 'layouts/admin', error: error, sellers: data.sellers, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre });
+    return res.view('pages/configuration/multiple', { layout: 'layouts/admin', seller, error: error, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre });
   },
   multipleexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -1415,7 +1383,6 @@ module.exports = {
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
     let next;
-
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
     } else {
@@ -1643,7 +1610,7 @@ module.exports = {
     let asProduct = req.body.asProduct;
     let lastPage;
     let next;
-
+    
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
     } else {

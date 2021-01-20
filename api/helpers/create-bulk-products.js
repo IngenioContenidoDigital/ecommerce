@@ -20,7 +20,6 @@ module.exports = {
   fn: async function (inputs,exits) {
 
     let seller = inputs.seller;
-    let images = [];
     let sid = inputs.socketId;
 
     try {
