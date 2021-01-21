@@ -82,6 +82,7 @@ module.exports = {
       { header: 'reference2', key: 'reference', width: 20 },
       { header: 'ean13', key: 'ean13', width: 16 },
       { header: 'upc', key: 'upc', width: 13 },
+      { header: 'skuId', key: 'skuId', width: 10 },
       { header: 'variation', key: 'variation', width: 10 },
       { header: 'quantity', key: 'quantity', width: 10 },
     ];
@@ -89,7 +90,7 @@ module.exports = {
 
     for (const variation of productsVariations) {
       variation.name = variation.product.name;
-      variation.variation = variation.variation.col;
+      variation.variation = variation.variation.name;
       products.push(variation);
     }
 
