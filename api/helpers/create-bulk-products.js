@@ -27,10 +27,6 @@ module.exports = {
         let errors = [];
         let result = [];
 
-        if(product.reference == '2226'){
-            console.log(product);
-        }
-
         try {
           let pro = await sails.helpers.checkProducts(product, seller);
 

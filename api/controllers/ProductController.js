@@ -1480,6 +1480,77 @@ module.exports = {
 
           let products = await Product.find({ externalId : p.externalId, seller:seller}).populate('images');
           let product = products[0];
+
+          //determinamos si el producto es variable 
+          if(!p.simple){
+            if(product && product.externalId){
+              let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                req.body.channel,
+                req.body.pk,
+                req.body.sk,
+                req.body.apiUrl,
+                req.body.version,
+                'PRODUCT_VARIATION_ID',
+                product.externalId)
+  
+                if(product_variables && product_variables.data){
+  
+                  let colors = product_variables.data.filter((pr)=>{
+                    return pr.color != null;
+                  });
+    
+                  if(colors.length > 0){
+                    
+                    for (let index = 0; index < colors.length; index++) {
+                         const pcolor = colors[index];
+                         let textPredictor = product.name+' '+pcolor.reference;
+                         let color = await sails.helpers.tools.findColor(`${(textPredictor + ' ' + pcolor.color)}`);
+                         
+                         if(!color || color.length == 0){
+                           console.log(color);
+                         }
+
+                         let colorModel = await Color.findOne({ id : color[0]});
+                         let productColor =  await Product.findOne({ reference : `${pcolor.reference}-${colorModel.name}`});
+
+                         if(productColor && (!productColor.images || productColor.images.length === 0)){
+                          for (let im of pcolor.images) {
+                            try {
+                              let url = (im.src.split('?'))[0];
+                              let file = (im.file.split('?'))[0];
+                              let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
+                                throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
+                              });
+                              if (uploaded) {
+                                let cover = 1;
+                                let totalimg = await ProductImage.count({ product: productColor.id});
+                                totalimg += 1;
+                                if (totalimg > 1) { cover = 0; }
+                                
+                                let rs = await ProductImage.create({
+                                  file: file,
+                                  position: totalimg,
+                                  cover: cover,
+                                  product: productColor.id
+                                }).fetch();
+                
+                                if(typeof(rs) === 'object'){
+                                    result.push(rs);
+                                }
+                                sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
+                              }
+                            } catch (err) {
+                              errors.push({ name:'ERRDATA', message:err.message });
+                              sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
+                            }
+                          }
+                        }
+                      }
+                  }
+                }
+            }
+          }
+
           if(product && product.images.length === 0){
             for (let im of p.images) {
               try {
@@ -1630,8 +1701,14 @@ module.exports = {
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
 
+                    if(vr.reference == "EVUFM812-XL"){
+                      console.log(vr);
+                    }
+
                     if(asProduct && vr.color){
-                      await sails.helpers.createProductFromVariation(vr, pr);
+                      await sails.helpers.createProductFromVariation(vr, pr).catch((e)=>{
+                        throw new Error(`Ocurrio un error al crear un producto desde una variacion de color ${e.message}`);
+                      });
                     }else{
 
                       let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});

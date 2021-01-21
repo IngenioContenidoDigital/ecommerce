@@ -46,6 +46,8 @@ IMAGES : `
                 pagesCount
                 data{
                         externalId
+                        simple
+                        reference
                         images{
                             file
                             src
@@ -82,50 +84,17 @@ VARIATIONS : `
             }
         }
 `,
-PRODUCTID :
-    `query WoocommerceProductIdQuery($productId: String) {
-        WooCommerceProductId(productId: $productId) {
-            product{
-            name
-            externalId
-            description
-            reference
-            descriptionShort
-            active
-            price
-            tax{
-                name
-                rate
-            }
-            discount{
-                name
-                from
-                to
-                type
-                value
-            }
-            variations{
+PRODUCT_VARIATION_ID :
+`query WooCommerceProductVariationQuery($productId: String) {
+    WooCommerceProductVariation(productId: $productId) {
+            data{
                 reference
-                talla
-                price
-                quantity
-                discount{
-                    name
-                    from
-                    to
-                    type
-                    value
+                simple
+                color
+                images{
+                    file
+                    src
                 }
-            }
-            manufacturer
-            width
-            weight
-            height
-            length
-            images{
-                file
-                src
-            }
             }
         }
     }`

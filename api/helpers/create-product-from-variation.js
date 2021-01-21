@@ -19,6 +19,10 @@ module.exports = {
     fn: async function (inputs,exits) {
         let vr = inputs.variation;
         let pr = inputs.product;
+
+        if(vr.reference == "EVUFM812-XL"){
+          console.log(vr);
+        }
         
         try {
            
@@ -31,7 +35,7 @@ module.exports = {
         let color = await sails.helpers.tools.findColor(`${vr.color ? (textPredictor + ' ' + vr.color) : textPredictor}`);
         
         if(!color || color.length == 0){
-          console.log(vr);
+          throw new Error(`Ref: ${vr.reference} : ${pr.name} En predictor no pudo identificar este color`);
         }
 
         let colorModel = await Color.findOne({ id : color[0]});
