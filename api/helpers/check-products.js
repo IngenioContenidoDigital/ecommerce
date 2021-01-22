@@ -27,7 +27,7 @@ module.exports = {
                 }
 
                 pro.reference = inputs.product.reference.toUpperCase().trim();
-             pro.description = inputs.product.description.trim();
+                pro.description = inputs.product.description.trim();
                 pro.descriptionShort = inputs.product.descriptionShort.trim();
                 pro.color  = inputs.product.color || '';
                 let textPredictor = inputs.product.textLink ? inputs.product.textLink : inputs.product.name+' '+inputs.product.reference;
