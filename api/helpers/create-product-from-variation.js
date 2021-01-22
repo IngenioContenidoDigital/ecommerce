@@ -19,10 +19,6 @@ module.exports = {
     fn: async function (inputs,exits) {
         let vr = inputs.variation;
         let pr = inputs.product;
-
-        if(vr.reference == "44102T-BK/WT"){
-          console.log(vr);
-        }
         
         try {
            

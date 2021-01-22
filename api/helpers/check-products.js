@@ -27,16 +27,7 @@ module.exports = {
                 }
 
                 pro.reference = inputs.product.reference.toUpperCase().trim();
-
-                if(pro.reference == "73-7013"){
-                    console.log(pro);
-                }
-
-                if(pro.reference == "73-7013"){
-                    console.log(pro);
-                }
-
-                pro.description = inputs.product.description.trim();
+             pro.description = inputs.product.description.trim();
                 pro.descriptionShort = inputs.product.descriptionShort.trim();
                 pro.color  = inputs.product.color || '';
                 let textPredictor = inputs.product.textLink ? inputs.product.textLink : inputs.product.name+' '+inputs.product.reference;

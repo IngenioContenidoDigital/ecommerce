@@ -82,6 +82,7 @@ module.exports = {
       { header: 'reference2', key: 'reference', width: 20 },
       { header: 'ean13', key: 'ean13', width: 16 },
       { header: 'upc', key: 'upc', width: 13 },
+      { header: 'skuId', key: 'skuId', width: 10 },
       { header: 'variation', key: 'variation', width: 10 },
       { header: 'quantity', key: 'quantity', width: 10 },
     ];
@@ -89,7 +90,7 @@ module.exports = {
 
     for (const variation of productsVariations) {
       variation.name = variation.product.name;
-      variation.variation = variation.variation.col;
+      variation.variation = variation.variation.name;
       products.push(variation);
     }
 
@@ -1675,22 +1676,24 @@ module.exports = {
   
             if(pro){
               if (discount && p.discount && p.discount.length > 0) {
-                if (pro.discount.length > 0 && pro.discount[0].value == p.discount[0].value 
-                  && pro.discount[0].type == p.discount[0].type) {
-                  await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
-                    from: moment(new Date( p.discount[0].from)).valueOf(),
-                    to: moment(new Date(p.discount[0].to)).valueOf()
-                  });
-                } else {
-                  const discountresult = await CatalogDiscount.create({
-                    name: p.discount[0].name.trim().toLowerCase(), 
-                    from: moment(new Date(p.discount[0].from)).valueOf(),
-                    to: moment(new Date(p.discount[0].to)).valueOf(),
-                    type: p.discount[0].type,
-                    value: parseFloat(p.discount[0].value),
-                    seller: pro.seller
-                  }).fetch();
-                  await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
+                for (const disc of p.discount) {
+                  if (pro.discount.length > 0 && pro.discount[0].value == disc.value
+                    && pro.discount[0].type == disc.type) {
+                    await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+                      from: moment(new Date(disc.from)).valueOf(),
+                      to: moment(new Date(disc.to)).valueOf()
+                    });
+                  } else {
+                    const discountresult = await CatalogDiscount.create({
+                      name: disc.name.trim().toLowerCase(),
+                      from: moment(new Date(disc.from)).valueOf(),
+                      to: moment(new Date(disc.to)).valueOf(),
+                      type: disc.type,
+                      value: parseFloat(disc.value),
+                      seller: pro.seller
+                    }).fetch();
+                    await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
+                  }
                 }
               }
               try {
@@ -1735,6 +1738,7 @@ module.exports = {
                           supplierreference:pr.reference,
                           ean13: vr.ean13 ? vr.ean13.toString() : '',
                           upc: vr.upc ? vr.upc : 0,
+                          skuId: vr.skuId ? vr.skuId : '',
                           price: vr.price,
                           quantity: vr.quantity ? vr.quantity : 0,
                           seller:pr.seller

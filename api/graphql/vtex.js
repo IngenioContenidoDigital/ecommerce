@@ -69,6 +69,7 @@ module.exports = {
           price
           quantity
           ean13
+          skuId
         }
       }
     }
@@ -110,6 +111,7 @@ module.exports = {
             price
             quantity
             ean13
+            skuId
           }
         }
         productImages{
