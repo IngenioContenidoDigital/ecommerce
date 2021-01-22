@@ -68,10 +68,10 @@ module.exports = {
                   });
                 }
               }else{
-                let variation = await Variation.find({ name:'unica', gender:pr.gender,category:pr.mainCategory});
+                let variation = await Variation.find({ name:'único', gender:pr.gender,category:pr.mainCategory});
                 
                 if(!variation || variation.length == 0){
-                   variation = await Variation.create({name:'unica',gender:pr.gender,category:pr.mainCategory}).fetch();
+                   variation = await Variation.create({name:'único',gender:pr.gender,category:pr.mainCategory}).fetch();
                 }
 
                 let pvs = await ProductVariation.find({ product:pr.id, supplierreference:pr.reference}).populate('variation');

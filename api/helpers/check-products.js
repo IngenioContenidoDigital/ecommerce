@@ -27,6 +27,15 @@ module.exports = {
                 }
 
                 pro.reference = inputs.product.reference.toUpperCase().trim();
+
+                if(pro.reference == "73-7013"){
+                    console.log(pro);
+                }
+
+                if(pro.reference == "73-7013"){
+                    console.log(pro);
+                }
+
                 pro.description = inputs.product.description.trim();
                 pro.descriptionShort = inputs.product.descriptionShort.trim();
                 pro.color  = inputs.product.color || '';
@@ -37,6 +46,8 @@ module.exports = {
                     pro.categories = cats;
                     let main = await Category.find({id:cats}).sort('level DESC');
                     pro.mainCategory = main[0].id;
+                }else{
+                    throw new Error(`Ref: ${pro.reference} : ${inputs.product.manufacturer.toLowerCase()} no se pudo identificar la categoria`); 
                 }
 
                 if(inputs.product.manufacturer){

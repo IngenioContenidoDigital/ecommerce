@@ -20,7 +20,7 @@ module.exports = {
         let vr = inputs.variation;
         let pr = inputs.product;
 
-        if(vr.reference == "EVUFM812-XL"){
+        if(vr.reference == "44102T-BK/WT"){
           console.log(vr);
         }
         

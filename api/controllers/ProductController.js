@@ -1505,6 +1505,10 @@ module.exports = {
                          let textPredictor = product.name+' '+pcolor.reference;
                          let color = await sails.helpers.tools.findColor(`${(textPredictor + ' ' + pcolor.color)}`);
                          
+                         if(pcolor.reference == "44102T-BK/WT"){
+                             console.log(p);
+                          }
+
                          if(!color || color.length == 0){
                            console.log(color);
                          }
@@ -1697,8 +1701,8 @@ module.exports = {
                 }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
-
-                    if(vr.reference == "EVUFM812-XL"){
+                    console.log(p.variations);
+                    if(vr.reference == "73-7013M"){
                       console.log(vr);
                     }
 
@@ -1714,6 +1718,10 @@ module.exports = {
                       
                       if(!variation || variation.length == 0){
                         variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
+                      }
+
+                      if(!variation || (variation.length == 0 )){
+                         console.log(pr)
                       }
 
                       let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
