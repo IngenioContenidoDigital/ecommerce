@@ -1506,13 +1506,13 @@ module.exports = {
                          let textPredictor = product.name+' '+pcolor.reference;
                          let color = await sails.helpers.tools.findColor(`${(textPredictor + ' ' + pcolor.color)}`);
                          
-                         if(pcolor.reference == "44102T-BK/WT"){
+                         /*if(pcolor.reference == "44102T-BK/WT"){
                              console.log(p);
-                          }
+                          }*/
 
-                         if(!color || color.length == 0){
+                         /*if(!color || color.length == 0){
                            console.log(color);
-                         }
+                         }*/
 
                          let colorModel = await Color.findOne({ id : color[0]});
                          let productColor =  await Product.findOne({ reference : `${pcolor.reference}-${colorModel.name}`});
@@ -1704,10 +1704,10 @@ module.exports = {
                 }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
-                    console.log(p.variations);
-                    if(vr.reference == "73-7013M"){
-                      console.log(vr);
-                    }
+                    //console.log(p.variations);
+                    //if(vr.reference == "73-7013M"){
+                    //  console.log(vr);
+                    //}
 
                     if(asProduct && vr.color){
                       await sails.helpers.createProductFromVariation(vr, pr).catch((e)=>{
@@ -1723,9 +1723,9 @@ module.exports = {
                         variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
                       }
 
-                      if(!variation || (variation.length == 0 )){
+                      /*if(!variation || (variation.length == 0 )){
                          console.log(pr)
-                      }
+                      }*/
 
                       let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
                       let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
