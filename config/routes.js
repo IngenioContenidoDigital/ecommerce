@@ -198,6 +198,10 @@ module.exports.routes = {
   'GET /genderindex/:action':{controller:'ProductController',action:'genderindex'},
   'GET /categoryindex/:action':{controller:'CategoryController',action:'categoryindex'},
   'GET /categoryscheme':{controller:'CategoryController',action:'categoryscheme'},
+
+  'GET /channels/:action?/:id?' : {controller:'ChannelController',action:'showchannels'},
+  'POST /channel/create' : {controller:'ChannelController',action:'createchannel'},
+  'POST /channel/edit/:id' : {controller:'ChannelController',action:'editchannel'}
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************
