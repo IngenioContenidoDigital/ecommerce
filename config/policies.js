@@ -49,6 +49,7 @@ module.exports.policies = {
   },
   SupplierController:{'*': 'isLoggedIn'},
   TaxController:{'*': 'isLoggedIn'},
+  CurrencyController:{'*': 'isLoggedIn'},
   UserController:{
     'registerform':true,
     'createuser':true,

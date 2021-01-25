@@ -79,6 +79,7 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcountries')){%><li><a href="/countries">Países</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showregions')){%><li><a href="/regions">Regiones</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showtaxes')){%><li><a href="/taxes">Impuestos</a></li><%}%>
+      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showCurrency')){%><li><a href="/currencies">Moneda</a></li><%}%>
     </ul>
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('users') || req.session.user.rights.permissions.includes('profiles') || req.session.user.rights.permissions.includes('permissions') || req.session.user.rights.permissions.includes('updateindex')){%>
