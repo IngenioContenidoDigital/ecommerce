@@ -270,28 +270,4 @@ module.exports.bootstrap = async function() {
       {name:'shipment', group:'transporte', description:'Visualizar Guías de transporte'},
     ]);
   }
-
-  let currencies = await Currency.find({});
-  let sellers =await Seller.find({});
-
-  if(currencies.length > 0){
-    let default_currency = currencies.filter((c)=>c.isocode == "COP")[0];
-    for (let index = 0; index < sellers.length; index++) {
-        const seller = sellers[index];
-
-        if(!seller.currency){
-          await Seller.update({ id : seller.id}).set({currency : default_currency.id});
-        }
-    }
-  }else{
-    let c = await Currency.create({name : 'Peso Colombiano', isocode:'COP'}).fetch();
-
-    for (let index = 0; index < sellers.length; index++) {
-      const seller = sellers[index];
-
-      if(!seller.currency){
-          await Seller.update({ id : seller.id}).set({currency : c.id});
-      }
-  }
-  }
 };
