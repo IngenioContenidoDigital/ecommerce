@@ -6,9 +6,7 @@
  */
 
 module.exports = {
-
   attributes: {
-
     name: {type:'string'},
     reference:{type:'string'},
     description:{type:'string'},
@@ -28,18 +26,6 @@ module.exports = {
     externalId:{type:'string'},
     stock:{type:'boolean',defaultsTo:false},
     seller: {model:'seller'},
-    dafitiprice:{type:'number', defaultsTo:0},
-    dafitistatus:{type:'boolean', defaultsTo:false},
-    dafitiqc:{type:'boolean', defaultsTo:false},
-    dafiti:{type:'boolean', defaultsTo:false},
-    linioprice:{type:'number', defaultsTo:0},
-    liniostatus:{type:'boolean', defaultsTo:false},
-    linio:{type:'boolean', defaultsTo:false},
-    linioqc:{type:'boolean', defaultsTo:false},
-    mlprice:{type:'number', defaultsTo:0},
-    mlstatus:{type:'boolean', defaultsTo:false},
-    ml:{type:'boolean', defaultsTo:false},
-    mlid:{type:'string',defaultsTo:''},
     categories:{
       collection:'category',
       via:'products'
@@ -60,7 +46,6 @@ module.exports = {
       collection:'catalogdiscount',
       via:'products'
     }
-
   },
 
 };
