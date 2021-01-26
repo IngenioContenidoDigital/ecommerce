@@ -21,6 +21,9 @@ module.exports = {
     salesCommission:{type:'number', defaultsTo:0},
     skuPrice:{type:'number', defaultsTo:0},
     integrationErp:{type:'boolean', defaultsTo:false},
+    currency:{
+      model:'currency'
+    },
     mainAddress:{
       model:'address'
     },

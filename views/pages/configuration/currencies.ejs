@@ -1,0 +1,99 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+      <div class="notification is-danger is-light" id="error">
+          <%= error %>
+      </div>
+    <% } %>
+    <% if(action=='create' || action=='edit'){ %> 
+          <h4 class="title is-4">Crear Moneda</h4>
+          <hr>
+          <% if(action=='create') { %>
+          <form action="/currencies/create" method="POST">
+          <% } %>
+          <% if(action=='edit') { %>
+          <form action="/currencies/edit/<%= currency.id %>" method="POST">
+          <% } %>
+          <div class="columns">
+          <div class="column"></div>
+          <div class="column">
+              <div class="box">
+                  <div class="field">
+                      <label class="label">Nombre</label>
+                      <div class="control">
+                      <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de la Moneda" <% if(action=='edit'){ %>value="<%= currency.name %>"<% }%>/>
+                      </div>
+                  </div>               
+                  <div class="columns" style="display: flex;align-items: center;justify-content: center;">
+                      <div class="column">
+                          <div class="field">
+                              <label class="label">Código ISO</label>
+                              <div class="field">
+                                  <p class="control has-icons-right">
+                                    <input class="input" type="text" name="isocode" id="value" required="true" min="0" maxlength="3" placeholder="Código ISO" <% if(action=='edit'){ %>value="<%= currency.isocode %>"<% } %>/>
+                                  </p>
+                              </div>                      
+                          </div>
+                      </div>
+                      <div class="column">
+                          <br>
+                          <div class="control buttons is-right">
+                              <% if(action=='edit'){ %> 
+                                  <button type="submit" style="margin:0;" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Moneda</button>
+                              <% }else if (action=='create'){ %>
+                                  <button type="submit" style="margin:0;" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Moneda</button>
+                              <% } %>
+                          </div>
+                      </div>                                    
+                  </div>
+              </div>
+          </div>
+          <div class="column"></div>
+          </form>
+      
+    <% } else { %>
+      <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+          <a href="/currencies/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+      </p>
+      <div class="table-container">
+          <table class="table is-hoverable" id="currency-table">
+              <thead>
+              <tr>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Codigo ISO</th>
+                  <th scope="col">Opciones</th>
+              </tr>
+              </thead>
+              <tbody>
+                  <% currencies.forEach(function(currency){ %>                
+                      <tr>
+                          <td class="align-middle is-capitalized"><%= currency.name %></td>
+                          <td class="align-middle"><%= currency.isocode %></td>                      
+                          <td class="align-middle">                        
+                              <a href="/currencies/edit/<%= currency.id %>" class="button is-small">
+                              <span class="icon">
+                                  <i class="bx bxs-edit"></i>
+                              </span>
+                              </a>
+                          </td>
+                      </tr>
+                  <% }); %>
+              </tbody>
+          </table>
+      </div>
+      <script>
+          document.addEventListener('DOMContentLoaded', function(){
+          let table = new simpleDatatables.DataTable('#currency-table',{
+              searchable:true,
+              sortable:true,
+              paging:true,
+              labels: {
+              placeholder: "Buscar...",
+              perPage: "{select} registros por página",
+              noRows: "No se encontraron datos",
+              info: "Mostrando {start} a {end} de {rows} registros",
+              }
+          });  
+          });
+      </script>
+    <% } %>
+  </div>

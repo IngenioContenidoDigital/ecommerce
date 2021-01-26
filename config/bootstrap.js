@@ -270,5 +270,4 @@ module.exports.bootstrap = async function() {
       {name:'shipment', group:'transporte', description:'Visualizar Guías de transporte'},
     ]);
   }
-
 };

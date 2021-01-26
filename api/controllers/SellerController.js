@@ -32,7 +32,7 @@ module.exports = {
     if(id){
       let currentDay =  moment().format('DD');
       let availableOptions = false;
-      seller = await Seller.findOne({id:id}).populate('mainAddress');
+      seller = await Seller.findOne({id:id}).populate('mainAddress').populate('currency');
       if(seller.mainAddress!==undefined && seller.mainAddress!==null){
         seller.mainAddress = await Address.findOne({id:seller.mainAddress.id})
         .populate('country')
@@ -56,7 +56,8 @@ module.exports = {
       }
     }
     let countries = await Country.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,months,action:action,seller:seller,error:error,success:success,countries:countries, integrations, channels, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
+    let currencies = await Currency.find();
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,months,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -89,6 +90,7 @@ module.exports = {
         phone:req.body.phone,
         domain:req.body.url ? req.body.url : '',
         active:isActive,
+        currency : req.body.currency,
         salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp
@@ -159,6 +161,7 @@ module.exports = {
         logo: filename[0].filename,
         mainAddress:address.id,
         active:isActive,
+        currency : req.body.currency,
         salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp});
@@ -176,6 +179,7 @@ module.exports = {
           domain:req.body.url,
           mainAddress:address.id,
           active:isActive,
+          currency : req.body.currency,
           salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           integrationErp});

@@ -111,6 +111,9 @@ module.exports.routes = {
   'POST /import-images' : {controller:'ProductController',action:'importImages'},
   'POST /import-variations' : {controller:'ProductController',action:'importVariations'},
   'GET /taxes/:action?/:id?' : {controller:'TaxController',action:'showtaxes'},
+  'GET /currencies/:action?/:id?' : {controller:'CurrencyController',action:'showCurrencies'},
+  'POST /currencies/create' : {controller:'CurrencyController',action:'createcurrency'},
+  'POST /currencies/edit/:id' : {controller:'CurrencyController',action:'editcurrency'},
   'POST /tax/create' : {controller:'TaxController',action:'createtax'},
   'POST /tax/edit/:id' : {controller:'TaxController',action:'edittax'},
 
