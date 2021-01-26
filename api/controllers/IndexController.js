@@ -62,7 +62,8 @@ module.exports = {
     let questions = 0;
     let questionsSeller = 0;
     let seller = req.session.user.seller || '';
-    let integration = await Integrations.findOne({seller: seller, channel: 'mercadolibre'});
+    let channel = await Channel.findOne({name: 'mercadolibre'});
+    let integration = await Integrations.findOne({seller: seller, channel: channel});
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
     } else {

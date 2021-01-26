@@ -8,14 +8,14 @@
 module.exports = {
 
   attributes: {
-
-    channel:{
-      type:'string',
-      required:true
-    },
+    channel:{model:'channel'},
     url:{
       type:'string',
       required:false,
+    },
+    name:{
+      type:'string',
+      required : true
     },
     user:{
       type:'string',

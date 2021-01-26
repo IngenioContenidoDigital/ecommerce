@@ -19,6 +19,7 @@ module.exports = {
     let success= req.param('success') ? req.param('success') : null;
     let seller = null;
     let integrations = null;
+    let channels = null;
     let commissiondiscount = null;
     let months = [];
     let action = req.param('action') ? req.param('action') : null;
@@ -38,9 +39,10 @@ module.exports = {
         .populate('region')
         .populate('city');
       }
+      channels = await Channel.find({});
       integrations = await Integrations.find({
         where:{seller:id},
-      });
+      }).populate('channel');
       commissiondiscount = await CommissionDiscount.find({
         where:{seller:id},
       });
@@ -54,7 +56,7 @@ module.exports = {
       }
     }
     let countries = await Country.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,months,action:action,seller:seller,error:error,success:success,countries:countries, integrations, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,months,action:action,seller:seller,error:error,success:success,countries:countries, integrations, channels, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -281,8 +283,13 @@ module.exports = {
   setintegration:async (req,res)=>{
     let seller = req.param('seller');
     let channel = req.param('channel');
-    Integrations.findOrCreate({seller:seller,channel:channel},{
+    const nameChannel = req.param('namechannel');
+    const integration = req.body.integration;
+    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.'
+
+    Integrations.findOrCreate({id: integration},{
       channel:channel,
+      name: req.body.name,
       url:req.body.url ? req.body.url : '',
       user:req.body.user,
       key:req.body.key,
@@ -294,6 +301,7 @@ module.exports = {
       if(!created){
         await Integrations.updateOne({id:record.id}).set({
           channel:channel,
+          name: req.body.name,
           url:req.body.url ? req.body.url : '',
           user:req.body.user,
           key:req.body.key,
@@ -303,10 +311,10 @@ module.exports = {
         });
       }
 
-      if(record.channel=='mercadolibre'){
+      if(nameChannel =='mercadolibre'){
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+seller+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
-        return res.redirect('/sellers/edit/'+seller+'?success=Se Agrego Correctamente la Integración.');
+        return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
     });
   },

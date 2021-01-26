@@ -233,9 +233,9 @@
             <% if(integrations){%>
               <% integrations.forEach(integration => { %>
                 <tr>
-                  <td><img src="/images/<%= integration.channel %>.png" width="100px"/></td>
+                  <td><img src="<%=imgurl%>/images/channels/<%= integration.channel.logo %>" width="100px"/></td>
                   <td>
-                    <%= integration.channel %>
+                    <%= integration.name %>
                   </td>
                   <td>
                     <a href="#" class="has-text-info" id="edit-integration"><i class="is-size-4 bx bxs-edit" integrationId="<%= integration.id %>"></i></a>
@@ -275,16 +275,15 @@
             const formIntegration = document.querySelector('#form-integration');
             const integrations = <%- JSON.stringify(integrations) %>;
             const integration = integrations.find(i => i.id === id);
-            const chann = integration.channel;
-            cleanFormEdit(chann);
-            let channel = document.querySelector('input[name="channel"]');
-            channel.value = chann;
+            const chann = integration.channel.name;
+            cleanFormEdit(integration.channel);
+            const idChannel = integration.channel.id
             if (chann === 'shopify' || chann === 'vtex' || chann === 'woocommerce' || chann === 'prestashop') {
-              createFormCms(chann, integration, true);
+              createFormCms(idChannel, chann, integration, true);
               removeClass(formIntegration, 'is-hidden');
               validateFormCms(chann);
             } else if(chann === 'linio' || chann === 'dafiti' || chann === 'mercadolibre'){
-              createFormMarketplace(chann, integration, true);
+              createFormMarketplace(idChannel, chann, integration, true);
               removeClass(formIntegration, 'is-hidden');
             }
             let modal = document.querySelector('#modal-integration');
@@ -304,14 +303,13 @@
             const images = document.querySelectorAll('.menu-title');
             const formIntegration = document.querySelector('#form-integration');
             const chann = e.target.id;
-            channel.value = chann;
-            
+            const idChannel = e.target.getAttribute('idChannel');
             if (chann === 'shopify' || chann === 'vtex' || chann === 'woocommerce' || chann === 'prestashop') {
-              createFormCms(chann, null, false);
+              createFormCms(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
               validateFormCms(chann);
             } else if(chann === 'linio' || chann === 'dafiti' || chann === 'mercadolibre'){
-              createFormMarketplace(chann, null, false);
+              createFormMarketplace(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
             }
             images.forEach(img =>{
@@ -341,14 +339,24 @@
             }
           }
           
-          function createFormCms(channel, integration, edit) {
+          function createFormCms(channel, nameChannel, integration, edit) {
             let div = document.createElement('div');
             let formIntegration = document.querySelector('#form-integration');
             formIntegration.innerHTML = '';
             <%if(action==='edit'){%>
               let form = 
-              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}">
+              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
                 <div class="container">
+                  <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
+                  <div class="field">
+                    <label class="label">Nombre</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                      <span class="icon is-small is-left">
+                        <i class='bx bx-collapse' ></i>
+                      </span>
+                    </div>
+                  </div>
                   <div class="field">
                     <label class="label">Consumer key</label>
                     <div class="control has-icons-left">
@@ -396,14 +404,24 @@
             <%}%>
           }
 
-          function createFormMarketplace(channel, integration, edit) {
+          function createFormMarketplace(channel, nameChannel, integration, edit) {
             let div = document.createElement('div');
             let formIntegration = document.querySelector('#form-integration');
             formIntegration.innerHTML = '';
             <%if(action==='edit'){%>
-              let form = channel === 'mercadolibre' ? 
-              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}">
+              let form = nameChannel === 'mercadolibre' ? 
+              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
                 <div class="container">
+                  <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
+                  <div class="field">
+                    <label class="label">Nombre</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                      <span class="icon is-small is-left">
+                        <i class='bx bx-collapse' ></i>
+                      </span>
+                    </div>
+                  </div>
                   <div class="field">
                     <label class="label">App Id</label>
                     <div class="control has-icons-left">
@@ -428,8 +446,18 @@
                   </div>
                 </div>
               </form>`:
-              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}">
+              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
                 <div class="container">
+                  <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
+                  <div class="field">
+                    <label class="label">Nombre</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                      <span class="icon is-small is-left">
+                        <i class='bx bx-collapse' ></i>
+                      </span>
+                    </div>
+                  </div>
                   <div class="field">
                     <label class="label">Usuario</label>
                     <div class="control has-icons-left">
@@ -448,15 +476,6 @@
                       </span>
                     </div>
                   </div>
-                  <div class="field">
-                    <label class="label">URL Petición</label>
-                    <div class="control has-icons-left">
-                      <input class="input" type="text" name="url" placeholder="Url de Petición" required value="${edit ? integration.url : ''}"/>
-                      <span class="icon is-small is-left">
-                        <i class='bx bx-world'></i>
-                      </span>
-                    </div>
-                  </div>
                   <br>
                   <div class="control is-right">
                     <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
@@ -469,38 +488,26 @@
           }
           
           function createColumnImages(edit, channel) {
+            let channels = <%- JSON.stringify(channels) %>;
             let div = document.createElement('div');
             let columnsIntegration = document.querySelector('#img-integrations');
             columnsIntegration.innerHTML = '';
-            
-            let content = edit ? 
-              `<div class="column" id="${channel}column">
-                <img class="image-integration img-multiple" src="/images/${channel}.png" id="${channel}"/>
-              </div>
-              <input class="is-hidden" name="channel" value=""/>` 
-              :
-              `<div class="column" id="woocommercecolumn">
-                <img class="menu-title image-integration" src="/images/wooCommerce.png" id="woocommerce"/>
-              </div>
-              <div class="column" id="shopifycolumn">
-                <img class="menu-title image-integration"  src="/images/shopify.png" id="shopify"/>
-              </div>
-              <div class="column" id="vtexcolumn">
-                <img class="menu-title image-integration"  src="/images/vtex.png" id="vtex"/>
-              </div>
-              <div class="column" id="prestashopcolumn">
-                <img class="menu-title image-integration"  src="/images/prestashop.png" id="prestashop"/>
-              </div>
-              <div class="column" id="liniocolumn">
-                <img class="menu-title image-integration"  src="/images/linio.png" id="linio"/>
-              </div>
-              <div class="column" id="dafiticolumn">
-                <img class="menu-title image-integration"  src="/images/dafiti.png" id="dafiti"/>
-              </div>
-              <div class="column" id="mercadolibrecolumn">
-                <img class="menu-title image-integration"  src="/images/mercadolibre.png" id="mercadolibre"/>
-              </div>
-              <input class="is-hidden" name="channel" value=""/>`
+            let content = '';
+          
+            if (edit) {
+              content =  
+                `<div class="column">
+                  <img class="image-integration img-multiple" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}"/>
+                </div>
+                <input class="is-hidden" name="channel" value=""/>`;
+            } else {
+              content = `<input class="is-hidden" name="channel" value=""/>`;
+              for (const channel of channels) {
+                content += `<div class="column">
+                <img class="menu-title image-integration" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" idChannel="${channel.id}"/>
+              </div>`
+              }
+            }
             addClass(div, 'columns');
             addClass(div, 'is-gapless');
             div.innerHTML = content;
@@ -513,34 +520,6 @@
             channel.value = '';
             formIntegration.innerHTML = '';
             cleanBorderImage();
-            const integrations = <%- JSON.stringify(integrations) %>;
-            for (const i of integrations) {
-              switch (i.channel) {
-                case 'linio':
-                  document.querySelector('#liniocolumn').remove();
-                  break;
-                case 'mercadolibre':
-                  document.querySelector('#mercadolibrecolumn').remove();
-                  break;
-                case 'dafiti':
-                  document.querySelector('#dafiticolumn').remove();
-                  break;
-                case 'vtex':
-                  document.querySelector('#vtexcolumn').remove();
-                  break;
-                case 'shopify':
-                  document.querySelector('#shopifycolumn').remove();
-                  break;
-                case 'prestashop':
-                  document.querySelector('#prestashopcolumn').remove();
-                  break;
-                case 'woocommerce':
-                  document.querySelector('#woocommercecolumn').remove();
-                  break;
-                default:
-                  break;
-              }
-            }
             addClass(formIntegration, 'is-hidden');
           }
           
