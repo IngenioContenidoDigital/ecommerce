@@ -57,7 +57,8 @@ module.exports = {
     } else {
       pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
     }
-    let cats = await sails.helpers.tools.findCategory(textPredictor + ' ' + gen.name + ' ' + inputs.product.manufacturer);
+    gen = gen ? gen.name : '';
+    let cats = await sails.helpers.tools.findCategory(textPredictor + ' ' + gen + ' ' + inputs.product.manufacturer);
     if(cats.length>0){
       pro.categories = cats;
       let main = await Category.find({id:cats}).sort('level DESC');

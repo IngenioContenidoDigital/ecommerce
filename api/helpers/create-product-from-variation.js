@@ -50,8 +50,8 @@ module.exports = {
       } else {
         variacionAsProduct.gender = (await Gender.findOne({ name: 'unisex' })).id;
       }
-
-      let cats = await sails.helpers.tools.findCategory(textPredictor + ' ' + gen.name);
+      gen = gen ? gen.name : '';
+      let cats = await sails.helpers.tools.findCategory(textPredictor + ' ' + gen);
       if(cats.length>0){
         variacionAsProduct.categories = cats;
         let main = await Category.find({id:cats}).sort('level DESC');
