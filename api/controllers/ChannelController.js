@@ -19,7 +19,8 @@ module.exports = {
     if(id){
       channel = await Channel.findOne({id:id});
     }
-    return res.view('pages/localization/channels',{layout:'layouts/admin',channels,action,error,channel});
+    let currencies = await Currency.find();
+    return res.view('pages/localization/channels',{layout:'layouts/admin',channels,action,error,channel,currencies});
   },
   createchannel: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -31,7 +32,8 @@ module.exports = {
     try{
       let channelData = {
         name: req.body.name.trim().toLowerCase(),
-        endpoint: req.body.endpoint.trim()
+        endpoint: req.body.endpoint.trim(),
+        currency: req.body.currency
       };
       filename = await sails.helpers.fileUpload(req, 'logo', 2000000,'images/channels');
       if(filename.length>0){channelData.logo = filename[0].filename;}
@@ -56,13 +58,15 @@ module.exports = {
       await Channel.updateOne({id: req.param('id')}).set({
         name: req.body.name.trim().toLowerCase(),
         endpoint: req.body.endpoint.trim(),
-        logo: filename[0].filename
+        logo: filename[0].filename,
+        currency: req.body.currency
       });
     }catch(err){
       if(err.code==='badRequest'){
         await Channel.updateOne({id: req.param('id')}).set({
           name: req.body.name.trim().toLowerCase(),
-          endpoint: req.body.endpoint.trim()
+          endpoint: req.body.endpoint.trim(),
+          currency: req.body.currency
         });
       } else {
         error = err;

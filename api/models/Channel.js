@@ -11,9 +11,8 @@ module.exports = {
     name:{type:'string'},
     logo:{type:'string'},
     endpoint:{type:'string'},
-    // currency:{
-    //   collection:'category',
-    //   via:'products'
-    // }
+    currency:{
+      model:'currency'
+    },
   },
 };

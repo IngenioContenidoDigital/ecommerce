@@ -19,15 +19,28 @@
           <% } %>
             <div class="box">
               <div class="field">
-                <label class="label">Nombre</label>
+                <label class="label is-size-7">Nombre</label>
                 <div class="control">
-                  <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre del Canal" <% if(action=='edit'){ %>value="<%= channel.name %>"<% }%>/>
+                  <input class="input is-capitalized is-size-7" type="text" name="name" required="true" placeholder="Nombre del Canal" <% if(action=='edit'){ %>value="<%= channel.name %>"<% }%>/>
                 </div>
               </div>
               <div class="field">
-                <label class="label">URL endpoint</label>
+                <label class="label is-size-7">URL endpoint</label>
                 <div class="control">
-                  <input class="input" type="text" name="endpoint" placeholder="URL endpoint" <% if(action=='edit'){ %>value="<%= channel.endpoint %>"<% }%>/>
+                  <input class="input is-size-7" type="text" name="endpoint" placeholder="URL endpoint" <% if(action=='edit'){ %>value="<%= channel.endpoint %>"<% }%>/>
+                </div>
+              </div>
+              <div class="field">
+                <label class="label is-size-7">Moneda</label>
+                <div class="control">
+                  <div class="select is-fullwidth is-size-7">
+                    <select required class="select is-capitalized" name="currency">
+                      <option value="0">Elegir Moneda</option>
+                      <% currencies.forEach((currency) =>{ %>
+                        <option class="is-capitalized" <%=(action=='edit' && channel.currency == currency.id) ? 'selected="selected"' : '' %> value="<%=currency.id%>"><%=currency.name%></option>
+                      <%})%>
+                    </select>
+                  </div>
                 </div>
               </div>
               <div class="field">
