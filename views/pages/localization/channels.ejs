@@ -31,6 +31,13 @@
                 </div>
               </div>
               <div class="field">
+                <div class="control">
+                  <label class="label is-size-7">Es Marketplace</label>
+                  <input id="ismarketplace" type="checkbox" name="ismarketplace" class="switch is-success" <% if(action=='edit' && channel.ismarketplace){%>checked<%}%>>
+                  <label for="ismarketplace"></label>
+                </div>
+              </div>
+              <div class="field">
                 <label class="label is-size-7">Moneda</label>
                 <div class="control">
                   <div class="select is-fullwidth is-size-7">

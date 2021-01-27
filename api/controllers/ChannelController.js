@@ -30,10 +30,12 @@ module.exports = {
     let error = null;
     let filename = null;
     try{
+      let isMarketplace = (req.body.ismarketplace ==='on') ? true : false;
       let channelData = {
         name: req.body.name.trim().toLowerCase(),
         endpoint: req.body.endpoint.trim(),
-        currency: req.body.currency
+        currency: req.body.currency,
+        ismarketplace: isMarketplace
       };
       filename = await sails.helpers.fileUpload(req, 'logo', 2000000,'images/channels');
       if(filename.length>0){channelData.logo = filename[0].filename;}
@@ -53,20 +55,23 @@ module.exports = {
       throw 'forbidden';
     }
     let error = null;
+    let isMarketplace = (req.body.ismarketplace === 'on') ? true : false;
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/channels');
       await Channel.updateOne({id: req.param('id')}).set({
         name: req.body.name.trim().toLowerCase(),
         endpoint: req.body.endpoint.trim(),
         logo: filename[0].filename,
-        currency: req.body.currency
+        currency: req.body.currency,
+        ismarketplace: isMarketplace
       });
     }catch(err){
       if(err.code==='badRequest'){
         await Channel.updateOne({id: req.param('id')}).set({
           name: req.body.name.trim().toLowerCase(),
           endpoint: req.body.endpoint.trim(),
-          currency: req.body.currency
+          currency: req.body.currency,
+          ismarketplace: isMarketplace
         });
       } else {
         error = err;

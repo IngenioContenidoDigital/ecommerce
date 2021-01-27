@@ -295,13 +295,14 @@
             const integrations = <%- JSON.stringify(integrations) %>;
             const integration = integrations.find(i => i.id === id);
             const chann = integration.channel.name;
+            const ismarketplace = integration.channel.ismarketplace;
             cleanFormEdit(integration.channel);
             const idChannel = integration.channel.id
-            if (chann === 'shopify' || chann === 'vtex' || chann === 'woocommerce' || chann === 'prestashop') {
+            if (!ismarketplace) {
               createFormCms(idChannel, chann, integration, true);
               removeClass(formIntegration, 'is-hidden');
               validateFormCms(chann);
-            } else if(chann === 'linio' || chann === 'dafiti' || chann === 'mercadolibre'){
+            } else if(ismarketplace){
               createFormMarketplace(idChannel, chann, integration, true);
               removeClass(formIntegration, 'is-hidden');
             }
@@ -323,11 +324,12 @@
             const formIntegration = document.querySelector('#form-integration');
             const chann = e.target.id;
             const idChannel = e.target.getAttribute('idChannel');
-            if (chann === 'shopify' || chann === 'vtex' || chann === 'woocommerce' || chann === 'prestashop') {
+            const isMarketplace = e.target.getAttribute('isMarketplace');
+            if (!isMarketplace) {
               createFormCms(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
               validateFormCms(chann);
-            } else if(chann === 'linio' || chann === 'dafiti' || chann === 'mercadolibre'){
+            } else if(isMarketplace){
               createFormMarketplace(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
             }
@@ -523,7 +525,7 @@
               content = `<input class="is-hidden" name="channel" value=""/>`;
               for (const channel of channels) {
                 content += `<div class="column">
-                <img class="menu-title image-integration" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" idChannel="${channel.id}"/>
+                <img class="menu-title image-integration" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" idChannel="${channel.id}" isMarketplace="${channel.ismarketplace}"/>
               </div>`
               }
             }

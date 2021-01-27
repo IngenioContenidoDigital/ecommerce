@@ -11,6 +11,10 @@ module.exports = {
     name:{type:'string'},
     logo:{type:'string'},
     endpoint:{type:'string'},
+    ismarketplace:{
+      type:'boolean',
+      defaultsTo:false
+    },
     currency:{
       model:'currency'
     },
