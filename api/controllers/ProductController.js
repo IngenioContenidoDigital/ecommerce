@@ -1482,7 +1482,7 @@ module.exports = {
           let product = products[0];
 
           //determinamos si el producto es variable 
-          if(!p.simple){
+          if(!p.simple && req.body.channel == constants.WOOCOMMERCE_CHANNEL){
             if(product && product.externalId){
               let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                 req.body.channel,
