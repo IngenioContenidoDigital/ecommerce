@@ -168,10 +168,10 @@ module.exports = {
     let integrations = null;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       sellers = await Seller.find({ id: req.session.user.seller });
-      integrations = await Integrations.find({ seller: req.session.user.seller });
+      integrations = await Integrations.find({ seller: req.session.user.seller }).populate('channel');
     } else {
       sellers = await Seller.find();
-      integrations = await Integrations.find();
+      integrations = await Integrations.find().populate('channel');
     }
 
     const taxes = await Tax.find();
@@ -622,7 +622,7 @@ module.exports = {
       throw 'forbidden';
     }
     let seller = req.param('seller') ? req.param('seller') : req.session.user.seller;
-    let  integrations = await Integrations.find({ seller: seller });
+    let  integrations = await Integrations.find({ seller: seller }).populate('channel');
     let error = req.param('error') ? req.param('error') : null;
     return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, resultados: null, rights: rights.name, seller, integrations, pagination: null });
   },

@@ -325,11 +325,11 @@
             const chann = e.target.id;
             const idChannel = e.target.getAttribute('idChannel');
             const isMarketplace = e.target.getAttribute('isMarketplace');
-            if (!isMarketplace) {
+            if (isMarketplace === 'false') {
               createFormCms(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
               validateFormCms(chann);
-            } else if(isMarketplace){
+            } else if(isMarketplace === 'true'){
               createFormMarketplace(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
             }
@@ -518,7 +518,7 @@
             if (edit) {
               content =  
                 `<div class="column">
-                  <img class="image-integration img-multiple" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}"/>
+                  <img class="image-integration img-multiple" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" isMarketplace="${channel.ismarketplace}"/>
                 </div>
                 <input class="is-hidden" name="channel" value=""/>`;
             } else {

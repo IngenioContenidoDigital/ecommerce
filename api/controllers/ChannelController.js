@@ -34,7 +34,7 @@ module.exports = {
       let channelData = {
         name: req.body.name.trim().toLowerCase(),
         endpoint: req.body.endpoint.trim(),
-        currency: req.body.currency,
+        currency: isMarketplace ? req.body.currency : null,
         ismarketplace: isMarketplace
       };
       filename = await sails.helpers.fileUpload(req, 'logo', 2000000,'images/channels');
@@ -62,7 +62,7 @@ module.exports = {
         name: req.body.name.trim().toLowerCase(),
         endpoint: req.body.endpoint.trim(),
         logo: filename[0].filename,
-        currency: req.body.currency,
+        currency: isMarketplace ? req.body.currency : null,
         ismarketplace: isMarketplace
       });
     }catch(err){
@@ -70,7 +70,7 @@ module.exports = {
         await Channel.updateOne({id: req.param('id')}).set({
           name: req.body.name.trim().toLowerCase(),
           endpoint: req.body.endpoint.trim(),
-          currency: req.body.currency,
+          currency: isMarketplace ? req.body.currency : null,
           ismarketplace: isMarketplace
         });
       } else {
