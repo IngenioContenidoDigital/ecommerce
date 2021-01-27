@@ -4,7 +4,8 @@ module.exports = {
   inputs: {
     products:{ type:'json' },
     seller : {type : 'string'},
-    socketId : {type : 'string'}
+    socketId : {type : 'string'},
+    provider : {type : 'string'}
   },
   exits: {
     success: {
@@ -35,7 +36,8 @@ module.exports = {
             let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller });
             if (!exists) {
               pr = await Product.create(pro).fetch();
-
+              
+              if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL){
               /* Caso para Everlast : si el producto simple trae definido el atributo peso toca buscar
               la variacion para el peso y  crear el productVariation */
               if(product.simple && product.product_weight){
@@ -97,7 +99,7 @@ module.exports = {
                   });
                 }
               }
-
+              }
             } else {
               delete pro.mainCategory;
               delete pro.categories;

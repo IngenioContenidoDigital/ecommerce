@@ -1,6 +1,3 @@
-const { log } = require('grunt');
-const createProductFromVariation = require('../helpers/create-product-from-variation');
-
 /**
  * ProductController
  *
@@ -1416,7 +1413,7 @@ module.exports = {
       isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
 
       if (!isEmpty) {
-        rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid).catch((e)=>console.log(e));
+        rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid, req.body.channel ).catch((e)=>console.log(e));
       } else {
         sails.sockets.broadcast(sid, 'product_task_ended', true);
         break;
