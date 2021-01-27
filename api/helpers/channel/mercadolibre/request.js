@@ -34,7 +34,7 @@ module.exports = {
       }
     };
     if(inputs.secret === 'auth'){delete config.headers}
-    if(inputs.params.responseType){config.responseType = inputs.params.responseType; delete inputs.params.responseType}
+    if(inputs.params && inputs.params.responseType){config.responseType = inputs.params.responseType; delete inputs.params.responseType}
     if(inputs.params){params=inputs.params;}
     let response = null;
     try{
