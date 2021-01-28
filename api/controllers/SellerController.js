@@ -273,22 +273,11 @@ module.exports = {
     var updatedSeller = await Seller.updateOne({id:id}).set({active:state});
     return res.send(updatedSeller);
   },
-  integrations:async(req,res)=>{
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'integrations')){
-      throw 'forbidden';
-    }
-    let integrations = [];
-    let seller = await Seller.findOne({id:req.param('id')});
-    integrations = await Integrations.find({seller:seller.id});
-
-    return res.view('pages/sellers/integrations',{layout:'layouts/admin',seller:seller,integrations:integrations, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML});
-  },
   setintegration:async (req,res)=>{
     let seller = req.param('seller');
     let channel = req.param('channel');
     const nameChannel = req.param('namechannel');
-    const integration = req.body.integration;
+    let integration = req.body.integration;
     const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.'
 
     Integrations.findOrCreate({id: integration},{
@@ -302,6 +291,7 @@ module.exports = {
       seller:seller
     }).exec(async (err, record, created)=>{
       if(err){return res.redirect('/sellers?error='+err);}
+      integration = record.id;
       if(!created){
         await Integrations.updateOne({id:record.id}).set({
           channel:channel,
@@ -316,7 +306,7 @@ module.exports = {
       }
 
       if(nameChannel =='mercadolibre'){
-        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+seller+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
+        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }

@@ -57,7 +57,7 @@
 						<section class="tab-content">
 							<% provider = null; %>
 							<%if(typeof integrations =='object' && integrations.length>0){%>
-								<% provider=integrations.filter(data => data.channel=='woocommerce' || data.channel=='shopify' || data.channel == 'vtex' || data.channel == 'prestashop');%>
+								<% provider=integrations.filter(data => data.channel.ismarketplace === false);%>
 								<% if(provider.length > 0){%>
 										<div class="field">
 											<label class="label">Tipo de Importación</label>
@@ -86,8 +86,8 @@
 										<div class="field">
 											<div class="control">
 												<label class="label">Proveedor</label>
-												<input type="text" id="channelTxt" disabled class="input is-primary" type="text"  placeholder="Proveedor" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%> />
-												<input type="hidden" name="channel" <%if(provider!==null){%>value="<%=provider.channel%>"<%}%>>
+												<input type="text" id="channelTxt" disabled class="input is-primary" type="text"  placeholder="Proveedor" <%if(provider!==null){%>value="<%=provider[0].channel.name%>"<%}%> />
+												<input type="hidden" name="channel" <%if(provider!==null){%>value="<%=provider[0].channel.name%>"<%}%>>
 											</div>
 										</div>
 										<div class="field">
@@ -139,14 +139,14 @@
 		if (providers && providers.length > 0) {
 			let selected = providers.filter(function(p){
 				return p.seller === seller;
-      })[0];
-			document.getElementById("channelTxt").value = selected.channel;
+			})[0];
+			document.getElementById("channelTxt").value = selected.channel.name;
 			document.getElementById("urlTxt").value = selected.url;
 			document.getElementsByName("pk")[0].value = selected.key;
 			document.getElementsByName("sk")[0].value = selected.secret;
 			document.getElementsByName("apiUrl")[0].value = selected.url;
 			document.getElementsByName("version")[0].value = selected.version;
-			document.getElementsByName("channel")[0].value = selected.channel;
+			document.getElementsByName("channel")[0].value = selected.channel.name;
 		}
 	<%}%>
 

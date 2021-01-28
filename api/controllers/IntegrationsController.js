@@ -8,7 +8,7 @@
 module.exports = {
     meliauth:async (req,res) =>{
         let code = req.param('code');
-        let integration = await Integrations.findOne({channel: 'mercadolibre', seller: req.param('state')});
+        let integration = await Integrations.findOne({id: req.param('state')});
         let redirectUri = 'https://'+req.hostname+'/mlauth/'+integration.user; // String | 
         let params = {
             'grant_type':'authorization_code',
