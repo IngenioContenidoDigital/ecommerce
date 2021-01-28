@@ -1237,7 +1237,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
             return res.serverError('No se Localizó la Orden Solicitada'+req.body.payload.OrderId);
           }
 
-          integration = await Integrations.findOne({ channel : 'linio', key : identifier}).catch((e)=> {return res.serverError('No se localizó la integracion');});
+          integration = await Integrations.findOne({ id : identifier}).catch((e)=> {return res.serverError('No se localizó la integracion');});
           let data = await sails.helpers.channel.linio.orderbyid(integration.seller,  ['OrderId='+order] ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
           let seller = await Seller.findOne({id: integration.seller});
           if (data && seller.integrationErp) {
