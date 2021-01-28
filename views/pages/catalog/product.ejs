@@ -779,7 +779,7 @@
               <% sellers.forEach(function(seller){ %>
                 <% if(seller.id==product.seller){ %>
                   <% integra = null; %>
-                  <% integra = integrations.filter(data => data.seller === seller.id && data.channel.ismarketplace);%>
+                  <% integra = integrations.filter(data => data.seller === seller.id && data.channel.type === 'marketplace');%>
                   <% if(integra.length > 0){%>
                     <% integra.forEach(function(i){ %>
                       <tr>
