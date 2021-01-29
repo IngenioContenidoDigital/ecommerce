@@ -38,6 +38,10 @@ module.exports = {
       collection:'productvariation',
       via:'product'
     },
+    channels:{
+      collection:'productchannel',
+      via:'product'
+    },
     suppliers:{
       collection:'supplier',
       via:'products'

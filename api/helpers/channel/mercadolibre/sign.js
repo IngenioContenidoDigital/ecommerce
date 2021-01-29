@@ -2,7 +2,7 @@ module.exports = {
   friendlyName: 'Init',
   description: 'Init mercadolibre.',
   inputs: {
-    seller:{
+    integration:{
       type:'string',
       required:true,
     },
@@ -17,7 +17,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     const meli = require('mercadolibre-nodejs-sdk');
-    let integration = await Integrations.findOne({channel:'mercadolibre',seller:inputs.seller});
+    let integration = await Integrations.findOne({id: inputs.integration});
     let mercadolibre = new meli.OAuth20Api();
     if (integration) {
       let opts = {
@@ -34,6 +34,7 @@ module.exports = {
           url:response.body['refresh_token'],
           secret:response.body['access_token'],
         });
+        updated = await Integrations.findOne({id: updated.id}).populate('channel');
         return exits.success(updated);
       });
     } else {

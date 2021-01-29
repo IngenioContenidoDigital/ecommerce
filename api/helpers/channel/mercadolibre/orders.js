@@ -2,7 +2,7 @@ module.exports = {
   friendlyName: 'Orders',
   description: 'Orders mercadolibre.',
   inputs: {
-    seller:{
+    integration:{
       type:'string',
       required:true
     },
@@ -20,19 +20,19 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
 
     let profile = await Profile.findOne({name:'customer'});
     let moment = require('moment');
 
     let result = await sails.helpers.channel.mercadolibre.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
     if(result.id){
-      let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret).catch(err =>{return exits.error(err.message);});
+      let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
       if(order){
         try{
-          let oexists = await Order.find({channel:'mercadolibre', channelref:order.id});
+          let oexists = await Order.find({channel:'mercadolibre', channelref:order.id, integration: integration.id});
           if(oexists.length === 0 && order.status==='paid'){
-            let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id).catch(err=>{
+            let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
               return exits.error(err.message);
             });
             if(shipping){
@@ -68,7 +68,8 @@ module.exports = {
                   data:{
                     estado:'Aceptado',
                     channel:'mercadolibre',
-                    channelref:order.id
+                    channelref:order.id,
+                    integration:integration.id
                   }
                 };
 
@@ -103,7 +104,7 @@ module.exports = {
           }else{
             if(oexists.length > 0){
               for (const ord of oexists) {
-                let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id).catch(err=>{
+                let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
                   return exits.error(err.message);
                 });
                 let currentStatus = await sails.helpers.orderState(shipping.status);

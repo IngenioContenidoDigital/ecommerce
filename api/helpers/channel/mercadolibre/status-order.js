@@ -2,7 +2,7 @@ module.exports = {
   friendlyName: 'Orders',
   description: 'Changed status orders mercadolibre.',
   inputs: {
-    seller:{
+    integration:{
       type:'string',
       required:true
     },
@@ -20,17 +20,17 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
     let moment = require('moment');
     let result = await sails.helpers.channel.mercadolibre.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
     const shippingId = inputs.resource.split('/')[2];
     if(result.id){
-      let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret, shippingId).catch(err=>{
+      let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret, shippingId, integration.channel.endpoint).catch(err=>{
         return exits.error(err.message);
       });
       if (shipping){
         try{
-          let oexists = await Order.find({channel:'mercadolibre',channelref: shipping.order_id});
+          let oexists = await Order.find({channel:'mercadolibre',channelref: shipping.order_id,integration: integration.id});
           if(oexists.length > 0){
             let currentStatus = await sails.helpers.orderState(shipping.status);
             for (const ord of oexists) {

@@ -765,77 +765,90 @@
     </div>
     <div class="is-hidden" id="integrations">
       <div class="box">
-        <table class="table">
-          <thead>
-            <tr>
-              <th><small>Marketplace</small></th>
-              <th><small>Nombre</small></th>
-              <th><small>Ajuste Precio</small></th>
-              <th><small>Activo</small></th>
-            </tr>
-          </thead>
-          <tbody>
-            <%if(product!==undefined && product !== null){%>
-              <% sellers.forEach(function(seller){ %>
-                <% if(seller.id==product.seller){ %>
-                  <% integra = null; %>
-                  <% integra = integrations.filter(data => data.seller === seller.id && data.channel.type === 'marketplace');%>
-                  <% if(integra.length > 0){%>
-                    <% integra.forEach(function(i){ %>
-                      <tr>
-                        <td><img  src="<%=imgurl%>/images/channels/<%= i.channel.logo %>" width="100px"/></td>
-                        <td><%= i.name %></td>
-                        <td>
-                          <div class="select is-small">
-                            <select name="<%= i.channel.name %>price">
-                            <option value="0" <%if(typeof product=='object' &&  product.dafitiprice==0){%>selected<%}%>>+ 0%</option>
-                              <option value="0.05" <%if(typeof product=='object' && product.dafitiprice==0.05){%>selected<%}%>>+ 5%</option>
-                              <option value="0.1" <%if(typeof product=='object' && product.dafitiprice==0.1){%>selected<%}%>>+ 10%</option>
-                              <option value="0.15" <%if(typeof product=='object' && product.dafitiprice==0.15){%>selected<%}%>>+ 15%</option>
-                              <option value="0.2" <%if(typeof product=='object' && product.dafitiprice==0.2){%>selected<%}%>>+ 20%</option>
-                              <option value="0.25" <%if(typeof product=='object' && product.dafitiprice==0.25){%>selected<%}%>>+ 25%</option>
-                              <option value="0.3" <%if(typeof product=='object' && product.dafitiprice==0.3){%>selected<%}%>>+ 30%</option>
-                            </select>
-                          </div>
-                        </td>
-                        <td style="padding-top:10px;">
-                        <input id="<%= i.channel.name %>" type="checkbox" name="<%= i.channel.name %>status" <%if(typeof product=='object' && product.dafitistatus){%>checked<%}%> class="switch is-success">
-                          <label for="<%= i.channel.name %>"></label>
-                        </td>
-                      </tr>
-                    <%})%>
-                  <%}%>
-                <%}%>          
-              <%})%>
-            <%}%>
-          </tbody>
-        </table>
+        <div class="columns is-gapless">
+          <div class="column">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th><small>Marketplace</small></th>
+                  <th><small>Nombre</small></th>
+                  <th><small>Ajuste Precio</small></th>
+                  <th><small>Activo</small></th>
+                </tr>
+              </thead>
+              <tbody>
+                <%if(product!==undefined && product !== null){%>
+                  <% sellers.forEach(function(seller){ %>
+                    <% if(seller.id==product.seller){ %>
+                      <% integra = null; %>
+                      <% integra = integrations.filter(data => data.seller === seller.id && data.channel.type === 'marketplace');%>
+                      <% if(integra.length > 0){%>
+                        <% integra.forEach(function(i){ %>
+                          <% productchannel = product.channels.find(item => item.integration === i.id && item.channel === i.channel.id);%>
+                          <tr>
+                            <td><img  src="<%=imgurl%>/images/channels/<%= i.channel.logo %>" width="100px"/></td>
+                            <td><%= i.name %></td>
+                            <td>
+                              <div class="select is-small">
+                                <select name="<%= i.id %>price">
+                                <option value="0" <%if(typeof product=='object' && productchannel && productchannel.price==0){%>selected<%}%>>+ 0%</option>
+                                  <option value="0.05" <%if(typeof product=='object' && productchannel && productchannel.price ==0.05){%>selected<%}%>>+ 5%</option>
+                                  <option value="0.1" <%if(typeof product=='object' && productchannel && productchannel.price ==0.1){%>selected<%}%>>+ 10%</option>
+                                  <option value="0.15" <%if(typeof product=='object' && productchannel && productchannel.price ==0.15){%>selected<%}%>>+ 15%</option>
+                                  <option value="0.2" <%if(typeof product=='object' && productchannel && productchannel.price ==0.2){%>selected<%}%>>+ 20%</option>
+                                  <option value="0.25" <%if(typeof product=='object' && productchannel && productchannel.price ==0.25){%>selected<%}%>>+ 25%</option>
+                                  <option value="0.3" <%if(typeof product=='object' && productchannel && productchannel.price ==0.3){%>selected<%}%>>+ 30%</option>
+                                </select>
+                              </div>
+                            </td>
+                            <td style="padding-top:10px;">
+                              <input id="<%= i.id %>" type="checkbox" name="productstatus" channelId='<%= i.channel.id %>' nameChannel="<%= i.channel.name %>" <%if(typeof product=='object' && productchannel && productchannel.status){%>checked<%}%> class="switch is-success">
+                              <label for="<%= i.id %>"></label>
+                            </td>
+                          </tr>
+                        <%})%>
+                      <%}%>
+                    <%}%>          
+                  <%})%>
+                <%}%>
+              </tbody>
+            </table>
+          </div>
+          <div class="column">
+            <div id="report" class="container is-fluid is-hidden">
+              <div class="notification is-danger">
+                <p>Hemos identificado <span id="errors">0</span> error(es).</p>
+                <br>
+                <div class="container is-fluid">
+                  <ol id="error-list">
+                  </ol>
+                </div>
+              </div>
+          </div>
+          </div>
+        </div>
       </div>
     </div>
     <script>
-    
-      live('#dafiti','click',e=>{
+      live('input[name="productstatus"]','change',e=>{
         let p = document.querySelector('#product-data').value;
-        let dafitiprice = document.querySelector('select[name="dafitiprice"]').value;
-        //if(e.target.checked){
-          io.socket.post('/dafiti/add',{product:p, dafitiprice:dafitiprice, status:e.target.checked});
-        //}
-      });
-
-      live('#mercadolibre','click',e=>{
-        let p = document.querySelector('#product-data').value;
-        let pricemercadolibre = document.querySelector('select[name="pricemercadolibre"]').value;
-        //if(e.target.checked){
-          io.socket.post('/mercadolibre/add',{product:p, pricemercadolibre:pricemercadolibre, status:e.target.checked});
-        //}
-      });
-
-      live('#linio','click',e=>{
-        let p = document.querySelector('#product-data').value;
-        let linioprice = document.querySelector('select[name="linioprice"]').value;
-        //if(e.target.checked){
-          io.socket.post('/linio/add',{product: p, linioprice: linioprice, status: e.target.checked});
-        //}
+        let integrationId = e.target.id;
+        let nameChannel = e.target.getAttribute('nameChannel');
+        let channelId = e.target.getAttribute('channelId');
+        let price = document.querySelector('select[name="'+integrationId+'price"]').value;
+        io.socket.post('/'+nameChannel+'/add',{product:p, price, status:e.target.checked,integrationId,channelId}, resData =>{
+          if(resData.error){
+            if(hasClass(report),'is-hidden'){removeClass(report,'is-hidden');}
+            let errors = document.querySelector('#errors');
+            errors.innerHTML=1;
+            let errorlist = document.querySelector('#error-list');
+            let err = document.createElement('li');
+            err.innerHTML='Se generó Error al procesar el producto.';
+            errorlist.appendChild(err);
+            e.target.checked = false;
+            document.querySelector('select[name="'+integrationId+'price"]').value = 0;
+          }
+        });
       });
 
     const pricent = document.querySelector('input[name="price_nt"]');

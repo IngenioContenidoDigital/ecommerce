@@ -2,7 +2,7 @@ module.exports = {
   friendlyName: 'Find question',
   description: 'Find question Mercadolibre',
   inputs: {
-    seller: {
+    integration: {
       type:'string',
       required:true
     },
@@ -21,9 +21,9 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.seller);
+    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
     try{
-      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource, integration.secret);
+      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource, integration.channel.endpoint, integration.secret);
       if(response){
         return exits.success(response);
       }

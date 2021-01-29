@@ -8,7 +8,7 @@
 module.exports = {
     meliauth:async (req,res) =>{
         let code = req.param('code');
-        let integration = await Integrations.findOne({id: req.param('state')});
+        let integration = await Integrations.findOne({id: req.param('state')}).populate('channel');
         let redirectUri = 'https://'+req.hostname+'/mlauth/'+integration.user; // String | 
         let params = {
             'grant_type':'authorization_code',
@@ -18,7 +18,7 @@ module.exports = {
             'redirect_uri':redirectUri,
         }
 
-        let response = await sails.helpers.channel.mercadolibre.request('oauth/token','auth',params,'POST')
+        let response = await sails.helpers.channel.mercadolibre.request('oauth/token',integration.channel.endpoint,'auth',params,'POST')
         .intercept((err) =>{
             return res.redirect('/sellers?error='+err.message);
         });

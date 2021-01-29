@@ -14,10 +14,17 @@ module.exports = {
       type:'number',
       defaultsTo:0
     },
+    channelPrice:{
+      type:'number'
+    },
     status:{
       type:'string',
       defaultsTo:'active'
-    }
+    },
+    integration:{
+      type:'string',
+      required:true,
+    },
   },
   exits: {
     success: {
@@ -31,7 +38,7 @@ module.exports = {
       let variations = [];
       let images = [];
       let vimages=[];
-      let categories = [];      
+      let categories = [];
       let product = await Product.findOne({id:inputs.product})
       .populate('manufacturer')
       .populate('gender')
@@ -48,8 +55,7 @@ module.exports = {
       });
       let body = null;
       let price = 0;
-      let padj = inputs.mlprice ? parseFloat(inputs.mlprice) : product.mlprice;
-      
+      let padj = inputs.mlprice ? parseFloat(inputs.mlprice) : inputs.channelPrice;
       let productimages = await ProductImage.find({product:product.id});
       productimages.forEach(image =>{
         images.push({'source':sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file});
@@ -60,21 +66,21 @@ module.exports = {
 
       productvariations.forEach(variation =>{
         //Se usa para llevar el precio con descuento debido a que el recurso promo no está disponible para colombia Líneas 163 a 182
-      //Si se habilita el recurso /promo en la MCO, se debe comentar Líneas 60 a 71 y habilitar líneas 168 a 188      
-      if(product.discount.length>0){
-        let discPrice=0;
-        switch(product.discount[0].type){
-          case 'P':
-            discPrice+=((variation.price*(1+padj))*(1-(product.discount[0].value/100)));
-            break;
-          case 'C':
-            discPrice+=((variation.price*(1+padj))-product.discount[0].value);
-            break;
+      //Si se habilita el recurso /promo en la MCO, se debe comentar Líneas 60 a 71 y habilitar líneas 168 a 188
+        if(product.discount.length>0){
+          let discPrice=0;
+          switch(product.discount[0].type){
+            case 'P':
+              discPrice+=((variation.price*(1+padj))*(1-(product.discount[0].value/100)));
+              break;
+            case 'C':
+              discPrice+=((variation.price*(1+padj))-product.discount[0].value);
+              break;
+          }
+          price = discPrice;
+        }else{
+          price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(2);
         }
-        price = discPrice;
-      }else{
-        price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(2)
-      }
         let v = {
           'attribute_combinations':[
             {
@@ -92,7 +98,7 @@ module.exports = {
         };
         variations.push(v);
       });
-      
+
       let brand = null;
       switch(product.manufacturer.name){
         case 'Rosé Pistol':
@@ -149,10 +155,10 @@ module.exports = {
           },
         ],
         'shipping':{
-            'mode':'me2',
-            'local_pick_up':false,
-            'free_shipping':true,
-            'free_methods':[]
+          'mode':'me2',
+          'local_pick_up':false,
+          'free_shipping':true,
+          'free_methods':[]
         },
         'variations':variations,
       };
@@ -169,25 +175,25 @@ module.exports = {
         categories.push(encodeURIComponent(product.categories[c].name));
       }*/
       categories = categories.join(' ');
-      let integration = await Integrations.findOne({channel:'mercadolibre',seller:product.seller});
+      let integration = await Integrations.findOne({id: inputs.integration});
       body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(categories)
       .intercept((err)=>{
         return new Error(err.message);
       });
-      let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration, brand)
+      let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration, brand);
       if(storeid>0){body['official_store_id']=storeid;}
       if(inputs.action==='ProductUpdate' || inputs.action==='Update'){
-          body['status']=status;
-          //if(product.ml && !product.mlstatus){
-            delete body['title'];
-            delete body['listing_type_id'];
-            delete body['buying_mode'];
-            delete body['price'];
-            delete body['description'];
-            delete body['condition'];
-            delete body['category_id'];
-          //}
-           /* BLOQUE DE DESCUENTOS 
+        body['status']=status;
+        //if(product.ml && !product.mlstatus){
+        delete body['title'];
+        delete body['listing_type_id'];
+        delete body['buying_mode'];
+        delete body['price'];
+        delete body['description'];
+        delete body['condition'];
+        delete body['category_id'];
+        //}
+        /* BLOQUE DE DESCUENTOS
             let mlproduct = result.id;
             console.log(mlproduct);
             if(product.discount.length>0){
@@ -208,7 +214,7 @@ module.exports = {
                 return exits.success(result);
               });
             }*/
-          /*mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
+        /*mercadolibre.put('items/'+product.mlid,body,{'access_token':integration.secret},(error,result) =>{
             if(error){return exits.error(error);}
             return exits.success(result);
           });*/

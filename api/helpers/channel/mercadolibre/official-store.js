@@ -18,7 +18,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     try{
-      let response = await sails.helpers.channel.mercadolibre.request('users/'+inputs.integration.useridml+'/brands', inputs.integration.secret);
+      let response = await sails.helpers.channel.mercadolibre.request('users/'+inputs.integration.useridml+'/brands', integration.channel.endpoint, inputs.integration.secret);
       if(response && response.brands.length>0){
         for(let brand of response.brands){
           if(brand.name.toLowerCase()===inputs.brand.toLowerCase()){

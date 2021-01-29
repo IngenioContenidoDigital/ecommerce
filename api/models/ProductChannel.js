@@ -8,11 +8,9 @@
 
 module.exports = {
     attributes: {
-        product:{
-            model:'product'
-        },
+        product:{model:'product'},
         channel:{ model:'channel' },
-        integrations:{ model:'integrations' },
+        integration:{ model:'integrations' },
         channelid:{ type:'string' },
         status:{ type:'boolean' },
         qc:{ type:'boolean' },

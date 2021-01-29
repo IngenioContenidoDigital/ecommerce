@@ -84,8 +84,10 @@ module.exports = {
     },
     fleteVariable:{
       type:'number',
+    },
+    integration:{
+      model:'integrations',
     }
-
   },
   beforeCreate (obj, cb) {
     Sequence.next('order', (err, num) => {

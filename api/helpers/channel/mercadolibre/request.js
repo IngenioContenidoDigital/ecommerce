@@ -6,6 +6,10 @@ module.exports = {
       type:'string',
       required:true
     },
+    url: {
+      type:'string',
+      required:true
+    },
     secret:{
       type:'string'
     },
@@ -16,7 +20,7 @@ module.exports = {
       type:'string',
       isIn:['GET','POST','PUT','DELETE'],
       defaultsTo:'GET'
-    }
+    },
   },
   exits: {
     success: {
@@ -25,7 +29,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     const axios = require('axios');
-    const apiUrl = 'https://api.mercadolibre.com/';
+    const apiUrl = inputs.url;
     inputs.resource = inputs.resource.replace(/^\//, '');
     let params = {};
     let config = {
