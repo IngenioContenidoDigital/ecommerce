@@ -24,20 +24,28 @@
                   <input class="input is-capitalized is-size-7" type="text" name="name" required="true" placeholder="Nombre del Canal" <% if(action=='edit'){ %>value="<%= channel.name %>"<% }%>/>
                 </div>
               </div>
-              <div class="field">
-                <div class="control">
-                  <label class="label is-size-7">Es Marketplace</label>
-                  <input id="ismarketplace" id="ismarketplace" type="checkbox" name="ismarketplace" class="switch is-success" <% if(action=='edit' && channel.ismarketplace){%>checked<%}%>>
-                  <label for="ismarketplace"></label>
-                </div>
+              <div class="control">
+                <label class="radio">
+                  <input type="radio" name="type" id="marketplace" value="marketplace" <% if(action=='edit' && channel.type == 'marketplace'){%>checked<%}%>>
+                  Marketplace
+                </label>
+                <label class="radio">
+                  <input type="radio" name="type" id="cms" value="cms" <% if(action=='edit' && channel.type == 'cms'){%>checked<%}%>>
+                  CMS
+                </label>
+                <label class="radio">
+                  <input type="radio" name="type" id="messenger" value="messenger" <% if(action=='edit' && channel.type == 'messenger'){%>checked<%}%>>
+                  Mensajería
+                </label>
               </div>
-              <div <% if(action=='edit' && channel.ismarketplace){%>class="field"<%}else{%> class="field is-hidden"<%}%> id="fieldUrl">
+              <br>
+              <div <% if(action=='edit' && channel.type == 'marketplace'){%>class="field"<%}else{%> class="field is-hidden"<%}%> id="fieldUrl">
                 <label class="label is-size-7">URL endpoint</label>
                 <div class="control">
                   <input class="input is-size-7" type="text" name="endpoint" placeholder="URL endpoint" <% if(action=='edit'){ %>value="<%= channel.endpoint %>"<% }%>/>
                 </div>
               </div>
-              <div <% if(action=='edit' && channel.ismarketplace){%>class="field"<%}else{%> class="field is-hidden"<%}%> id="fieldMoney">
+              <div <% if(action=='edit' && channel.type == 'marketplace'){%>class="field"<%}else{%> class="field is-hidden"<%}%> id="fieldMoney">
                 <label class="label is-size-7">Moneda</label>
                 <div class="control">
                   <div class="select is-fullwidth is-size-7">
@@ -51,6 +59,7 @@
                 </div>
               </div>
               <div class="field">
+                <label class="label is-size-7">Logo</label>
                 <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
                   <label class="file-label">
                     <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
@@ -89,12 +98,10 @@
           fileName.textContent = fileInput.files[0].name;
         }
       };
-      live('#ismarketplace','click',e=>{
-        let fieldUrl = document.querySelector('#fieldUrl');
-        let fieldMoney = document.querySelector('#fieldMoney');
-        let value =  e.target.checked;
-        value ? removeClass(fieldUrl, 'is-hidden') : addClass(fieldUrl, 'is-hidden');
-        value ? removeClass(fieldMoney, 'is-hidden') : addClass(fieldMoney, 'is-hidden');
+      live('input[name="type"]','change', e =>{
+        let id =  e.target.id;
+        id === 'marketplace' ? removeClass(fieldUrl, 'is-hidden') : addClass(fieldUrl, 'is-hidden');
+        id === 'marketplace' ? removeClass(fieldMoney, 'is-hidden') : addClass(fieldMoney, 'is-hidden');
       });
     </script>
   <% } else { %>

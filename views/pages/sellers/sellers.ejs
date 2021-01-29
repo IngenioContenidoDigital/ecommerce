@@ -295,14 +295,14 @@
             const integrations = <%- JSON.stringify(integrations) %>;
             const integration = integrations.find(i => i.id === id);
             const chann = integration.channel.name;
-            const ismarketplace = integration.channel.ismarketplace;
+            const type = integration.channel.type;
             cleanFormEdit(integration.channel);
             const idChannel = integration.channel.id
-            if (!ismarketplace) {
+            if (type === 'cms') {
               createFormCms(idChannel, chann, integration, true);
               removeClass(formIntegration, 'is-hidden');
               validateFormCms(chann);
-            } else if(ismarketplace){
+            } else if(type === 'marketplace'){
               createFormMarketplace(idChannel, chann, integration, true);
               removeClass(formIntegration, 'is-hidden');
             }
@@ -324,12 +324,12 @@
             const formIntegration = document.querySelector('#form-integration');
             const chann = e.target.id;
             const idChannel = e.target.getAttribute('idChannel');
-            const isMarketplace = e.target.getAttribute('isMarketplace');
-            if (isMarketplace === 'false') {
+            const type = e.target.getAttribute('type');
+            if (type === 'cms') {
               createFormCms(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
               validateFormCms(chann);
-            } else if(isMarketplace === 'true'){
+            } else if(type === 'marketplace'){
               createFormMarketplace(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
             }
@@ -518,14 +518,14 @@
             if (edit) {
               content =  
                 `<div class="column">
-                  <img class="image-integration img-multiple" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" isMarketplace="${channel.ismarketplace}"/>
+                  <img class="image-integration img-multiple" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" type="${channel.type}"/>
                 </div>
                 <input class="is-hidden" name="channel" value=""/>`;
             } else {
               content = `<input class="is-hidden" name="channel" value=""/>`;
               for (const channel of channels) {
                 content += `<div class="column">
-                <img class="menu-title image-integration" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" idChannel="${channel.id}" isMarketplace="${channel.ismarketplace}"/>
+                <img class="menu-title image-integration" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.name}" idChannel="${channel.id}" type="${channel.type}"/>
               </div>`
               }
             }

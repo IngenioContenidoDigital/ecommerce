@@ -23,10 +23,11 @@ module.exports = {
         await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCTS, callback : async (response)=>{
             if (response.data.ShopifyProducts) {
               let result = response.data.ShopifyProducts;
-              let integration = await Integrations.findOne({channel: result.channel, key: result.key});
+              let channel = await Channel.findOne({name: result.channel});
+              let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
               if (integration) {
                 let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                  integration.channel,
+                  integration.channel.name,
                   integration.key,
                   integration.secret,
                   integration.url,
@@ -44,10 +45,11 @@ module.exports = {
           await sails.helpers.subscription({ subscription : VTEX_PRODUCTS, callback : async (response)=>{
             if (response.data.VtexProducts) {
               let result = response.data.VtexProducts;
-              let integration = await Integrations.findOne({channel: result.channel, key: result.key});
+              let channel = await Channel.findOne({name: result.channel});
+              let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
               if (integration) {
                 let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                  integration.channel,
+                  integration.channel.name,
                   integration.key,
                   integration.secret,
                   integration.url,
@@ -65,10 +67,11 @@ module.exports = {
           await sails.helpers.subscription({ subscription : WOOCOMMERCE_PRODUCTS, callback : async (response)=>{
             if (response.data.WoocommerceProducts) {
               let result = response.data.WoocommerceProducts;
-              let integration = await Integrations.findOne({channel: result.channel, key: result.key});
+              let channel = await Channel.findOne({name: result.channel});
+              let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
               if (integration) {
                 let response = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                  integration.channel,
+                  integration.channel.name,
                   integration.key,
                   integration.secret,
                   integration.url,
@@ -86,10 +89,11 @@ module.exports = {
           await sails.helpers.subscription({ subscription : PRESTASHOP_PRODUCTS, callback : async (response)=>{
             if (response.data.PrestashopProducts) {
               let result = response.data.PrestashopProducts;
-              let integration = await Integrations.findOne({channel: result.channel, key: result.key});
+              let channel = await Channel.findOne({name: result.channel});
+              let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
               if (integration) {
                 let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                  integration.channel,
+                  integration.channel.name,
                   integration.key,
                   integration.secret,
                   integration.url,
