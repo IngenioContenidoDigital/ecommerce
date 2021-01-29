@@ -49,12 +49,7 @@ module.exports = {
     discount:{
       collection:'catalogdiscount',
       via:'products'
-    },
-    channels:{
-      collection:'channel',
-      via:'products'
     }
   },
-
 };
 
