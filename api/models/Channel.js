@@ -18,5 +18,9 @@ module.exports = {
     currency:{
       model:'currency'
     },
+    products:{
+      collection:'product',
+      via:'channels'
+    }
   },
 };

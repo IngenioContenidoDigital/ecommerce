@@ -8,6 +8,6 @@
 module.exports = {
     attributes: {
         name:{type:'string', required : true},
-        isocode:{type:'string', required : true}
+        isocode:{type:'string', required : true, unique : true}
     }
 };
