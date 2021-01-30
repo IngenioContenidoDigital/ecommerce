@@ -69,7 +69,11 @@
             </div>
             <div class="column">
               <p class="container has-text-right">
-                <a href="/guia/<%=order.tracking%>" id="tracking" class="button is-small"><span class="icon"><i class='bx bxs-truck'></i></span></a>
+                <%if(order.channel==='coppel'){%>
+                  <a href="https://www.fedex.com" target="_blank" id="tracking" class="button is-small"><span class="icon"><i class='bx bxs-truck'></i></span></a>
+                <%}else{%>
+                  <a href="/guia/<%=order.tracking%>" id="tracking" class="button is-small"><span class="icon"><i class='bx bxs-truck'></i></span></a>
+                <%}%>
               </p>
             </div>
           </div>
@@ -133,6 +137,20 @@
         </div>
       </div>
     </div>
+    <div id="modal-integration" class="is-hidden columns modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <section class="modal-card-body">
+          <div class="box">
+            <div class="field">
+              <label class="label">Información de Guía</label>
+            </div>
+            <div class="setup" id="form-integration"></div>
+          </div>
+        </section>
+      </div>
+      <button class="modal-close is-large" id="close-modal" aria-label="close"></button>
+    </div>
     <script>
       let totals = <%- JSON.stringify(printed) %>;
 
@@ -158,12 +176,89 @@
 
       live('#stt','click',(e) =>{
         e.preventDefault();
+        let channel='<%- order.channel %>';
         let order= document.getElementById('order').getAttribute('order');
         let state= document.querySelector('select[name="orderState"]').value;
-        io.socket.put('/order/update',{id:order,orderState:state},(resData) =>{
-          let colorcode = resData.newstate.color.code;
-          document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
-        });
+        let tracking= '<%- order.tracking %>';
+        if(channel == 'coppel' && state =='5eeceb61c7b6fb0418019db2' && tracking == ''){
+          let modal = document.querySelector('#modal-integration');
+          removeClass(modal, 'is-hidden');
+          createTrackingForm();
+        }else{
+          io.socket.put('/order/update',{id:order,orderState:state},(resData) =>{
+            let colorcode = resData.newstate.color.code;
+            document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
+          });
+        }
+      });
+
+      live('#close-modal','click',function(e){
+            e.preventDefault();
+            let modal = document.querySelector('#modal-integration');
+            addClass(modal,'is-hidden');
+          });
+
+      function createTrackingForm() {
+            let div = document.createElement('div');
+            let formIntegration = document.querySelector('#form-integration');
+            formIntegration.innerHTML = '';
+              let form = 
+              `<form id="tracking-form" method="POST" action="/integration/set">
+                <div class="container">
+                  <div class="field">
+                    <label class="label">Número de Guía</label>
+                    <div class="control has-icons-left">
+                      <input class="input" type="text" name="tracking" placeholder="Número de Guía" required value=""/>
+                      <span class="icon is-small is-left">
+                        <i class='bx bx-truck'></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label">Transportadora</label>
+                    <div class="control has-icons-left">
+                      <select class="is-capitalized" name="carrier">
+                        <option class="is-capitalized" value="fedex" selected="selected">FedEx</option>
+                        <option class="is-capitalized" value="DHL" >DHL</option>
+                      </select>
+                    </div>
+                  </div>
+                  <br>
+                    <div class="control is-left" style="display: inline-block">
+                      <button id="status-change" type="submit" class="button is-primary is-small">Guardar</button>
+                    </div>
+                    <div id="loading-block" class="control is-left is-hidden" style="display: inline-block; margin-left:10px">
+                      <i class="fas fa-sync fa-spin"></i>
+                        Actualizando...
+                        <progress class="progress is-small is-primary" max="100">15%</progress>
+                    </div>
+                </div>
+              </form>`
+              div.innerHTML = form;
+              formIntegration.appendChild(div);
+          }
+      live('#status-change','click',(e) =>{
+        e.preventDefault();
+        let formIntegration = document.querySelector('#tracking-form');
+        let validation = validateForm(formIntegration);
+        let channel='<%- order.channel %>';
+        let order= document.getElementById('order').getAttribute('order');
+        let state= document.querySelector('select[name="orderState"]').value;
+        let carrier= document.querySelector('select[name="carrier"]').value;
+        let tracking= document.querySelector('input[name="tracking"]').value;
+        if(validation){
+          let loadingBlock = document.querySelector('#loading-block');
+          if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');};
+          io.socket.put('/order/update/coppel',{order:order, carrier:carrier, tracking:tracking},(resData) =>{
+            io.socket.put('/order/update',{id:order,orderState:state},(resData) =>{
+              let colorcode = resData.newstate.color.code;
+              document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
+            });
+            if(!hasClass(loadingBlock,'is-hidden')){addClass(loadingBlock,'is-hidden');};
+            let modal = document.querySelector('#modal-integration');
+            addClass(modal, 'is-hidden');
+          });
+        }
       });
     </script>
 </div>

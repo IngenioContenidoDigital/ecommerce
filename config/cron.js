@@ -82,6 +82,17 @@ module.exports.cron = {
       }
     },
     timezone: 'America/Bogota'
+  },  
+  coppelOrders:{
+    schedule: '30 50 */3 * * *',
+    onTick: async () =>{
+      let channel = await Channel.findOne({name: 'coppel'});
+      let integrations = await Integrations.find({channel: channel.id});
+      for(let i=0; i<integrations.length; i++){
+        await sails.helpers.channel.coppel.orders(integrations[i].id);
+      }
+    },
+    timezone: 'America/Bogota'
   },
   /*linioOrders:{
     schedule: '05 45 * * * *',

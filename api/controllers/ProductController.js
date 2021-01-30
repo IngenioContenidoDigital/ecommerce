@@ -645,6 +645,128 @@ module.exports = {
       return res.send(err.message);
     }
   },
+  coppeladd: async (req, res) => {
+    if (!req.isSocket) { return res.badRequest(); }
+    let axios = require('axios');
+    let fs = require('fs');
+    let FormData = require('form-data');
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    let productChannelId = productchannel ? productchannel.id : '';
+    const channelPrice = productchannel ? productchannel.price : 0;
+    let integration = await Integrations.findOne({id: integrationId}).populate('channel');
+    try {
+      
+      let action = null;
+      let result = null;
+      let status = req.body.status ? 'active' : 'paused';
+      if (productchannel && productchannel.channelid) {
+        action = 'Update';
+      } else {
+        action = 'Post';
+      }
+
+      options = {
+        method: 'get',
+        url: `${integration.channel.endpoint}api/products?product_references=EAN|${product.id}`,
+        headers: {
+            'Authorization':`${integration.key}`,
+            accept: 'application/json'
+        }
+      }
+     let created = await axios(options).catch((e) => {result=e.response});
+      if(created){
+        if(created.data.total_count==0 && status=="active"){
+          await sails.helpers.channel.coppel.product(product.id, action, parseFloat(channelPrice), status)
+          .intercept((err) => {return new Error(err.message);});
+          let file = new FormData();
+          file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+          options = {
+            method: 'post',
+            url: `${integration.channel.endpoint}api/products/imports`,
+            headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                accept: 'application/json'
+            },
+            data:file
+          }
+          let response = await axios(options).catch((e) => {result=e.response; console.log(result);});
+          if(response){
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:product.id,
+              channel:channelId,
+              integration:integrationId,
+              channelid: response.data.import_id,
+              status: true,
+              qc:true,
+              price: req.body.price ? parseFloat(req.body.price) : 0
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){
+                productChannelId = await ProductChannel.updateOne({id: record.id}).set({
+                  channelid: response.data.import_id,
+                  status:true,
+                  qc:true,
+                  price: req.body.price ? parseFloat(req.body.price) : 0
+                });
+              }
+            });
+          }
+        }
+        if(action == 'Post'){
+          await sails.helpers.channel.coppel.product(product.id, 'Offer', parseFloat(req.body.price), status)
+          .intercept((err) => {return new Error(err.message);});
+          let file = new FormData();
+          file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+          file.append('import_mode','NORMAL');
+          options = {
+            method: 'post',
+            url: `${integration.channel.endpoint}api/offers/imports`,
+            headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                accept: 'application/json'
+            },
+            data:file
+         }
+         await axios(options).catch((e) => {result=e.response; console.log(result);});
+        }else if(action == 'Update'){
+          let body = await sails.helpers.channel.coppel.product(product.id, 'Update', parseFloat(req.body.price), status)
+          .intercept((err) => {return new Error(err.message);});
+          console.log(body);
+          options = {
+            method: 'post',
+            url: `${integration.channel.endpoint}api/offers`,
+            headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `application/json`,
+                accept: 'application/json'
+            },
+            data:body
+         }
+         let response_offer = await axios(options).catch((e) => {result=e.response; console.log(result);});
+         if(response_offer){
+           await ProductChannel.updateOne({ id: productChannelId }).set({ 
+             status: req.body.status,
+             price: req.body.price ? parseFloat(req.body.price) : 0
+           });
+         }
+        }
+      }
+    } catch (err) {
+      console.log(err);
+      await ProductChannel.updateOne({id: productChannelId}).set({
+        channelid: '',
+        status:false,
+        qc:false,
+        price: 0
+      });
+      return res.send(err.message);
+    }
+  },
   qualitycheck: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {

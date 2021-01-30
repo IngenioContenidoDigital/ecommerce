@@ -785,6 +785,7 @@
                       <% if(integra.length > 0){%>
                         <% integra.forEach(function(i){ %>
                           <% productchannel = product.channels.find(item => item.integration === i.id && item.channel === i.channel.id);%>
+                          <% if(i.channel.name !== 'coppel'){%>
                           <tr>
                             <td><img  src="<%=imgurl%>/images/channels/<%= i.channel.logo %>" width="100px"/></td>
                             <td><%= i.name %></td>
@@ -806,6 +807,29 @@
                               <label for="<%= i.id %>"></label>
                             </td>
                           </tr>
+                          <%}else if(i.channel.name === 'coppel' && product.variations.length === 1){%>
+                            <tr>
+                              <td><img  src="<%=imgurl%>/images/channels/<%= i.channel.logo %>" width="100px"/></td>
+                              <td><%= i.name %></td>
+                              <td>
+                                <div class="select is-small">
+                                  <select name="<%= i.id %>price">
+                                  <option value="0" <%if(typeof product=='object' && productchannel && productchannel.price==0){%>selected<%}%>>+ 0%</option>
+                                    <option value="0.05" <%if(typeof product=='object' && productchannel && productchannel.price ==0.05){%>selected<%}%>>+ 5%</option>
+                                    <option value="0.1" <%if(typeof product=='object' && productchannel && productchannel.price ==0.1){%>selected<%}%>>+ 10%</option>
+                                    <option value="0.15" <%if(typeof product=='object' && productchannel && productchannel.price ==0.15){%>selected<%}%>>+ 15%</option>
+                                    <option value="0.2" <%if(typeof product=='object' && productchannel && productchannel.price ==0.2){%>selected<%}%>>+ 20%</option>
+                                    <option value="0.25" <%if(typeof product=='object' && productchannel && productchannel.price ==0.25){%>selected<%}%>>+ 25%</option>
+                                    <option value="0.3" <%if(typeof product=='object' && productchannel && productchannel.price ==0.3){%>selected<%}%>>+ 30%</option>
+                                  </select>
+                                </div>
+                              </td>
+                              <td style="padding-top:10px;">
+                                <input id="<%= i.id %>" type="checkbox" name="productstatus" channelId='<%= i.channel.id %>' nameChannel="<%= i.channel.name %>" <%if(typeof product=='object' && productchannel && productchannel.status){%>checked<%}%> class="switch is-success">
+                                <label for="<%= i.id %>"></label>
+                              </td>
+                            </tr>
+                          <%}%>
                         <%})%>
                       <%}%>
                     <%}%>          

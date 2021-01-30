@@ -78,6 +78,18 @@ module.exports = {
       case 'invalid':
         name='fallido';
         break;
+      case 'WAITING_ACCEPTANCE':
+        name='pendiente';
+        break;
+      case 'WAITING_DEBIT_PAYMENT':
+        name='aceptado';
+        break;
+      case 'CANCELED':
+        name='cancelado';
+        break;
+      case 'SHIPPING':
+        name='aceptado';
+        break;  
       default:
         name='pendiente';
         break;
