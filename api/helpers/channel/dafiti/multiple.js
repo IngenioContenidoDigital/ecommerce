@@ -2,6 +2,10 @@ module.exports = {
   friendlyName: 'Multiple',
   description: 'Multiple dafiti.',
   inputs: {
+    integration : {
+      type:'string',
+      required:true,
+    },
     seller:{
       type:'string',
       required:true,

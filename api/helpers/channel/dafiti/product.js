@@ -13,6 +13,13 @@ module.exports = {
     status:{
       type:'string',
       defaultsTo:'active'
+    },
+    channelPrice:{
+      type:'number'
+    },
+    integration:{
+      type:'string',
+      required:true,
     }
   },
   exits: {
@@ -23,10 +30,10 @@ module.exports = {
   fn: async function (inputs,exits) {
     let moment = require('moment');
     var jsonxml = require('jsontoxml');
-    let padj = inputs.dafitiprice ? parseFloat(inputs.dafitiprice) : 0;
+    let padj = inputs.dafitiprice ? parseFloat(inputs.dafitiprice) : inputs.channelPrice;
     let body={Request:[]};
       for(let p of inputs.products){
-        let priceadjust = padj > 0 ? padj : p.dafitiprice;
+        let priceadjust = padj > 0 ? padj : inputs.channelPrice ;
         try{
           let product = await Product.findOne({id:p.id})
           .populate('gender')
@@ -115,10 +122,10 @@ module.exports = {
               let discPrice=0;
               switch(product.discount[0].type){
                 case 'P':
-                  discPrice+=((pv.price*(1+priceadjust))*(1-(product.discount[0].value/100)));
+                  discPrice+=((pv.price*(1+priceadjust || 0))*(1-(product.discount[0].value/100)));
                   break;
                 case 'C':
-                  discPrice+=((pv.price*(1+priceadjust))-product.discount[0].value);
+                  discPrice+=((pv.price*(1+priceadjust || 0))-product.discount[0].value);
                   break;
               }
               data.Product.SalePrice=discPrice.toFixed(2);

@@ -6,6 +6,10 @@ module.exports = {
       type:'ref',
       required:true,
     },
+    integration : {
+      type:'string',
+      required:true,
+    }
   },
   exits: {
     success: {
@@ -39,7 +43,11 @@ module.exports = {
             throw new Error('Producto sin Variaciones');
           }
         }else{
-          await Product.updateOne({id:p.id}).set({dafiti:true,dafitistatus:false,dafitiqc:false});
+          await ProductChannel.updateOne({product: record.id, integration : inputs.integration}).set({
+            status:false,
+            qc:false,
+          });
+
           throw new Error('Producto sin Imágenes');
         }
       }catch(err){

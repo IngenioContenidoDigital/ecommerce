@@ -2,6 +2,10 @@ module.exports = {
   friendlyName: 'Sign Request',
   description: 'Sign Request for Channel',
   inputs: {
+    integration:{
+      type:'string',
+      required:true,
+    },
     action:{
       type:'string',
       required:true,
@@ -22,9 +26,8 @@ module.exports = {
   fn: async function (inputs,exits) {
     let moment = require('moment');
     let crypto = require('crypto');
-    let seller = await Seller.findOne({id:inputs.seller});
-    let integration = await Integrations.findOne({channel:'dafiti',seller:seller.id});
-
+    let integration = await Integrations.findOne({id: inputs.integration});
+    
     let params=[
       encodeURIComponent('Version')+'='+encodeURIComponent('1.0'),
       encodeURIComponent('UserID')+'='+encodeURIComponent(integration.user),

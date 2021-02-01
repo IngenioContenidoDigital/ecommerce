@@ -422,41 +422,64 @@ module.exports = {
   },
   dafitiadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    const productChannelId = productchannel ? productchannel.id : '';
+    const channelPrice = productchannel ? productchannel.price : 0;
+    let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
+    
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
-      let product = await Product.find({ id: req.param('product') });
-      if (!product[0].dafiti) {
+      if (!productchannel || !productchannel.channelid) {
         action = 'ProductCreate';
       } else {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.dafiti.product(product, req.body.dafitiprice, status);
+      let result = await sails.helpers.channel.dafiti.product([product], parseFloat(req.body.price), status, channelPrice, integrationId);
       var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.dafiti.sign(action,product[0].seller);
-      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
+      let sign = await sails.helpers.channel.dafiti.sign(integrationId, action, product.seller);
+      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
       .then(async (resData)=>{
         resData = JSON.parse(resData);
         if(resData.SuccessResponse){
-          await Product.updateOne({ id: req.param('product') }).set({
-            dafiti: true,
-            dafitistatus: (product[0].dafitistatus) ? false : true,
-            dafitiprice: req.body.dafitiprice,
-            dafitiqc: false,
+          await ProductChannel.findOrCreate({id: productChannelId},{
+            product:product.id,
+            channel:channelId,
+            integration:integrationId,
+            channelid:'',
+            status: true,
+            qc:true,
+            price: req.body.price ? parseFloat(req.body.price) : 0
+          }).exec(async (err, record, created)=>{
+            if(err){return new Error(err.message);}
+            if(!created){
+              await ProductChannel.updateOne({id: record.id}).set({
+                channelid:'',
+                status:true,
+                qc:true,
+                price: req.body.price ? parseFloat(req.body.price) : 0
+              });
+            }
           });
-          let imgresult = await sails.helpers.channel.dafiti.images(product);
+          let imgresult = await sails.helpers.channel.dafiti.images([product], integrationId);
           var imgxml = jsonxml(imgresult,true);
-          let imgsign = await sails.helpers.channel.dafiti.sign('Image',product[0].seller);
-          setTimeout(async () => {await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+imgsign,'POST',imgxml);}, 5000);
+          let imgsign = await sails.helpers.channel.dafiti.sign(integrationId, 'Image', product.seller);
+
+          setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
           return res.send(resData.SuccessResponse.Head.RequestId);
         }else{
-          await Product.updateOne({ id: req.param('product') }).set({
-            dafiti: false,
-            dafitistatus: false,
-            dafitiprice: 0,
-            dafitiqc: false,
-          });
+          await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
+            {
+              status: false,
+              qc:false,
+              price: 0
+            }
+          );
+
           return res.send(resData.ErrorResponse.Head.ErrorMessage);
         }
       })
