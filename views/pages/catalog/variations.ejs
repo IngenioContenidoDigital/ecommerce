@@ -44,7 +44,20 @@
                     </select>
                   </div>
                 </div>
-              </div>                
+              </div>
+              <div class="field">
+                <label class="label is-inline is-size-7-mobile" for="seller">Seller</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select class="is-capitalized" name="seller" id="seller" required>
+                      <option value=""> -- Elegir Seller --</option>
+                      <% sellers.forEach(function(seller){ %>
+                        <option class="is-capitalized" <% if(action=='edit' && variation.seller !== null && seller.id==variation.seller ){ %> selected <% } %> value="<%= seller.id %>" ><%= seller.name %></option>
+                      <%})%>
+                    </select>                  
+                  </div>
+                </div>              
+              </div>
               <div class="field">
                 <label class="label">Nombre</label>
                 <div class="control">
