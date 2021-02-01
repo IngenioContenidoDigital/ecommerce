@@ -175,7 +175,6 @@ module.exports = {
     }
 
     const taxes = await Tax.find();
-    let variations = null;
     let error = null;
     let product = null;
     let action = req.param('action') ? req.param('action') : null;
@@ -191,13 +190,9 @@ module.exports = {
         .populate('variations')
         .populate('discount')
         .populate('channels');
-      if (product.gender !== undefined && product.gender !== null) {
-        variations = await Variation.find({ gender: product.gender });
-      }
       for (let pv in product.variations) {
         product.variations[pv].variation = await Variation.findOne({ id: product.variations[pv].variation });
       }
-      //return a.variation.name.localeCompare(b.variation.name)
       product.variations.sort((a, b) => { return parseFloat(a.variation.name) - parseFloat(b.variation.name); });
     }
     let moment = require('moment');
@@ -210,7 +205,6 @@ module.exports = {
       sellers: sellers,
       integrations: integrations,
       taxes: taxes,
-      variations: variations,
       action: action,
       product: product,
       error: error,
@@ -381,7 +375,7 @@ module.exports = {
     }
     let product = await Product.findOne({ id: req.param('id') }).populate('categories', { level: 2 });
     let level2 = product.categories.map(c => c.id);
-    let variations = await Variation.find({ where: { gender: product.gender, category: { in: level2 } } });
+    let variations = await Variation.find({ where: { gender: product.gender, seller: product.seller, category: { in: level2 } } });
     return res.send(variations);
   },
   findproductvariations: async (req, res) => {
@@ -827,7 +821,7 @@ module.exports = {
           prod.product = product.id;
           prod.price = parseInt(product.price * (1 + product.tax.value / 100));
           let variation = await Variation.find({
-            where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, category: { 'in': categories } },
+            where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, seller: product.seller, category: { 'in': categories } },
             limit: 1
           });
           if (variation) {
@@ -1738,43 +1732,32 @@ module.exports = {
                 }
               }
               try {
-                let tx = await Tax.findOne({id:pro.tax});
                 let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
                 if (!pro.categories[0]) {
                   throw new Error(`El producto Ref ${pro.reference} no tiene categoría.`);
                 }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
-                    //console.log(p.variations);
-                    //if(vr.reference == "73-7013M"){
-                    //  console.log(vr);
-                    //}
-
                     if(asProduct && vr.color){
                       await sails.helpers.createProductFromVariation(vr, pr).catch((e)=>{
                         throw new Error(`Ocurrio un error al crear un producto desde una variacion de color ${e.message}`);
                       });
                     }else{
 
-                      let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,category:pro.categories[0].id});
+                      let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});
                       let productVariation;
                       let discountHandled = false;
 
                       if(!variation || variation.length == 0){
-                        variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,category:pro.categories[0].id}).fetch();
+                        variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,seller:pro.seller,category:pro.categories[0].id}).fetch();
                       }
-
-                      /*if(!variation || (variation.length == 0 )){
-                         console.log(pr)
-                      }*/
-
+                      variation = variation.length ? variation[0] : variation;
                       let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
-                      let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
-
+                      let pv = pvs.find(pv=> pv.variation.name == variation.name);
                       if (!pv) {
                         productVariation = await ProductVariation.create({
                           product:pr.id,
-                          variation:variation[0].id,
+                          variation:variation.id,
                           reference: vr.reference ? vr.reference : '',
                           supplierreference:pr.reference,
                           ean13: vr.ean13 ? vr.ean13.toString() : '',
@@ -1787,7 +1770,7 @@ module.exports = {
                       } else {
                         productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
                           price: vr.price,
-                          variation: variation[0].id,
+                          variation: variation.id,
                           quantity: vr.quantity ? vr.quantity : 0,
                         });
                       }

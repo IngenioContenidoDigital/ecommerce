@@ -52,18 +52,18 @@ module.exports = {
       try {
         if(pro.categories[0] && productVariation.variations && productVariation.variations.length > 0){
           for(let vr of productVariation.variations){
-            let variation = await Variation.find({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, category: pro.categories[0].id});
+            let variation = await Variation.find({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, seller: pro.seller,category: pro.categories[0].id});
             let discountHandled = false;
-
             if(!variation || variation.length == 0){
-              variation = await Variation.create({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, category: pro.categories[0].id}).fetch();
+              variation = await Variation.create({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, seller: pro.seller,category: pro.categories[0].id}).fetch();
             }
+            variation = variation.length ? variation[0] : variation;
             let pvs = await ProductVariation.find({product: pro.id}).populate('variation');
-            let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
+            let pv = pvs.find(pv=> pv.variation.name == variation.name);
             if (!pv) {
               await ProductVariation.create({
                 product: pro.id,
-                variation: variation[0].id,
+                variation: variation.id,
                 reference: vr.reference ? vr.reference : '',
                 supplierreference: pro.reference,
                 ean13: vr.ean13 ? vr.ean13.toString() : '',
@@ -76,7 +76,7 @@ module.exports = {
             } else if(pv){
               await ProductVariation.updateOne({ id: pv.id }).set({
                 price: vr.price,
-                variation: variation[0].id,
+                variation: variation.id,
                 quantity: vr.quantity ? vr.quantity : 0,
               });
             }

@@ -63,10 +63,10 @@ module.exports = {
 
       if(vp){
         let variation = vr.weight || vr.talla;
-        variation = await Variation.find({ name:variation.toLowerCase().replace(',','.'), gender:variacionAsProduct.gender,category:categories[0].id});
+        variation = await Variation.find({ name:variation.toLowerCase().replace(',','.'), gender:variacionAsProduct.gender,seller:variacionAsProduct.seller,category:categories[0].id});
 
         if(!variation || variation.length == 0){
-          variation = await Variation.create({name:variation.toLowerCase().replace(',','.'),gender:variacionAsProduct.gender,category:categories[0].id}).fetch();
+          variation = await Variation.create({name:variation.toLowerCase().replace(',','.'),gender:variacionAsProduct.gender,seller:variacionAsProduct.seller,category:categories[0].id}).fetch();
         }
 
         let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');

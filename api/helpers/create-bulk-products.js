@@ -41,10 +41,10 @@ module.exports = {
               /* Caso para Everlast : si el producto simple trae definido el atributo peso toca buscar
               la variacion para el peso y  crear el productVariation */
               if(product.simple && product.product_weight){
-                let variation = await Variation.find({ name:product.product_weight, gender:pr.gender,category:pr.mainCategory});
+                let variation = await Variation.find({ name:product.product_weight, gender:pr.gender,seller:pr.seller,category:pr.mainCategory});
                 
                 if(!variation || variation.length == 0){
-                   variation = await Variation.create({name:product.product_weight,gender:pr.gender,category:pr.mainCategory}).fetch();
+                   variation = await Variation.create({name:product.product_weight,gender:pr.gender,seller:pr.seller,category:pr.mainCategory}).fetch();
                 }
 
                 let pvs = await ProductVariation.find({ product:pr.id, supplierreference:pr.reference}).populate('variation');
@@ -70,10 +70,10 @@ module.exports = {
                   });
                 }
               }else{
-                let variation = await Variation.find({ name:'único', gender:pr.gender,category:pr.mainCategory});
+                let variation = await Variation.find({ name:'único', gender:pr.gender,seller:pr.seller,category:pr.mainCategory});
                 
                 if(!variation || variation.length == 0){
-                   variation = await Variation.create({name:'único',gender:pr.gender,category:pr.mainCategory}).fetch();
+                   variation = await Variation.create({name:'único',gender:pr.gender,seller:pr.seller,category:pr.mainCategory}).fetch();
                 }
 
                 let pvs = await ProductVariation.find({ product:pr.id, supplierreference:pr.reference}).populate('variation');
