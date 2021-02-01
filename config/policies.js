@@ -42,6 +42,7 @@ module.exports.policies = {
   },
   ProductController:{
     'findproductvariations' : true,
+    'muybacanoupdate' : true,
     '*': 'isLoggedIn'
   },
   SellerController:{

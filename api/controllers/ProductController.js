@@ -645,6 +645,54 @@ module.exports = {
       return res.send(err.message);
     }
   },
+  qualitycheck: async (req, res) => {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
+      throw 'forbidden';
+    }
+    let params={};
+    let error = null;
+    let channel = req.param('channel');
+    if(req.param('seller')){params.seller=req.param('seller');}
+    switch(channel){
+      case 'linio':
+        params.linio=true;
+        params.linioqc=false;
+        break;
+      case 'dafiti':
+        params.dafiti=true;
+        params.dafitiqc=false;
+        break;
+    }
+    let products = await Product.find({
+      where:params,
+      select: ['id','reference']
+    });
+    return res.view('pages/configuration/quality', { layout: 'layouts/admin', error: error, channel: channel, products: products});
+  },
+  qualityexecute: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
+      throw 'forbidden';
+    }
+    if (!req.isSocket) { return res.badRequest(); }
+    let response = {items: [],errors: []};
+    let result = null;
+    try{
+      switch(req.body.channel){
+        case 'linio':
+          result = await sails.helpers.channel.linio.checkstatus(req.body.product.id);
+          break;
+        case 'dafiti':
+          result = await sails.helpers.channel.dafiti.checkstatus(req.body.product.id);
+          break;
+      }
+      if (result) {response.items.push({ code: 'REF:'+req.body.product.reference, message: result });}
+    }catch(err){
+      response.errors.push({ code: 'REF:'+req.body.product.reference, message: 'No Localizado' });
+    }
+    return res.send(response);
+  },
   coppeladd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
     let axios = require('axios');
@@ -708,7 +756,7 @@ module.exports = {
               if(!created){
                 productChannelId = await ProductChannel.updateOne({id: record.id}).set({
                   channelid: response.data.import_id,
-                  status:true,
+                  status:req.body.status,
                   qc:false,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
@@ -767,53 +815,94 @@ module.exports = {
       return res.send(err.message);
     }
   },
-  qualitycheck: async (req, res) => {
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
-      throw 'forbidden';
+  muybacanoadd: async (req, res) => {
+    if (!req.isSocket) {
+      return res.badRequest();
     }
-    let params={};
-    let error = null;
-    let channel = req.param('channel');
-    if(req.param('seller')){params.seller=req.param('seller');}
-    switch(channel){
-      case 'linio':
-        params.linio=true;
-        params.linioqc=false;
-        break;
-      case 'dafiti':
-        params.dafiti=true;
-        params.dafitiqc=false;
-        break;
-    }
-    let products = await Product.find({
-      where:params,
-      select: ['id','reference']
-    });
-    return res.view('pages/configuration/quality', { layout: 'layouts/admin', error: error, channel: channel, products: products});
-  },
-  qualityexecute: async (req, res) =>{
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
-      throw 'forbidden';
-    }
-    if (!req.isSocket) { return res.badRequest(); }
-    let response = {items: [],errors: []};
-    let result = null;
-    try{
-      switch(req.body.channel){
-        case 'linio':
-          result = await sails.helpers.channel.linio.checkstatus(req.body.product.id);
-          break;
-        case 'dafiti':
-          result = await sails.helpers.channel.dafiti.checkstatus(req.body.product.id);
-          break;
+    let axios = require('axios');
+    try {
+      let product = await Product.findOne({ id: req.body.product }).populate('channels');
+      let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
+      let integration = await Integrations.findOne({id: req.body.integrationId}).populate('seller').populate('channel');
+      const channelId = req.body.channelId;
+      let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+      let productChannelId = productchannel ? productchannel.id : '';
+      let action='';
+      
+      for (let index = 0; index < productvariations.length; index++) {
+        let result=0;
+        const pv = productvariations[index];
+        options = {
+          method: 'post',
+          url: `${integration.channel.endpoint}/api/catalog_system/pvt/skuseller/changenotification/${integration.seller.id}/${pv.id}`,
+          headers: {
+              'X-VTEX-API-AppToken':integration.user,
+              'X-VTEX-API-AppKey':integration.key,
+              'content-type': 'application/json',
+              accept: 'application/json'
+          }
+        };
+        let response = await axios(options).catch((e) => {result=e.response.status;});
+        
+        if( result == 404 ){
+          action = 'Post';
+        }else if(response){
+          if(response.status == 204 || 200 ){
+            action = 'Post';
+          }
+        };
+
+        let body = await sails.helpers.channel.muybacano.product(product.id, pv.id, action, req.body.price, {},req.body.status);
+        options = {
+          method: 'put',
+          url: `https://api.vtex.com/muybacano/suggestions/${integration.seller.id}/${pv.id}`,
+          headers: {
+              'X-VTEX-API-AppToken':integration.user,
+              'X-VTEX-API-AppKey':integration.key,
+              'content-type': 'application/json',
+              accept: 'application/json'
+          },
+          data:body
+       }
+       await axios(options).catch((e) => {result=e.response.status});
       }
-      if (result) {response.items.push({ code: 'REF:'+req.body.product.reference, message: result });}
-    }catch(err){
-      response.errors.push({ code: 'REF:'+req.body.product.reference, message: 'No Localizado' });
+
+      await ProductChannel.findOrCreate({id: productChannelId},{
+        product:product.id,
+        channel:channelId,
+        integration:integration.id,
+        channelid: '',
+        status: true,
+        qc:false,
+        price: req.body.price ? parseFloat(req.body.price) : 0
+      }).exec(async (err, record, created)=>{
+        if(err){return new Error(err.message);}
+        if(!created){
+          productChannelId = await ProductChannel.updateOne({id: record.id}).set({
+            channelid: '',
+            status:req.body.status,
+            qc:false,
+            price: req.body.price ? parseFloat(req.body.price) : 0
+          });
+        }
+      });
+      return res.send();
+    } catch (err) {
+      console.log(err);
+      return res.send(err);
     }
-    return res.send(response);
+  },
+  muybacanoupdate: async (req, res) => {
+    
+    try {
+      let action = 'Update';
+      let query ;
+      if(req.route.methods.post){query= req.body;};
+      let response = await sails.helpers.channel.muybacano.product('', '', action, 0, query);
+      return res.send(response);
+    } catch (err) {
+      return res.send(err);
+    }
   },
   import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
