@@ -11,18 +11,29 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'showvariations')){
       throw 'forbidden';
     }
+    let filter = {};
     let error = null;
     let variation=null;
-    let variations = await Variation.find().populate('gender').populate('category');
+    let sellers = null;
     let genders = await Gender.find();
     let categories = await Category.find({level:2});
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     let measures = ['centímetro', 'gramo','mililitro','unidad'];
+    if (rights.name !== 'superadmin' && rights.name !== 'admin') {
+      sellers = await Seller.find({ id: req.session.user.seller });
+      filter.seller = req.session.user.seller;
+    } else {
+      sellers = await Seller.find();
+    }
+    let variations = await Variation.find({
+      where: filter,
+      sort: 'createdAt DESC'
+    }).populate('gender').populate('category').populate('seller');
     if(id){
       variation = await Variation.findOne({id:id}).populate('gender');
     }
-    return res.view('pages/catalog/variations',{layout:'layouts/admin',variations:variations,categories:categories,action:action,error:error,variation:variation,genders:genders,measures:measures});
+    return res.view('pages/catalog/variations',{layout:'layouts/admin',sellers,variations:variations,categories:categories,action:action,error:error,variation:variation,genders:genders,measures:measures});
   },
   createvariation: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -35,6 +46,7 @@ module.exports = {
         name:req.body.name.trim().toLowerCase(),
         gender:req.body.gender,
         category: req.body.category ? req.body.category : null,
+        seller: req.body.seller ? req.body.seller : null,
         cm:req.body.cm,
         col:req.body.col,
         us:req.body.us,
@@ -63,6 +75,7 @@ module.exports = {
         name:req.body.name.trim().toLowerCase(),
         gender:req.body.gender,
         category: req.body.category ? req.body.category : null,
+        seller: req.body.seller ? req.body.seller : null,
         cm:req.body.cm,
         col:req.body.col,
         us:req.body.us,
