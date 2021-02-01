@@ -21,14 +21,21 @@
                     </div>
                 </div>
                 <br>
-                <div class="columns is-marginless is-gapless">
-                    <div class="column"><img class="menu-title is-hidden" src="/images/dafiti.png" id="dafiti"/></div>
-                    <div class="column"><img class="menu-title is-hidden" src="/images/mercadolibre.png" id="mercadolibre"/></div>
-                    <div class="column"><img class="menu-title is-hidden" src="/images/linio.png" id="linio"/></div>
-                </div>
-                <div class="columns is-marginless is-gapless">
-                    <input class="is-hidden" name="channel" id="channel" required value="">
-                </div>
+				<% integra = null; %>
+				<% integra = integrations.filter(data => data.channel.type === 'marketplace');%>
+				<% if(integra.length > 0){%>
+					<div class="field">
+						<label class="label is-size-7">Elegir Integración</label>
+						<div class="select is-fullwidth">
+							<select class="is-capitalized" name="integration" id="selectIntegration" required>
+							<option class="is-capitalized" value="">-- Elegir Integración --</option>
+							<% integra.forEach(function(inte){ %>
+								<option class="is-capitalized" value="<%=inte.id%>"><%= inte.name %></option>
+							<%})%>
+							</select>
+						</div>
+					</div>
+				<%}%>
                 <br>
                 <div class="buttons is-right is-fixed-bottom">
                     <br><br><br>
@@ -42,8 +49,9 @@
                 <br>
                 <h6 class="title is-6">Espera un momento por favor ...</h6>
                 <hr>
-                <div id="items" class="notification is-primary">
-                </div>
+                <div class="notification is-primary">
+					Se han procesado un total de <span id="items">0</span> registros.
+				</div>
                 <div class="notification is-danger">
                     <p>Hemos identificado <span id="errors">0</span> error(es).</p>
                     <br>
@@ -57,56 +65,37 @@
     </div>
 </div>
 <script>
-    <%if(seller !== null){%>
-        let dafiti = document.querySelector('#dafiti');
-        let linio = document.querySelector('#linio');
-        let mercadolibre = document.querySelector('#mercadolibre');
-        <%- channelDafiti %> ? removeClass(dafiti, 'is-hidden') : addClass(dafiti, 'is-hidden');
-        <%- channelLinio %> ? removeClass(linio, 'is-hidden') : addClass(linio, 'is-hidden');
-        <%- channelMercadolibre %> ? removeClass(mercadolibre, 'is-hidden') : addClass(mercadolibre, 'is-hidden');
-    <%}%>
-
     live('#process','click',e=>{
         e.preventDefault();
-        let channel = document.querySelector('#channel').value
-        let action = document.querySelector('#action').value
+		let action = document.querySelector('#action').value
+		let integrationId = document.querySelector('#selectIntegration').value
         let seller = '<%- seller %>';
         let loading = document.querySelector('.loading');
         loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
         let report = document.querySelector('#report');
+        let items = document.querySelector('#items');
+        let errors = document.querySelector('#errors');
+        let errorlist = document.querySelector('#error-list');
+        errors.innerHTML=0;
+        errorlist.innerHTML='';
+        items.innerHTML=0;
         if(hasClass(report),'is-hidden'){removeClass(report,'is-hidden');}
-        io.socket.post('/multiple',{channel:channel, action:action,seller:seller},resData =>{
+        io.socket.post('/multiple',{action,seller,integrationId},resData =>{
+            loading.innerHTML='';
             if(resData.items.length>=1){
-                let items = document.querySelector('#items');
-                items.innerHTML='Petición Enviada:'+ resData.items[0];
+                items.innerHTML=parseInt(resData.items.length);
             }
 
             if(resData.errors.length>=1){
-                let errors = document.querySelector('#errors')
                 errors.innerHTML=resData.errors.length;
-                let errorlist = document.querySelector('#error-list');
                 for(let e of resData.errors){
-                let err = document.createElement('li');
-                err.innerHTML=e;
-                errorlist.appendChild(err);
+					let err = document.createElement('li');
+					err.innerHTML=e;
+					errorlist.appendChild(err);
                 }
             }
-
             let mensaje = document.querySelector('#report > .title');
             mensaje.innerHTML='Proceso Finalizado';
-            loading.innerHTML='';
-
         });
-    });
-
-    live('.menu-title', 'click', e =>{
-        let channel = document.querySelector('input[name="channel"]');
-        let images = document.querySelectorAll('.menu-title');
-
-        channel.value = e.target.id;
-        images.forEach(img =>{
-            removeClass(img, 'img-multiple');
-        });
-        addClass(e.target,'img-multiple');
     });
 </script>
