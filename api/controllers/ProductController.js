@@ -701,7 +701,7 @@ module.exports = {
               integration:integrationId,
               channelid: response.data.import_id,
               status: true,
-              qc:true,
+              qc:false,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -709,7 +709,7 @@ module.exports = {
                 productChannelId = await ProductChannel.updateOne({id: record.id}).set({
                   channelid: response.data.import_id,
                   status:true,
-                  qc:true,
+                  qc:false,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }

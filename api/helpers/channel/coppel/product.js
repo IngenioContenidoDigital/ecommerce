@@ -85,7 +85,13 @@ module.exports = {
             }else{
               price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(2)
             }
-            });
+            });    
+            
+            if(seller.mainAddress.country==='5eeb7a88cc42a6289844ec83'){
+              exchange_rate = await sails.helpers.currencyConverter('COP', 'MXN');
+              price = price*exchange_rate.result;
+            }
+
             if(inputs.action=='Post'){
     
               let workbook = new Excel.Workbook();
