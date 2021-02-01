@@ -279,6 +279,7 @@ module.exports = {
     const nameChannel = req.param('namechannel');
     let integration = req.body.integration;
     const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.'
+    let edit = false;
 
     Integrations.findOrCreate({id: integration},{
       channel:channel,
@@ -293,19 +294,18 @@ module.exports = {
       if(err){return res.redirect('/sellers?error='+err);}
       integration = record.id;
       if(!created){
-        await Integrations.updateOne({id:record.id}).set({
-          channel:channel,
+        record = await Integrations.updateOne({id:record.id}).set({
           name: req.body.name,
           url:req.body.url ? req.body.url : '',
           user:req.body.user,
           key:req.body.key,
           secret:req.body.secret ? req.body.secret : '',
           version:req.body.version ? req.body.version : '',
-          seller:seller
         });
+        edit = record.useridml !== '' ? true : false;
       }
 
-      if(nameChannel =='mercadolibre'){
+      if(nameChannel == 'mercadolibre' && !edit){
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
