@@ -510,7 +510,7 @@ module.exports = {
         action = 'Post';
       }
       let integration = await sails.helpers.channel.mercadolibre.sign(integrationId);
-      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status)
+      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, parseFloat(req.body.price),channelPrice,status,integration.id)
       .intercept((err) => {return new Error(err.message);});
       if(body){
         if(action==='Update'){
@@ -518,7 +518,7 @@ module.exports = {
           .intercept((err)=>{
             return new Error(err.message);
           });
-          await ProductChannel.updateOne({id: productChannelId}).set({
+          responseProductChannel = await ProductChannel.updateOne({id: productChannelId}).set({
             status: req.body.status ? true : false,
             price: req.body.price ? parseFloat(req.body.price) : 0
           });
@@ -572,6 +572,7 @@ module.exports = {
           });
         }
       });
+      console.log(err);
       return res.send({error: err});
     }
   },
@@ -1166,9 +1167,9 @@ module.exports = {
       throw 'forbidden';
     }
     let seller = req.param('seller') ? req.param('seller') : req.session.user.seller;
-    let integrations = await Integrations.find({ seller: seller }).populate('channel');
+    let data = await sails.helpers.checkChannels(seller);
     let error = req.param('error') ? req.param('error') : null;
-    return res.view('pages/configuration/multiple', { layout: 'layouts/admin',seller,error,integrations});
+    return res.view('pages/configuration/multiple', { layout: 'layouts/admin', seller, error: error, channelDafiti: data.channelDafiti, channelLinio: data.channelLinio, channelMercadolibre: data.channelMercadolibre });
   },
   multipleexecute: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -1177,9 +1178,9 @@ module.exports = {
     }
     var jsonxml = require('jsontoxml');
     let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
-    let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
-    let channel = integration.channel.name;
+    let channel = req.body.channel;
     let result = null;
+    let params = { seller: seller };
     let response = { items: [], errors: [] };
     let productlist = [];
     try {
@@ -1294,74 +1295,61 @@ module.exports = {
       }
       if (channel === 'mercadolibre') {
         let action = '';
-        const intgrationId = integration.id;
-        let products = await Product.find({seller: seller, active: true}).populate('channels',{
-          where:{
-            channel: integration.channel.id,
-            integration: intgrationId
-          },
-          limit: 1
-        });
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'Post';
-            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            params.ml = false;
+            params.active = true;
             break;
           case 'ProductUpdate':
             action = 'Update';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            params.ml = true;
+            params.mlid = { '!=': '' };
+            /*params.active = true;*/
             break;
           case 'Image':
             action = 'Update';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            params.ml = true;
+            params.mlstatus = true;
+            params.active = true;
             break;
         }
+        let products = await Product.find(params);
         if (products.length > 0) {
-          let integration = await sails.helpers.channel.mercadolibre.sign(intgrationId);
+          let integration = await sails.helpers.channel.mercadolibre.sign(products[0].seller);
           for (let pl of products) {
-            const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
-            const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
-            const mlstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
-            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
-            let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
+            let body = await sails.helpers.channel.mercadolibre.product(pl.id, action, pl.mlprice)
             .tolerate(async (err) => {
+              await Product.updateOne({ id: pl.id }).set({
+                ml: false,
+                mlstatus: false,
+                mlid: '',
+                mlprice:0
+              });
               response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
             });
             if(body){
               if(action==='Update'){
-                result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
+                result = await sails.helpers.channel.mercadolibre.request('items/'+pl.mlid,integration.secret, body,'PUT')
                 .tolerate((err)=>{return;});
                 if(result){
                   response.items.push(body);
-                  await ProductChannel.updateOne({ id: productChannelId }).set({
-                    status:mlstatus,
-                    qc:true,
-                    price:mlprice
+                  await Product.updateOne({ id: pl.id }).set({
+                    ml: true,
+                    mlstatus: pl.mlstatus,
+                    mlprice:parseFloat(pl.mlprice)
                   });
                 }
               }
               if(action==='Post'){
-                result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
+                result = await sails.helpers.channel.mercadolibre.request('items',integration.secret, body,'POST')
                 .tolerate((err)=>{return;});
                 if(result.id.length>0){
-                  await ProductChannel.findOrCreate({id: productChannelId},{
-                    product:pl.id,
-                    channel:integration.channel.id,
-                    integration:integration.id,
-                    channelid:result.id,
-                    status:true,
-                    qc:true,
-                    price:0
-                  }).exec(async (err, record, created)=>{
-                    if(err){return new Error(err.message);}
-                    if(!created){
-                      await ProductChannel.updateOne({id: record.id}).set({
-                        channelid:result.id,
-                        status:true,
-                        qc:true,
-                        price:mlprice
-                      });
-                    }
+                  await Product.updateOne({id: product.id}).set({
+                    ml: true,
+                    mlstatus: true,
+                    mlid: result.id,
+                    mlprice: parseFloat(pl.mlprice)
                   });
                   response.items.push(body);
                 }
