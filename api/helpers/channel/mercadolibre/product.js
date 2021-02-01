@@ -10,21 +10,21 @@ module.exports = {
       type:'string',
       required:true,
     },
-    mlprice:{
-      type:'number',
-      defaultsTo:0
-    },
-    channelPrice:{
-      type:'number'
-    },
-    status:{
-      type:'string',
-      defaultsTo:'active'
-    },
     integration:{
       type:'string',
       required:true,
     },
+    channelPrice:{
+      type:'number'
+    },
+    mlprice:{
+      type:'number',
+      defaultsTo:0
+    },
+    status:{
+      type:'string',
+      defaultsTo:'active'
+    }
   },
   exits: {
     success: {
