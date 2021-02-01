@@ -1,5 +1,3 @@
-const { exists } = require('grunt');
-
 module.exports = {
   friendlyName: 'Channel sync',
   description: '',
