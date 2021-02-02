@@ -15,7 +15,8 @@ module.exports = {
       defaultsTo:'active'
     },
     channelPrice:{
-      type:'number'
+      type:'number',
+      defaultsTo:0
     },
     integration:{
       type:'string',

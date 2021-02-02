@@ -97,5 +97,40 @@
             let mensaje = document.querySelector('#report > .title');
             mensaje.innerHTML='Proceso Finalizado';
         });
+
+        io.socket.on("product_created", (resData)=>{
+            if(resData && resData.item){
+                items.innerHTML=parseInt(items.innerHTML)+1;
+            }
+
+            if(resData && resData.error && resData.error.length>=1){
+                let errors = document.querySelector('#errors')
+                errors.innerHTML=parseInt(errors.innerHTML)+1;
+                let errorlist = document.querySelector('#error-list');
+                let err = document.createElement('li');
+                err.innerHTML=resData.error.message;
+                errorlist.appendChild(err);
+            }
+
+            if(resData && resData.total && resData.proceced) {
+                
+                let total = resData.total;
+                let proceced =  resData.proceced;
+                
+                if(proceced == total){
+                    let mensaje = document.querySelector('#report > .title');
+                    mensaje.innerHTML='Proceso Finalizado';
+                    addClass(loading, 'is-hidden');
+                }
+            }
+        });
+        
+        io.socket.on("product_bulk_ended", (resData)=>{
+            if(resData){
+                let mensaje = document.querySelector('#report > .title');
+                mensaje.innerHTML='Proceso Finalizado';
+                addClass(loading, 'is-hidden');
+            }
+	    });
     });
 </script>
