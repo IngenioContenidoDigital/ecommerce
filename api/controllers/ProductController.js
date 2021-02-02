@@ -1654,6 +1654,181 @@ module.exports = {
           throw new Error('Sin Productos para Procesar');
         }
       }
+      if (channel === 'coppel') {
+
+        let axios = require('axios');
+        let fs = require('fs');
+        let FormData = require('form-data');
+        let result;
+
+        const intgrationId = integration.id;
+        
+        let products = await Product.find({seller: seller, active: true}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        });
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'Post';
+            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            break;
+          case 'ProductUpdate':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            break;
+          case 'Image':
+            action = 'Image';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            break;
+        }
+        if (products.length > 0) {
+          for (let pl of products) {
+            let productvariations = await ProductVariation.find({product:pl.id}).populate('variation');
+            const cpprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
+            const cpid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const cpstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
+            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+            if(productvariations.length===1){
+              if(action==='Update'){
+                let body = await sails.helpers.channel.coppel.product(pl.id, 'Update', cpprice, cpstatus)
+                .intercept((err) => {return new Error(err.message);});
+                options = {
+                  method: 'post',
+                  url: `${integration.channel.endpoint}api/offers`,
+                  headers: {
+                      'Authorization':`${integration.key}`,
+                      'content-type': `application/json`,
+                      accept: 'application/json'
+                  },
+                  data:body
+                }
+                let response_offer = await axios(options).catch((e) => {
+                  result=e.response.data.message?e.response.data.message:e.response.data; 
+                  response.errors.push('REF: '+pl.reference+' no actualizado en Coppel: '+ result);
+                });
+                if(response_offer){
+                  response.items.push(response_offer.data.import_id);
+                  await ProductChannel.updateOne({id: productChannelId}).set({	
+                    channelid:response_offer.data.import_id,	
+                    status:true,	
+                    qc:false,	
+                    price:cpprice	
+                  });
+                }
+              }
+              if(action==='Post'){
+                options = {
+                  method: 'get',
+                  url: `${integration.channel.endpoint}api/products?product_references=EAN|${pl.id}`,
+                  headers: {
+                      'Authorization':`${integration.key}`,
+                      accept: 'application/json'
+                  }
+                }
+                let created = await axios(options).catch((e) => {result=e.response});
+                if(created){
+                  if(created.data.total_count === 0){
+                    await sails.helpers.channel.coppel.product(pl.id, action, cpprice, cpstatus)
+                    .intercept((err) => {return new Error(err.message);});
+                    let file = new FormData();
+                    file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+                    options = {
+                      method: 'post',
+                      url: `${integration.channel.endpoint}api/products/imports`,
+                      headers: {
+                          'Authorization':`${integration.key}`,
+                          'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                          accept: 'application/json'
+                      },
+                      data:file
+                    }
+                    await axios(options).catch((e) => {result=e.response; console.log(result);});
+                  }
+
+                  await sails.helpers.channel.coppel.product(pl.id, 'Offer', cpprice, cpstatus)
+                  .intercept((err) => {return new Error(err.message);});
+                  file = new FormData();
+                  file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+                  file.append('import_mode','NORMAL');
+                  options = {
+                    method: 'post',
+                    url: `${integration.channel.endpoint}api/offers/imports`,
+                    headers: {
+                        'Authorization':`${integration.key}`,
+                        'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                        accept: 'application/json'
+                    },
+                    data:file
+                  }
+                  let response_offer = await axios(options).catch((e) => {
+                    result=e.response.data.message?e.response.data.message:e.response.data; 
+                    response.errors.push('REF: '+pl.reference+' no creado en Coppel: '+ result);
+                  });
+                  
+                  
+
+                  await ProductChannel.findOrCreate({id: productChannelId},{
+                    product:pl.id,
+                    channel:integration.channel.id,
+                    integration:integration.id,
+                    channelid:response_offer.data.import_id,
+                    status:true,
+                    qc:false,
+                    price:cpprice
+                  }).exec(async (err, record, created)=>{
+                    if(err){return new Error(err.message);}
+
+                    if(!created){	
+                      await ProductChannel.updateOne({id: record.id}).set({	
+                        channelid:response_offer.data.import_id,	
+                        status:true,	
+                        qc:false,	
+                        price:cpprice	
+                      });	
+                    }
+                  });
+
+                  response.items.push(response_offer.data.import_id);
+                }
+              }
+              if(action==='Image'){
+                await sails.helpers.channel.coppel.product(pl.id, 'Post', cpprice, cpstatus)
+                .intercept((err) => {return new Error(err.message);});
+                let file = new FormData();
+                file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+                options = {
+                  method: 'post',
+                  url: `${integration.channel.endpoint}api/products/imports`,
+                  headers: {
+                      'Authorization':`${integration.key}`,
+                      'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                      accept: 'application/json'
+                  },
+                  data:file
+                }
+                let response_product = await axios(options).catch((e) => {
+                  result=e.response.data.message?e.response.data.message:e.response.data; 
+                  response.errors.push('REF: '+pl.reference+' no actualizado en Coppel: '+ result);
+                });
+                if(response_product){
+                  response.items.push(response_product.data.import_id);
+                  await ProductChannel.updateOne({id: productChannelId}).set({	
+                    channelid:response_product.data.import_id,	
+                    status:true,	
+                    qc:false,	
+                    price:cpprice	
+                  });
+                }
+              }
+            }
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
     } catch (err) {
       response.errors.push(err.message);
     }
