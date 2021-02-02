@@ -1310,7 +1310,6 @@ module.exports = {
             products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
             break;
         }
-         products = await Product.find(params);
         if (products.length > 0) {
           let integration = await sails.helpers.channel.mercadolibre.sign(intgrationId);
           for (let pl of products) {
