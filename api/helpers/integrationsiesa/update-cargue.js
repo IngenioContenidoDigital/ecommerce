@@ -19,7 +19,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     const sql = require('mssql');
     var config = {
-      user: '1Ecomm',
+      user: '1ecomm',
       password: '1Ec099p32$',
       server: '190.0.46.6',
       database: 'unoEcommerce_Produccion',
@@ -27,7 +27,8 @@ module.exports = {
         'encrypt': false,
         'enableArithAbort': false
       },
-      port: 14998
+      port: 14998,
+      requestTimeout: 300000
     };
     try {
       let connection = await sql.connect(config);
