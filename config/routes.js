@@ -161,7 +161,7 @@ module.exports.routes = {
   'POST /order/generatereport': {controller:'OrderController', action:'generateReportExcel'},
   'GET /respuesta' : {controller: 'OrderController', action: 'response'},
   'POST /confirmacion' : {controller:'OrderController', action:'confirmation', csrf:false},
-  'POST /pvt/orders/:id?/:fulfill?' : {controller:'OrderController',action:'muybacanoorders'},
+  'POST /api/pvt/orders/:id?/:fulfill?' : {controller:'OrderController',action:'muybacanoorders'},
   'GET /discounts/:action?/:id?' : {controller:'DiscountController',action:'discounts'},
   'POST /discount/:action/:id?' : {controller:'DiscountController',action:'creatediscount'},
   'POST /productdiscount' : {controller:'DiscountController',action:'productdiscount'},

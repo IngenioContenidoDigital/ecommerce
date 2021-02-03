@@ -89,7 +89,10 @@ module.exports = {
         break;
       case 'SHIPPING':
         name='aceptado';
-        break;  
+        break;
+      case 'CLOSED':
+        name='entregado';
+        break;    
       default:
         name='pendiente';
         break;

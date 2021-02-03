@@ -1829,6 +1829,94 @@ module.exports = {
           throw new Error('Sin Productos para Procesar');
         }
       }
+      if (channel === 'muybacano') {
+        let axios = require('axios');
+        let action = 'Post';
+        const intgrationId = integration.id;
+        console.log(integration.channel.endpoint);
+        let products = await Product.find({seller: seller, active: true}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        });
+        
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'Post';
+            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            break;
+          case 'ProductUpdate':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            break;
+          case 'Image':
+            action = 'Image';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            break;
+        }
+        
+        if (products.length > 0) {
+          for (let pl of products) {
+            let productvariations = await ProductVariation.find({product:pl.id}).populate('variation');
+            let seller = await Seller.findOne({ id: pl.seller });
+            const mbprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
+            const mbid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const mbstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
+            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+            
+      
+            for (let index = 0; index < productvariations.length; index++) {
+              let result=0;
+              const pv = productvariations[index];
+              options = {
+                method: 'post',
+                url: `${integration.channel.endpoint}/api/catalog_system/pvt/skuSeller/changenotification/${seller.id}/${pv.id}`,
+                headers: {
+                    'X-VTEX-API-AppToken':integration.user,
+                    'X-VTEX-API-AppKey':integration.key,
+                    'content-type': 'application/json',
+                    accept: 'application/json'
+                }
+              };
+              let response_mb = await axios(options).catch((e) => {result=e.response.status});
+              
+              if( result == 404 ){
+                action = 'Post';
+              }else if(response_mb){
+                if(response_mb.status == 204 || 200 ){
+                  action = 'Post';
+                }
+              };
+      
+              let body = await sails.helpers.channel.muybacano.product(pl.id, pv.id, action, mbprice, {}, mbstatus);
+              options = {
+                method: 'put',
+                url: `https://api.vtex.com/muybacano/suggestions/${seller.id}/${pv.id}`,
+                headers: {
+                    'X-VTEX-API-AppToken':integration.user,
+                    'X-VTEX-API-AppKey':integration.key,
+                    'content-type': 'application/json',
+                    accept: 'application/json'
+                },
+                data:body
+             }
+             let response_put = await axios(options).catch((e) => {result=e.response.status});
+             if(!response_put){
+              throw new Error(`Producto:${pl.name} SKU:${pv.supplierreference} no procesado`);
+             }
+            }
+            // response.items.push(`SKU's procesados`);    
+            // await Product.updateOne({ id: pl.id }).set({
+            //   mb: true,
+            //   mbstatus: true
+            // });
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
     } catch (err) {
       response.errors.push(err.message);
     }

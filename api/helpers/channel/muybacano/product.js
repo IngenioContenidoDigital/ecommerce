@@ -207,10 +207,24 @@ module.exports = {
             array_items.push(item);
             info ={
                   "itemIndex": index, // obrigatório, int - index do array de items
-                  "stockBalance": 0, // obrigatório, int - estoque que atende
                   "quantity": productvariation.quantity, // obrigatório, int - retornar a quantidade solicitada ou a quantidade que consegue atender
                   "shipsTo": [ "COL"],  // obrigatório, array de string com as siglas dos países de entrega
-                  "slas": []
+                  "slas": [
+                    {
+                      "id": "Regular",
+                      "deliveryChannel": "delivery",
+                      "name": "Regular Delivery",
+                      "price": 0,
+                      "shippingEstimate": "5bd"
+                   }
+                  ],                  
+                  "stockBalance": productvariation.quantity,
+                  "deliveryChannels": [
+                    {
+                       "id": "delivery",
+                       "stockBalance": productvariation.quantity
+                    }
+                 ]
               }
               array_info.push(info);
           } else {
@@ -222,10 +236,9 @@ module.exports = {
         }
 
         let data={
+            "country":"COL",
             "items": array_items,
-            "logisticsInfo": array_info,
-            "country":"COL",   // string, nulo se não enviado
-            "postalCode":"22251-030"   // string, nulo se não enviado,
+            "logisticsInfo": array_info,  
         }
       return exits.success(data);
       }catch(err){

@@ -38,6 +38,7 @@ module.exports.policies = {
   OrderController:{
     'response':true,
     'confirmation':true,
+    'muybacanoorders': true,
     '*': 'isLoggedIn'
   },
   ProductController:{
