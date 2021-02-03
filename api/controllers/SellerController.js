@@ -296,13 +296,13 @@ module.exports = {
       if(!created){
         record = await Integrations.updateOne({id:record.id}).set({
           name: req.body.name,
-          url:req.body.url ? req.body.url : '',
-          user:req.body.user,
-          key:req.body.key,
-          secret:req.body.secret ? req.body.secret : '',
-          version:req.body.version ? req.body.version : '',
+          url:req.body.url ? req.body.url : record.url,
+          user:req.body.user ? req.body.user : record.user,
+          key:req.body.key ? req.body.key : record.key,
+          secret:req.body.secret ? req.body.secret : record.secret,
+          version:req.body.version ? req.body.version : record.version
         });
-        edit = record.useridml !== '' ? true : false;
+        edit = record.useridml !== '' && record.secret !== '' ? true : false;
       }
 
       if(nameChannel == 'mercadolibre' && !edit){

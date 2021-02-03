@@ -1315,7 +1315,6 @@ module.exports = {
           for (let pl of products) {
             const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
             const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
-            const mlstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
             let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
             .tolerate(async (err) => {
@@ -1328,7 +1327,7 @@ module.exports = {
                 if(result){
                   response.items.push(body);
                   await ProductChannel.updateOne({ id: productChannelId }).set({
-                    status:mlstatus,
+                    status:true,
                     qc:true,
                     price:mlprice
                   });
@@ -1348,7 +1347,6 @@ module.exports = {
                     price:0
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
-
                     if(!created){	
                       await ProductChannel.updateOne({id: record.id}).set({	
                         channelid:result.id,	
@@ -1358,7 +1356,6 @@ module.exports = {
                       });	
                     }
                   });
-
                   response.items.push(body);
                 }
               }

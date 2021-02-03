@@ -237,10 +237,11 @@ module.exports = {
       return res.badrequest();
     }
     try{
-      let keys = await Integrations.find({where:{channel:'dafiti'},limit:1});
-      if(keys.length>0){
-        let route = await sails.helpers.channel.dafiti.sign('GetCategoryTree',keys[0].seller);
-        let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+      let channel = await Channel.find({name: 'dafiti'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
+      if(integration.length>0){
+        let route = await sails.helpers.channel.dafiti.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
+        let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
       }else{
         return res.serverError();
@@ -254,10 +255,11 @@ module.exports = {
       return res.badrequest();
     }
     try{
-      let keys = await Integrations.find({where:{channel:'linio'}, limit:1});
-      if(keys.length > 0){
-        let route = await sails.helpers.channel.linio.sign('GetCategoryTree', keys[0].seller);
-        let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'GET');
+      let channel = await Channel.find({name: 'linio'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
+      if(integration.length>0){
+        let route = await sails.helpers.channel.linio.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
+        let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
       }else{
         return res.serverError();

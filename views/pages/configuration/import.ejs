@@ -54,10 +54,11 @@
 								</div>  
 							</form>
 						</section>
+						
 						<section class="tab-content">
 							<% provider = null; %>
 							<%if(typeof integrations =='object' && integrations.length>0){%>
-								<% provider=integrations.filter(data => data.channel.ismarketplace === false);%>
+								<% provider=integrations.filter(data => data.channel.type === 'cms');%>
 								<% if(provider.length > 0){%>
 										<div class="field">
 											<label class="label">Tipo de Importación</label>
