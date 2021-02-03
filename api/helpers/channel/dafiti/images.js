@@ -43,7 +43,7 @@ module.exports = {
             throw new Error('Producto sin Variaciones');
           }
         }else{
-          await ProductChannel.updateOne({product: record.id, integration : inputs.integration}).set({
+          await ProductChannel.updateOne({product: p.id, integration : inputs.integration}).set({
             status:false,
             qc:false,
           });

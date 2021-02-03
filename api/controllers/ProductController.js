@@ -572,39 +572,62 @@ module.exports = {
   },
   linioadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    const productChannelId = productchannel ? productchannel.id : '';
+    const channelPrice = productchannel ? productchannel.price : 0;
+    let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
+    
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
-      let product = await Product.find({ id: req.param('product') });
-      if (!product[0].linio) {
+      if (!productchannel || !productchannel.channelid) {
         action = 'ProductCreate';
       } else {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product(product, req.body.linioprice,status);
+      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice, integrationId);
       var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.linio.sign(action,product[0].seller);
-      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml)
+      let sign = await sails.helpers.channel.linio.sign(integrationId, action,product.seller);
+      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml)
       .then(async (resData)=>{
         resData = JSON.parse(resData);
         if(resData.SuccessResponse){
-          await Product.updateOne({ id: req.param('product') }).set({
-            linio: true,
-            liniostatus: (product[0].liniostatus) ? false : true,
-            linioprice: req.body.linioprice,
+          await ProductChannel.findOrCreate({id: productChannelId},{
+            product:product.id,
+            integration:integrationId,
+            status: true,
+            qc:false,
+            price: req.body.price ? parseFloat(req.body.price) : 0
+          }).exec(async (err, record, created)=>{
+            if(err){return new Error(err.message);}
+            if(!created){
+              await ProductChannel.updateOne({id: record.id}).set({
+                status:true,
+                qc:true,
+                price: req.body.price ? parseFloat(req.body.price) : 0
+              });
+            }
           });
-          let imgresult = await sails.helpers.channel.linio.images(product);
+
+          let imgresult = await sails.helpers.channel.dafiti.images([product], integrationId);
           var imgxml = jsonxml(imgresult,true);
-          let imgsign = await sails.helpers.channel.linio.sign('Image',product[0].seller);
-          setTimeout(async () => {await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+imgsign,'POST',imgxml);}, 5000);
+          let imgsign = await sails.helpers.channel.dafiti.sign(integrationId, 'Image', product.seller);
+          setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
           return res.send(resData.SuccessResponse.Head.RequestId);
         }else{
-          await Product.updateOne({ id: req.param('product') }).set({
-            linio: false,
-            liniostatus: false,
-            linioprice: 0
-          });
+          
+          await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
+            {
+              status: false,
+              qc:false,
+              price: 0
+            }
+          );
+
           return res.send(resData.ErrorResponse.Head.ErrorMessage);
         }
       })
@@ -1184,9 +1207,8 @@ module.exports = {
      
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller, active: false}).populate('channels',{
+        products = await Product.find({seller: seller, active: true}).populate('channels',{
           where:{
-            channel: integration.channel.id,
             integration: intgrationId
           },
           limit: 1
@@ -1195,15 +1217,15 @@ module.exports = {
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
-            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            products = products.filter(pro => pro.channels.length === 0);
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            products = products.filter(pro => pro.channels.length > 0);
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === false && pro.channels[0].channelid !== '');
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === false);
             break;
         }
 
@@ -1231,6 +1253,7 @@ module.exports = {
                         await ProductChannel.create({
                           product:productlist[pro],
                           integration:integration.id,
+                          channel : integration.channel.id,
                           status: false,
                           qc:false,
                           price: p.price
@@ -1256,77 +1279,74 @@ module.exports = {
         }
       }
       if (channel === 'linio') {
+        const intgrationId = integration.id;
+        products = await Product.find({seller: seller, active: true}).populate('channels',{
+          where:{
+            integration: intgrationId
+          },
+          limit: 1
+        });
+
         switch (req.body.action) {
           case 'ProductCreate':
-            params.linio = false;
-            params.active = true;
+            action = 'ProductCreate';
+            products = products.filter(pro => pro.channels.length === 0);
             break;
           case 'ProductUpdate':
-            params.linio = true;
-            /*params.liniostatus = true;
-            params.active = true;*/
+            action = 'ProductUpdate';
+            products = products.filter(pro => pro.channels.length > 0);
             break;
           case 'Image':
-            params.linio = true;
-            params.liniostatus = false;
-            params.active = true;
+            action = 'Image';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === false);
             break;
         }
 
+        for (let pl of products) {
+            if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
+        }
+
         if (products.length > 0) {
-          let integration = await sails.helpers.channel.mercadolibre.sign(intgrationId);
-          for (let pl of products) {
-            const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
-            const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
-            const mlstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
-            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
-            let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
-            .tolerate(async (err) => {
-              response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
-            });
-            if(body){
-              if(action==='Update'){
-                result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
-                .tolerate((err)=>{return;});
-                if(result){
-                  response.items.push(body);
-                  await ProductChannel.updateOne({ id: productChannelId }).set({
-                    status:mlstatus,
-                    qc:true,
-                    price:mlprice
-                  });
-                }
-              }
-              if(action==='Post'){
-                result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
-                .tolerate((err)=>{return;});
-                if(result.id.length>0){
-                  await ProductChannel.findOrCreate({id: productChannelId},{
-                    product:pl.id,
-                    channel:integration.channel.id,
-                    integration:integration.id,
-                    channelid:result.id,
-                    status:true,
-                    qc:true,
-                    price:0
-                  }).exec(async (err, record, created)=>{
-                    if(err){return new Error(err.message);}
-
-                    if(!created){	
-                      await ProductChannel.updateOne({id: record.id}).set({	
-                        channelid:result.id,	
-                        status:true,	
-                        qc:true,	
-                        price:mlprice	
-                      });	
+            if(req.body.action == 'Image'){
+              let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
+              var imgxml = jsonxml(imgresult,true);
+              let imgsign = await sails.helpers.channel.linio.sign(integration.id, 'Image', seller);
+              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            }else{
+              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0, integration.id);
+              var xml = jsonxml(result,true);
+              let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+              .then(async (resData)=>{
+                resData = JSON.parse(resData);
+                if(resData.SuccessResponse){
+                  if(action === 'ProductCreate'){
+                    for(pro in productlist){
+                        let p  = await Product.findOne({ id : productlist[pro]});
+                        await ProductChannel.create({
+                          product:productlist[pro],
+                          integration:integration.id,
+                          channel : integration.channel.id,
+                          status: false,
+                          qc:false,
+                          price: p.price
+                        });
                     }
-                  });
+                  }
 
-                  response.items.push(body);
+                  if(action === 'ProductUpdate'){
+                    for(pro in productlist){
+                      await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                    }
+                  }
+                }else{
+                  throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
                 }
-              }
+              })
+              .catch(err =>{
+                throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+              });              
             }
-          }
         } else {
           throw new Error('Sin Productos para Procesar');
         }

@@ -13,6 +13,13 @@ module.exports = {
     status:{
       type:'string',
       defaultsTo:'active'
+    },
+    channelPrice:{
+      type:'number',
+      defaultsTo:0
+    },
+    integration:{
+      type:'string'
     }
   },
   exits: {
@@ -23,10 +30,10 @@ module.exports = {
   fn: async function (inputs,exits) {
     let moment = require('moment');
     var jsonxml = require('jsontoxml');
-    let padj = inputs.linioprice ? parseFloat(inputs.linioprice) : 0;
+    let padj = inputs.linioprice ? parseFloat(inputs.linioprice) : inputs.channelPrice;
     let body={Request:[]};
       for(let p of inputs.products){
-        let priceadjust = padj > 0 ? padj : p.linioprice;
+        let priceadjust = padj > 0 ? padj : inputs.channelPrice ;
         try{
           let product = await Product.findOne({id:p.id})
           .populate('gender')

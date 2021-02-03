@@ -6,6 +6,10 @@ module.exports = {
       type:'ref',
       required:true,
     },
+    integration : {
+      type:'string',
+      required:true,
+    }
   },
   exits: {
     success: {
@@ -39,7 +43,10 @@ module.exports = {
             throw new Error('Producto sin Variaciones');
           }
         }else{
-          await Product.updateOne({id:pp.id}).set({linio:true,liniostatus:false});
+          await ProductChannel.updateOne({product: p.id, integration : inputs.integration}).set({
+            status:false,
+            qc:false,
+          });
           throw new Error('Producto sin Imágenes');
         }
       }catch(err){
