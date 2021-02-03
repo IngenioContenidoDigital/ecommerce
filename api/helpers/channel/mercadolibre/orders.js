@@ -36,7 +36,6 @@ module.exports = {
               return exits.error(err.message);
             });
             if(shipping){
-              console.log(shipping);
               let cityname = shipping['receiver_address'].city.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
               let state = shipping['receiver_address'].state.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
               if(cityname==='Bogota D.C.' ){cityname='Bogota';}
