@@ -572,39 +572,62 @@ module.exports = {
   },
   linioadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    const productChannelId = productchannel ? productchannel.id : '';
+    const channelPrice = productchannel ? productchannel.price : 0;
+    let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
+    
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
-      let product = await Product.find({ id: req.param('product') });
-      if (!product[0].linio) {
+      if (!productchannel || !productchannel.channelid) {
         action = 'ProductCreate';
       } else {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product(product, req.body.linioprice,status);
+      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice, integrationId);
       var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.linio.sign(action,product[0].seller);
-      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml)
+      let sign = await sails.helpers.channel.linio.sign(integrationId, action,product.seller);
+      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml)
       .then(async (resData)=>{
         resData = JSON.parse(resData);
         if(resData.SuccessResponse){
-          await Product.updateOne({ id: req.param('product') }).set({
-            linio: true,
-            liniostatus: (product[0].liniostatus) ? false : true,
-            linioprice: req.body.linioprice,
+          await ProductChannel.findOrCreate({id: productChannelId},{
+            product:product.id,
+            integration:integrationId,
+            status: true,
+            qc:false,
+            price: req.body.price ? parseFloat(req.body.price) : 0
+          }).exec(async (err, record, created)=>{
+            if(err){return new Error(err.message);}
+            if(!created){
+              await ProductChannel.updateOne({id: record.id}).set({
+                status:true,
+                qc:true,
+                price: req.body.price ? parseFloat(req.body.price) : 0
+              });
+            }
           });
-          let imgresult = await sails.helpers.channel.linio.images(product);
+
+          let imgresult = await sails.helpers.channel.dafiti.images([product], integrationId);
           var imgxml = jsonxml(imgresult,true);
-          let imgsign = await sails.helpers.channel.linio.sign('Image',product[0].seller);
-          setTimeout(async () => {await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+imgsign,'POST',imgxml);}, 5000);
+          let imgsign = await sails.helpers.channel.dafiti.sign(integrationId, 'Image', product.seller);
+          setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
           return res.send(resData.SuccessResponse.Head.RequestId);
         }else{
-          await Product.updateOne({ id: req.param('product') }).set({
-            linio: false,
-            liniostatus: false,
-            linioprice: 0
-          });
+          
+          await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
+            {
+              status: false,
+              qc:false,
+              price: 0
+            }
+          );
+
           return res.send(resData.ErrorResponse.Head.ErrorMessage);
         }
       })
@@ -1171,6 +1194,7 @@ module.exports = {
       throw 'forbidden';
     }
     var jsonxml = require('jsontoxml');
+    let sid = sails.sockets.getId(req);
     let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
     let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
     let channel = integration.channel.name;
@@ -1178,113 +1202,152 @@ module.exports = {
     let params = { seller: seller };
     let response = { items: [], errors: [] };
     let productlist = [];
+    let products = [];
     try {
+     
       if (channel === 'dafiti') {
+        const intgrationId = integration.id;
+        products = await Product.find({seller: seller, active: true}).populate('channels',{
+          where:{
+            integration: intgrationId
+          },
+          limit: 1
+        });
+
         switch (req.body.action) {
           case 'ProductCreate':
-            params.dafiti = false;
-            params.active = true;
+            action = 'ProductCreate';
+            products = products.filter(pro => pro.channels.length === 0);
             break;
           case 'ProductUpdate':
-            params.dafiti = true;
-            /*params.dafitistatus = true;
-            params.active = true;*/
+            action = 'ProductUpdate';
+            products = products.filter(pro => pro.channels.length > 0);
             break;
           case 'Image':
-            params.dafiti = true;
-            params.dafitistatus = false;
-            params.dafitiqc = false;
-            params.active = true;
+            action = 'Image';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === false);
             break;
         }
 
-        let products = await Product.find(params);
         for (let pl of products) {
-          if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
+            if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
         }
+
         if (products.length > 0) {
-          if (req.body.action === 'Image') {
-            result = await sails.helpers.channel.dafiti.images(products)
-              .catch(err => {
-                throw new Error(err.message);
-              });
-          } else {
-            result = await sails.helpers.channel.dafiti.product(products)
-              .catch(err => {
-                throw new Error(err.message);
-              });
-          }
-          var xml = jsonxml(result,true);
-          let sign = await sails.helpers.channel.dafiti.sign(req.body.action,seller);
-          await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml)
-          .then(async (resData)=>{
-            resData = JSON.parse(resData);
-            if(resData.SuccessResponse){
-              response.items.push(resData.SuccessResponse.Head.RequestId);
-              if(req.body.action==='ProductCreate'){await Product.update({id:productlist}).set({dafiti:true,dafitistatus:false,dafitiqc:false});}
-              if(req.body.action==='ProductUpdate'){await Product.update({id:productlist}).set({dafitistatus:true});}
+            if(req.body.action == 'Image'){
+              let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
+              var imgxml = jsonxml(imgresult,true);
+              let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
+              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
             }else{
-              throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+              let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0, integration.id);
+              var xml = jsonxml(result,true);
+              let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+              .then(async (resData)=>{
+                resData = JSON.parse(resData);
+                if(resData.SuccessResponse){
+                  if(action === 'ProductCreate'){
+                    for(pro in productlist){
+                        let p  = await Product.findOne({ id : productlist[pro]});
+                        await ProductChannel.create({
+                          product:productlist[pro],
+                          integration:integration.id,
+                          channel : integration.channel.id,
+                          status: false,
+                          qc:false,
+                          price: p.price
+                        });
+                    }
+                  }
+
+                  if(action === 'ProductUpdate'){
+                    for(pro in productlist){
+                      await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                    }
+                  }
+                }else{
+                  throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                }
+              })
+              .catch(err =>{
+                throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+              });              
             }
-          })
-          .catch(err =>{
-            throw new Error (err.message);
-          });
-        }else{
+        } else {
           throw new Error('Sin Productos para Procesar');
         }
       }
       if (channel === 'linio') {
+        const intgrationId = integration.id;
+        products = await Product.find({seller: seller, active: true}).populate('channels',{
+          where:{
+            integration: intgrationId
+          },
+          limit: 1
+        });
+
         switch (req.body.action) {
           case 'ProductCreate':
-            params.linio = false;
-            params.active = true;
+            action = 'ProductCreate';
+            products = products.filter(pro => pro.channels.length === 0);
             break;
           case 'ProductUpdate':
-            params.linio = true;
-            /*params.liniostatus = true;
-            params.active = true;*/
+            action = 'ProductUpdate';
+            products = products.filter(pro => pro.channels.length > 0);
             break;
           case 'Image':
-            params.linio = true;
-            params.liniostatus = false;
-            params.active = true;
+            action = 'Image';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === false);
             break;
         }
 
-        let products = await Product.find(params);
         for (let pl of products) {
-          if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
+            if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
         }
+
         if (products.length > 0) {
-          if (req.body.action === 'Image') {
-            result = await sails.helpers.channel.linio.images(products)
-              .catch(err => {
-                throw new Error(err.message);
-              });
-          } else {
-            result = await sails.helpers.channel.linio.product(products)
-              .catch(err => {
-                throw new Error(err.message);
-              });
-          }
-          var xml = jsonxml(result,true);
-          let sign = await sails.helpers.channel.linio.sign(req.body.action,seller);
-          await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml)
-          .then(async (resData)=>{
-            resData = JSON.parse(resData);
-            if(resData.SuccessResponse){
-              response.items.push(resData.SuccessResponse.Head.RequestId);
-              if(req.body.action==='ProductCreate'){await Product.update({id:productlist}).set({linio:true,liniostatus:false});}
-              if(req.body.action==='ProductUpdate'){await Product.update({id:productlist}).set({liniostatus:true});}
+            if(req.body.action == 'Image'){
+              let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
+              var imgxml = jsonxml(imgresult,true);
+              let imgsign = await sails.helpers.channel.linio.sign(integration.id, 'Image', seller);
+              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
             }else{
-              throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0, integration.id);
+              var xml = jsonxml(result,true);
+              let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+              .then(async (resData)=>{
+                resData = JSON.parse(resData);
+                if(resData.SuccessResponse){
+                  if(action === 'ProductCreate'){
+                    for(pro in productlist){
+                        let p  = await Product.findOne({ id : productlist[pro]});
+                        await ProductChannel.create({
+                          product:productlist[pro],
+                          integration:integration.id,
+                          channel : integration.channel.id,
+                          status: false,
+                          qc:false,
+                          price: p.price
+                        });
+                    }
+                  }
+
+                  if(action === 'ProductUpdate'){
+                    for(pro in productlist){
+                      await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                    }
+                  }
+                }else{
+                  throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                }
+              })
+              .catch(err =>{
+                throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+              });              
             }
-          })
-          .catch(err =>{
-            throw new Error (err.message);
-          });
-        }else{
+        } else {
           throw new Error('Sin Productos para Procesar');
         }
       }

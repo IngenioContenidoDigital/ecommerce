@@ -18,7 +18,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     let moment = require('moment');
-    let sign = await sails.helpers.channel.dafiti.sign('GetOrders',inputs.seller,inputs.params);
+    let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrders',inputs.seller,inputs.params);
     let profile = await Profile.findOne({name:'customer'});
     await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET')
     .then(async (response)=>{

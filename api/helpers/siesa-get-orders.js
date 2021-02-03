@@ -34,7 +34,6 @@ module.exports = {
                         <Parametros>
                             <fechaini>${inputs.data.ini}</fechaini>
                             <fechafin>${inputs.data.end}</fechafin>
-                            <idCargue>${inputs.data.oneCommerceStatus || -1}</idCargue>
                             <estado>${inputs.data.status || -1}</estado>
                             <numeroOC>-1</numeroOC>
                         </Parametros>

@@ -2,6 +2,10 @@ module.exports = {
   friendlyName: 'Sign Linio',
   description: 'Sign Request for Channel Linio',
   inputs: {
+    integration:{
+      type:'string',
+      required:true,
+    },
     action:{
       type:'string',
       required:true,
@@ -22,7 +26,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let moment = require('moment');
     let crypto = require('crypto');
-    let integration = await Integrations.findOne({channel: 'linio', seller: inputs.seller});
+    let integration = await Integrations.findOne({id: inputs.integration});
 
     let params=[
       encodeURIComponent('Version')+'='+encodeURIComponent('1.0'),
