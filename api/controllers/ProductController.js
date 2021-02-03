@@ -599,6 +599,7 @@ module.exports = {
           await ProductChannel.findOrCreate({id: productChannelId},{
             product:product.id,
             integration:integrationId,
+            channel : integration.channel.id,
             status: true,
             qc:false,
             price: req.body.price ? parseFloat(req.body.price) : 0
@@ -1250,25 +1251,27 @@ module.exports = {
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
                   response.items.push(resData.SuccessResponse);
-                  if(action === 'ProductCreate'){
                     for(pro in productlist){
-                        let p  = await Product.findOne({ id : productlist[pro]});
-                        await ProductChannel.create({
-                          product:productlist[pro],
-                          integration:integration.id,
-                          channel : integration.channel.id,
-                          status: false,
-                          qc:false,
-                          price: p.price
-                        });
+                      let p  = await Product.findOne({ id : productlist[pro]});
+                        if(action === 'ProductCreate'){
+                          await ProductChannel.create({
+                            product:productlist[pro],
+                            integration:integration.id,
+                            channel : integration.channel.id,
+                            status: false,
+                            qc:false,
+                            price: p.price
+                          });
+                        }
+                        
+                        if(action === 'ProductUpdate'){
+                          for(pro in productlist){
+                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                          }
+                        }
                     }
-                  }
 
-                  if(action === 'ProductUpdate'){
-                    for(pro in productlist){
-                      await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
-                    }
-                  }
+
                 }else{
                   throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
                 }
@@ -1326,25 +1329,25 @@ module.exports = {
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
                   response.items.push(resData.SuccessResponse);
-                  if(action === 'ProductCreate'){
                     for(pro in productlist){
-                        let p  = await Product.findOne({ id : productlist[pro]});
-                        await ProductChannel.create({
-                          product:productlist[pro],
-                          integration:integration.id,
-                          channel : integration.channel.id,
-                          status: false,
-                          qc:false,
-                          price: p.price
-                        });
-                    }
-                  }
+                        if(action === 'ProductCreate'){
+                          let p  = await Product.findOne({ id : productlist[pro]});
+                          await ProductChannel.create({
+                            product:productlist[pro],
+                            integration:integration.id,
+                            channel : integration.channel.id,
+                            status: false,
+                            qc:false,
+                            price: p.price
+                          });
+                        }
 
-                  if(action === 'ProductUpdate'){
-                    for(pro in productlist){
-                      await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                        if(action === 'ProductUpdate'){
+                          for(pro in productlist){
+                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                          }
+                        }
                     }
-                  }
                 }else{
                   throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
                 }
