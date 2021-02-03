@@ -74,6 +74,7 @@ module.exports.cron = {
                   if(!updatedOrder.tracking){
                     await sails.helpers.carrier.shipment(order.id);
                     await OrderHistory.create({order: order.id, state: state});
+                    await OrderHistory.create({order: order.id, state: state.id});
                   }
     
                 }
