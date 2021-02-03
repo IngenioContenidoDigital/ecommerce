@@ -1199,16 +1199,17 @@ module.exports = {
     let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
     let channel = integration.channel.name;
     let result = null;
-    let params = { seller: seller };
     let response = { items: [], errors: [] };
     let productlist = [];
     let products = [];
+    let action = '';
     try {
      
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
         products = await Product.find({seller: seller, active: true}).populate('channels',{
           where:{
+            channel: integration.channel.id,
             integration: intgrationId
           },
           limit: 1
@@ -1239,6 +1240,7 @@ module.exports = {
               var imgxml = jsonxml(imgresult,true);
               let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+              response.items.push(imgresult);
             }else{
               let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0, integration.id);
               var xml = jsonxml(result,true);
@@ -1247,6 +1249,7 @@ module.exports = {
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
+                  response.items.push(resData.SuccessResponse);
                   if(action === 'ProductCreate'){
                     for(pro in productlist){
                         let p  = await Product.findOne({ id : productlist[pro]});
@@ -1271,7 +1274,7 @@ module.exports = {
                 }
               })
               .catch(err =>{
-                throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
               });              
             }
         } else {
@@ -1282,6 +1285,7 @@ module.exports = {
         const intgrationId = integration.id;
         products = await Product.find({seller: seller, active: true}).populate('channels',{
           where:{
+            channel: integration.channel.id,
             integration: intgrationId
           },
           limit: 1
@@ -1312,6 +1316,7 @@ module.exports = {
               var imgxml = jsonxml(imgresult,true);
               let imgsign = await sails.helpers.channel.linio.sign(integration.id, 'Image', seller);
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+              response.items.push(imgresult);
             }else{
               let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0, integration.id);
               var xml = jsonxml(result,true);
@@ -1320,6 +1325,7 @@ module.exports = {
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
+                  response.items.push(resData.SuccessResponse);
                   if(action === 'ProductCreate'){
                     for(pro in productlist){
                         let p  = await Product.findOne({ id : productlist[pro]});
@@ -1344,7 +1350,7 @@ module.exports = {
                 }
               })
               .catch(err =>{
-                throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
               });              
             }
         } else {
@@ -1363,6 +1369,7 @@ module.exports = {
 
         switch (req.body.action) {
           case 'ProductCreate':
+            action = 'Post';
             products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
             break;
           case 'ProductUpdate':
@@ -1370,6 +1377,7 @@ module.exports = {
             products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
             break;
           case 'Image':
+            action = 'Update';
             products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
             break;
         }
