@@ -73,7 +73,7 @@ module.exports = {
                 ProductId: pv.ean13,
                 Status: status,
                 Name: product.name,
-                Variation: (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único') ? 'Talla Única' : pv.variation.col.toString(),
+                Variation: (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString(),
                 PrimaryCategory: product.mainCategory.linio.split(',')[0],
                 Categories: categories.join(','),
                 Description: jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
@@ -107,8 +107,8 @@ module.exports = {
                 data.Product.ProductData.Intencity = 'Eau de Toilette';
               }
             }
-            if(categories.includes('15215')/** Hogar*/ || categories.includes('11496') /** Libros y Peliculas */ || categories.includes('12792')/** Deportes*/){ delete data.Product.ProductData.Gender; }
-            if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('15215')/** Hogar*/ || categories.includes('11496') /** Libros y Peliculas */ || categories.includes('12792')/** Deportes*/ || categories.includes('10232')/** Papeleria y Oficina*/ || categories.includes('11799')/** Electrodomeśticos*/){ delete data.Product.ProductData.Gender; }
+            if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/ || categories.includes('10170') /** Automotriz */){ delete data.Product.ProductData.Gender;}
 
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
