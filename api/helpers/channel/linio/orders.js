@@ -2,6 +2,10 @@ module.exports = {
   friendlyName: 'Orders',
   description: 'Orders linio.',
   inputs: {
+    integration:{
+      type:'string',
+      required:true
+    },
     seller:{
       type:'string',
       required:true
@@ -18,7 +22,8 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     let moment = require('moment');
-    let sign = await sails.helpers.channel.linio.sign('GetOrders', inputs.seller, inputs.params);
+    let integration = await Integrations.findOne({id : inputs.integration}).populate('channel');
+    let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrders', inputs.seller, inputs.params);
     let profile = await Profile.findOne({name: 'customer'});
     await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+ sign, 'GET')
     .then(async (response)=>{
@@ -65,13 +70,14 @@ module.exports = {
                 data:{
                   estado: 'Aceptada',
                   channel: 'linio',
-                  channelref: order.OrderId
+                  channelref: order.OrderId,
+                  integration : integration.id
                 }
               };
               payment.data['ref_payco'] = order.OrderNumber;
               let cart = await Cart.create().fetch();
-              let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems', inputs.seller,['OrderId='+order.OrderId]);
-              await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+ itemsign, 'GET')
+              let itemsign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrderItems', inputs.seller,['OrderId='+order.OrderId]);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+ itemsign, 'GET')
               .then(async (result)=>{
                 let rs = JSON.parse(result);
                 let items = {
