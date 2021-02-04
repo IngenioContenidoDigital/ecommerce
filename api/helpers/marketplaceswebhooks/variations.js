@@ -21,19 +21,17 @@ module.exports = {
     let productVariation = inputs.productVariation;
     let pro = await Product.findOne({id: productId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
       where:{
-        to:{'>=':moment().valueOf()},
-        from:{'<=':moment().valueOf()}
+        to:{'>=':moment().valueOf()}
       },
-      sort: 'createdAt DESC',
-      limit: 1
+      sort: 'createdAt DESC'
     });
     if(pro){
       if (productVariation.discount && productVariation.discount.length > 0) {
         for (const disc of productVariation.discount) {
-          if (pro.discount.length > 0 && pro.discount[0].value == disc.value
-            && pro.discount[0].type == disc.type) {
-            await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
-              from: moment(new Date( disc.from)).valueOf(),
+          let exists = pro.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
+          if (exists) {
+            await CatalogDiscount.updateOne({ id: exists.id }).set({
+              from: moment(new Date(disc.from)).valueOf(),
               to: moment(new Date(disc.to)).valueOf()
             });
           } else {

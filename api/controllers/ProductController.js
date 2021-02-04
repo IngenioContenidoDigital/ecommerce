@@ -1786,19 +1786,15 @@ module.exports = {
           try {
             let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
               where:{
-                to:{'>=':moment().valueOf()},
-                from:{'<=':moment().valueOf()}
+                to:{'>=':moment().valueOf()}
               },
-              sort: 'createdAt DESC',
-              limit: 1
+              sort: 'createdAt DESC'
             })
             : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
               where:{
-                to:{'>=':moment().valueOf()},
-                from:{'<=':moment().valueOf()}
+                to:{'>=':moment().valueOf()}
               },
-              sort: 'createdAt DESC',
-              limit: 1
+              sort: 'createdAt DESC'
             });
 
             if(!pro){
@@ -1808,9 +1804,9 @@ module.exports = {
             if(pro){
               if (discount && p.discount && p.discount.length > 0) {
                 for (const disc of p.discount) {
-                  if (pro.discount.length > 0 && pro.discount[0].value == disc.value
-                    && pro.discount[0].type == disc.type) {
-                    await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
+                  let exists = pro.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
+                  if (exists) {
+                    await CatalogDiscount.updateOne({ id: exists.id }).set({
                       from: moment(new Date(disc.from)).valueOf(),
                       to: moment(new Date(disc.to)).valueOf()
                     });
