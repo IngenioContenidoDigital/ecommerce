@@ -14,27 +14,34 @@ module.exports = {
   },
   fn: async function (inputs) {
     let jsonxml = require('jsontoxml');
-    if (inputs.product.dafiti) { 
-      let result = await sails.helpers.channel.dafiti.product([inputs.product], inputs.product.dafitiprice);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.dafiti.sign('ProductUpdate',inputs.product.seller);
-      await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'POST',xml);
-    }
-    if (inputs.product.ml && inputs.product.mlid ) { 
-      let mlstatus = inputs.product.mlstatus ? 'active' : 'paused';
-      let body =  await sails.helpers.channel.mercadolibre.product(inputs.product.id, 'Update', inputs.product.mlprice,mlstatus)
-      .tolerate(()=>{ return;});
-      if(body){
-        let integration = await sails.helpers.channel.mercadolibre.sign(inputs.product.seller);
-        await sails.helpers.channel.mercadolibre.request('items/'+inputs.product.mlid,integration.secret,body,'PUT')
-        .tolerate(()=>{return;});
+    let productChannels = await ProductChannel.find({product: inputs.product.id});
+    if (productChannels.length > 0) {
+      for (const item of productChannels) {
+        let integration = await Integrations.findOne({id: item.integration}).populate('channel');
+
+        if (integration.channel.name === 'dafiti' && item.status) {
+          let result = await sails.helpers.channel.dafiti.product([inputs.product], item.price);
+          const xml = jsonxml(result,true);
+          let sign = await sails.helpers.channel.dafiti.sign(integration.id,'ProductUpdate',inputs.product.seller);
+          await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml);
+        }
+        if (integration.channel.name === 'mercadolibre' && item.status && item.channelid !== '') {
+          let mlstatus = item.status ? 'active' : 'paused';
+          let body =  await sails.helpers.channel.mercadolibre.product(inputs.product.id, 'Update', integration.id, item.price, mlstatus)
+          .tolerate(()=>{ return;});
+          if(body){
+            let integrat = await sails.helpers.channel.mercadolibre.sign(integration.id);
+            await sails.helpers.channel.mercadolibre.request('items/'+item.channelid,integrat.secret,body,'PUT')
+            .tolerate(()=>{return;});
+          }
+        }
+        if (integration.channel.name === 'linio' && item.status) {
+          let result = await sails.helpers.channel.linio.product([inputs.product], item.price);
+          const xml = jsonxml(result,true);
+          let sign = await sails.helpers.channel.linio.sign(integration.id,'ProductUpdate',inputs.product.seller);
+          await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml);
+        }
       }
-    }
-    if (inputs.product.linio) {
-      let result = await sails.helpers.channel.linio.product([inputs.product], inputs.product.linioprice);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.linio.sign('ProductUpdate',inputs.product.seller);
-      await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'POST',xml); 
     }
   }
 };

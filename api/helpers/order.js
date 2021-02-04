@@ -73,7 +73,7 @@ module.exports = {
             carrier:carrier.id ? carrier.id : '',
             channel:payment.data.channel ? payment.data.channel : 'direct',
             channelref:payment.data.channelref ? payment.data.channelref : '',
-            integration:payment.data.integration ? payment.data.integration : null
+            integration:payment.data.integration ? payment.data.integration : ''
           }).fetch();
 
           await OrderHistory.create({

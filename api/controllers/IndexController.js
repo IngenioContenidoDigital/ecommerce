@@ -1213,7 +1213,8 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         let order = await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
         let seller = await Seller.findOne({id: order.seller});
         if (seller && seller.integrationErp && state) {
-          let resultState = state.name === 'en procesamiento' ? 'En procesa' : state.name === 'reintegrado' ? 'Reintegrad' : state.name.charAt(0).toUpperCase() + state.name.slice(1);
+          let orderstate = await OrderState.findOne({id:state});
+          let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
         break;
@@ -1256,7 +1257,8 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         let order = await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
         let seller = await Seller.findOne({id: order.seller});
         if (seller && seller.integrationErp && state) {
-          let resultState = state.name === 'en procesamiento' ? 'En procesa' : state.name === 'reintegrado' ? 'Reintegrad' : state.name.charAt(0).toUpperCase() + state.name.slice(1);
+          let orderstate = await OrderState.findOne({id:state});
+          let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
         break;
