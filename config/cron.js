@@ -50,7 +50,7 @@ module.exports.cron = {
     timezone: 'America/Bogota'
   },
   SiesaOrdersStatusChanged: {
-    schedule: '50 20 */3 * * *',
+    schedule: '50 */20 * * * *',
     onTick: async () => {
       console.log('Iniciando Rastreo de Pedidos Siesa');
       let moment = require('moment');
@@ -74,6 +74,7 @@ module.exports.cron = {
                   if(!updatedOrder.tracking){
                     await sails.helpers.carrier.shipment(order.id);
                     await OrderHistory.create({order: order.id, state: state});
+                    await OrderHistory.create({order: order.id, state: state.id});
                   }
     
                 }

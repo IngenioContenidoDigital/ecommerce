@@ -41,7 +41,7 @@ module.exports = {
         Object.keys(resultItems).map((key) => {
           const item = resultItems[key];
           const priceIva = parseInt(item.originalPrice - (item.originalPrice/1.19));
-          const unitPrice = address.region.iva ? Math.ceil((item.originalPrice - item.discount) - priceIva) : Math.ceil(item.originalPrice - item.discount);
+          const unitPrice = address.region.iva ? Math.ceil(item.price - priceIva) : item.price;
           const movtoItem = `<Movto_Pedidos_Comercial>              
               <f431_id_tipo_docto>EMV</f431_id_tipo_docto>
               <f431_consec_docto>1</f431_consec_docto>
