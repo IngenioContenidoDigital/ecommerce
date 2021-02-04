@@ -77,7 +77,13 @@ module.exports = {
                 let cart = await Cart.create().fetch();
                 for(let item of order['order_items']){
                   try{
-                    let productvariation = await ProductVariation.findOne({id:item.item['seller_sku']});
+                    let productvariation;
+                    if(item.item['seller_sku']){
+                      productvariation = await ProductVariation.findOne({id:item.item['seller_sku']});
+                    }else{
+                      let pr = await Product.findOne({mlid:item.item.id}).populate('variations');
+                      productvariation = pr.variations[0];
+                    }
                     if(productvariation){
                       await CartProduct.create({
                         cart:cart.id,
@@ -85,7 +91,7 @@ module.exports = {
                         productvariation:productvariation.id,
                         totalDiscount:parseFloat(0),
                         totalPrice:parseFloat(item['full_unit_price']),
-                        externalReference:item.item['variation_id']
+                        externalReference:item.item['variation_id'] ? item.item['variation_id'] : ''
                       });
                     }
                   }catch(err){
