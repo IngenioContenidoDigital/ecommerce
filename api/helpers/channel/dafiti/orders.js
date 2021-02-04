@@ -2,6 +2,10 @@ module.exports = {
   friendlyName: 'Orders',
   description: 'Orders dafiti.',
   inputs: {
+    integration:{
+      type:'string',
+      required:true
+    },
     seller:{
       type:'string',
       required:true
@@ -20,7 +24,8 @@ module.exports = {
     let moment = require('moment');
     let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrders',inputs.seller,inputs.params);
     let profile = await Profile.findOne({name:'customer'});
-    await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET')
+    let integration = await Integrations.findOne({id : inputs.integration}).populate('channel');
+    await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET')
     .then(async (response)=>{
       let result = await JSON.parse(response);
       let orders = {
@@ -64,13 +69,14 @@ module.exports = {
                 data:{
                   estado:'Aceptada',
                   channel:'dafiti',
-                  channelref:order.OrderId
+                  channelref:order.OrderId,
+                  integration : integration.id
                 }
               };
               payment.data['ref_payco'] = order.OrderNumber;
               let cart = await Cart.create().fetch();
-              let itemsign = await sails.helpers.channel.dafiti.sign('GetOrderItems',inputs.seller,['OrderId='+order.OrderId]);
-              await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+itemsign,'GET')
+              let itemsign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrderItems',inputs.seller,['OrderId='+order.OrderId]);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+itemsign,'GET')
               .then(async (result)=>{
                 let rs = JSON.parse(result);
                 let items = {

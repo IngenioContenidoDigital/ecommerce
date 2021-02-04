@@ -70,7 +70,8 @@ module.exports = {
                   data:{
                     estado:'Aceptada',
                     channel:'dafiti',
-                    channelref:order.OrderId
+                    channelref:order.OrderId,
+                    integration : integration.id
                   }
                 };
                 payment.data['ref_payco'] = order.OrderNumber;
