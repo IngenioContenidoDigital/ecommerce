@@ -1833,7 +1833,6 @@ module.exports = {
         let axios = require('axios');
         let action = 'Post';
         const intgrationId = integration.id;
-        console.log(integration.channel.endpoint);
         let products = await Product.find({seller: seller, active: true}).populate('channels',{
           where:{
             channel: integration.channel.id,
@@ -1880,7 +1879,7 @@ module.exports = {
                     accept: 'application/json'
                 }
               };
-              let response_mb = await axios(options).catch((e) => {result=e.response.status});
+              let response_mb = await axios(options).catch((e) => {result=e.response.status;console.log(result);});
               
               if( result == 404 ){
                 action = 'Post';
@@ -1907,11 +1906,25 @@ module.exports = {
               throw new Error(`Producto:${pl.name} SKU:${pv.supplierreference} no procesado`);
              }
             }
-            // response.items.push(`SKU's procesados`);    
-            // await Product.updateOne({ id: pl.id }).set({
-            //   mb: true,
-            //   mbstatus: true
-            // });
+            response.items.push(`SKU's procesados`);
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:pl.id,
+              channel:integration.channel.id,
+              integration:integration.id,
+              channelid:'',
+              status:true,
+              qc:false,
+              price:mbprice
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){	
+                await ProductChannel.updateOne({id: record.id}).set({	
+                  status:mbstatus,	
+                  qc:false,	
+                  price:mbprice	
+                });	
+              }
+            });    
           }
         } else {
           throw new Error('Sin Productos para Procesar');
