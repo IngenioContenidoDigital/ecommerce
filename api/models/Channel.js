@@ -13,6 +13,7 @@ module.exports = {
     endpoint:{type:'string'},
     type:{
       type:'string',
+      isIn:['marketplace','cms','messenger'],
       required:true
     },
     currency:{
