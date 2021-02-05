@@ -433,7 +433,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.dafiti.product([product], parseFloat(req.body.price), status, channelPrice, integrationId);
+      let result = await sails.helpers.channel.dafiti.product([product], parseFloat(req.body.price), status, channelPrice);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.dafiti.sign(integrationId, action, product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -589,7 +589,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice, integrationId);
+      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.linio.sign(integrationId, action,product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml)
@@ -1243,7 +1243,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0, integration.id);
+              let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0);
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1321,7 +1321,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0, integration.id);
+              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0);
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
