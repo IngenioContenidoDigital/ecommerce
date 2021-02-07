@@ -124,16 +124,20 @@ module.exports = {
       .populate('tax')
       .populate('mainColor')
       .populate('manufacturer')
-      .populate('seller');
+      .populate('seller')
+      .populate('channels');
     for (let p of products) {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle'; }
       if(p.active && (p.stock<1 || p.images.length <1)){ await sails.helpers.tools.productState(p.id,false); cl = 'bx-x-circle';}
       let published = '';
-      if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
-      if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
-      if (p.linio) { published += '<li><small>Linio</small></li>'; }
+      for(let pchannel of p.channels){
+        let cn = await Integrations.findOne({id:pchannel.integration});
+        if(cn && pchannel.status){
+          published += '<li><small>'+cn.name+'</small></li>';
+        }
+      }
       let tax = p.tax ? (p.tax.value/100) : 0;
       let price = p.price ? p.price : 0;
       row = [
