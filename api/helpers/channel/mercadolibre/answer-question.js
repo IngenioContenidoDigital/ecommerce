@@ -6,10 +6,6 @@ module.exports = {
       type:'string',
       required:true
     },
-    secret: {
-      type: 'string',
-      required: true
-    },
     questionId: {
       type: 'string',
       required: true

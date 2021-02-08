@@ -1,0 +1,162 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
+<section class="container">
+  <div class="notification is-danger is-light is-hidden" id="error">
+    Error al contestar la pregunta.
+  </div>
+  <h4 class="title is-4">Mensajería</h4>
+  <div class="columns box boxmessage">
+    <% channels.forEach(function(channel){ %>
+      <div class="column images-message">
+        <div class="button button-message" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
+          <span class="icon size-icon">
+            <img src="<%=imgurl%>/images/channels/<%= channel.logo %>" name="logo" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
+          </span>
+        </div>
+      </div>
+    <%})%>
+  </div>
+  <div class="container container-message" id="listQuestions"></div>
+  <div class="container container-message is-hidden" id="listAnswers"></div>
+</section>
+<script>
+  live('.button-message','click', e =>{
+    let seller = '<%- seller %>'
+    let channelId = e.target.id;
+    const buttons = document.querySelectorAll('.button-message');
+    const button = document.getElementById(channelId);
+    const color = button.getAttribute('color');
+    buttons.forEach(bt =>{
+      bt.style.background = '#686868';
+    });
+    button.style.background = color;
+    filterQuestions(seller, channelId);
+  });
+
+  live('#iconback','click', e =>{
+    let listQuestions = document.querySelector("#listQuestions");
+    let listAnswers = document.querySelector("#listAnswers");
+    addClass(listQuestions,'container-message');
+    removeClass(listQuestions,'is-hidden');
+    addClass(listAnswers,'is-hidden');
+    removeClass(listAnswers,'container-message');
+  });
+
+  function filterQuestions(seller, channel) {
+    io.socket.post('/filter/questions', { seller, channel }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        listHtml(resData)
+      }
+    });
+  }
+
+  function listHtml(data, content) {
+    let listQuestions = document.querySelector("#listQuestions");
+    let listQuest = '';
+    listQuestions.innerHTML = '';
+    data.messages.forEach(message => {
+      const article = `<article class="post menu-title" id="`+message.id+`" onclick="showQuestions(\'` + message.id + `\')">
+        <h4>`+message.name+`</h4>
+        <div class="media">
+          <div class="media-left">
+            <p class="image is-32x32">
+              <img src="<%=imgurl%>/images/products/`+message.id+'/'+ message.image +`">
+            </p>
+          </div>
+          <div class="media-content">
+            <div class="content">
+              <p>
+                `+ message.questions[0].text + ' ' + `<a href="#">`+moment(message.questions[0].dateCreated).locale('es').startOf('day').fromNow()+`</a>&nbsp;
+                <span class="tag">Pregunta</span>
+              </p> 
+            </div>
+          </div>
+          <div class="media-right">
+            <span class="has-text-grey-light"><i class='bx bx-conversation'></i>`+message.questions.length+`</span>
+          </div>
+        </div>
+      </article>`;
+      listQuest += article;
+    });
+    listQuestions.innerHTML = `<div class="box content container-scroll">`+listQuest+`</div>`;
+  }
+
+  function showQuestions(productId) {
+    let listQuestions = document.querySelector("#listQuestions");
+    let listAnswers = document.querySelector("#listAnswers");
+    removeClass(listQuestions,'container-message');
+    addClass(listQuestions,'is-hidden');
+    addClass(listAnswers,'container-message');
+    removeClass(listAnswers,'is-hidden');
+    io.socket.post('/getquestions', {productId}, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        createHtmlQuestions(resData.questions);
+      }
+    });
+  }
+
+  function createHtmlQuestions(questions) {
+    let listAnswers = document.querySelector("#listAnswers");
+    let listAnsw = '';
+    listAnswers.innerHTML = '';
+    questions.forEach(question => {
+      const classhidden = question.answer !== null ? ' mediaocult is-hidden' : ''
+      const icon = question.answer === null ? '<i class="is-hidden"></i>' : '<i class="bx bxs-message-rounded-dots bx-flip-horizontal bx-sm"></i>'
+      const answer = question.answer !== null ? '<p class="message-content message-answer">'+ question.answer.text +'&nbsp;<span class="tag">Respuesta</span></p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'
+      const quest = '<div class="media'+ classhidden + '"><div class="media-left message-left"><i class="bx bxs-message-rounded-dots bx-sm"></i>' + icon +'</div><div class="media-content container-content"><div class="content"><p class="message-content">'+ question.text +' &nbsp;<span class="tag">Pregunta</span></p>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('day').fromNow() +'</span></div></div>'
+      listAnsw += quest
+    });
+    const arti = `<i class='tag bx bxs-left-arrow-alt menu-title' id='iconback'></i><article class="post">
+      <div class="tags has-addons title-product">
+        <i class="tag bx bxs-chevron-down" id="iconanswer"></i>
+        <a class="tag" id="textanswer" onclick="ocultQuestions()">Preguntas anteriores</a>
+      </div>`+ listAnsw +`</article>`;
+
+    listAnswers.innerHTML = `<div class="box content container-scroll">`+arti+`</div>`;
+  }
+
+  function ocultQuestions() {
+    var elements = document.getElementsByClassName('media mediaocult');
+    var icon = document.querySelector("#iconanswer");
+    var label = document.querySelector("#textanswer");
+    for (let i = 0; i < elements.length; i++) {
+      let element = elements[i];
+      let className = element.className;
+      if (className.includes('is-hidden')) {
+        removeClass(element, 'is-hidden');
+        removeClass(icon, 'bxs-chevron-down');
+        addClass(icon, 'bxs-chevron-up');
+        label.text = 'Ocultar preguntas';
+      } else {
+        addClass(icon, 'bxs-chevron-down');
+        addClass(element, 'is-hidden');
+        removeClass(icon, 'bxs-chevron-up');
+        label.text = 'Preguntas anteriores';
+      }
+    }
+  }
+
+  function clickAnswer(id) {
+    let text = document.getElementById(id).value;
+    let seller = '<%- seller %>';
+    io.socket.post('/answerquestion', { text, id, seller }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        if (resData.questions) {
+          createHtmlQuestions(resData.questions);
+        } else {
+          const el = document.getElementById('error');
+          removeClass(el,'is-hidden');
+          setTimeout(function() {
+            addClass(el,'is-hidden');
+          }, 4000);
+        }
+      }
+    });
+  }
+
+  function clickCancel(id) {
+    let text = document.getElementById(id);
+    text.value = '';
+  }
+
+</script>
+
