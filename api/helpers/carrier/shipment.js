@@ -28,7 +28,8 @@ module.exports = {
     let city = await City.findOne({id:order.addressDelivery.city});
     let oitems = await OrderItem.find({order:order.id}).populate('product');
     let items = oitems.length;
-
+    let integration = await Integrations.findOne({id: order.integration}).populate('channel');
+    
     if(order.channel==='direct'){
       let soap = require('strong-soap').soap;
       //let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
@@ -165,12 +166,12 @@ module.exports = {
           litems.push(it.externalReference);
         }
       }
-      let route = await sails.helpers.channel.dafiti.sign('SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega']);
-      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'POST');
+      let route = await sails.helpers.channel.dafiti.sign(order.integration, 'SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega']);
+      let response = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'POST');
       let result = JSON.parse(response);
       if(result.SuccessResponse){
-        let itemsign = await sails.helpers.channel.dafiti.sign('GetOrderItems',order.seller,['OrderId='+order.channelref]);
-        let citems = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+itemsign,'GET');
+        let itemsign = await sails.helpers.channel.dafiti.sign(order.integration,'GetOrderItems',order.seller,['OrderId='+order.channelref]);
+        let citems = await sails.helpers.request(integration.channel.endpoint,'/?'+itemsign,'GET');
         let rs = JSON.parse(citems);
         let items = {OrderItem:[]};
         if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
@@ -180,8 +181,8 @@ module.exports = {
         }
         let tracking = items.OrderItem[0].TrackingCode;
         await Order.updateOne({id:order.id}).set({tracking:tracking});
-        let rts = await sails.helpers.channel.dafiti.sign('SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega','TrackingNumber='+tracking]);
-        await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+rts,'POST');
+        let rts = await sails.helpers.channel.dafiti.sign(order.integration,'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega','TrackingNumber='+tracking]);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
       }
     }
     if(order.channel==='linio'){
@@ -191,12 +192,12 @@ module.exports = {
           litems.push(it.externalReference);
         }
       }
-      let route = await sails.helpers.channel.linio.sign('SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship']);
-      let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'POST');
+      let route = await sails.helpers.channel.linio.sign(order.integration, 'SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship']);
+      let response = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'POST');
       let result = JSON.parse(response);
       if(result.SuccessResponse){
-        let itemsign = await sails.helpers.channel.linio.sign('GetOrderItems',order.seller,['OrderId='+order.channelref]);
-        let citems = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+itemsign,'GET');
+        let itemsign = await sails.helpers.channel.linio.sign(order.integration, 'GetOrderItems',order.seller,['OrderId='+order.channelref]);
+        let citems = await sails.helpers.request(integration.channel.endpoint,'/?'+itemsign,'GET');
         let rs = JSON.parse(citems);
         let items = {OrderItem:[]};
         if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
@@ -206,8 +207,8 @@ module.exports = {
         }
         let tracking = items.OrderItem[0].TrackingCode;
         await Order.updateOne({id:order.id}).set({tracking:tracking});
-        let rts = await sails.helpers.channel.linio.sign('SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','TrackingNumber='+tracking]);
-        await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+rts,'POST');
+        let rts = await sails.helpers.channel.linio.sign(order.integration, 'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','TrackingNumber='+tracking]);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
       }
     }
 
