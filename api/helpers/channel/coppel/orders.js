@@ -66,8 +66,8 @@ module.exports = {
               response = await axios(options).catch((e) => {result=e.response; console.log(result);});
             }
             if(oexists===undefined && order.order_state==='SHIPPING'){
-              let city = await City.find({name:'ciudad de mexico'}).populate('region');
-              // let city = await City.find({name:order.customer.shipping_address.city.trim().toLowerCase()}).populate('region');
+              // let city = await City.find({name:'ciudad de mexico'}).populate('region');
+              let city = await City.find({name:order.customer.shipping_address.city.trim().toLowerCase()}).populate('region');
               let country = await Country.find({name:order.customer.shipping_address.country.trim().toLowerCase()});
               
               let user = await User.findOrCreate({emailAddress:order.customer_notification_email},{
