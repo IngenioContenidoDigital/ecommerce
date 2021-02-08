@@ -86,6 +86,7 @@ module.exports.cron = {
   coppelOrders:{
     schedule: '30 50 */3 * * *',
     onTick: async () =>{
+      await sails.helpers.channel.coppel.qualitycheck();
       let channel = await Channel.findOne({name: 'coppel'});
       let integrations = await Integrations.find({channel: channel.id});
       for(let i=0; i<integrations.length; i++){
