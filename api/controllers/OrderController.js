@@ -550,47 +550,5 @@ module.exports = {
       console.log(e);
     }
   },
-  muybacanoorders: async function(req, res){
-    
-    let moment = require('moment');
-    let orderinfo = req.body;
-    let id = req.param('id') ? req.param('id') : null;
-    let action = req.param('fulfill') ? req.param('fulfill') : null;
-    if(id){
-      try {
-        let estado = '';
-        if(action==='fulfill'){
-          estado = 'paid';
-        }else if(action==='cancel'){
-          estado = 'cancelled';
-        }
-        let id_state = await sails.helpers.orderState(estado);
-        let order = await Order.findOne({channel: 'muybacano', channelref: orderinfo.marketplaceOrderId});
-        await Order.updateOne({ id: order.id }).set({
-          currentstatus:id_state,
-        });
-        
-        await OrderHistory.create({order:order.id,state:id_state});
-        
-        let response = {
-          date: moment().format("YYYY-MM-DD HH:mm:ss"),
-          marketplaceOrderId: orderinfo.marketplaceOrderId,
-          orderId: order.id,
-          receipt: order.reference.toString()
-        };
-
-        return res.send(response);
-      } catch(err) {
-        return res.status(404).send(err);
-      }
-    }else{
-      try {
-        let response = await sails.helpers.channel.muybacano.orders('seller', 'integration.secret', orderinfo);
-        return res.send(response);
-      } catch(err) {
-        return res.status(404).send(err);
-      }
-    }
-  }
 };
 
