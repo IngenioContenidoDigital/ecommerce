@@ -44,29 +44,23 @@ module.exports = {
       }
 
       let gender = await sails.helpers.tools.findGender(textPredictor);
+
       if (gender && gender.length>0) {
         variacionAsProduct.gender = gender[0];
         gen = await Gender.findOne({id:gender[0]});
       } else {
         variacionAsProduct.gender = (await Gender.findOne({ name: 'unisex' })).id;
       }
-      gen = gen ? gen.name : '';
-      let cats = await sails.helpers.tools.findCategory(textPredictor + ' ' + gen);
-      if(cats.length>0){
-        variacionAsProduct.categories = cats;
-        let main = await Category.find({id:cats}).sort('level DESC');
-        variacionAsProduct.mainCategory = main[0].id;
-      }
 
-      let categories = variacionAsProduct.categories;
+      let prod = await Product.findOne({reference : variacionAsProduct.reference, externalId: pr.externalId, seller:pr.seller}).populate('categories', {level:2 })
       let vp = await Product.create(variacionAsProduct).fetch();
 
-      if(vp){
-        let variation = vr.weight || vr.talla;
-        variation = await Variation.find({ name:variation.toLowerCase().replace(',','.'), gender:variacionAsProduct.gender,seller:variacionAsProduct.seller,category:categories[0].id});
+    if(vp){
+        let pro_variation = vr.weight || vr.talla;
+        variation = await Variation.find({ name:pro_variation.toLowerCase().replace(',','.'), gender:variacionAsProduct.gender,seller:variacionAsProduct.seller,category:prod.categories[0].id});
 
         if(!variation || variation.length == 0){
-          variation = await Variation.create({name:variation.toLowerCase().replace(',','.'),gender:variacionAsProduct.gender,seller:variacionAsProduct.seller,category:categories[0].id}).fetch();
+          variation = await Variation.create({name:pro_variation.toLowerCase().replace(',','.'),gender:variacionAsProduct.gender,seller:variacionAsProduct.seller,category:prod.categories[0].id}).fetch();
         }
 
         let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
@@ -94,7 +88,7 @@ module.exports = {
         }
 
         exits.success(pvariation);
-
+        
       }
     } catch (error) {
       exits.serverError(error);
