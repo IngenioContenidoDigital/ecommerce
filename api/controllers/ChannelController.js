@@ -34,7 +34,8 @@ module.exports = {
         name: req.body.name.trim().toLowerCase(),
         endpoint: req.body.endpoint.trim(),
         currency: req.body.type === 'marketplace' ? req.body.currency : null,
-        type: req.body.type
+        type: req.body.type,
+        colorcode: req.body.type === 'messenger' ? req.body.code : ''
       };
       filename = await sails.helpers.fileUpload(req, 'logo', 2000000,'images/channels');
       if(filename.length>0){channelData.logo = filename[0].filename;}
@@ -61,7 +62,8 @@ module.exports = {
         endpoint: req.body.endpoint.trim(),
         logo: filename[0].filename,
         currency: req.body.type === 'marketplace' ? req.body.currency : null,
-        type: req.body.type
+        type: req.body.type,
+        colorcode: req.body.type === 'messenger' ? req.body.code : ''
       });
     }catch(err){
       if(err.code==='badRequest'){
@@ -69,7 +71,8 @@ module.exports = {
           name: req.body.name.trim().toLowerCase(),
           endpoint: req.body.endpoint.trim(),
           currency: req.body.type === 'marketplace' ? req.body.currency : null,
-          type: req.body.type
+          type: req.body.type,
+          colorcode: req.body.type === 'messenger' ? req.body.code : ''
         });
       } else {
         error = err;

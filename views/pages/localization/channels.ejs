@@ -5,6 +5,7 @@
     </div>
   <% } %>
   <% if(action=='create' || action=='edit'){ %> 
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script> 
     <div class="columns">
       <div class="column">
         <div class="container">
@@ -58,6 +59,22 @@
                   </div>
                 </div>
               </div>
+              <div <% if(action=='edit' && channel.type == 'messenger'){%>class="columns"<%}else{%> class="columns is-hidden"<%}%> id="fieldcolor">
+                <div class="column">
+                  <div class="field">
+                    <label class="label">Código</label>
+                    <div class="control">
+                    <input class="input" type="text" name="code" id="code" required="true" maxlength="7" placeholder="Codigo del Color" <% if(action=='edit'){ %>value="<%= channel.colorcode %>"<% }else{%>value="#FFFFFF"<%}%>/>
+                    </div>                        
+                  </div>
+                  <div class="notification is-info">
+                    Usa la rueda para obtener el código de color correspondiente
+                  </div>
+                </div>
+                <div class="column has-text-centered is-4">
+                  <div id="picker"></div>
+                </div>
+              </div>
               <div class="field">
                 <label class="label is-size-7">Logo</label>
                 <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
@@ -102,6 +119,24 @@
         let id =  e.target.id;
         id === 'marketplace' ? removeClass(fieldUrl, 'is-hidden') : addClass(fieldUrl, 'is-hidden');
         id === 'marketplace' ? removeClass(fieldMoney, 'is-hidden') : addClass(fieldMoney, 'is-hidden');
+        id === 'messenger' ? removeClass(fieldcolor, 'is-hidden') : addClass(fieldcolor, 'is-hidden')
+      });
+
+      var colorPicker = new iro.ColorPicker('#picker',{width:150, color:'#FFFFFF',layoutDirection:'vertical'});
+      const code = document.querySelector('#code');
+      colorPicker.on('color:change', function(color) {
+        code.value=color.hexString;
+        code.style.backgroundColor= code.value;
+      });
+
+      code.onkeyup = function(){
+        this.style.backgroundColor= this.value;
+        colorPicker.color.hexString = this.value;
+      };
+
+      document.addEventListener('DOMContentLoaded', function(){
+        code.style.backgroundColor= code.value;
+        colorPicker.color.hexString = code.value;
       });
     </script>
   <% } else { %>
@@ -112,8 +147,8 @@
       <table class="table is-hoverable" id="countries-table">
         <thead>
           <tr>
-            <th scope="col">Logo</th>
             <th scope="col">Nombre</th>
+            <th scope="col">Tipo de canal</th>
             <th scope="col">URL</th>
             <th scope="col">Opciones</th>
           </tr>
@@ -121,10 +156,8 @@
         <tbody>
           <% channels.forEach(function(channel){ %>
             <tr>
-              <td class="align-middle">
-                <img async src="<%=imgurl%>/images/channels/<%= channel.logo %>" name="logo" alt="<%= channel.name %>" width="150px" />
-              </td>
               <td class="align-middle is-capitalized"><%= channel.name %></td>
+              <td class="align-middle is-capitalized"><%= channel.type %></td>
               <td class="align-middle"><%= channel.endpoint %></td>
               <td class="align-middle">
                 <a href="/channels/edit/<%= channel.id %>" class="button is-small">
