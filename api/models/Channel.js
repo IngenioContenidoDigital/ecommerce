@@ -14,6 +14,7 @@ module.exports = {
     colorcode:{type:'string'},
     type:{
       type:'string',
+      isIn:['marketplace','cms','messenger'],
       required:true
     },
     currency:{

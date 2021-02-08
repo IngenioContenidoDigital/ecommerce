@@ -97,45 +97,46 @@ module.exports = {
       throw 'forbidden';
     }
     let tracking = req.param('tracking');
-    let order = await Order.find({tracking:tracking});
+    let orders = await Order.find({tracking:tracking});
     let guia=null;
     let label=null;
-    if(order[0].channel==='direct'){
-      guia = await sails.helpers.carrier.guia(tracking);
-      label = await sails.helpers.carrier.label(tracking);
-    }
-    if(order[0].channel==='dafiti'){
-      let oitems = await OrderItem.find({order:order[0].id});
-      let litems = [];
-      for(let it of oitems){
-        if(!litems.includes(it.externalReference)){
-          litems.push(it.externalReference);
-        }
+    for(let order of orders){      
+      if(order.channel==='direct'){
+        guia = await sails.helpers.carrier.guia(tracking);
+        label = await sails.helpers.carrier.label(tracking);
       }
-      let route = await sails.helpers.channel.dafiti.sign('GetDocument',order[0].seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
-      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
-      let result = JSON.parse(response);
-      guia = result.SuccessResponse.Body.Documents.Document.File;
-    }
-
-    if(order[0].channel==='linio'){
-      let oitems = await OrderItem.find({order:order[0].id});
-      let litems = [];
-      for(let it of oitems){
-        if(!litems.includes(it.externalReference)){
-          litems.push(it.externalReference);
+      if(order.channel==='dafiti'){
+        let oitems = await OrderItem.find({order:order.id});
+        let litems = [];
+        for(let it of oitems){
+          if(!litems.includes(it.externalReference)){
+            litems.push(it.externalReference);
+          }
         }
+        let route = await sails.helpers.channel.dafiti.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
+        let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+        let result = JSON.parse(response);
+        guia = result.SuccessResponse.Body.Documents.Document.File;
       }
-      let route = await sails.helpers.channel.linio.sign('GetDocument',order[0].seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
-      let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'GET');
-      let result = JSON.parse(response);
-      guia = result.SuccessResponse.Body.Documents.Document.File;
+  
+      if(order.channel==='linio'){
+        let oitems = await OrderItem.find({order:order.id});
+        let litems = [];
+        for(let it of oitems){
+          if(!litems.includes(it.externalReference)){
+            litems.push(it.externalReference);
+          }
+        }
+        let route = await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
+        let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'GET');
+        let result = JSON.parse(response);
+        guia = result.SuccessResponse.Body.Documents.Document.File;
+      }
+  
+      if(order.channel==='mercadolibre'){
+        guia = await sails.helpers.channel.mercadolibre.shipping(order);
+      }
     }
-
-    if(order[0].channel==='mercadolibre'){
-      guia = await sails.helpers.channel.mercadolibre.shipping(order[0]);
-    }
-
     return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});
   }
 

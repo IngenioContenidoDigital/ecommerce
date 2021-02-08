@@ -124,16 +124,20 @@ module.exports = {
       .populate('tax')
       .populate('mainColor')
       .populate('manufacturer')
-      .populate('seller');
+      .populate('seller')
+      .populate('channels');
     for (let p of products) {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle'; }
       if(p.active && (p.stock<1 || p.images.length <1)){ await sails.helpers.tools.productState(p.id,false); cl = 'bx-x-circle';}
       let published = '';
-      if (p.dafiti) { published += '<li><small>Dafiti</small></li>'; }
-      if (p.ml) { published += '<li><small>Mercadolibre</small></li>'; }
-      if (p.linio) { published += '<li><small>Linio</small></li>'; }
+      for(let pchannel of p.channels){
+        let cn = await Integrations.findOne({id:pchannel.integration});
+        if(cn && pchannel.status){
+          published += '<li><small>'+cn.name+'</small></li>';
+        }
+      }
       let tax = p.tax ? (p.tax.value/100) : 0;
       let price = p.price ? p.price : 0;
       row = [
@@ -433,7 +437,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.dafiti.product([product], parseFloat(req.body.price), status, channelPrice, integrationId);
+      let result = await sails.helpers.channel.dafiti.product([product], parseFloat(req.body.price), status, channelPrice);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.dafiti.sign(integrationId, action, product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -589,7 +593,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice, integrationId);
+      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.linio.sign(integrationId, action,product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml)
@@ -1243,7 +1247,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0, integration.id);
+              let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0);
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1321,7 +1325,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0, integration.id);
+              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0);
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)

@@ -17,10 +17,6 @@ module.exports = {
     channelPrice:{
       type:'number',
       defaultsTo:0
-    },
-    integration:{
-      type:'string',
-      required:true,
     }
   },
   exits: {
