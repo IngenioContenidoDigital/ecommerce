@@ -54,7 +54,7 @@
     </p>
     <ul class="menu-list">
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%><li><a href="/sellers">Sellers</a></li><%}%>
-      <!-- <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('mensajesmeli')){%><li><a href="/messagesmeli">Preguntas Mercadolibre</a></li><%}%> -->
+      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
     </ul>
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcarriers')){%>
@@ -102,5 +102,6 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('updateindex')){%><li><a href="/categoryindex/add">Indexar Categorias</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('updateindex')){%><li><a href="/categoryscheme">Reglas de Categoria</a></li><%}%>
     </ul>
+
     <%}%>
   </aside>

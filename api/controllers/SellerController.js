@@ -319,7 +319,9 @@ module.exports = {
       throw 'forbidden';
     }
     let channels = await Channel.find({type: 'messenger'});
-    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, seller});
+    let countQuestion = await Question.count({status: 'UNANSWERED', seller: seller});
+
+    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, countQuestion, seller});
   },
   notificationml: async function(req, res){
     let moment = require('moment');
@@ -389,17 +391,16 @@ module.exports = {
     let seller = req.body.seller || req.session.user.seller;
     let messages = [];
 
-    let questions = await Question.find({seller: seller}).sort('createdAt DESC')
+    let questions = await Question.find({seller: seller, status: 'UNANSWERED'}).sort('createdAt DESC')
       .populate('product');
 
     for(let q of questions){
       if(!messages.some(m => m.id === q.product.id)){
-        let image = await ProductImage.find({product:q.product.id});
-        const questi = questions.filter(item => item.product.id === q.product.id);
+        const questi = questions.filter(item => item.product.id === q.product.id && item.status === 'UNANSWERED');
         messages.push({
           id: q.product.id,
-          image: image[0].file,
           name: q.product.name.toUpperCase(),
+          created: q.dateCreated,
           questions: questi
         });
       }

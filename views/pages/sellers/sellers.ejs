@@ -913,11 +913,13 @@
                           <i class="bx bxs-cog"></i>
                           </span>
                       </a>
-                      <a href="/products/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Ver Productos">
-                        <span class="icon">
-                          <i class='bx bxs-spreadsheet'></i>
-                        </span>
-                      </a>
+                      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                        <a href="/products/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Ver Productos">
+                          <span class="icon">
+                            <i class='bx bxs-spreadsheet'></i>
+                          </span>
+                        </a>
+                      <%}%>
                       <a id="productsdownload" sellerid="<%= seller.id %>" sellername="<%= seller.name %>" href="#" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Descargar Inventario">
                         <span class="icon">
                           <i class='bx bxs-file-export'></i>
@@ -933,11 +935,13 @@
                           <i class='bx bx-import'></i>
                         </span>
                       </a>
-                      <a href="/channelmessages/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Mensajería">
-                        <span class="icon">
-                          <i class='bx bxs-message-rounded-check'></i>
-                        </span>
-                      </a> 
+                      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                        <a href="/channelmessages/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Mensajería">
+                          <span class="icon">
+                            <i class='bx bxs-conversation'></i>
+                          </span>
+                        </a>
+                      <%}%>
                     </td>
                 </tr>
               <% }); %>
