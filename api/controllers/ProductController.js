@@ -431,7 +431,7 @@ module.exports = {
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
-      if (!productchannel || !productchannel.channelid) {
+      if (!productchannel || !productchannel.channel) {
         action = 'ProductCreate';
       } else {
         action = 'ProductUpdate';
@@ -446,8 +446,8 @@ module.exports = {
         if(resData.SuccessResponse){
           await ProductChannel.findOrCreate({id: productChannelId},{
             product:product.id,
-            channel:channelId,
             integration:integrationId,
+            channel : integration.channel.id,
             channelid:'',
             status: true,
             qc:true,
@@ -456,8 +456,7 @@ module.exports = {
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
-                channelid:'',
-                status:true,
+                status:req.body.status,
                 qc:true,
                 price: req.body.price ? parseFloat(req.body.price) : 0
               });
@@ -587,7 +586,7 @@ module.exports = {
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
-      if (!productchannel || !productchannel.channelid) {
+      if (!productchannel || !productchannel.channel) {
         action = 'ProductCreate';
       } else {
         action = 'ProductUpdate';
@@ -611,7 +610,7 @@ module.exports = {
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
-                status:true,
+                status:req.body.status,
                 qc:true,
                 price: req.body.price ? parseFloat(req.body.price) : 0
               });
