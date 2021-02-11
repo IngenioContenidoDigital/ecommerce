@@ -14,6 +14,7 @@ module.exports = {
     status: {type:'string'},
     dateCreated: {type:'number'},
     product: {model:'product'},
-    answer: {model:'answer'}
+    answer: {model:'answer'},
+    integration:{ model:'integrations' }
   },
 };

@@ -1638,50 +1638,57 @@ module.exports = {
                   for (let index = 0; index < colors.length; index++) {
                     const pcolor = colors[index];
                     let textPredictor = product.name+' '+pcolor.reference;
-                    let color = await sails.helpers.tools.findColor(`${(textPredictor + ' ' + pcolor.color)}`);
+                    
+                    try {
+                      let color = await sails.helpers.tools.findColor(`${(textPredictor + ' ' + pcolor.color)}`);
 
-                    /*if(pcolor.reference == "44102T-BK/WT"){
-                             console.log(p);
-                          }*/
+                      if(!color || color.length == 0){
+                        console.log(color , textPredictor);
+                        throw new Error(`Ref: ${pcolor.reference} : No se pudo identificar el color ${pcolor.color}`);
+                      }
 
-                    /*if(!color || color.length == 0){
-                           console.log(color);
-                         }*/
-
-                    let colorModel = await Color.findOne({ id : color[0]});
-                    let productColor =  await Product.findOne({ reference : `${pcolor.reference}-${colorModel.name}`});
-
-                    if(productColor && (!productColor.images || productColor.images.length === 0)){
-                      for (let im of pcolor.images) {
-                        try {
-                          let url = (im.src.split('?'))[0];
-                          let file = (im.file.split('?'))[0];
-                          let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
-                            throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
-                          });
-                          if (uploaded) {
-                            let cover = 1;
-                            let totalimg = await ProductImage.count({ product: productColor.id});
-                            totalimg += 1;
-                            if (totalimg > 1) { cover = 0; }
-
-                            let rs = await ProductImage.create({
-                              file: file,
-                              position: totalimg,
-                              cover: cover,
-                              product: productColor.id
-                            }).fetch();
-
-                            if(typeof(rs) === 'object'){
-                              result.push(rs);
+                      if(!color[0]){
+                        console.log("productColor", pcolor);
+                      }
+  
+                      let colorModel = await Color.findOne({ id : color[0]});
+                      let productColor =  await Product.findOne({ reference : `${pcolor.reference}-${colorModel.name}`});
+  
+                      if(productColor && (!productColor.images || productColor.images.length === 0)){
+                        for (let im of pcolor.images) {
+                          try {
+                            let url = (im.src.split('?'))[0];
+                            let file = (im.file.split('?'))[0];
+                            let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
+                              throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
+                            });
+                            if (uploaded) {
+                              let cover = 1;
+                              let totalimg = await ProductImage.count({ product: productColor.id});
+                              totalimg += 1;
+                              if (totalimg > 1) { cover = 0; }
+  
+                              let rs = await ProductImage.create({
+                                file: file,
+                                position: totalimg,
+                                cover: cover,
+                                product: productColor.id
+                              }).fetch();
+  
+                              if(typeof(rs) === 'object'){
+                                result.push(rs);
+                              }
+                              sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                             }
+                          } catch (err) {
+                            errors.push({ name:'ERRDATA', message:err.message });
                             sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                           }
-                        } catch (err) {
-                          errors.push({ name:'ERRDATA', message:err.message });
-                          sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                         }
                       }
+                    } catch (error) {
+                      errors.push({ name:'ERRDATA', message:error.message });
+                      sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                     }
                   }
                 }

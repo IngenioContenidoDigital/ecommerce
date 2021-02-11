@@ -656,14 +656,14 @@
   function showInfoTop10(data) {
     var ulTopProductsPrice = document.querySelector("#topProductsPrice");
     var ulTopProductsCant = document.querySelector("#topProductsCant");
-    var ullessProducts = document.querySelector("#lessProducts");
+    // var ullessProducts = document.querySelector("#lessProducts");
     ulTopProductsPrice.innerHTML = '';
     ulTopProductsCant.innerHTML = '';
-    ullessProducts.innerHTML = '';
+    // ullessProducts.innerHTML = '';
 
     processDataProductsOrders(data.topProductsPrice, ulTopProductsPrice);
     processDataProductsOrders(data.topProductsCant, ulTopProductsCant);
-    processDataProductsOrders(data.lessProducts, ullessProducts);
+    // processDataProductsOrders(data.lessProducts, ullessProducts);
   }
 
   function showInfoLogistics(data) {

@@ -1,0 +1,135 @@
+<script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
+<section class="container">
+  <div class="notification is-danger is-light is-hidden" id="error">
+    Error al contestar la pregunta.
+  </div>
+  <h4 class="title is-4">Mensajería</h4>
+  <div class="columns box boxmessage">
+    <% channels.forEach(function(channel){ %>
+      <div class="column images-message">
+        <div class="button button-message has-badge-rounded" data-badge="<%= countQuestion %>" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
+          <span class="icon size-icon">
+            <img src="<%=imgurl%>/images/channels/<%= channel.logo %>" name="logo" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
+          </span>
+        </div>
+      </div>
+    <%})%>
+  </div>
+  <div class="container container-message" id="listQuestions"></div>
+  <div class="container container-message is-hidden" id="listAnswers"></div>
+</section>
+<script>
+  live('.button-message','click', e =>{
+    let seller = '<%- seller %>'
+    let channelId = e.target.id;
+    const buttons = document.querySelectorAll('.button-message');
+    const button = document.getElementById(channelId);
+    const color = button.getAttribute('color');
+    buttons.forEach(bt =>{
+      bt.style.background = '#686868';
+    });
+    button.style.background = color;
+    filterQuestions(seller, channelId);
+  });
+
+  live('#iconback','click', e =>{
+    let listQuestions = document.querySelector("#listQuestions");
+    let listAnswers = document.querySelector("#listAnswers");
+    addClass(listQuestions,'container-message');
+    removeClass(listQuestions,'is-hidden');
+    addClass(listAnswers,'is-hidden');
+    removeClass(listAnswers,'container-message');
+  });
+
+  function filterQuestions(seller, channel) {
+    io.socket.post('/filter/questions', { seller, channel }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        listHtml(resData)
+      }
+    });
+  }
+
+  function listHtml(data, content) {
+    let listQuestions = document.querySelector("#listQuestions");
+    let listQuest = '';
+    listQuestions.innerHTML = '';
+    if (data.messages.length > 0) {
+      data.messages.forEach(message => {
+        const article = `<article class="post menu-title" id="`+message.id+`" onclick="showQuestions(\'` + message.id + `\')">
+          <div class="media">
+            <div class="media-left">
+              <h6>`+message.name+`</h6>
+            </div>
+            <div class="media-content">
+              <div class="content">
+              </div>
+            </div>
+            <div class="media-right">
+              <span class="has-text-grey-light message-right time-questions"><a href="#">`+moment(message.created).locale('es').startOf('day').fromNow()+`</a></span>
+              <span class="has-text-grey-light"><i class='bx bx-conversation'></i>`+message.questions.length+`</span>
+            </div>
+          </div>
+        </article>`;
+        listQuest += article;
+      });
+    }else {
+      listQuest = 
+      `<div class="notification is-info is-light">
+        No tiene mensajes disponibles.
+      </div>`
+    }
+    listQuestions.innerHTML = `<div class="box content container-scroll">`+listQuest+`</div>`;
+  }
+
+  function showQuestions(productId) {
+    let listQuestions = document.querySelector("#listQuestions");
+    let listAnswers = document.querySelector("#listAnswers");
+    removeClass(listQuestions,'container-message');
+    addClass(listQuestions,'is-hidden');
+    addClass(listAnswers,'container-message');
+    removeClass(listAnswers,'is-hidden');
+    io.socket.post('/getquestions', {productId}, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        createHtmlQuestions(resData.questions);
+      }
+    });
+  }
+
+  function createHtmlQuestions(questions) {
+    let listAnswers = document.querySelector("#listAnswers");
+    let listAnsw = '';
+    listAnswers.innerHTML = '';
+    questions.forEach(question => {
+      const answer = question.answer !== null ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answer.text +'&nbsp;</p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'
+      const quest = '<div class="media"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('day').fromNow() +'</span></div></div>'
+      listAnsw += quest
+    });
+    const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="/product/edit/`+questions[0].product.id+`" target="_blank" class="title-questions">`+questions[0].product.name.toUpperCase()+`</a><article class="post">`+ listAnsw +`</article>`;
+    listAnswers.innerHTML = `<div class="box content container-scroll">`+arti+`</div>`;
+  }
+
+  function clickAnswer(id) {
+    let text = document.getElementById(id).value;
+    let seller = '<%- seller %>';
+    io.socket.post('/answerquestion', { text, id, seller }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        if (resData.questions) {
+          createHtmlQuestions(resData.questions);
+        } else {
+          const el = document.getElementById('error');
+          removeClass(el,'is-hidden');
+          setTimeout(function() {
+            addClass(el,'is-hidden');
+          }, 4000);
+        }
+      }
+    });
+  }
+
+  function clickCancel(id) {
+    let text = document.getElementById(id);
+    text.value = '';
+  }
+
+</script>
+

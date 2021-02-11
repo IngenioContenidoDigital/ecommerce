@@ -11,6 +11,7 @@ module.exports = {
     name:{type:'string'},
     logo:{type:'string'},
     endpoint:{type:'string'},
+    colorcode:{type:'string'},
     type:{
       type:'string',
       isIn:['marketplace','cms','messenger'],

@@ -6,10 +6,6 @@ module.exports = {
       type:'string',
       required:true
     },
-    secret: {
-      type: 'string',
-      required: true
-    },
     resource: {
       type: 'string',
       required: true
