@@ -94,7 +94,7 @@ module.exports = {
                 Brand:brand,
                 Condition:'new',
                 Variation:pv.variation.col.replace(/\.5/,'½').toString(),
-                Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(2),
+                Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0),
                 Quantity:pv.quantity <= 0 ? '0' : pv.quantity.toString(),
                 ProductData:{
                   Gender:product.gender.name,
