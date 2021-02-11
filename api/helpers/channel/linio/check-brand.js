@@ -14,8 +14,9 @@ module.exports = {
   },
   fn: async (inputs,exits) => {
     let brand = 'Generico';
-    let integrations = await Integrations.find({channel:'linio'});
-    let sign = await sails.helpers.channel.linio.sign('GetBrands', integrations[0].seller);
+    let channel = await Channel.findOne({name:'linio'});
+    let integrations = await Integrations.find({channel:channel.id});
+    let sign = await sails.helpers.channel.linio.sign(integrations[0].id, 'GetBrands', integrations[0].seller);
 
     inputs.brand=inputs.brand.replace(/[^a-zA-Z0-9_-\s]/g,'');
 
@@ -30,7 +31,7 @@ module.exports = {
         inputs.brand = 'color siete';
         break;
     }
-    await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+sign,'GET')
+    await sails.helpers.request(channel.endpoint,'/?'+sign,'GET')
     .then(async (resData)=>{
       let result = JSON.parse(resData);
       if(result.SuccessResponse.Body.Brands.Brand.length>0){
