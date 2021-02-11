@@ -1841,9 +1841,7 @@ module.exports = {
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
                     if(asProduct && vr.color){
-                      await sails.helpers.createProductFromVariation(vr, pr).catch((e)=>{
-                        throw new Error(`Ocurrio un error al crear un producto desde una variacion de color ${e.message}`);
-                      });
+                      await sails.helpers.createProductFromVariation(vr, pr);
                     }else{
 
                       let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});
