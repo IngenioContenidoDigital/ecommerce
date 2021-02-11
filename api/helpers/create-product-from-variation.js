@@ -53,9 +53,9 @@ module.exports = {
       }
 
       let prod = await Product.findOne({reference : variacionAsProduct.reference, externalId: pr.externalId, seller:pr.seller}).populate('categories', {level:2 })
-      let vp = await Product.create(variacionAsProduct).fetch();
+      //let vp = await Product.create(variacionAsProduct).fetch();
 
-    if(vp){
+    /*if(vp){
         let pro_variation = vr.weight || vr.talla;
         variation = await Variation.find({ name:pro_variation.toLowerCase().replace(',','.'), gender:variacionAsProduct.gender,seller:variacionAsProduct.seller,category:prod.categories[0].id});
 
@@ -89,7 +89,10 @@ module.exports = {
 
         exits.success(pvariation);
         
-      }
+      }*/
+
+      exits.success(true);
+
     } catch (error) {
       exits.serverError(error);
     }
