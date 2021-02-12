@@ -1,4 +1,4 @@
-module.exports = {
+  module.exports = {
   friendlyName: 'Shipment',
   description: 'Shipment carrier.',
   inputs: {
