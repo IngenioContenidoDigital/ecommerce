@@ -103,6 +103,13 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },*/
+  walmart: {
+    schedule: '50 00 00 * * *',
+    onTick: async () => {
+      await sails.helpers.channel.walmart.sign();
+    },
+    timezone: 'America/Bogota'
+  },
   /*linioOrders:{
     schedule: '05 45 * * * *',
     onTick: async () =>{

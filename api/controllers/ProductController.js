@@ -771,6 +771,32 @@ module.exports = {
       return res.send(err.message);
     }
   },
+  walmartadd: async (req, res) => {
+    if (!req.isSocket) { return res.badRequest(); }
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    const productChannelId = productchannel ? productchannel.id : '';
+    const channelPrice = productchannel ? productchannel.price : 0;
+    let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
+    
+    var jsonxml = require('jsontoxml');
+    let action = null;
+    if (!productchannel || !productchannel.channel) {
+      action = 'ProductCreate';
+    } else {
+      action = 'ProductUpdate';
+    }
+    let status = req.body.status ? 'active' : 'inactive';
+    
+    try {
+      let result = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice);
+    } catch (err) {
+      console.log(err);
+      return res.send(err.message);
+    }
+  },
   import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
