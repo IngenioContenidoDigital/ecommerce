@@ -83,8 +83,8 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },  
-  coppelOrders:{
-    schedule: '30 50 */3 * * *',
+  /*coppelOrders:{
+    schedule: '30 50 * * * *',
     onTick: async () =>{
       await sails.helpers.channel.coppel.qualitycheck();
       let channel = await Channel.findOne({name: 'coppel'});
@@ -94,7 +94,7 @@ module.exports.cron = {
       }
     },
     timezone: 'America/Bogota'
-  },
+  },*/
   /*linioOrders:{
     schedule: '05 45 * * * *',
     onTick: async () =>{

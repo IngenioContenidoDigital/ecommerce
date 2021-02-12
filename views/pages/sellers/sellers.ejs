@@ -325,7 +325,6 @@
             const chann = e.target.id;
             const idChannel = e.target.getAttribute('idChannel');
             const type = e.target.getAttribute('type');
-            console.log(type);
             if (type === 'cms') {
               createFormCms(idChannel, chann, null, false);
               removeClass(formIntegration, 'is-hidden');
