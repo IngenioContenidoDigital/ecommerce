@@ -68,7 +68,8 @@ module.exports = {
                   data:{
                     estado:'Aceptada',
                     channel:'linio',
-                    channelref:order.OrderId
+                    channelref:order.OrderId,
+                    integration:integration.id
                   }
                 };
                 payment.data['ref_payco'] = order.OrderNumber;
