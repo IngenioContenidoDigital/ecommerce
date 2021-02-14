@@ -100,7 +100,9 @@
                 <div class="columns">
                   <div class="column">
                     <article class="media">
+                      <%if(item.product.images.length>0){%>
                       <img width="128px;" async src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=item.product.images[0].file%>" />
+                      <%}%>
                       <div class="container">
                         <p class="is-capitalized"><%=item.product.manufacturer.name%></p>
                         <p><strong class="is-uppercase"><%=item.product.name%></strong></p>
