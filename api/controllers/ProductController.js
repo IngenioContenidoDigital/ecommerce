@@ -649,25 +649,37 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
       throw 'forbidden';
     }
-    let params={};
     let error = null;
-    let channel = req.param('channel');
-    if(req.param('seller')){params.seller=req.param('seller');}
-    switch(channel){
-      case 'linio':
-        params.linio=true;
-        params.linioqc=false;
-        break;
-      case 'dafiti':
-        params.dafiti=true;
-        params.dafitiqc=false;
-        break;
-    }
-    let products = await Product.find({
-      where:params,
-      select: ['id','reference']
+    let intlist = [];
+    let plist = [];
+    let channel = await Channel.findOne({name:req.param('channel')});
+    let integrations = await Integrations.find({
+      where:{channel:channel.id,seller:req.param('seller')},
+      select:['id']
     });
-    return res.view('pages/configuration/quality', { layout: 'layouts/admin', error: error, channel: channel, products: products});
+    
+    for(let itg of integrations){
+      if(!intlist.includes(itg.id)){
+        intlist.push(itg.id);
+      }
+    }
+
+    let pchannel = await ProductChannel.find({
+      where:{integration:intlist,qc:false},
+      select:['product']
+    });
+    
+    for(let p of pchannel){
+      if(!plist.includes(p.product)){
+        plist.push(p.product);
+      }
+    }
+    
+    let products = await Product.find({
+      where:{id:plist},
+      select:['id','reference']
+    })
+    return res.view('pages/configuration/quality', { layout: 'layouts/admin', error: error, channel: channel.name, products: products});
   },
   qualityexecute: async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
