@@ -425,7 +425,6 @@ module.exports = {
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
     const productChannelId = productchannel ? productchannel.id : '';
-    const channelPrice = productchannel ? productchannel.price : 0;
     let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
     
     try {
@@ -437,7 +436,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.dafiti.product([product], parseFloat(req.body.price), status, channelPrice);
+      let result = await sails.helpers.channel.dafiti.product([product], integration, parseFloat(req.body.price), status);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.dafiti.sign(integrationId, action, product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -450,14 +449,13 @@ module.exports = {
             channel : integration.channel.id,
             channelid:'',
             status: true,
-            qc:true,
+            qc:false,
             price: req.body.price ? parseFloat(req.body.price) : 0
           }).exec(async (err, record, created)=>{
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
                 status:req.body.status,
-                qc:true,
                 price: req.body.price ? parseFloat(req.body.price) : 0
               });
             }
@@ -472,7 +470,6 @@ module.exports = {
           await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
             {
               status: false,
-              qc:false,
               price: 0
             }
           );
@@ -532,7 +529,7 @@ module.exports = {
               integration:integrationId,
               channelid: result.id,
               status: true,
-              qc:true,
+              qc:false,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -540,7 +537,6 @@ module.exports = {
                 await ProductChannel.updateOne({id: record.id}).set({
                   channelid:result.id,
                   status:true,
-                  qc:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -564,7 +560,6 @@ module.exports = {
           await ProductChannel.updateOne({id: record.id}).set({
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
-            qc:false,
             price:0
           });
         }
@@ -592,7 +587,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice);
+      let result = await sails.helpers.channel.linio.product([product], integration, parseFloat(req.body.price), status);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.linio.sign(integrationId, action,product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml)
@@ -611,7 +606,6 @@ module.exports = {
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
                 status:req.body.status,
-                qc:true,
                 price: req.body.price ? parseFloat(req.body.price) : 0
               });
             }
@@ -627,7 +621,6 @@ module.exports = {
           await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
             {
               status: false,
-              qc:false,
               price: 0
             }
           );
@@ -768,7 +761,6 @@ module.exports = {
                 productChannelId = await ProductChannel.updateOne({id: record.id}).set({
                   channelid: response.data.import_id,
                   status:req.body.status,
-                  qc:false,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -820,7 +812,6 @@ module.exports = {
       await ProductChannel.updateOne({id: productChannelId}).set({
         channelid: '',
         status:false,
-        qc:false,
         price: 0
       });
       return res.send(err.message);
@@ -1380,7 +1371,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0);
+              let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1397,13 +1388,13 @@ module.exports = {
                             channel : integration.channel.id,
                             status: false,
                             qc:false,
-                            price: p.price
+                            price: 0
                           });
                         }
                         
                         if(action === 'ProductUpdate'){
                           for(pro in productlist){
-                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true});
                           }
                         }
                     }
@@ -1458,7 +1449,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0);
+              let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1475,13 +1466,13 @@ module.exports = {
                             channel : integration.channel.id,
                             status: false,
                             qc:false,
-                            price: p.price
+                            price: 0
                           });
                         }
 
                         if(action === 'ProductUpdate'){
                           for(pro in productlist){
-                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true});
                           }
                         }
                     }
@@ -1539,7 +1530,6 @@ module.exports = {
                   response.items.push(body);
                   await ProductChannel.updateOne({ id: productChannelId }).set({
                     status:true,
-                    qc:true,
                     price:mlprice
                   });
                 }
@@ -1554,15 +1544,13 @@ module.exports = {
                     integration:integration.id,
                     channelid:result.id,
                     status:true,
-                    qc:true,
+                    qc:false,
                     price:0
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
                     if(!created){	
                       await ProductChannel.updateOne({id: record.id}).set({	
                         channelid:result.id,	
-                        status:true,	
-                        qc:true,	
                         price:mlprice	
                       });	
                     }
@@ -1636,7 +1624,6 @@ module.exports = {
                   await ProductChannel.updateOne({id: productChannelId}).set({	
                     channelid:response_offer.data.import_id,	
                     status:true,	
-                    qc:false,	
                     price:cpprice	
                   });
                 }
@@ -1707,7 +1694,6 @@ module.exports = {
                       await ProductChannel.updateOne({id: record.id}).set({	
                         channelid:response_offer.data.import_id,	
                         status:true,	
-                        qc:false,	
                         price:cpprice	
                       });	
                     }
@@ -1740,7 +1726,6 @@ module.exports = {
                   await ProductChannel.updateOne({id: productChannelId}).set({	
                     channelid:response_product.data.import_id,	
                     status:true,	
-                    qc:false,	
                     price:cpprice	
                   });
                 }
