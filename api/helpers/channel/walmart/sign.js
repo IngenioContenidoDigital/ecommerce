@@ -49,6 +49,6 @@ module.exports = {
             data:params
         };
         let token = await axios(options).catch((e) => {console.log(e.response.data);});
-        console.log(token);
+        return exits.success(token.data.access_token);
     }
   };

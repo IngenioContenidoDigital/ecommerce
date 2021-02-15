@@ -773,6 +773,10 @@ module.exports = {
   },
   walmartadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
+    let axios = require('axios');
+    let fs = require('fs');
+    let FormData = require('form-data');
+
     let product = await Product.findOne({ id: req.body.product }).populate('channels');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -781,7 +785,7 @@ module.exports = {
     const channelPrice = productchannel ? productchannel.price : 0;
     let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
     
-    var jsonxml = require('jsontoxml');
+   
     let action = null;
     if (!productchannel || !productchannel.channel) {
       action = 'ProductCreate';
@@ -791,7 +795,35 @@ module.exports = {
     let status = req.body.status ? 'active' : 'inactive';
     
     try {
-      let result = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice);
+      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice);
+      fs.writeFile("./.tmp/uploads/walmart", xml, function(err) {if(err) {return console.log(err);}console.log("The file was saved!");});
+      let token = await sails.helpers.channel.walmart.sign();
+
+      file = new FormData();
+      file.append('file',fs.createReadStream('./.tmp/uploads/walmart'));
+      file.append('import_mode','NORMAL');
+
+      let auth = `${integration.user}:${integration.key}`;
+      const buferArray = Buffer.from(auth);
+      let encodedAuth = buferArray.toString('base64');
+      
+      let options = {
+        method: 'post',
+        url: `${integration.channel.endpoint}/v3/feeds?feedType=item`,
+        headers: {
+            'content-type': `application/xml`,
+            accept: 'application/json',                
+            'WM_MARKET' : 'mx',
+            'WM_SEC.ACCESS_TOKEN':token,
+            'WM_SVC.NAME' : 'Walmart Marketplace',
+            'WM_QOS.CORRELATION_ID': '11111111',
+            'Authorization': `Basic ${encodedAuth}`
+        },
+        data:file
+        }
+      // let response = await axios(options).catch((e) => {console.log(e.response.data);});
+      // console.log(response);
+
     } catch (err) {
       console.log(err);
       return res.send(err.message);
