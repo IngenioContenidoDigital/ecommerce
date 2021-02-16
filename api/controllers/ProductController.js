@@ -717,7 +717,7 @@ module.exports = {
     let imageItems = [];
     let type = req.body.entity ? req.body.entity : null;
     let discount = req.body.discount;
-    let asProduct = req.body.asProduct;
+    let asColor = req.body.asColor;
 
     if (req.body.channel) {
       let page = 1;
@@ -739,7 +739,7 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, asProduct, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.PRODUCT_VARIATION:
           let paginationVariation = await sails.helpers.commerceImporter(
@@ -751,7 +751,7 @@ module.exports = {
             'PAGINATION',
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
-          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, asProduct, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, asColor, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         case constants.IMAGE_TYPE:
           let paginationImage = await sails.helpers.commerceImporter(
@@ -764,7 +764,7 @@ module.exports = {
             { page, pageSize, next: next || null }
           ).catch((e) => console.log(e));
 
-          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, asProduct, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           break;
         default:
           break;
@@ -1517,6 +1517,8 @@ module.exports = {
     let lastPage;
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
+    let asColor = req.body.asColor;
+    
     let next;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       seller = req.session.user.seller;
@@ -1550,7 +1552,13 @@ module.exports = {
       isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
 
       if (!isEmpty) {
-        rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid, req.body.channel ).catch((e)=>console.log(e));
+        rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid, {
+          channel : req.body.channel,
+          pk : req.body.pk,
+          sk : req.body.sk,
+          url : req.body.apiUrl,
+          version : req.body.version
+        }, req.body.channel, asColor || false ).catch((e)=>console.log(e));
       } else {
         sails.sockets.broadcast(sid, 'product_task_ended', true);
         break;
@@ -1753,7 +1761,6 @@ module.exports = {
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
     let discount = req.body.discount;
-    let asProduct = req.body.asProduct;
     let lastPage;
     let next;
 
@@ -1840,9 +1847,10 @@ module.exports = {
                 }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
-                    if(asProduct && vr.color){
-                      await sails.helpers.createProductFromVariation(vr, pr);
-                    }else{
+
+                    if(vr.color && vr.color.length > 0){
+                      console.log(vr);
+                    }
 
                       let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});
                       let productVariation;
@@ -1851,9 +1859,11 @@ module.exports = {
                       if(!variation || variation.length == 0){
                         variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,seller:pro.seller,category:pro.categories[0].id}).fetch();
                       }
+
                       variation = variation.length ? variation[0] : variation;
                       let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
                       let pv = pvs.find(pv=> pv.variation.name == variation.name);
+
                       if (!pv) {
                         productVariation = await ProductVariation.create({
                           product:pr.id,
@@ -1901,7 +1911,6 @@ module.exports = {
                           sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
                         }
                       }
-                    }
                   }
                 } else {
                   let pvs = await ProductVariation.find({product: pro.id, supplierreference: pro.reference});

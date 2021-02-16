@@ -5,7 +5,9 @@ module.exports = {
     products:{ type:'json' },
     seller : {type : 'string'},
     socketId : {type : 'string'},
-    provider : {type : 'string'}
+    credentials : {type : 'ref'},
+    provider : {type : 'string'},
+    asColor : {type : 'boolean', required:false}
   },
   exits: {
     success: {
@@ -29,80 +31,64 @@ module.exports = {
         let result = [];
 
         try {
-          let pro = await sails.helpers.checkProducts(product, seller);
+          let pro = await sails.helpers.checkProducts(product, seller, inputs.asColor || false);
 
           if(typeof(pro) === 'object'){
             let pr;
-            let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller });
+            let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference });
             if (!exists) {
               pr = await Product.create(pro).fetch();
-              
-              /*if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL){
-              if(product.simple && product.product_weight){
-                let variation = await Variation.find({ name:product.product_weight, gender:pr.gender,seller:pr.seller,category:pr.mainCategory});
-                
-                if(!variation || variation.length == 0){
-                   variation = await Variation.create({name:product.product_weight,gender:pr.gender,seller:pr.seller,category:pr.mainCategory}).fetch();
-                }
-
-                let pvs = await ProductVariation.find({ product:pr.id, supplierreference:pr.reference}).populate('variation');
-                let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
-               
-                if (!pv) {
-                  productVariation = await ProductVariation.create({
-                    product:pr.id,
-                    variation:variation.length > 0  ? variation[0].id : variation.id,
-                    reference: pr.reference,
-                    supplierreference:pr.reference,
-                    ean13: pr.ean13 ? pr.ean13.toString() : '',
-                    upc: pr.upc ? pr.upc : 0,
-                    price: pr.price,
-                    quantity: product.quantity ? product.quantity : 0,
-                    seller:pr.seller
-                  }).fetch();
-                } else {
-                  productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                    price: pr.price,
-                    variation: variation.length > 0  ? variation[0].id : variation.id,
-                    quantity: product.quantity ? product.quantity : 0,
-                  });
-                }
-              }else{
-                let variation = await Variation.find({ name:'único', gender:pr.gender,seller:pr.seller,category:pr.mainCategory});
-                
-                if(!variation || variation.length == 0){
-                   variation = await Variation.create({name:'único',gender:pr.gender,seller:pr.seller,category:pr.mainCategory}).fetch();
-                }
-
-                let pvs = await ProductVariation.find({ product:pr.id, supplierreference:pr.reference}).populate('variation');
-                let pv = pvs.find(pv=> pv.variation.name == variation[0].name);
-               
-                if (!pv) {
-                  productVariation = await ProductVariation.create({
-                    product:pr.id,
-                    variation:variation.length > 0  ? variation[0].id : variation.id,
-                    reference: pr.reference,
-                    supplierreference:pr.reference,
-                    ean13: pr.ean13 ? pr.ean13.toString() : '',
-                    upc: pr.upc ? pr.upc : 0,
-                    price: pr.price,
-                    quantity: product.quantity ? product.quantity : 0,
-                    seller:pr.seller
-                  }).fetch();
-                } else {
-                  productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                    price: pr.price,
-                    variation: variation.length > 0  ? variation[0].id : variation.id,
-                    quantity: product.quantity ? product.quantity : 0,
-                  });
-                }
-              }
-              }*/
             } else {
               delete pro.mainCategory;
               delete pro.categories;
               pr = await Product.updateOne({ id: exists.id }).set(pro);
             }
+
+            try {
+              if(inputs.asColor && product.color && product.color.length > 0 && !product.simple){
+                let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                  inputs.credentials.channel, 
+                  inputs.credentials.pk,
+                  inputs.credentials.sk,
+                  inputs.credentials.url,
+                  inputs.credentials.version,
+                  'PRODUCT_VARIATION_ID', 
+                  product.externalId
+                );
+
+                for (let index = 0; index < product_variables.data.length; index++) {
+                  const product_variable = product_variables.data[index];
+                  if(product_variable.color && product.color.length > 0){
+                    pro.reference = product_variable.reference;
+                    let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
+
+                    if(color && color.length > 0){
+                      pro.mainColor = color[0];
+                    }else{
+                      throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);
+                    }
+
+                    let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference });
+                    
+                    if (!exists) {
+                        pr = await Product.create(pro).fetch();
+                    } else {
+                      delete pro.mainCategory;
+                      delete pro.categories;
+                      pr = await Product.updateOne({ id: exists.id }).set(pro);
+                    }
+                  }
+
+                }
+
+                result.push(pr);
+                sails.sockets.broadcast(sid, 'product_processed', { errors, result });
+          }
+            } catch (error) {
+              errors.push({ name:'ERRDATA', message:error.message });
+              sails.sockets.broadcast(sid, 'product_processed', { errors, result });
+            }
+
             result.push(pr);
             sails.sockets.broadcast(sid, 'product_processed', { errors, result });
           }
