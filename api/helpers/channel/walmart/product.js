@@ -17,6 +17,10 @@ module.exports = {
     channelPrice:{
       type:'number',
       defaultsTo:0
+    },
+    action:{
+      type:'string',
+      required:true
     }
   },
   exits: {
@@ -31,6 +35,8 @@ module.exports = {
     let images = [];
     let padj = inputs.walmartprice ? parseFloat(inputs.walmartprice) : inputs.channelPrice;
     let body={Request:[]};
+    let variant = false;
+    let price;
       for(let p of inputs.products){
         let priceadjust = padj > 0 ? padj : inputs.channelPrice ;
         try{
@@ -49,8 +55,10 @@ module.exports = {
             sort: 'createdAt DESC',
             limit: 1
           });
-
+          
+          let seller = await Seller.findOne({id:product.seller}).populate('mainAddress');
           let status= inputs.status ? inputs.status : 'active';
+          let exchange_rate = await sails.helpers.currencyConverter('COP', 'MXN');
 
           let productimages = await ProductImage.find({product:product.id});
           productimages.forEach(image =>{
@@ -58,6 +66,7 @@ module.exports = {
           });
 
           let productvariation = await ProductVariation.find({product:product.id}).populate('variation');
+          if(productvariation.length>1){variant = true;}
           productvariation.forEach(variation =>{
             if(product.discount.length>0){
               let discPrice=0;
@@ -73,9 +82,12 @@ module.exports = {
             }else{
               price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(2);
             }
+            if(seller.mainAddress.country==='5eeb7a88cc42a6289844ec83'){
+              price = price*exchange_rate.result;
+            }
             variation.price = price;
           });
-          let parent = productvariation[0].id;
+          
           let categories = [];
           for (let c of product.categories){
             let cd = c.walmart.split(',');
@@ -85,145 +97,21 @@ module.exports = {
               }
             }
           }
-          let body_template = await sails.helpers.channel.walmart.bodyGenerator(categories);
-          console.log(body_template);
-          // for(let pv of productvariation){
-          //   let data = {
-              
-            
-          //         "MPItem": {
-          //           "processMode": "CREATE",
-          //           "sku": pv.id,
-          //           "productIdentifiers": {
-          //             "productIdentifier": {
-          //               "productIdType": "GTIN",
-          //               "productId": product.id
-          //             }
-          //           },
-          //           "MPProduct": {
-          //             "productName": product.name,
-          //             "msrp": pv.price,
-          //             "category": {
-          //               "Electronics": {
-          //                 "TVsAndVideoDisplays": {
-          //                   "keyFeatures": {
-          //                     "keyFeaturesValue": [
-          //                       "Verdadera resolución UHD 4KUna TV inteligente Smart TV",
-          //                       "HDR con mejor claridad y una expresión de color precisa"
-          //                     ]
-          //                   },
-          //                   "brand": product.manufacturer.name,
-          //                   "subBrand": product.manufacturer.name,
-          //                   "modelStyleType": product.reference,
-          //                   "shortDescription": product.descriptionShort,
-          //                   "mainImageUrl": images[0],
-          //                   "productSecondaryImageURL": { "productSecondaryImageURLValue": images[1] },
-          //                   "resolution": "1024",
-          //                   "screenSize": {
-          //                     "measure": "55.00",
-          //                     "unit": "in"
-          //                   },
-          //                   "displayTechnology": "LED",
-          //                   "has3dCapabilities": "No",
-          //                   "modelName": "4K Ultra HD Smart",
-          //                   "assembledProductWeight": {
-          //                     "measure": "10.00",
-          //                     "unit": "kg"
-          //                   },
-          //                   "assembledProductWidth": {
-          //                     "measure": "60.00",
-          //                     "unit": "cm"
-          //                   },
-          //                   "assembledProductHeight": {
-          //                     "measure": "100.00",
-          //                     "unit": "cm"
-          //                   },
-          //                   "assembledProductLength": {
-          //                     "measure": "90.00",
-          //                     "unit": "cm"
-          //                   },
-          //                   "warningText": "Uso sólo en Interiores",
-          //                   "countryOfOriginAssembly": "Canadá",
-          //                   "electricalCurrent": "Alterna 110/120v",
-          //                   "compatibleSoftwareApplications": {
-          //                     "compatibleSoftwareApplicationsValue": [
-          //                       "Netflix",
-          //                       "Vudu"
-          //                     ]
-          //                   },
-          //                   "widthWithStand": {
-          //                     "measure": "12.00",
-          //                     "unit": "cm"
-          //                   },
-          //                   "hasHDR": "Sí",
-          //                   "connections": {
-          //                     "connection": [
-          //                       "USB",
-          //                       "HDMI"
-          //                     ]
-          //                   },
-          //                   "itemsIncluded": "TV, Cable, Remote",
-          //                   "videoPanelDesign": "Plano",
-          //                   "isSmart": "Sí",
-          //                   "isRemoteControlIncluded": "Sí",
-          //                   "watts": {
-          //                     "measure": "140.00",
-          //                     "unit": "W"
-          //                   },
-          //                   "keywords": "Smart TV, UHD",
-          //                   "refreshRate": {
-          //                     "measure": "120.00",
-          //                     "unit": "Hz"
-          //                   },
-          //                   "productVideo": { "productVideoValue": "https://www.walmart.com.mx/tv-y-video/pantallas/todas/tv-samsung-55-pulgadas-4k-ultra-hd-smart-tv-led-un55nu7090fxzx_00750940180824" }
-          //                 }
-          //               }
-          //             }
-          //           },
-          //           "MPOffer": {
-          //             "price": "9999.00",
-          //             "StartDate": "2019-08-08",
-          //             "EndDate": "2021-08-09",
-          //             "ShippingDimensionsWidth": {
-          //               "measure": "65.00",
-          //               "unit": "cm"
-          //             },
-          //             "ShippingDimensionsHeight": {
-          //               "measure": "85.00",
-          //               "unit": "cm"
-          //             },
-          //             "ShippingWeight": {
-          //               "measure": "8.00",
-          //               "unit": "kg"
-          //             },
-          //             "ProductTaxCode": "2038346",
-          //             "condition": "Nuevo",
-          //             "ShippingDimensionsDepth": {
-          //               "measure": "75.00",
-          //               "unit": "cm"
-          //             },
-          //             "typeOfTaxInPercentage": "8",
-          //             "monthsWithoutInterest": "3",
-          //             "shippingDiscount": "Sí",
-          //             "sellerWarranty": "3",
-          //             "sellerWarrantyCondition": "New",
-          //             "sellerWarrantyPeriod": "3",
-          //             "shippingCountryOfOrigin": "Brasil",
-          //             "fulfillmentLagTime": "2"
-                    
-          //         }
-          //       }
-          //   };
-     
-          //   body.Request.push(data);
-          // }
-          // console.log(body.Request[0]);
+          let i=0;
+          for(let pv of productvariation){
+            let primary_variant = i == 0 ? true : false;
+            let data = await sails.helpers.channel.walmart.bodyGenerator(categories, variant, inputs.action, pv, images, product, primary_variant);
+            i++;
+            // console.log(data.MPItem.MPProduct.category);
+            body.Request.push(data);
+          }
 
-          // let xml = jsonxml(body.Request[0],true);
-          // String.prototype.splice = function(idx, rem, str) {
-          //   return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
-          // };
-          // body = xml.splice(38, 0, `<MPItemFeed xmlns="http://walmart.com/"><MPItemFeedHeader><version>3.2</version><locale>es_MX</locale><mart>WALMART_MEXICO</mart></MPItemFeedHeader>`);
+          let xml = jsonxml(body.Request,true);
+          String.prototype.splice = function(idx, rem, str) {
+            return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
+          };
+          body = xml.splice(38, 0, `<MPItemFeed xmlns="http://walmart.com/"><MPItemFeedHeader><version>3.2</version><locale>es_MX</locale><mart>WALMART_MEXICO</mart></MPItemFeedHeader>`);
+          console.log(body);
         }catch(err){
           console.log(err);
         }

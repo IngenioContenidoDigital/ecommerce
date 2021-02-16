@@ -795,7 +795,7 @@ module.exports = {
     let status = req.body.status ? 'active' : 'inactive';
     
     try {
-      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice);
+      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice, action);
       fs.writeFile("./.tmp/uploads/walmart", xml, function(err) {if(err) {return console.log(err);}console.log("The file was saved!");});
       let token = await sails.helpers.channel.walmart.sign();
 

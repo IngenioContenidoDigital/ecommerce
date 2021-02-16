@@ -2443,7 +2443,6 @@ module.exports = {
                 break;
         }
 
-
         switch (action) {
             case 'ProductCreate':
                 action = 'CREATE'
