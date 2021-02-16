@@ -637,66 +637,6 @@ module.exports = {
       return res.send(err.message);
     }
   },
-  qualitycheck: async (req, res) => {
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
-      throw 'forbidden';
-    }
-    let error = null;
-    let intlist = [];
-    let plist = [];
-    let channel = await Channel.findOne({name:req.param('channel')});
-    let integrations = await Integrations.find({
-      where:{channel:channel.id,seller:req.param('seller')},
-      select:['id']
-    });
-    
-    for(let itg of integrations){
-      if(!intlist.includes(itg.id)){
-        intlist.push(itg.id);
-      }
-    }
-
-    let pchannel = await ProductChannel.find({
-      where:{integration:intlist,qc:false},
-      select:['product']
-    });
-    
-    for(let p of pchannel){
-      if(!plist.includes(p.product)){
-        plist.push(p.product);
-      }
-    }
-    
-    let products = await Product.find({
-      where:{id:plist},
-      select:['id','reference']
-    })
-    return res.view('pages/configuration/quality', { layout: 'layouts/admin', error: error, channel: channel.name, products: products});
-  },
-  qualityexecute: async (req, res) =>{
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
-      throw 'forbidden';
-    }
-    if (!req.isSocket) { return res.badRequest(); }
-    let response = {items: [],errors: []};
-    let result = null;
-    try{
-      switch(req.body.channel){
-        case 'linio':
-          result = await sails.helpers.channel.linio.checkstatus(req.body.product.id);
-          break;
-        case 'dafiti':
-          result = await sails.helpers.channel.dafiti.checkstatus(req.body.product.id);
-          break;
-      }
-      if (result) {response.items.push({ code: 'REF:'+req.body.product.reference, message: result });}
-    }catch(err){
-      response.errors.push({ code: 'REF:'+req.body.product.reference, message: 'No Localizado' });
-    }
-    return res.send(response);
-  },
   coppeladd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
     let axios = require('axios');
