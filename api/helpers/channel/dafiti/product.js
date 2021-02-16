@@ -6,6 +6,10 @@ module.exports = {
       type:'ref',
       required:true,
     },
+    integration:{
+      type:'ref',
+      required:true
+    },
     dafitiprice:{
       type:'number',
       defaultsTo:0
@@ -13,10 +17,6 @@ module.exports = {
     status:{
       type:'string',
       defaultsTo:'active'
-    },
-    channelPrice:{
-      type:'number',
-      defaultsTo:0
     }
   },
   exits: {
@@ -27,10 +27,8 @@ module.exports = {
   fn: async function (inputs,exits) {
     let moment = require('moment');
     var jsonxml = require('jsontoxml');
-    let padj = inputs.dafitiprice ? parseFloat(inputs.dafitiprice) : inputs.channelPrice;
     let body={Request:[]};
       for(let p of inputs.products){
-        let priceadjust = padj > 0 ? padj : inputs.channelPrice ;
         try{
           let product = await Product.findOne({id:p.id})
           .populate('gender')
@@ -46,7 +44,15 @@ module.exports = {
             },
             sort: 'createdAt DESC',
             limit: 1
-          });
+          })
+          .populate('channels',{integration:inputs.integration.id});
+          let priceadjust = 0;
+          if(product.channels.length>0){
+            priceadjust = (inputs.dafitiprice && inputs.dafitiprice > 0) ? parseFloat(inputs.dafitiprice) : product.channels[0].price;
+          }else{
+            priceadjust = (inputs.dafitiprice && inputs.dafitiprice > 0) ? parseFloat(inputs.dafitiprice) : 0;
+          }
+          
           let status= inputs.status ? inputs.status : 'active';
           if((product.description.length + product.descriptionShort.length)<=30){throw new Error('Producto sin Descripcion');}
           let productvariation = await ProductVariation.find({product:product.id})
