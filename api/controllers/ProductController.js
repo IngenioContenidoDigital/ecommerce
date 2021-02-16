@@ -1876,26 +1876,10 @@ module.exports = {
                 });
 
                 if(colors.length > 0){
-
                   for (let index = 0; index < colors.length; index++) {
                     const pcolor = colors[index];
-                    let textPredictor = product.name+' '+pcolor.reference;
-                    
                     try {
-                      let color = await sails.helpers.tools.findColor(`${(textPredictor + ' ' + pcolor.color)}`);
-
-                      if(!color || color.length == 0){
-                        console.log(color , textPredictor);
-                        throw new Error(`Ref: ${pcolor.reference} : No se pudo identificar el color ${pcolor.color}`);
-                      }
-
-                      if(!color[0]){
-                        console.log("productColor", pcolor);
-                      }
-  
-                      let colorModel = await Color.findOne({ id : color[0]});
-                      let productColor =  await Product.findOne({ reference : `${pcolor.reference}-${colorModel.name}`});
-  
+                      let productColor =  await Product.findOne({ reference : pcolor.reference});
                       if(productColor && (!productColor.images || productColor.images.length === 0)){
                         for (let im of pcolor.images) {
                           try {

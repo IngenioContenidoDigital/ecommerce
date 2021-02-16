@@ -45,7 +45,7 @@ module.exports = {
             }
 
             try {
-              if(inputs.asColor && product.color && product.color.length > 0 && !product.simple){
+              if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL && inputs.asColor && product.color && product.color.length > 0 && !product.simple){
                 let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                   inputs.credentials.channel, 
                   inputs.credentials.pk,
