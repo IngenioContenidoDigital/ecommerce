@@ -95,7 +95,6 @@ module.exports = {
             limit: 1
           });
           orders.push(order);
-
           for(let cp of sellerproducts){
             await OrderItem.create({
               order:order.id,
@@ -115,6 +114,7 @@ module.exports = {
               await sails.helpers.channel.channelSync(uproduct);
             }
           }
+          await sails.helpers.notification(seller, order);
         }catch(err){
           return exits.error(err);
         }

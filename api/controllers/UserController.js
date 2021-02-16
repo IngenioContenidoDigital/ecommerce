@@ -190,15 +190,21 @@ module.exports = {
     }
     let error= req.param('error') ? req.param('error') : null;
     let user = null;
+    let states = null;
+    let userNotifications = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     let users = await User.find().populate('profile');
-    if(id){user = await User.findOne({id:id});}
+    if(id){
+      user = await User.findOne({id:id});
+      states = await OrderState.find({}).populate('color');
+      userNotifications = await UserNotification.find({user: id});
+    }
     let countries = await Country.find();
     let sellers = await Seller.find();
     let profiles = await Profile.find({name:{'nin':['superadmin','customer']}});
     users = users.filter(user => {return user.profile.name !== 'superadmin' && user.profile.name !== 'customer';});
-    return res.view('pages/configuration/users',{layout:'layouts/admin',users:users, user:user,profiles:profiles,countries:countries,sellers:sellers,action:action,error:error});
+    return res.view('pages/configuration/users',{layout:'layouts/admin',users:users, user:user,profiles:profiles,countries:countries,sellers:sellers,action:action,error:error,states,userNotifications});
   },
   admincreate: async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -209,7 +215,6 @@ module.exports = {
     let isActive = (req.body.activo==='on') ? true : false;
     try{
       let country = await Country.findOne({id:req.body.country});
-      console.log(req.body);
       await User.create({
         emailAddress:req.body.email,
         emailStatus:'confirmed',
@@ -420,6 +425,37 @@ module.exports = {
     }
     req.session.user.menu = req.body.menu;
     return res.ok();
+  },
+  usernotification: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'permissions')){
+      throw 'forbidden';
+    }
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let user = req.body.user;
+    let notification = req.body.notification;
+    let orderState = req.body.orderState;
+    try {
+      await UserNotification.findOrCreate({state: orderState, user: user},{
+        user: user,
+        state: orderState,
+        sms: notification === 'sms' ? req.body.value : false,
+        email: notification === 'email' ? req.body.value : false
+      }).exec(async (err, record, created)=>{
+        if(err){return new Error(err.message);}
+        if(!created){
+          await UserNotification.updateOne({id: record.id}).set({
+            sms: notification === 'sms' ? req.body.value : record.sms,
+            email: notification === 'email' ? req.body.value : record.email
+          });
+        }
+      });
+      return res.send({error: null});
+    } catch (err) {
+      console.log(err);
+      return res.send({error: err});
+    }
   }
 };
-

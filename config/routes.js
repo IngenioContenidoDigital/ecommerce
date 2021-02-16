@@ -182,6 +182,7 @@ module.exports.routes = {
   'POST /permissions/set/:id' : {controller:'UserController',action:'setpermissions'},
   'GET /permission' : {controller:'UserController',action:'newpermission'},
   'POST /permission/create' : {controller:'UserController',action:'addpermission'},
+  'POST /usernotification' : {controller:'UserController',action:'usernotification'},
 
   'POST /integration/set/:seller/:channel/:namechannel' : {controller:'SellerController',action:'setintegration'},
   'POST /commission/set/:seller' : {controller:'SellerController',action:'setcommission'},
