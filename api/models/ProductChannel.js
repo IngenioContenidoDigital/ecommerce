@@ -13,7 +13,7 @@ module.exports = {
         integration:{ model:'integrations' },
         channelid:{ type:'string' },
         status:{ type:'boolean' },
-        qc:{ type:'boolean' },
-        price:{ type:'number' }
+        qc:{ type:'boolean', defaultsTo:false },
+        price:{ type:'number', defaultsTo:0 }
     }
 };

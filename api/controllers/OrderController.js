@@ -539,5 +539,16 @@ module.exports = {
     const buffer = await workbook.xlsx.writeBuffer();
     return res.send(buffer);
   },
+  updatecoppel:async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    try{
+      let response = await sails.helpers.channel.coppel.shipping(req.body);
+      return res.send(response);;
+    }catch(e){
+      console.log(e);
+    }
+  },
 };
 

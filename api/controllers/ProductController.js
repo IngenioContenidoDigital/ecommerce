@@ -425,7 +425,6 @@ module.exports = {
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
     const productChannelId = productchannel ? productchannel.id : '';
-    const channelPrice = productchannel ? productchannel.price : 0;
     let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
     
     try {
@@ -437,7 +436,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.dafiti.product([product], parseFloat(req.body.price), status, channelPrice);
+      let result = await sails.helpers.channel.dafiti.product([product], integration, parseFloat(req.body.price), status);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.dafiti.sign(integrationId, action, product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -450,14 +449,13 @@ module.exports = {
             channel : integration.channel.id,
             channelid:'',
             status: true,
-            qc:true,
+            qc:false,
             price: req.body.price ? parseFloat(req.body.price) : 0
           }).exec(async (err, record, created)=>{
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
                 status:req.body.status,
-                qc:true,
                 price: req.body.price ? parseFloat(req.body.price) : 0
               });
             }
@@ -472,7 +470,6 @@ module.exports = {
           await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
             {
               status: false,
-              qc:false,
               price: 0
             }
           );
@@ -532,7 +529,7 @@ module.exports = {
               integration:integrationId,
               channelid: result.id,
               status: true,
-              qc:true,
+              qc:false,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -540,7 +537,6 @@ module.exports = {
                 await ProductChannel.updateOne({id: record.id}).set({
                   channelid:result.id,
                   status:true,
-                  qc:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -564,7 +560,6 @@ module.exports = {
           await ProductChannel.updateOne({id: record.id}).set({
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
-            qc:false,
             price:0
           });
         }
@@ -592,7 +587,7 @@ module.exports = {
         action = 'ProductUpdate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product([product], parseFloat(req.body.price), status, channelPrice);
+      let result = await sails.helpers.channel.linio.product([product], integration, parseFloat(req.body.price), status);
       var xml = jsonxml(result,true);
       let sign = await sails.helpers.channel.linio.sign(integrationId, action,product.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml)
@@ -611,7 +606,6 @@ module.exports = {
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
                 status:req.body.status,
-                qc:true,
                 price: req.body.price ? parseFloat(req.body.price) : 0
               });
             }
@@ -627,7 +621,6 @@ module.exports = {
           await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
             {
               status: false,
-              qc:false,
               price: 0
             }
           );
@@ -644,53 +637,125 @@ module.exports = {
       return res.send(err.message);
     }
   },
-  qualitycheck: async (req, res) => {
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
-      throw 'forbidden';
-    }
-    let params={};
-    let error = null;
-    let channel = req.param('channel');
-    if(req.param('seller')){params.seller=req.param('seller');}
-    switch(channel){
-      case 'linio':
-        params.linio=true;
-        params.linioqc=false;
-        break;
-      case 'dafiti':
-        params.dafiti=true;
-        params.dafitiqc=false;
-        break;
-    }
-    let products = await Product.find({
-      where:params,
-      select: ['id','reference']
-    });
-    return res.view('pages/configuration/quality', { layout: 'layouts/admin', error: error, channel: channel, products: products});
-  },
-  qualityexecute: async (req, res) =>{
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productstate')) {
-      throw 'forbidden';
-    }
+  coppeladd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
-    let response = {items: [],errors: []};
-    let result = null;
-    try{
-      switch(req.body.channel){
-        case 'linio':
-          result = await sails.helpers.channel.linio.checkstatus(req.body.product.id);
-          break;
-        case 'dafiti':
-          result = await sails.helpers.channel.dafiti.checkstatus(req.body.product.id);
-          break;
+    let axios = require('axios');
+    let fs = require('fs');
+    let FormData = require('form-data');
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    let productChannelId = productchannel ? productchannel.id : '';
+    const channelPrice = productchannel ? productchannel.price : 0;
+    let integration = await Integrations.findOne({id: integrationId}).populate('channel');
+    try {
+      
+      let action = null;
+      let result = null;
+      let status = req.body.status ? 'active' : 'paused';
+      if (productchannel && productchannel.channelid) {
+        action = 'Update';
+      } else {
+        action = 'Post';
       }
-      if (result) {response.items.push({ code: 'REF:'+req.body.product.reference, message: result });}
-    }catch(err){
-      response.errors.push({ code: 'REF:'+req.body.product.reference, message: 'No Localizado' });
+
+      options = {
+        method: 'get',
+        url: `${integration.channel.endpoint}api/products?product_references=EAN|${product.id}`,
+        headers: {
+            'Authorization':`${integration.key}`,
+            accept: 'application/json'
+        }
+      }
+     let created = await axios(options).catch((e) => {result=e.response});
+      if(created){
+        if(created.data.total_count==0 && status=="active"){
+          await sails.helpers.channel.coppel.product(product.id, action, parseFloat(channelPrice), status)
+          .intercept((err) => {return new Error(err.message);});
+          let file = new FormData();
+          file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+          options = {
+            method: 'post',
+            url: `${integration.channel.endpoint}api/products/imports`,
+            headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                accept: 'application/json'
+            },
+            data:file
+          }
+          let response = await axios(options).catch((e) => {result=e.response; console.log(result);});
+          if(response){
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:product.id,
+              channel:channelId,
+              integration:integrationId,
+              channelid: response.data.import_id,
+              status: true,
+              qc:false,
+              price: req.body.price ? parseFloat(req.body.price) : 0
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){
+                productChannelId = await ProductChannel.updateOne({id: record.id}).set({
+                  channelid: response.data.import_id,
+                  status:req.body.status,
+                  price: req.body.price ? parseFloat(req.body.price) : 0
+                });
+              }
+            });
+          }
+        }
+        if(action == 'Post'){
+          await sails.helpers.channel.coppel.product(product.id, 'Offer', parseFloat(req.body.price), status)
+          .intercept((err) => {return new Error(err.message);});
+          let file = new FormData();
+          file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+          file.append('import_mode','NORMAL');
+          options = {
+            method: 'post',
+            url: `${integration.channel.endpoint}api/offers/imports`,
+            headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                accept: 'application/json'
+            },
+            data:file
+         }
+         await axios(options).catch((e) => {result=e.response; console.log(result);});
+        }else if(action == 'Update'){
+          let body = await sails.helpers.channel.coppel.product(product.id, 'Update', parseFloat(req.body.price), status)
+          .intercept((err) => {return new Error(err.message);});
+          console.log(body);
+          options = {
+            method: 'post',
+            url: `${integration.channel.endpoint}api/offers`,
+            headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `application/json`,
+                accept: 'application/json'
+            },
+            data:body
+         }
+         let response_offer = await axios(options).catch((e) => {result=e.response; console.log(result);});
+         if(response_offer){
+           await ProductChannel.updateOne({ id: productChannelId }).set({ 
+             status: req.body.status,
+             price: req.body.price ? parseFloat(req.body.price) : 0
+           });
+         }
+        }
+      }
+    } catch (err) {
+      console.log(err);
+      await ProductChannel.updateOne({id: productChannelId}).set({
+        channelid: '',
+        status:false,
+        price: 0
+      });
+      return res.send(err.message);
     }
-    return res.send(response);
   },
   import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -1246,7 +1311,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.dafiti.product(products, 0, 'active', 0);
+              let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1263,13 +1328,13 @@ module.exports = {
                             channel : integration.channel.id,
                             status: false,
                             qc:false,
-                            price: p.price
+                            price: 0
                           });
                         }
                         
                         if(action === 'ProductUpdate'){
                           for(pro in productlist){
-                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true});
                           }
                         }
                     }
@@ -1324,7 +1389,7 @@ module.exports = {
               setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
               response.items.push(imgresult);
             }else{
-              let result = await sails.helpers.channel.linio.product(products, 0, 'active', 0);
+              let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');
               var xml = jsonxml(result,true);
               let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1341,13 +1406,13 @@ module.exports = {
                             channel : integration.channel.id,
                             status: false,
                             qc:false,
-                            price: p.price
+                            price: 0
                           });
                         }
 
                         if(action === 'ProductUpdate'){
                           for(pro in productlist){
-                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true, qc:true, price: p.price});
+                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true});
                           }
                         }
                     }
@@ -1405,7 +1470,6 @@ module.exports = {
                   response.items.push(body);
                   await ProductChannel.updateOne({ id: productChannelId }).set({
                     status:true,
-                    qc:true,
                     price:mlprice
                   });
                 }
@@ -1420,20 +1484,190 @@ module.exports = {
                     integration:integration.id,
                     channelid:result.id,
                     status:true,
-                    qc:true,
+                    qc:false,
                     price:0
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
                     if(!created){	
                       await ProductChannel.updateOne({id: record.id}).set({	
                         channelid:result.id,	
-                        status:true,	
-                        qc:true,	
                         price:mlprice	
                       });	
                     }
                   });
                   response.items.push(body);
+                }
+              }
+            }
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
+      if (channel === 'coppel') {
+
+        let axios = require('axios');
+        let fs = require('fs');
+        let FormData = require('form-data');
+        let result;
+
+        const intgrationId = integration.id;
+        
+        let products = await Product.find({seller: seller, active: true}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        });
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'Post';
+            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            break;
+          case 'ProductUpdate':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            break;
+          case 'Image':
+            action = 'Image';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            break;
+        }
+        if (products.length > 0) {
+          for (let pl of products) {
+            let productvariations = await ProductVariation.find({product:pl.id}).populate('variation');
+            const cpprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
+            const cpid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const cpstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
+            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+            if(productvariations.length===1){
+              if(action==='Update'){
+                let body = await sails.helpers.channel.coppel.product(pl.id, 'Update', cpprice, cpstatus)
+                .intercept((err) => {return new Error(err.message);});
+                options = {
+                  method: 'post',
+                  url: `${integration.channel.endpoint}api/offers`,
+                  headers: {
+                      'Authorization':`${integration.key}`,
+                      'content-type': `application/json`,
+                      accept: 'application/json'
+                  },
+                  data:body
+                }
+                let response_offer = await axios(options).catch((e) => {
+                  result=e.response.data.message?e.response.data.message:e.response.data; 
+                  response.errors.push('REF: '+pl.reference+' no actualizado en Coppel: '+ result);
+                });
+                if(response_offer){
+                  response.items.push(response_offer.data.import_id);
+                  await ProductChannel.updateOne({id: productChannelId}).set({	
+                    channelid:response_offer.data.import_id,	
+                    status:true,	
+                    price:cpprice	
+                  });
+                }
+              }
+              if(action==='Post'){
+                options = {
+                  method: 'get',
+                  url: `${integration.channel.endpoint}api/products?product_references=EAN|${pl.id}`,
+                  headers: {
+                      'Authorization':`${integration.key}`,
+                      accept: 'application/json'
+                  }
+                }
+                let created = await axios(options).catch((e) => {result=e.response});
+                if(created){
+                  if(created.data.total_count === 0){
+                    await sails.helpers.channel.coppel.product(pl.id, action, cpprice, cpstatus)
+                    .intercept((err) => {return new Error(err.message);});
+                    let file = new FormData();
+                    file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+                    options = {
+                      method: 'post',
+                      url: `${integration.channel.endpoint}api/products/imports`,
+                      headers: {
+                          'Authorization':`${integration.key}`,
+                          'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                          accept: 'application/json'
+                      },
+                      data:file
+                    }
+                    await axios(options).catch((e) => {result=e.response; console.log(result);});
+                  }
+
+                  await sails.helpers.channel.coppel.product(pl.id, 'Offer', cpprice, cpstatus)
+                  .intercept((err) => {return new Error(err.message);});
+                  file = new FormData();
+                  file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+                  file.append('import_mode','NORMAL');
+                  options = {
+                    method: 'post',
+                    url: `${integration.channel.endpoint}api/offers/imports`,
+                    headers: {
+                        'Authorization':`${integration.key}`,
+                        'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                        accept: 'application/json'
+                    },
+                    data:file
+                  }
+                  let response_offer = await axios(options).catch((e) => {
+                    result=e.response.data.message?e.response.data.message:e.response.data; 
+                    response.errors.push('REF: '+pl.reference+' no creado en Coppel: '+ result);
+                  });
+                  
+                  
+
+                  await ProductChannel.findOrCreate({id: productChannelId},{
+                    product:pl.id,
+                    channel:integration.channel.id,
+                    integration:integration.id,
+                    channelid:response_offer.data.import_id,
+                    status:true,
+                    qc:false,
+                    price:cpprice
+                  }).exec(async (err, record, created)=>{
+                    if(err){return new Error(err.message);}
+
+                    if(!created){	
+                      await ProductChannel.updateOne({id: record.id}).set({	
+                        channelid:response_offer.data.import_id,	
+                        status:true,	
+                        price:cpprice	
+                      });	
+                    }
+                  });
+
+                  response.items.push(response_offer.data.import_id);
+                }
+              }
+              if(action==='Image'){
+                await sails.helpers.channel.coppel.product(pl.id, 'Post', cpprice, cpstatus)
+                .intercept((err) => {return new Error(err.message);});
+                let file = new FormData();
+                file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+                options = {
+                  method: 'post',
+                  url: `${integration.channel.endpoint}api/products/imports`,
+                  headers: {
+                      'Authorization':`${integration.key}`,
+                      'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                      accept: 'application/json'
+                  },
+                  data:file
+                }
+                let response_product = await axios(options).catch((e) => {
+                  result=e.response.data.message?e.response.data.message:e.response.data; 
+                  response.errors.push('REF: '+pl.reference+' no actualizado en Coppel: '+ result);
+                });
+                if(response_product){
+                  response.items.push(response_product.data.import_id);
+                  await ProductChannel.updateOne({id: productChannelId}).set({	
+                    channelid:response_product.data.import_id,	
+                    status:true,	
+                    price:cpprice	
+                  });
                 }
               }
             }
@@ -1847,11 +2081,6 @@ module.exports = {
                 }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
-
-                    if(vr.color && vr.color.length > 0){
-                      console.log(vr);
-                    }
-
                       let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});
                       let productVariation;
                       let discountHandled = false;

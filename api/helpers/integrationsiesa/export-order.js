@@ -38,8 +38,9 @@ module.exports = {
             resultItems[tempKey].quantity += 1;
           }
         });
-        Object.keys(resultItems).map((key) => {
+        for (const key of Object.keys(resultItems)) {
           const item = resultItems[key];
+          const undInvetory = await sails.helpers.integrationsiesa.findItem(item.productvariation.ean13);
           const priceIva = parseInt(item.originalPrice - (item.originalPrice/1.19));
           const unitPrice = address.region.iva ? Math.ceil(item.price - priceIva) : item.price;
           const movtoItem = `<Movto_Pedidos_Comercial>              
@@ -54,7 +55,7 @@ module.exports = {
               <f431_id_un_movto></f431_id_un_movto>
               <f431_fecha_entrega>${deliveryDate}</f431_fecha_entrega>
               <f431_num_dias_entrega>5</f431_num_dias_entrega>
-              <f431_id_unidad_medida>UND</f431_id_unidad_medida>
+              <f431_id_unidad_medida>${undInvetory}</f431_id_unidad_medida>
               <f431_cant_pedida_base>${item.quantity}</f431_cant_pedida_base>
               <f431_precio_unitario>${unitPrice}</f431_precio_unitario>
             </Movto_Pedidos_Comercial>`;
@@ -64,11 +65,10 @@ module.exports = {
               <F431_NRO_REGISTRO>${i+1}</F431_NRO_REGISTRO>
               <F433_ID_LLAVE_IMPUESTO>IV02</F433_ID_LLAVE_IMPUESTO>
               <F433_VLR_UNI>${priceIva}</F433_VLR_UNI>
-            </Impuestos>
-          `;
+            </Impuestos>`;
           Movto = Movto + movtoItem + tax;
           i += 1;
-        });
+        }
         let requestArgs={
           idDocumento: 80032,
           strNombreDocumento: 'Pedidos',
