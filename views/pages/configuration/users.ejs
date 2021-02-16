@@ -4,177 +4,240 @@
           <%= error %>
       </div>
     <% } %>
-    <% if(action=='create' || action=='edit'){ %>  
-          <div class="container">
-              <br />
-              <h4 class="title is-4">Crear Usuario</h4>
-              <hr>
-              <% if(action=='create') { %>
-                <form action="/user/create" method="POST" id="users">
-              <% } %>
-              <% if(action=='edit') { %>
-                <form action="/user/edit/<%= user.id %>" method="POST" id="users">
-              <% } %>
-                <div class="box">
-                <p class="field has-text-right">
-                    <% if(action=='edit'){ %>
-                        <input id="activo" type="checkbox" <% if(user.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
-                        <label for="activo">Usuario: <span id="state"><% if(user.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
-                    <% }else{ %>
-                        <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
-                        <label for="activo">usuario: <span id="state"><b style="color:green;">activo</b></span></label>  
-                    <% } %>
-                </p>
-                <div class="columns">
-                    <div class="column">
-                        <div class="field">
-                            <p class="control has-icons-left">
-                                <input class="input" name="fullname" type="text" required placeholder="Nombre" <%if(action=='edit'){%>value="<%=user.fullName%>"<%}%>>
-                                <span class="icon is-small is-left">
-                                    <i class='bx bx-rename'></i>
-                                </span>
-                            </p>
-                            </div>
-                    </div>
-                    <div class="column">
-                        <div class="field has-addons">
-                            <p class="control">
-                            <span class="select">
-                                <select required name="dnitype">
-                                <option value="CC">CC</option>
-                                <option value="CE">CE</option>
-                                <option value="NIT">NIT</option>
-                                <!--<option value="PPN">PPN</option>
-                                <option value="SSN">SSN</option>
-                                <option value="LIC">LIC</option>
-                                <option value="DNI">DNI</option>-->
-                                </select>
-                            </span>
-                            </p>
-                            <p class="control has-icons-left is-expanded">
-                                <input class="input" required name="dni" type="number" placeholder="Número de Identificación" <%if(action=='edit'){%>value="<%=user.dni%>"<%}%>>
-                                <span class="icon is-small is-left">
-                                    <i class='bx bx-id-card' ></i>
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="columns">
-                    <div class="column">
-                        <div class="field">
-                            <p class="control has-icons-left">
-                            <input class="input" name="email" type="email" required placeholder="Email" <%if(action=='edit'){%>value="<%=user.emailAddress%>"<%}%>>
-                            <span class="icon is-small is-left">
-                                <i class="bx bxs-envelope"></i>
-                            </span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="field has-addons">
-                            <p class="control">
-                            <span class="select">
-                                <select required name="country">
-                                <% countries.forEach((country) =>{ %>
-                                    <% if(country.active){ %>
-                                    <option class="is-uppercase" value="<%=country.id%>" <%if(action=='edit' && user.mobilecountry==country.id){%>selected="selected"<%}%> >+<%=country.prefix%></option>
-                                    <%}%>
-                                <% });%>
-                                </select>
-                            </span>
-                            </p>
-                            <p class="control has-icons-left is-expanded">
-                                <input class="input" required name="mobile" type="number" placeholder="Número Móvil" <%if(action=='edit'){%>value="<%=user.mobile%>"<%}%>>
-                                <span class="icon is-small is-left">
-                                    <i class='bx bx-mobile'></i>
-                                </span>
-                            </p>
-                        </div>                  
-                    </div>
-                </div>
-                <div class="columns">
-                    <div class="column">
-                        <div class="field has-addons">
-                            <p class="control has-icons-left is-expanded">
-                            <input class="input pass" name="password" type="password" minlength="6" <%if(action=='create' || action==null || action==undefined){%>required<%}%> placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
-                            <span class="icon is-small is-left">
-                                <i class='bx bxs-lock-alt'></i>
-                            </span>
-                            </p>
-                            <p class="control">
-                                <a class="button" id="eye">
-                                    <i class='bx bx-low-vision' ></i>
-                                </a>
-                                </p>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="field">
-                            <div class="select is-fullwidth">
-                                <select class="is-capitalized" name="seller">
-                                    <option value="">-- Elegir Seller --</option>
-                                    <%sellers.forEach(seller =>{%>
-                                        <option value="<%=seller.id%>" class="is-capitalized" <%if(action=='edit' && user.seller==seller.id){%>selected="selected"<%}%> ><%= seller.name %></option>
-                                    <%})%>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="column">
-                        <div class="field">
-                            <div class="select is-fullwidth">
-                                <select class="is-capitalized" name="profile" required>
-                                    <option value="">-- Elegir Perfil --</option>
-                                    <%profiles.forEach(profile =>{%>
-                                        <option value="<%=profile.id%>" class="is-capitalized" <%if(action=='edit' && user.profile==profile.id){%>selected="selected"<%}%> ><%= profile.name %></option>
-                                    <%})%>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="control buttons is-right">
-                <% if(action=='edit'){ %> 
-                    <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Usuario</button>
-                <% }else if (action=='create'){ %>
-                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Usuario</button>
-                <% } %>
-                </div>
-                </div>
-              </form>
-            </div>
-            <script>
-              
-              live('#activo','click',function(){
-                let elm = this;
-                let state = elm.checked;
-                var sp = document.querySelector('#state');
-                if(state){
-                  sp.innerHTML='<b style="color:green;">activo</b>';
-                }else{
-                  sp.innerHTML='<b style="color:red;">inactivo</b>';
-                }
-              });
+    <% if(action=='create' || action=='edit'){ %>
+		<h4 class="title is-4">Crear Usuario</h4>
+		<div class="box">
+			<div class="product-tab tabs">
+				<ul>
+					<li class="is-active"><a option="infobasics" >Información General</a></li>
+					<li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="notification">Notificaciones</a></li>
+				</ul>
+			</div>
+			<div id ="infobasics">
+				<% if(action=='create') { %>
+					<form action="/user/create" method="POST" id="users">
+				<% } %>
+				<% if(action=='edit') { %>
+					<form action="/user/edit/<%= user.id %>" method="POST" id="users">
+				<% } %>
+					<p class="field has-text-right">
+						<% if(action=='edit'){ %>
+							<input id="activo" type="checkbox" <% if(user.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+							<label for="activo">Usuario: <span id="state"><% if(user.active){ %> <b style="color:green;">activo</b> <% } else { %> <b style="color:red;">inactivo</b> <% } %></span></label>
+						<% }else{ %>
+							<input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+							<label for="activo">usuario: <span id="state"><b style="color:green;">activo</b></span></label>  
+						<% } %>
+					</p>
+					<div class="columns">
+						<div class="column">
+							<div class="field">
+								<p class="control has-icons-left">
+									<input class="input" name="fullname" type="text" required placeholder="Nombre" <%if(action=='edit'){%>value="<%=user.fullName%>"<%}%>>
+									<span class="icon is-small is-left">
+										<i class='bx bx-rename'></i>
+									</span>
+								</p>
+								</div>
+						</div>
+						<div class="column">
+							<div class="field has-addons">
+								<p class="control">
+								<span class="select">
+									<select required name="dnitype">
+									<option value="CC">CC</option>
+									<option value="CE">CE</option>
+									<option value="NIT">NIT</option>
+									<!--<option value="PPN">PPN</option>
+									<option value="SSN">SSN</option>
+									<option value="LIC">LIC</option>
+									<option value="DNI">DNI</option>-->
+									</select>
+								</span>
+								</p>
+								<p class="control has-icons-left is-expanded">
+									<input class="input" required name="dni" type="number" placeholder="Número de Identificación" <%if(action=='edit'){%>value="<%=user.dni%>"<%}%>>
+									<span class="icon is-small is-left">
+										<i class='bx bx-id-card' ></i>
+									</span>
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="columns">
+						<div class="column">
+							<div class="field">
+								<p class="control has-icons-left">
+								<input class="input" name="email" type="email" required placeholder="Email" <%if(action=='edit'){%>value="<%=user.emailAddress%>"<%}%>>
+								<span class="icon is-small is-left">
+									<i class="bx bxs-envelope"></i>
+								</span>
+								</p>
+							</div>
+						</div>
+						<div class="column">
+							<div class="field has-addons">
+								<p class="control">
+								<span class="select">
+									<select required name="country">
+									<% countries.forEach((country) =>{ %>
+										<% if(country.active){ %>
+										<option class="is-uppercase" value="<%=country.id%>" <%if(action=='edit' && user.mobilecountry==country.id){%>selected="selected"<%}%> >+<%=country.prefix%></option>
+										<%}%>
+									<% });%>
+									</select>
+								</span>
+								</p>
+								<p class="control has-icons-left is-expanded">
+									<input class="input" required name="mobile" type="number" placeholder="Número Móvil" <%if(action=='edit'){%>value="<%=user.mobile%>"<%}%>>
+									<span class="icon is-small is-left">
+										<i class='bx bx-mobile'></i>
+									</span>
+								</p>
+							</div>                  
+						</div>
+					</div>
+					<div class="columns">
+						<div class="column">
+							<div class="field has-addons">
+								<p class="control has-icons-left is-expanded">
+								<input class="input pass" name="password" type="password" minlength="6" <%if(action=='create' || action==null || action==undefined){%>required<%}%> placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
+								<span class="icon is-small is-left">
+									<i class='bx bxs-lock-alt'></i>
+								</span>
+								</p>
+								<p class="control">
+									<a class="button" id="eye">
+										<i class='bx bx-low-vision' ></i>
+									</a>
+									</p>
+							</div>
+						</div>
+						<div class="column">
+							<div class="field">
+								<div class="select is-fullwidth">
+									<select class="is-capitalized" name="seller">
+										<option value="">-- Elegir Seller --</option>
+										<%sellers.forEach(seller =>{%>
+											<option value="<%=seller.id%>" class="is-capitalized" <%if(action=='edit' && user.seller==seller.id){%>selected="selected"<%}%> ><%= seller.name %></option>
+										<%})%>
+									</select>
+								</div>
+							</div>
+						</div>
+						<div class="column">
+							<div class="field">
+								<div class="select is-fullwidth">
+									<select class="is-capitalized" name="profile" required>
+										<option value="">-- Elegir Perfil --</option>
+										<%profiles.forEach(profile =>{%>
+											<option value="<%=profile.id%>" class="is-capitalized" <%if(action=='edit' && user.profile==profile.id){%>selected="selected"<%}%> ><%= profile.name %></option>
+										<%})%>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="control buttons is-right">
+					<% if(action=='edit'){ %> 
+						<button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Usuario</button>
+					<% }else if (action=='create'){ %>
+						<button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Usuario</button>
+					<% } %>
+					</div>
+				</form>
+				<script>
+					live('#activo','click',function(){
+					  let elm = this;
+					  let state = elm.checked;
+					  var sp = document.querySelector('#state');
+					  if(state){
+						sp.innerHTML='<b style="color:green;">activo</b>';
+					  }else{
+						sp.innerHTML='<b style="color:red;">inactivo</b>';
+					  }
+					});
+	  
+					live('#eye','click',e =>{
+					  let pass = document.querySelector('.pass');
+					  if(pass.type==='password'){
+						  pass.type='text';
+					  }else{
+						  pass.type='password';
+					  }
+					});
+	  
+					live('button[type="submit"]','click',e=>{
+					  e.preventDefault();
+					  let form = document.querySelector('#users');
+					  if(validateForm(form)){
+						  form.submit();
+					  }
+					});
+				</script>
+			</div>
+			<div class="is-hidden" id="notification">
+				<table class="table is-hoverable is-size-6 is-mediumwidth">
+					<thead>
+					  <tr>
+						<th><small></small></th>
+						<th><small>Sms</small></th>
+						<th><small>Email</small></th>
+					  </tr>
+					</thead>
+					<tbody>
+						<% if(states){ %>
+							<% states.forEach(state => { %>
+								<tr>
+									<td><span class="tag" style="background-color: <%= state.color.code %>; width: 250px;"><p class="text-notification"><%= state.name.toUpperCase() %></p></span></span></td>
+									<td>
+										<input id="sms-<%= state.id %>" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.state == state.id && n.sms)){%>checked<%}%>>
+										<label for="sms-<%= state.id %>"></label>
+									</td>
+									<td>
+										<input id="email-<%= state.id %>" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.state == state.id && n.email)){%>checked<%}%>>
+										<label for="email-<%= state.id %>"></label>
+									</td>
+								</tr>
+							<%})%>
+						<%}%>
+					</tbody>
+				  </table>
+			</div>
+		</div>
+		<script>
+			live('.switch', 'click', (e)=>{ 
+				let element = e.target.id;
+				let value = e.target.checked;
+				let user = '<%- user ? user.id : "" %>';
+				const notification = element.split('-')[0];
+				const orderState = element.split('-')[1];
+				io.socket.post('/usernotification', {user, notification, orderState, value}, (resData, jwRes) => {
+					if(jwRes.statusCode == 200) {
+						if (resData.error) {
+							setTimeout(() => { 
+								e.target.checked = false;
+							}, 2000);
+						}
+					}
+				});
+			});
 
-              live('#eye','click',e =>{
-                let pass = document.querySelector('.pass');
-                if(pass.type==='password'){
-                    pass.type='text';
-                }else{
-                    pass.type='password';
-                }
-              });
-
-              live('button[type="submit"]','click',e=>{
-                e.preventDefault();
-                let form = document.querySelector('#users');
-                if(validateForm(form)){
-                    form.submit();
-                }
-              });
-
-            </script>
+			live('.tabs ul li','click',(e)=>{
+				e = e || window.event;
+				let element = e.target || e.srcElement;
+				let option = element.getAttribute('option');
+				let list = element.parentNode.parentNode.querySelectorAll('li');
+				list.forEach((li)=>{
+				if(hasClass(li,'is-active')){
+					addClass(document.querySelector('#'+li.querySelector('a').getAttribute('option')),'is-hidden');
+				}
+				removeClass(li,'is-active');
+				});
+				removeClass(document.querySelector('#'+option),'is-hidden');
+				addClass(element.parentNode,'is-active');
+			});
+		</script>
       <% } else { %>
           <p style="text-align: right;font-size: 20px; margin-right: 5px;">
               <a href="/users/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>

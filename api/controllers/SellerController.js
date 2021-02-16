@@ -39,7 +39,7 @@ module.exports = {
         .populate('region')
         .populate('city');
       }
-      channels = await Channel.find({});
+      channels = await Channel.find({where:{type: { '!=': 'messenger' }}});
       integrations = await Integrations.find({
         where:{seller:id},
       }).populate('channel');
