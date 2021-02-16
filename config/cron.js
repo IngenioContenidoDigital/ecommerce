@@ -30,7 +30,7 @@ module.exports.cron = {
       for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
       let orders = await Order.find({
         where:{currentstatus:statesIds,channel:'direct',tracking:{'!=':''}},
-        select:['id','tracking']
+        select:['id','tracking','seller']
       });
       for(let order of orders){
         let result = await sails.helpers.carrier.coordinadora.tracking(order.tracking);
