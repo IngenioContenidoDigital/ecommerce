@@ -18,9 +18,9 @@ module.exports = {
     let state = null;
 
     if(inputs.order.seller.id){
-      users = await User.find({seller: order.seller.id});
+      users = await User.find({seller: inputs.order.seller.id});
     }else{
-      users = await User.find({seller: order.seller});
+      users = await User.find({seller: inputs.order.seller});
     }
     
     if(inputs.order.currentstatus.id){
