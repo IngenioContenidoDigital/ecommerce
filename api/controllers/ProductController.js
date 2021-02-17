@@ -1069,6 +1069,7 @@ module.exports = {
       if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: ' + req.body.product.variation + ' - ' + err.message); }
       if (req.body.type === 'Product') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }
       if (req.body.type === 'ProductImage') { result['errors'].push('Archivo: ' + req.body.product.original + ': ' + err.message); }
+      if (req.body.type === 'Discount') { result['errors'].push('Ref: ' + req.body.product.reference + ': ' + err.message); }
     }
     return res.send(result);
   },
