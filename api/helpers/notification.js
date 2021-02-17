@@ -20,10 +20,10 @@ module.exports = {
   fn: async function (inputs, exits) {
     let users = await User.find({seller: inputs.seller});
     let state = inputs.order.currentstatus;
-    let newstate = await OrderState.findOne({id:state});
+    let newstate = await OrderState.findOne({id:state.id});
     for (const user of users) {
       const country = await Country.findOne({id:user.mobilecountry});
-      const userNotification = await UserNotification.findOne({user: user.id, state: state});
+      const userNotification = await UserNotification.findOne({user: user.id, state: state.id});
       if (userNotification && userNotification.sms) {
         await sails.helpers.sendSms('Te informamos que se ha cambio de estado (' + newstate.name.toUpperCase() + ') la orden #'+ inputs.order.reference +'. Por favor verificar la orden.',country.prefix+user.mobile);
       }
