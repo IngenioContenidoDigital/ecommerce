@@ -358,28 +358,14 @@
 		addClass(box,'is-hidden');
 		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
     	document.querySelector('#divreport').innerHTML = '';
-		addDivReport();
-		io.socket.post('/import',{entity, file, seller}, (resData, jwRes) =>{
-			if(jwRes.statusCode){
-				console.log('paila');
-				removeClass(box,'is-hidden');
-				document.querySelector('.loading').innerHTML='';
-				// responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asProduct, resData.pagination)
-			}
-		});
   });
 
 	live('#process-from-provider','click',e=>{
 		e.preventDefault();
 		let box = document.querySelector('.box').parentNode;
 		const importType = document.querySelector('select[name="importType"]').value;
-<<<<<<< HEAD
     	const discount = document.querySelector('input[name="discount"]').checked;
 		const asColor = document.querySelector('input[name="color"]').checked;
-=======
-		const discount = document.querySelector('input[name="discount"]').checked;
-		const asProduct = document.querySelector('input[name="asProduct"]').checked;
->>>>>>> 9a3b171 (se añade comunicacion en front)
 		const channel = document.querySelector('input[name="channel"]').value;
 		const apiUrl = document.querySelector('input[name="apiUrl"]').value;
 		const pk = document.querySelector('input[name="pk"]').value;
