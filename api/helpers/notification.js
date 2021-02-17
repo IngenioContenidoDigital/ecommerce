@@ -3,10 +3,6 @@ module.exports = {
   friendlyName: 'Send Notification',
   description: 'Envia notificacion al usuario',
   inputs: {
-    seller: {
-      type:'string',
-      required: true
-    },
     order: {
       type:'ref',
       required: true
@@ -18,8 +14,15 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let users = await User.find({seller: inputs.seller});
+    let users = null;
     let state = null;
+
+    if(inputs.order.seller.id){
+      users = await User.find({seller: order.seller.id});
+    }else{
+      users = await User.find({seller: order.seller});
+    }
+    
     if(inputs.order.currentstatus.id){
       state = inputs.order.currentstatus;
     }else{

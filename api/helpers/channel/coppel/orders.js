@@ -136,7 +136,7 @@ module.exports = {
                   order:oexists.id,
                   state:currentStatus
                 });
-                await sails.helpers.notification(oexists.seller, oexists);
+                await sails.helpers.notification(oexists);
               }
             }
           }

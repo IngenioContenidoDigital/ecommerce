@@ -35,7 +35,7 @@ module.exports = {
                 order:order.id,
                 state:currentStatus
               });
-              await sails.helpers.notification(order.seller, order);
+              await sails.helpers.notification(order);
             }catch(err){
               return exits.error(err);
             }

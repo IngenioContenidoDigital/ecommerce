@@ -155,7 +155,7 @@ module.exports = {
                   order:ord.id,
                   state:currentStatus
                 });
-                await sails.helpers.notification(ord.seller, ord);
+                await sails.helpers.notification(ord);
               }
             }
           }
