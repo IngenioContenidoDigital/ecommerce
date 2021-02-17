@@ -799,7 +799,7 @@ module.exports = {
     try {
       let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice, action);
       fs.writeFile("./.tmp/uploads/walmart", xml, function(err) {if(err) {return console.log(err);}console.log("The file was saved!");});
-      let token = await sails.helpers.channel.walmart.sign();
+      let token = await sails.helpers.channel.walmart.sign(integration);
 
       file = new FormData();
       file.append('file',fs.createReadStream('./.tmp/uploads/walmart'));

@@ -106,7 +106,7 @@ module.exports.cron = {
   walmart: {
     schedule: '50 00 00 * * *',
     onTick: async () => {
-      await sails.helpers.channel.walmart.bodyGenerator();
+      await sails.helpers.channel.walmart.qualityCheck();
     },
     timezone: 'America/Bogota'
   },
