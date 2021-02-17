@@ -89,7 +89,7 @@ PRODUCT_VARIATION_ID :
     WooCommerceProductVariation(productId: $productId) {
             data{
                 reference
-                simple
+                simple,
                 color
                 images{
                     file

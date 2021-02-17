@@ -10,6 +10,7 @@ module.exports = {
   inputs: {
     product: { type: 'ref' },
     seller: { type: 'string' },
+    asColor : { type: 'boolean', required:false }
   },
 
   exits: {
@@ -66,9 +67,6 @@ module.exports = {
     }else{
       throw new Error(`Ref: ${pro.reference} : ${inputs.product.manufacturer.toLowerCase()} no se pudo identificar la categoria`);
     }
-
-
-
 
     if (inputs.product.tax) {
       tax = (await Tax.findOne({ value: inputs.product.tax.rate }));
