@@ -57,7 +57,7 @@ module.exports = {
           });
           
           let seller = await Seller.findOne({id:product.seller}).populate('mainAddress');
-          let status= inputs.status ? inputs.status : 'active';
+          let status= inputs.status;
           let exchange_rate = await sails.helpers.currencyConverter('COP', 'MXN');
 
           let productimages = await ProductImage.find({product:product.id});
@@ -100,7 +100,7 @@ module.exports = {
           let i=0;
           for(let pv of productvariation){
             let primary_variant = i == 0 ? true : false;
-            let data = await sails.helpers.channel.walmart.bodyGenerator(categories, variant, inputs.action, pv, images, product, primary_variant);
+            let data = await sails.helpers.channel.walmart.bodyGenerator(categories, variant, inputs.action, pv, images, product, primary_variant, status);
             i++;
             // console.log(data.MPItem.MPProduct.category);
             body.Request.push(data);
@@ -111,7 +111,7 @@ module.exports = {
             return this.slice(0, idx) + str + this.slice(idx + Math.abs(rem));
           };
           body = xml.splice(38, 0, `<MPItemFeed xmlns="http://walmart.com/"><MPItemFeedHeader><version>3.2</version><locale>es_MX</locale><mart>WALMART_MEXICO</mart></MPItemFeedHeader>`);
-          console.log(body);
+          body = body +'</MPItemFeed>';
         }catch(err){
           console.log(err);
         }

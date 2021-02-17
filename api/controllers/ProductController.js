@@ -717,6 +717,7 @@ module.exports = {
                 });
               }
             });
+            return res.send(response.data.import_id);
           }
         }
         if(action == 'Post'){
@@ -792,7 +793,8 @@ module.exports = {
     } else {
       action = 'ProductUpdate';
     }
-    let status = req.body.status ? 'active' : 'inactive';
+    let status = req.body.status;
+    let error;
     
     try {
       let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice, action);
@@ -821,11 +823,38 @@ module.exports = {
         },
         data:file
         }
-      // let response = await axios(options).catch((e) => {console.log(e.response.data);});
-      // console.log(response);
+      let response = await axios(options).catch((e) => {error=e.response.data; console.log(e.response.data);});
+      
+      if (response){
+        await ProductChannel.findOrCreate({id: productChannelId},{
+          product:product.id,
+          integration:integrationId,
+          channel : integration.channel.id,
+          channelid: response.data.feedId,
+          status: true,
+          qc:false,
+          price: req.body.price ? parseFloat(req.body.price) : 0
+        }).exec(async (err, record, created)=>{
+          if(err){return new Error(err.message);}
+          if(!created){
+            await ProductChannel.updateOne({id: record.id}).set({
+              status:req.body.status,
+              price: req.body.price ? parseFloat(req.body.price) : 0
+            });
+          }
+        });
+        return res.send(response.data.feedId);
+      }else{
+        await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
+          {
+            status: false,
+            price: 0
+          }
+        );
+        return res.send(error.error.description);
+      }
 
     } catch (err) {
-      console.log(err);
       return res.send(err.message);
     }
   },
