@@ -70,7 +70,7 @@
 												</select>
 											</div>
 										</div>
-										<div id="fieldDiscount" class="field">
+										<div id="fieldDiscount" class="field is-hidden">
 											<div class="control">
 												<label class="label">Importar Descuentos</label>
 												<input id="discount" type="checkbox" name="discount" class="switch is-success">
@@ -335,7 +335,7 @@
 		let field = document.querySelector('#fieldDiscount');
 		let color = document.querySelector('#fieldColor');
 		let value =  e.target.value;
-		value === 'Product' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
+		value === 'Variations' ? removeClass(field, 'is-hidden') : addClass(field, 'is-hidden');
 		value === 'Product' ? removeClass(color, 'is-hidden') : addClass(color, 'is-hidden');
 	});
 
