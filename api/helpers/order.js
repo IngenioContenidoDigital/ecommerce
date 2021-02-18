@@ -73,7 +73,7 @@ module.exports = {
             carrier:carrier.id ? carrier.id : '',
             channel:payment.data.channel ? payment.data.channel : 'direct',
             channelref:payment.data.channelref ? payment.data.channelref : '',
-            integration:payment.data.integration ? payment.data.integration : ''
+            integration:payment.data.integration ? payment.data.integration : null
           }).fetch();
 
           await OrderHistory.create({
@@ -114,7 +114,7 @@ module.exports = {
               await sails.helpers.channel.channelSync(uproduct);
             }
           }
-          await sails.helpers.notification(seller, order);
+          await sails.helpers.notification(order);
         }catch(err){
           return exits.error(err);
         }
