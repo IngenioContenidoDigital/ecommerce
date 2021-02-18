@@ -38,12 +38,10 @@ module.exports = {
       let variations = [];
       let images = [];
       let vimages=[];
-      let categories = [];
       let product = await Product.findOne({id:inputs.product})
       .populate('manufacturer')
       .populate('gender')
       .populate('mainColor')
-      .populate('categories')
       .populate('tax')
       .populate('discount',{
         where:{
@@ -79,7 +77,7 @@ module.exports = {
           }
           price = discPrice;
         }else{
-          price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(2);
+          price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
         }
         let v = {
           'attribute_combinations':[
@@ -170,12 +168,8 @@ module.exports = {
             }
           }
         });*/
-      categories.push(encodeURIComponent(product.name));
-      /*for(let c in product.categories){
-        categories.push(encodeURIComponent(product.categories[c].name));
-      }*/
-      categories = categories.join(' ');
-      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(categories)
+      let category = await Category.findOne({id:product.mainCategory});
+      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(category.name)
       .intercept((err)=>{
         return new Error(err.message);
       });
