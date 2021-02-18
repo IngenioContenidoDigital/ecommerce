@@ -152,6 +152,7 @@ module.exports = {
     const seller = req.session.user.seller;
     let guia = null;
     let orders = null;
+    const path = './.tmp/file_Ouput.pdf';
     try {
       if (dateStart && dateEnd) {
         orders = await Order.find({
@@ -203,14 +204,14 @@ module.exports = {
             documents.push('./.tmp/document_'+ order.reference +'.pdf');
           }
         }
-        merge(documents, './.tmp/file_Ouput.pdf', (err) => {
+        merge(documents, path, (err) => {
           if (err) {return res.send({guia: null, error: 'Error al generar pdf'});}
           documents.forEach(doc => {
             fs.unlinkSync(doc);
           });
-          fs.readFile('./.tmp/file_Ouput.pdf',(err,data) =>{
+          fs.readFile(path,(err,data) =>{
             if(err){return res.send({guia: null, error: 'Error abrir pdf'});}
-            setTimeout(() => { fs.unlinkSync('./.tmp/file_Ouput.pdf');}, 3000);
+            setTimeout(() => { fs.unlinkSync(path);}, 3000);
             return res.send({guia: data ? data.toString('base64') : null, error: null});
           });
         });
