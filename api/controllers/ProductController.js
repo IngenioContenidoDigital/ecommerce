@@ -1872,20 +1872,8 @@ module.exports = {
 
                   for (let index = 0; index < colors.length; index++) {
                     const pcolor = colors[index];
-                    let textPredictor = product.name+' '+pcolor.reference;
-                    let color = await sails.helpers.tools.findColor(`${(textPredictor + ' ' + pcolor.color)}`);
-
-                    /*if(pcolor.reference == "44102T-BK/WT"){
-                             console.log(p);
-                          }*/
-
-                    /*if(!color || color.length == 0){
-                           console.log(color);
-                         }*/
-
-                    let colorModel = await Color.findOne({ id : color[0]});
-                    let productColor =  await Product.findOne({ reference : `${pcolor.reference}-${colorModel.name}`});
-
+                    let color = await sails.helpers.tools.findColor(pcolor.color);
+                    let productColor =  await Product.findOne({ reference :pcolor.reference});
                     if(productColor && (!productColor.images || productColor.images.length === 0)){
                       for (let im of pcolor.images) {
                         try {
