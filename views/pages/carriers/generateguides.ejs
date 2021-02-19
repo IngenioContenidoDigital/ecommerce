@@ -85,6 +85,7 @@
             } else {
                 if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
                 errors.innerHTML = resData.error ? resData.error : 'Error al procesar guias';
+                console.log(resData.err ? resData.err : '');
             }
         });
     });
