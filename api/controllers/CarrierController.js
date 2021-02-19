@@ -152,7 +152,7 @@ module.exports = {
     const seller = req.session.user.seller;
     let guia = null;
     let orders = null;
-    const path = './.tmp/file_Ouput.pdf';
+    const path = './pdf/file_Ouput.pdf';
     try {
       if (dateStart && dateEnd) {
         orders = await Order.find({
@@ -198,23 +198,37 @@ module.exports = {
           let result = JSON.parse(respo);
           if(result.SuccessResponse){
             guia = result.SuccessResponse.Body.Documents.Document.File;
-            fs.writeFile('./.tmp/document_'+ order.reference +'.pdf', guia, 'base64', (error) => {
+            fs.writeFile('./pdf/document_'+ order.reference +'.pdf', guia, 'base64', (error) => {
               if (error) {return res.send({guia: null, error: 'Error al almacenar documento'});}
             });
-            documents.push('./.tmp/document_'+ order.reference +'.pdf');
+            documents.push('./pdf/document_'+ order.reference +'.pdf');
           }
         }
-        merge(documents, path, (err) => {
-          if (err) {return res.send({guia: null, error: 'Error al generar pdf'});}
-          documents.forEach(doc => {
-            fs.unlinkSync(doc);
+        if (documents.length > 1) { 
+          merge(documents, path, (err) => {
+            documents.forEach(doc => {
+              fs.unlinkSync(doc);
+            });
+            if (err) {
+              console.log(err);
+              return res.send({guia: null, error: 'Error al generar pdf'});
+            } else {
+              fs.readFile(path,(err, data) =>{
+                setTimeout(() => {
+                  fs.unlinkSync(path);
+                }, 4000);
+                if(err){return res.send({guia: null, error: 'Error al descargar pdf'});}
+                return res.send({guia: data ? data : null, error: null});
+              });
+            }
           });
-          fs.readFile(path,(err,data) =>{
-            if(err){return res.send({guia: null, error: 'Error abrir pdf'});}
-            setTimeout(() => { fs.unlinkSync(path);}, 3000);
-            return res.send({guia: data ? data.toString('base64') : null, error: null});
+        } else {
+          fs.readFile(documents[0], (err, data) =>{
+            fs.unlinkSync(documents[0]);
+            if(err){return res.send({guia: null, error: 'Error al descargar pdf'});}
+            return res.send({guia: data ? data : null, error: null});
           });
-        });
+        }
       } else {
         return res.send({guia: null, error: 'No se encontró pedidos para procesar'});
       }
@@ -223,4 +237,3 @@ module.exports = {
     }
   }
 };
-
