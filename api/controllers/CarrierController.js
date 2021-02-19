@@ -210,7 +210,7 @@ module.exports = {
               fs.unlinkSync(doc);
             });
             if (err) {
-              return res.send({guia: null, error: 'Error al generar pdf'});
+              return res.send({guia: null, error: 'Error al generar pdf', err});
             } else {
               fs.readFile(path,(err, data) =>{
                 setTimeout(() => {
