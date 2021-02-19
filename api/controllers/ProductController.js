@@ -798,12 +798,9 @@ module.exports = {
     
     try {
       let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice, action);
-      fs.writeFile("./.tmp/uploads/walmart", xml, function(err) {if(err) {return console.log(err);}console.log("The file was saved!");});
+      const buffer_xml = Buffer.from(xml);
+     
       let token = await sails.helpers.channel.walmart.sign(integration);
-
-      file = new FormData();
-      file.append('file',fs.createReadStream('./.tmp/uploads/walmart'));
-      file.append('import_mode','NORMAL');
 
       let auth = `${integration.user}:${integration.key}`;
       const buferArray = Buffer.from(auth);
@@ -821,16 +818,17 @@ module.exports = {
             'WM_QOS.CORRELATION_ID': '11111111',
             'Authorization': `Basic ${encodedAuth}`
         },
-        data:file
-        }
-      let response = await axios(options).catch((e) => {error=e.response.data; console.log(e.response.data);});
+        data:buffer_xml
+      }
+
+      let response_xml = await axios(options).catch((e) => {error=e; console.log(e);});
       
-      if (response){
+      if (response_xml){
         await ProductChannel.findOrCreate({id: productChannelId},{
           product:product.id,
           integration:integrationId,
           channel : integration.channel.id,
-          channelid: response.data.feedId,
+          channelid: response_xml.data.feedId,
           status: true,
           qc:false,
           price: req.body.price ? parseFloat(req.body.price) : 0
