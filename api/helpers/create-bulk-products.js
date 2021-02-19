@@ -35,12 +35,16 @@ module.exports = {
 
           if(typeof(pro) === 'object'){
             let pr;
-            let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference });
+            let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference});
             if (!exists) {
               pr = await Product.create(pro).fetch();
             } else {
-              delete pro.mainCategory;
+              delete pro.mainCategory;	
               delete pro.categories;
+              delete pro.manufacturer;
+              delete pro.gender;
+              delete pro.tax;
+              delete pro.seller;
               pr = await Product.updateOne({ id: exists.id }).set(pro);
             }
 
@@ -68,13 +72,23 @@ module.exports = {
                       throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
                     }	
 
+                    if(!pro.seller){
+                      console.log(pro);
+                    }
+
                     let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference });	
 
                     if (!exists) {	
                         pr = await Product.create(pro).fetch();	
                     } else {	
+
                       delete pro.mainCategory;	
-                      delete pro.categories;	
+                      delete pro.categories;
+                      delete pro.manufacturer;
+                      delete pro.gender;
+                      delete pro.tax;
+                      delete pro.seller;
+
                       pr = await Product.updateOne({ id: exists.id }).set(pro);	
                     }	
                   }	
@@ -85,6 +99,7 @@ module.exports = {
                 sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
           }	
             } catch (error) {	
+              console.log(error);
               errors.push({ name:'ERRDATA', message:error.message });	
               sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
             }	
