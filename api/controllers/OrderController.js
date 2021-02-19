@@ -323,7 +323,7 @@ module.exports = {
           '<td class="align-middle"><span>'+o.seller.name+'</span></td>',
           '<td class="align-middle"><a href="/order/edit/'+o.id+'" target="_blank" class="button is-small"><span class="icon"><i class="bx bx-dots-horizontal"></i></span></a>'+track+'</td>',
         ];
-        if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(6,1);}
+        if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(7,1);}
         ordersdata.push(row);
       }
     return res.send(ordersdata);
