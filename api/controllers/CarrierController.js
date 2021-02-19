@@ -152,7 +152,7 @@ module.exports = {
     const seller = req.session.user.seller;
     let guia = null;
     let orders = null;
-    const path = './pdf/file_Ouput.pdf';
+    const path = './assets/pdf/file_Ouput.pdf';
     try {
       if (dateStart && dateEnd) {
         orders = await Order.find({
@@ -198,10 +198,10 @@ module.exports = {
           let result = JSON.parse(respo);
           if(result.SuccessResponse){
             guia = result.SuccessResponse.Body.Documents.Document.File;
-            fs.writeFile('./pdf/document_'+ order.reference +'.pdf', guia, 'base64', (error) => {
+            fs.writeFile('./assets/pdf/document_'+ order.reference +'.pdf', guia, 'base64', (error) => {
               if (error) {return res.send({guia: null, error: 'Error al almacenar documento'});}
             });
-            documents.push('./pdf/document_'+ order.reference +'.pdf');
+            documents.push('./assets/pdf/document_'+ order.reference +'.pdf');
           }
         }
         if (documents.length > 1) { 
@@ -210,7 +210,6 @@ module.exports = {
               fs.unlinkSync(doc);
             });
             if (err) {
-              console.log(err);
               return res.send({guia: null, error: 'Error al generar pdf'});
             } else {
               fs.readFile(path,(err, data) =>{
