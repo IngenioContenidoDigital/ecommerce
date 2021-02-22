@@ -1,7 +1,6 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/js/bulma-tagsinput.min.js"></script>
 <link href='https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/css/bulma-tagsinput.min.css' rel='stylesheet'>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
-
 <div class="container">
     <h4 class="title is-4">Procesamiento Multiple de Guias</h4>
     <hr>
@@ -35,10 +34,11 @@
                     <p id="errors"></p>
                 </div>
             </div>
-        </div>
-    </div>
-    <div class="columns">
-        <div class="column" id="pdf">
+            <div id="notifi" class="container is-fluid is-hidden">
+                <div class="notification is-primary">
+                    Se ha generado las guias correctamente.
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -70,25 +70,22 @@
         const startDate = dateRange ? moment(dateRange.split(' - ')[0]).format('YYYY/MM/DD') : null;
         const endDate = dateRange ? moment(dateRange.split(' - ')[1]).add(1, 'days').format('YYYY/MM/DD') : null;
         let loading = document.querySelector('.loading');
-        let pdf = document.querySelector('#pdf');
         let errors = document.querySelector('#errors');
         let report = document.querySelector('#report');
+        let notifi = document.querySelector('#notifi');
         loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
         errors.innerHTML= '';
-        pdf.innerHTML = '';
         if(!hasClass(report,'is-hidden')){addClass(report,'is-hidden');}
+        if(!hasClass(notifi,'is-hidden')){addClass(notifi,'is-hidden');}
         io.socket.post('/multipleguides',{numbers,startDate,endDate}, resData =>{
             loading.innerHTML= '';
             if (resData.guia) {
-                pdf.innerHTML =
-                `<div class="box">
-                    <p class="container has-text-centered">
-                        <embed src="data:application/pdf;base64,`+ resData.guia +`" width="100%" height="500">
-                    </p>
-                </div>`;
+                saveAs(new Blob([resData.guia],{type:"application/pdf"}), `Guias.pdf`);
+                if(hasClass(notifi,'is-hidden')){removeClass(notifi,'is-hidden');}
             } else {
                 if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
                 errors.innerHTML = resData.error ? resData.error : 'Error al procesar guias';
+                console.log(resData.err ? resData.err : '');
             }
         });
     });
