@@ -43,6 +43,9 @@ module.exports = {
         data.hits.hit.forEach(h =>{
           results.push(h.id);
         });
+      }else{
+        let gender = await Gender.findOne({name:'unisex'});
+        results.push(gender.id);
       }
       return exits.success(results);
     }); 

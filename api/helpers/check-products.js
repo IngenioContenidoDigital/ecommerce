@@ -10,6 +10,7 @@ module.exports = {
   inputs: {
     product: { type: 'ref' },
     seller: { type: 'string' },
+    asColor : { type: 'boolean', required:false }
   },
 
   exits: {
