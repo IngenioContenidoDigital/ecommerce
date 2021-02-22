@@ -111,7 +111,7 @@ module.exports = {
           body = body +'</MPItemFeed>';
 
         }catch(err){
-          console.log(err);
+          return exits.error(err);    
         }
       }
     return exits.success(body);

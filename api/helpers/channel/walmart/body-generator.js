@@ -42,8 +42,6 @@ module.exports = {
     },
     fn: async function (inputs,exits) {
 
-        var jsonxml = require('jsontoxml');
-
         let categories = inputs.categories;
         let variant = inputs.variant;
         let action = inputs.action;
@@ -2450,13 +2448,13 @@ module.exports = {
 
         switch (action) {
             case 'ProductCreate':
-                action = 'CREATE'
+                action = 'CREATE';
                 break;
             case 'ProductUpdate':
-                action = 'REPLACE_ALL'
+                action = 'REPLACE_ALL';
                 break;
-            case 'OfferUpdate':
-                action = 'PARTIAL_UPDATE'
+            case 'ProductUpdateImage':
+                action = 'PARTIAL_UPDATE';
                 break;
             default:
                 break;
@@ -2508,6 +2506,7 @@ module.exports = {
                     }
                 }
             };
+            if(action === 'PARTIAL_UPDATE'){delete body.MPItem.MPOffer;}
         }
 
         return exits.success(body);

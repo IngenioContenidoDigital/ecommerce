@@ -775,8 +775,6 @@ module.exports = {
   walmartadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
     let axios = require('axios');
-    let fs = require('fs');
-    let FormData = require('form-data');
 
     let product = await Product.findOne({ id: req.body.product }).populate('channels');
     const integrationId = req.body.integrationId;
@@ -1781,6 +1779,108 @@ module.exports = {
                     price:cpprice
                   });
                 }
+              }
+            }
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
+      if (channel === 'walmart') {
+        const intgrationId = integration.id;
+        let products = await Product.find({seller: seller, active: true}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        });
+        let error;
+        let axios = require('axios');
+
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'ProductCreate';
+            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            break;
+          case 'ProductUpdate':
+            action = 'ProductUpdate';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            break;
+          case 'Image':
+            action = 'ProductUpdateImage';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            break;
+        }
+        // products.splice(0, 302);
+        console.log(products.length);
+        if (products.length > 0) {
+          for (let pl of products) {
+            const wmprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
+            const wmid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+            const wmstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
+            
+            let xml = await sails.helpers.channel.walmart.product([pl], wmprice, wmstatus, wmprice, action)
+            .tolerate(async (err) => {
+              response.errors.push('REF: '+pl.reference+' no ha sido mapeado: '+ err);
+            });
+            
+            console.log(xml);
+            console.log('...............................');
+            if(xml){
+              const buffer_xml = Buffer.from(xml);
+     
+              let token = await sails.helpers.channel.walmart.sign(integration);
+        
+              let auth = `${integration.user}:${integration.key}`;
+              const buferArray = Buffer.from(auth);
+              let encodedAuth = buferArray.toString('base64');
+  
+              let options = {
+                method: 'post',
+                url: `${integration.channel.endpoint}/v3/feeds?feedType=item`,
+                headers: {
+                    'content-type': `application/xml`,
+                    accept: 'application/json',                
+                    'WM_MARKET' : 'mx',
+                    'WM_SEC.ACCESS_TOKEN':token,
+                    'WM_SVC.NAME' : 'Walmart Marketplace',
+                    'WM_QOS.CORRELATION_ID': '11111111',
+                    'Authorization': `Basic ${encodedAuth}`
+                },
+                data:buffer_xml
+              }
+              
+              let response_xml = await axios(options).catch((e) => {error=e; console.log(e);});
+
+              if (response_xml){
+                await ProductChannel.findOrCreate({id: productChannelId},{
+                  product: pl.id,
+                  integration: intgrationId,
+                  channel : integration.channel.id,
+                  channelid: response_xml.data.feedId,
+                  status: true,
+                  qc:false,
+                  price: wmprice ? parseFloat(wmprice) : 0
+                }).exec(async (err, record, created)=>{
+                  if(err){return new Error(err.message);}
+                  if(!created){
+                    await ProductChannel.updateOne({id: record.id}).set({
+                      status: wmstatus,
+                      price: wmprice ? parseFloat(wmprice) : 0
+                    });
+                  }
+                });
+                response.items.push(response_xml.data.feedId);
+              }else{
+                await ProductChannel.updateOne({ product:pl.id , integration:intgrationId }).set(
+                  {
+                    status: false,
+                    price: 0
+                  }
+                );
+                response.errors.push('REF: '+pl.reference+' no ha sido eviado: '+ error.error.description);
               }
             }
           }
