@@ -1,0 +1,162 @@
+<div class="container">
+  <% if (error != undefined || error != null) { %>
+    <div class="notification is-danger is-light" id="error">
+      <%= error %>
+    </div>
+  <% } %>
+  <% if(action=='create' || action=='edit'){ %> 
+    <div class="columns">
+      <div class="column">
+        <div class="container">
+          <br />
+          <h4 class="title is-4">Crear Campaña para MercadoLibre</h4>
+          <hr>
+          <% if(action=='create') { %>
+            <form action="/campaign/create" method="POST" enctype="multipart/form-data">
+          <% } %>
+          <% if(action=='edit') { %>
+            <form action="/campaign/edit/<%= campaign.id %>" method="POST" enctype="multipart/form-data">
+          <% } %>
+            <div class="box">
+              <%if(integrations.length > 0){%>
+                <div class="field <% if(action=='edit'){ %> is-hidden <% } %>">
+                  <label class="label is-size-7">Nombre</label>
+                  <div class="control">
+                    <input class="input is-capitalized is-size-7" type="text" name="name" required="true" placeholder="Nombre de la Campaña" <% if(action=='edit'){ %>value="<%= campaign.name %>"<% }%>/>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label is-size-7">Presupuesto</label>
+                  <div class="control has-icons-left">
+                    <input class="input is-size-7" type="number" step="any" name="budget" placeholder="Presupuesto de la campaña" required <% if(action=='edit'){ %>value="<%= campaign.budget %>"<% }%>/>
+                    <span class="icon-input-left is-small is-left">
+                      <i class="bx bxs-badge-dollar"></i>
+                    </span>
+                  </div>
+                </div>
+                <div class="field <% if(action=='edit'){ %> is-hidden <% } %>">
+                  <label class="label is-size-7">Elegir Integración</label>
+                  <div class="select is-fullwidth is-size-7">
+                    <select class="is-capitalized" name="integration" id="selectIntegration" required>
+                    <option class="is-capitalized" value="">-- Elegir Integración --</option>
+                    <% integrations.forEach(function(inte){ %>
+                      <option class="is-capitalized" <% if(action=='edit' && inte.id==campaign.integration ){ %> selected <% } %> value="<%=inte.id%>"><%= inte.name %></option>
+                    <%})%>
+                    </select>
+                  </div>
+                </div>
+                <div class="field">
+                  <div class="control">
+                    <label class="label is-size-7">Estado de la campaña</label>
+                    <input id="status" type="checkbox" name="status" class="switch is-success" <% if(action=='edit' && campaign.status == 'active'){ %><%= checked="checked" %><% } %>>
+                    <label for="status"></label>
+                  </div>
+                </div>
+                <div class="control buttons is-right">
+                  <% if(action=='edit'){ %> 
+                    <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Campaña</button>
+                  <% }else if (action=='create'){ %>
+                    <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Campaña</button>
+                  <% } %>
+                </div>
+              <%}else {%> 
+                <div class="notification">
+                  <button class="delete"></button>
+                  Para realizar la creación de campañas se debe configurar previamente
+                  integraciones con MercadoLibre <strong><a href="/sellers/edit/<%= req.session.user.seller %>">Credenciales del api</a>.</strong>  
+                </div>
+              <%}%>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="column"></div>
+    </div>
+  <% } else { %>
+    <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+      <a href="/campaigns/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+    </p>
+    <div class="table-container">
+      <table class="table is-hoverable" id="countries-table">
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Presupuesto</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Opciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% campaigns.forEach(function(campaign){ %>
+            <tr>
+              <td class="align-middle is-capitalized"><%= campaign.name %></td>
+              <td class="align-middle is-capitalized"><%= campaign.budget %></td>
+              <td class="align-middle">
+                <span class="action">
+                  <% if(campaign.status==='active') { %>
+                    <i campaign="<%= campaign.id %>" class="state bx bx-check-circle"></i>
+                  <% }else{ %>
+                    <i campaign="<%= campaign.id %>" class="state bx bx-x-circle"></i>
+                  <%}%>
+                </span>
+              </td>
+              <td class="align-middle">
+                <a href="/campaigns/edit/<%= campaign.id %>" class="button is-small">
+                  <span class="icon">
+                    <i class="bx bx-edit"></i>
+                  </span>
+                </a>
+                <a href="/campaign/show/<%= campaign.id %>" class="button is-small">
+                  <span class="icon">
+                    <i class='bx bxs-show'></i>
+                  </span>
+                </a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        let table = new simpleDatatables.DataTable('#countries-table',{
+        searchable:true,
+        sortable:true,
+        paging:true,
+        labels: {
+          placeholder: "Buscar...",
+          perPage: "{select} registros por página",
+          noRows: "No se encontraron datos",
+          info: "Mostrando {start} a {end} de {rows} registros",
+        }
+        });  
+      });
+
+      live('.state', 'click', function(){
+        if(confirm('¿Seguro Desea Continuar?')){
+          var elm = this;
+          var id = this.getAttribute('campaign');
+          var status = null;
+          if (hasClass(elm,'bx-check-circle')){status = 'paused';}else{status = 'active';}
+          io.socket.put('/campaign/'+id,{active:status},function(resData, jwr){
+            if(resData.status==='paused'){
+              removeClass(elm, 'bx-check-circle');
+              addClass(elm,'bx-x-circle');
+            }else{
+              removeClass(elm, 'bx-x-circle');
+              addClass(elm,'bx-check-circle');
+            }
+          });
+        }
+      });
+    </script>
+  <% } %>
+  <script>
+    setTimeout(function() {
+      var el = document.getElementById('error');
+      if(el){
+        el.style.display='none';
+      }
+    }, 7000);
+  </script>
+</div>
