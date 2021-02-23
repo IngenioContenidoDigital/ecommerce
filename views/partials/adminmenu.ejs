@@ -57,7 +57,6 @@
       <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
     </ul>
     <%}%>
-    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcarriers')){%>
     <p class="menu-label is-size-7">
       <i class='bx bxs-truck' ></i>&nbsp;Transporte & Envíos
       <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
@@ -66,8 +65,8 @@
     </p>
     <ul class="menu-list">
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcarriers')){%><li><a href="/carriers">Transporte</a></li><%}%>
+      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/generateguides">Guias</a></li><%}%>
     </ul>
-    <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcountries') || req.session.user.rights.permissions.includes('showregions') || req.session.user.rights.permissions.includes('showtaxes')){%>
     <p class="menu-label is-size-7">
       <i class='bx bx-world' ></i>&nbsp;Localización

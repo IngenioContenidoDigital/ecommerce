@@ -64,8 +64,14 @@ module.exports = {
                               tipoDoc : order.tipoDoc
                           }
                       }
+
+                      try {
+                        return exits.success(result.EjecutarConsultaXMLResult.diffgram ? result.EjecutarConsultaXMLResult.diffgram.NewDataSet.Resultado.map(mapper) : []);
+                        
+                      } catch (error) {
+                        exits.error(error);
+                      }
                       
-                      return exits.success(result.EjecutarConsultaXMLResult.diffgram ? result.EjecutarConsultaXMLResult.diffgram.NewDataSet.Resultado.map(mapper) : []);
                   }
       
                 });
