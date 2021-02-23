@@ -1,0 +1,113 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<div class="container">
+  <div class="box">
+    <div class="columns is-mobile is-vcentered">
+      <div class="column">
+        <p class="has-text-left"><strong>
+          <%= seller.name.toUpperCase() %><br>
+          <%= 'NIT.' + seller.dni %><br>
+        </strong>
+        </p>
+      </div>
+      <div class="column">
+        <p class="has-text-right"><img height="100" src="<%=imgurl%>/images/sellers/<%= seller.logo %>" /><br></p>
+      </div>
+    </div>
+  </div>
+</div>
+<br>
+<div class="columns is-size-7">
+  <div class="column">
+    <div class="box">
+      <div id="loading-block" class="notification is-hidden">
+        <i class="fas fa-sync fa-spin"></i>
+          Estamos generando tu informe...
+          <progress class="progress is-small is-primary" max="100">15%</progress>
+      </div>
+      <table id="reportTable" class="table is-striped is-size-6 is-fullwidth">
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Fecha Disponibilidad</th>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% months.forEach((element) =>{ %>
+            <tr>
+              <td><%= element.month %></td>
+              <td><%= '20 ' + element.available %></td>
+              <td>
+                <button id="seeReport" class="button is-rounded is-small is-link" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                  <span class="icon is-small">
+                    <i class='bx bxs-file-find bx-sm'></i>
+                  </span>
+                  <span>Ver Reporte</span>
+                </button>
+              </td>
+              <td>
+                <button id="generatePdf" class="button is-rounded is-small is-danger" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                  <span class="icon is-small">
+                    <i class='bx bxs-file-pdf bx-sm'></i>
+                  </span>
+                  <span>Generar PDF</span>
+                </button>
+              </td>
+              <td>
+                <button id="generateReport" class="button is-rounded is-small is-primary" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                  <span class="icon is-small">
+                    <i class='bx bxs-file-doc bx-sm'></i>
+                  </span>
+                  <span>Detalle Excel</span>
+                </button>
+              </td>
+            </tr>
+          <%})%>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  let seller = '<%- seller.id %>';
+  live('#generateReport','click', function(){
+    if (!this.disabled) {
+      let name = '<%- seller.name %>';
+      let month = this.getAttribute('monthavailable');
+      let loadingBlock = document.querySelector('#loading-block');
+      if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+      io.socket.post('/generatereport', {seller, month}, (resData, jwRes) =>{
+        if(jwRes.statusCode == 200) {
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Reporte ${name}.xlsx`);
+          addClass(loadingBlock,'is-hidden');
+        }
+      });
+    }
+  });
+
+  live('#generatePdf','click', function(){
+    if (!this.disabled) {
+      let name = '<%- seller.name %>';
+      let month = this.getAttribute('monthavailable');
+      let loadingBlock = document.querySelector('#loading-block');
+      if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+      io.socket.post('/reportseller', {seller, month}, (resData, jwRes) =>{
+        if(jwRes.statusCode == 200) {
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Factura ${name}.pdf`);
+          addClass(loadingBlock,'is-hidden');
+        }
+      });
+    }
+  });
+
+  live('#seeReport','click', function(){
+    if (!this.disabled) {
+      let month = this.getAttribute('monthavailable');
+      let loadingBlock = document.querySelector('#loading-block');
+      if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+      window.location.href = "/showreport/" + seller + '/?month=' + month;
+    }
+  });
+</script>

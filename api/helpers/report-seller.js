@@ -43,7 +43,14 @@ module.exports = {
         createdAt: { '<': dateEnd }
       }
     });
-    let skuPrice = seller.skuPrice || 0;
+    let skuPrice = seller.skuPrice;
+    let reportSkuPrice = await ReportSkuPrice.findOne({seller: seller.id, month: inputs.month});
+    if (reportSkuPrice) {
+      skuPrice = reportSkuPrice.price;
+    } else {
+      reportSkuPrice = await ReportSkuPrice.create({month: inputs.month,seller: seller.id,price: skuPrice}).fetch();
+      skuPrice = reportSkuPrice.price;
+    }
     let totalSku = (Math.ceil(totalProducts /100)) * skuPrice * 1.19;
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});

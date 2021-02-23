@@ -21,7 +21,6 @@ module.exports = {
     let integrations = null;
     let channels = null;
     let commissiondiscount = null;
-    let months = [];
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(rights.name!=='superadmin' && rights.name!=='admin'){
@@ -30,8 +29,6 @@ module.exports = {
       sellers = await Seller.find();
     }
     if(id){
-      let currentDay =  moment().format('DD');
-      let availableOptions = false;
       seller = await Seller.findOne({id:id}).populate('mainAddress').populate('currency');
       if(seller.mainAddress!==undefined && seller.mainAddress!==null){
         seller.mainAddress = await Address.findOne({id:seller.mainAddress.id})
@@ -46,18 +43,10 @@ module.exports = {
       commissiondiscount = await CommissionDiscount.find({
         where:{seller:id},
       });
-      for (let i = 14; i >= 0; i--) {
-        let month = moment().subtract(i+1, 'months').locale('es').format('MMMM YYYY');
-        let available = moment().subtract(i, 'months').locale('es').format('MMMM YYYY');
-        if (i === 0 && currentDay < 20) {
-          availableOptions = true;
-        }
-        months.push({month, available, availableOptions});
-      }
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,months,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -447,5 +436,43 @@ module.exports = {
     } catch (error) {
       return res.send(error);
     }
+  },
+  showreports: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
+      throw 'forbidden';
+    }
+    let moment = require('moment');
+    let seller = null;
+    let months = [];
+    let id = req.param('id') ? req.param('id') : req.session.user.seller;
+    if(id){
+      let currentDay =  moment().format('DD');
+      let availableOptions = false;
+      seller = await Seller.findOne({id:id}).populate('mainAddress').populate('currency');
+      const status = await OrderState.findOne({name: 'entregado'});
+      let order = await Order.find({
+        where:{
+          seller: seller.id,
+          currentstatus: status.id
+        },
+        sort: 'createdAt ASC',
+        limit: 1
+      });
+      const dateStart = order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
+      const dateEnd = moment().format('YYYY/MM');
+      let numberMonth = moment(dateEnd, 'YYYY/MM').diff(moment(dateStart, 'YYYY/MM'), 'months');
+      const number = numberMonth >= 14 ? 14 : numberMonth - 1;
+      for (let i = number; i >= 0; i--) {
+        let month = moment().subtract(i+1, 'months').locale('es').format('MMMM YYYY');
+        let available = moment().subtract(i, 'months').locale('es').format('MMMM YYYY');
+        if (i === 0 && currentDay < 20) {
+          availableOptions = true;
+        }
+        months.push({month, available, availableOptions});
+      }
+    }
+    res.view('pages/sellers/reports',{layout:'layouts/admin',months,moment,seller});
+
   }
 };
