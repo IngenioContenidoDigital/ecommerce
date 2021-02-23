@@ -136,6 +136,10 @@ module.exports = {
       if(order.channel==='mercadolibre'){
         guia = await sails.helpers.channel.mercadolibre.shipping(order);
       }
+
+      if(order.channel==='walmart'){
+        guia = await sails.helpers.channel.walmart.shipping(order);
+      }
     }
     return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});
   },

@@ -39,6 +39,9 @@ module.exports = {
       case 'shipped':
         name='enviado';
         break;
+      case 'onhold':
+        name='pendiente';
+        break;  
       case '5':
         name='enviado';
         break;

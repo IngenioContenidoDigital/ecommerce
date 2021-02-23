@@ -211,6 +211,75 @@
         await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
       }
     }
+    if(order.channel==='walmart'){
+      let axios = require('axios');    
+      let token = await sails.helpers.channel.walmart.sign(integration);
+
+      let auth = `${integration.user}:${integration.key}`;
+      const buferArray = Buffer.from(auth);
+      let encodedAuth = buferArray.toString('base64');
+
+      let order_id_array = order.channelref.split("-");
+      let purchaseOrderId = order_id_array[0];
+      let order_line = order_id_array[1];
+      
+      let options = {
+        method: 'post',
+        url: `${integration.channel.endpoint}/v3/orders/${purchaseOrderId}/acknowledge`,
+        headers: {
+            accept: 'application/json',                
+            'WM_MARKET' : 'mx',
+            'WM_SEC.ACCESS_TOKEN':token,
+            'WM_SVC.NAME' : 'Walmart Marketplace',
+            'WM_QOS.CORRELATION_ID': '11111111',
+            'Authorization': `Basic ${encodedAuth}`
+        },
+        data: {
+          "orderAcknowledge": {
+            "orderLines": {
+              "orderLine": [
+                {
+                  "lineNumber": order_line,
+                  "orderLineStatuses": {
+                    "orderLineStatus": [
+                      {
+                        "status": "Acknowledged",
+                        "statusQuantity": {
+                          "amount": "1",
+                          "unitOfMeasurement": "EACH"
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        }
+      };
+      
+      let response = await axios(options).catch((e) => {error=e; console.log(e);});
+      
+      if(response){
+        options = {
+          method: 'get',
+          url: `${integration.channel.endpoint}/v3/orders?purchaseOrderId=${purchaseOrderId}`,
+          headers: {
+              accept: 'application/json',                
+              'WM_MARKET' : 'mx',
+              'WM_SEC.ACCESS_TOKEN':token,
+              'WM_SVC.NAME' : 'Walmart Marketplace',
+              'WM_QOS.CORRELATION_ID': '11111111',
+              'Authorization': `Basic ${encodedAuth}`
+          }
+        };
+        let response_order = await axios(options).catch((e) => {error=e; console.log(e);});
+        if(response_order){
+          let tracking = response_order.data.order[0].shipments[0].shipmentNo;
+          await Order.updateOne({id:order.id}).set({tracking:tracking});
+        }
+      }
+    }
 
     return exits.success();
   }
