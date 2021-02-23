@@ -144,7 +144,7 @@ module.exports = {
   },
   multipleguides: async function(req, res){
     const fs = require('fs');
-    const merge = require('easy-pdf-merge');
+    const PDFDocument = require('pdf-lib').PDFDocument;
     let orderState = await OrderState.findOne({name: 'empacado'});
     const dateStart = req.body.startDate;
     const dateEnd = req.body.endDate;
@@ -152,7 +152,7 @@ module.exports = {
     const seller = req.session.user.seller;
     let guia = null;
     let orders = null;
-    const path = './.tmp/file_Ouput.pdf';
+    const path = './assets/pdf/file_Ouput.pdf';
     try {
       if (dateStart && dateEnd) {
         orders = await Order.find({
@@ -198,23 +198,58 @@ module.exports = {
           let result = JSON.parse(respo);
           if(result.SuccessResponse){
             guia = result.SuccessResponse.Body.Documents.Document.File;
-            fs.writeFile('./.tmp/document_'+ order.reference +'.pdf', guia, 'base64', (error) => {
+            fs.writeFile('./assets/pdf/document_'+ order.reference +'.pdf', guia, 'base64', (error) => {
               if (error) {return res.send({guia: null, error: 'Error al almacenar documento'});}
             });
-            documents.push('./.tmp/document_'+ order.reference +'.pdf');
+            documents.push('./assets/pdf/document_'+ order.reference +'.pdf');
           }
         }
-        merge(documents, path, (err) => {
-          if (err) {return res.send({guia: null, error: 'Error al generar pdf'});}
-          documents.forEach(doc => {
-            fs.unlinkSync(doc);
+        if (documents.length > 1) {
+          Promise.all(documents.map(function(_path){
+            return new Promise(((_path, resolve, reject) => {
+              fs.readFile(_path, (err, data) => {
+                if(err){
+                  resolve('');
+                }else{
+                  resolve(data);
+                }
+              });
+            }).bind(this, _path));
+          })).then(async (results) => {
+            const mergedPdf = await PDFDocument.create();
+            for (const pdfBytes of results) {
+              const pdf = await PDFDocument.load(pdfBytes);
+              const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+              copiedPages.forEach((page) => {
+                mergedPdf.addPage(page);
+              });
+            }
+            const buf = await mergedPdf.save();
+            fs.open(path, 'w', (err, fd) => {
+              if(err){return res.send({guia: null, error: 'Error al procesar pdf'});}
+              fs.write(fd, buf, 0, buf.length, null, (err) => {
+                if(err){return res.send({guia: null, error: 'Error al procesar pdf'});}
+                fs.close(fd, () => {console.log('wrote the file successfully');});
+                fs.readFile(path, (err, data) =>{
+                  setTimeout(() => {
+                    fs.unlinkSync(path);
+                    documents.forEach(doc => {
+                      fs.unlinkSync(doc);
+                    });
+                  }, 6000);
+                  if(err){ console.log(err); return res.send({guia: null, error: 'Error al procesar pdf'});}
+                  return res.send({guia: data ? data : null, error: null});
+                });
+              });
+            });
           });
-          fs.readFile(path,(err,data) =>{
-            if(err){return res.send({guia: null, error: 'Error abrir pdf'});}
-            setTimeout(() => { fs.unlinkSync(path);}, 3000);
-            return res.send({guia: data ? data.toString('base64') : null, error: null});
+        } else {
+          fs.readFile(documents[0], (err, data) =>{
+            fs.unlinkSync(documents[0]);
+            if(err){return res.send({guia: null, error: 'Error al procesar pdf'});}
+            return res.send({guia: data ? data : null, error: null});
           });
-        });
+        }
       } else {
         return res.send({guia: null, error: 'No se encontró pedidos para procesar'});
       }
@@ -223,4 +258,3 @@ module.exports = {
     }
   }
 };
-
