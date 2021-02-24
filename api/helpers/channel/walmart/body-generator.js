@@ -2462,8 +2462,8 @@ module.exports = {
 
         if(sub_category){
             if(variant){
-                sub_category[categories[1]].variantGroupId= product.id;
-                sub_category[categories[1]].variantAttributeNames= { "variantAttributeName": variant_name };
+                sub_category[categories[1]].variantGroupId = product.id;
+                sub_category[categories[1]].variantAttributeNames = { "variantAttributeName": variant_name };
                 sub_category[categories[1]].isPrimaryVariant = inputs.primary_variant? "Sí" : "No" ;
             }
             body = {
@@ -2502,7 +2502,7 @@ module.exports = {
                         "ProductTaxCode": "0",
                         "sellerWarranty": "Defectos de fábrica",
                         "sellerWarrantyPeriod": "3",
-                        "shippingCountryOfOrigin": "Colombia"
+                        "shippingCountryOfOrigin": "México"
                     }
                 }
             };

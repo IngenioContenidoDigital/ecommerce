@@ -839,7 +839,7 @@ module.exports = {
             });
           }
         });
-        return res.send(response.data.feedId);
+        return res.send(response_xml.data.feedId);
       }else{
         await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
           {
@@ -851,6 +851,7 @@ module.exports = {
       }
 
     } catch (err) {
+      console.log(err);
       return res.send(err.message);
     }
   },
