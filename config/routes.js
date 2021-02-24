@@ -80,6 +80,7 @@ module.exports.routes = {
   'POST /seller/create' : {controller:'SellerController',action:'createseller'},
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},
   'POST /seller/edit/:id' : {controller:'SellerController',action:'editseller'},
+  'GET /showreports/:id' : {controller:'SellerController',action:'showreports'},
   'GET /colors/:action?/:id?' : {controller:'ColorController',action:'showcolors'},
   'POST /color/create' : {controller:'ColorController',action:'createcolor'},
   'POST /color/edit/:id' : {controller:'ColorController',action:'editcolor'},

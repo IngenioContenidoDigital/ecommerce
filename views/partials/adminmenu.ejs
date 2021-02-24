@@ -56,6 +56,7 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%><li><a href="/sellers">Sellers</a></li><%}%>
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/campaigns">Campañas</a></li><%}%>
+      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/showreports/<%=session.user.seller%>">Reportes</a></li><%}%>
     </ul>
     <%}%>
     <p class="menu-label is-size-7">
