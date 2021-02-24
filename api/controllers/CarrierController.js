@@ -143,7 +143,6 @@ module.exports = {
     res.view('pages/carriers/generateguides',{layout:'layouts/admin'});
   },
   multipleguides: async function(req, res){
-    const fs = require('fs');
     const PDFDocument = require('pdf-lib').PDFDocument;
     let orderState = await OrderState.findOne({name: 'empacado'});
     const dateStart = req.body.startDate;
