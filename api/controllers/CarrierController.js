@@ -150,9 +150,7 @@ module.exports = {
     const dateEnd = req.body.endDate;
     let numbers = req.body.numbers;
     const seller = req.session.user.seller;
-    let guia = null;
     let orders = null;
-    const path = './assets/pdf/file_Ouput.pdf';
     try {
       if (dateStart && dateEnd) {
         orders = await Order.find({
@@ -180,11 +178,10 @@ module.exports = {
           sort: 'createdAt DESC'
         });
       }
-
       if (orders && orders.length > 0) {
-        let litems = [];
         let documents = [];
         for (const order of orders) {
+          let litems = [];
           let oitems = await OrderItem.find({order:order.id}).populate('product');
           let integration = await Integrations.findOne({id: order.integration}).populate('channel');
           for(let it of oitems){
@@ -197,59 +194,21 @@ module.exports = {
           let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
           let result = JSON.parse(respo);
           if(result.SuccessResponse){
-            guia = result.SuccessResponse.Body.Documents.Document.File;
-            fs.writeFile('./assets/pdf/document_'+ order.reference +'.pdf', guia, 'base64', (error) => {
-              if (error) {return res.send({guia: null, error: 'Error al almacenar documento'});}
-            });
-            documents.push('./assets/pdf/document_'+ order.reference +'.pdf');
+            const resultBuf = Buffer.from(result.SuccessResponse.Body.Documents.Document.File, 'base64');
+            documents.push(resultBuf);
           }
         }
-        if (documents.length > 1) {
-          Promise.all(documents.map(function(_path){
-            return new Promise(((_path, resolve, reject) => {
-              fs.readFile(_path, (err, data) => {
-                if(err){
-                  resolve('');
-                }else{
-                  resolve(data);
-                }
-              });
-            }).bind(this, _path));
-          })).then(async (results) => {
-            const mergedPdf = await PDFDocument.create();
-            for (const pdfBytes of results) {
-              const pdf = await PDFDocument.load(pdfBytes);
-              const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-              copiedPages.forEach((page) => {
-                mergedPdf.addPage(page);
-              });
-            }
-            const buf = await mergedPdf.save();
-            fs.open(path, 'w', (err, fd) => {
-              if(err){return res.send({guia: null, error: 'Error al procesar pdf'});}
-              fs.write(fd, buf, 0, buf.length, null, (err) => {
-                if(err){return res.send({guia: null, error: 'Error al procesar pdf'});}
-                fs.close(fd, () => {console.log('wrote the file successfully');});
-                fs.readFile(path, (err, data) =>{
-                  setTimeout(() => {
-                    fs.unlinkSync(path);
-                    documents.forEach(doc => {
-                      fs.unlinkSync(doc);
-                    });
-                  }, 6000);
-                  if(err){ console.log(err); return res.send({guia: null, error: 'Error al procesar pdf'});}
-                  return res.send({guia: data ? data : null, error: null});
-                });
-              });
-            });
-          });
-        } else {
-          fs.readFile(documents[0], (err, data) =>{
-            fs.unlinkSync(documents[0]);
-            if(err){return res.send({guia: null, error: 'Error al procesar pdf'});}
-            return res.send({guia: data ? data : null, error: null});
+        const mergedPdf = await PDFDocument.create();
+        for (const pdfBytes of documents) {
+          const pdf = await PDFDocument.load(pdfBytes);
+          const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          copiedPages.forEach((page) => {
+            mergedPdf.addPage(page);
           });
         }
+        const buf = await mergedPdf.save();
+        const resultPdf = Buffer.from(new Uint8Array(buf)).toString('base64');
+        return res.send({guia: resultPdf, error: null});
       } else {
         return res.send({guia: null, error: 'No se encontró pedidos para procesar'});
       }
