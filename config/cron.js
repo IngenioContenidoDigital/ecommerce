@@ -54,32 +54,39 @@ module.exports.cron = {
     schedule: '50 */20 * * * *',
     onTick: async () => {
       console.log('Iniciando Rastreo de Pedidos Siesa');
-      let moment = require('moment');
-      let ini = moment().subtract(15,'d').format('YYYYMMDD');
-      let end = moment().format('YYYYMMDD');
-      let status = 4;
-      let oneCommerceStatus = 'Aceptado';
-
-      let orders = await sails.helpers.siesaGetOrders({ini, end, status, oneCommerceStatus});
-      if(orders.length > 0){
-        let state = await OrderState.findOne({name: 'empacado'});
-
-        for (let index = 0; index < orders.length; index++) {
-              const incomingOrder = orders[index];
-              let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
-              
-              if(order){
-                if(order.currentstatus.id != state.id){
-                  let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
-                  await sails.helpers.notification(order);
-                  if(!updatedOrder.tracking){
-                    await sails.helpers.carrier.shipment(order.id);
-                    await OrderHistory.create({order: order.id, state: state.id});
+      try {
+        let moment = require('moment');
+        let ini = moment().subtract(15,'d').format('YYYYMMDD');
+        let end = moment().format('YYYYMMDD');
+        let status = 4;
+        let oneCommerceStatus = 'Aceptado';
+  
+        let orders = await sails.helpers.siesaGetOrders({ini, end, status, oneCommerceStatus}).catch(e=>{
+          console.log("Error recuperando las ordenens de siesas details : ",  e.message);
+        });
+  
+        if(orders && orders.length > 0){
+          let state = await OrderState.findOne({name: 'empacado'});
+  
+          for (let index = 0; index < orders.length; index++) {
+                const incomingOrder = orders[index];
+                let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
+                
+                if(order){
+                  if(order.currentstatus.id != state.id){
+                    let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
+                    await sails.helpers.notification(order);
+                    if(!updatedOrder.tracking){
+                      await sails.helpers.carrier.shipment(order.id);
+                      await OrderHistory.create({order: order.id, state: state.id});
+                    }
+      
                   }
-    
                 }
-              }
+          }
         }
+      } catch (error) {
+        console.log("Error recuperando las ordenens de siesas details : ",  error.message);
       }
     },
     timezone: 'America/Bogota'
