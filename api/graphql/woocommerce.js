@@ -71,6 +71,7 @@ VARIATIONS : `
                             talla
                             price
                             color
+                            size
                             weight
                             discount{
                                 name
@@ -91,6 +92,7 @@ PRODUCT_VARIATION_ID :
                 reference
                 simple
                 color
+                size
                 images{
                     file
                     src

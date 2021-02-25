@@ -2071,12 +2071,13 @@ module.exports = {
                   for(let vr of p.variations){
                     if(vr.color && vr.color.length > 0){
                       let prc= await Product.findOne({reference:vr.reference, seller:pro.seller});
-                      let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});	
+                      let vt = vr.size ? vr.size.toLowerCase() : vr.talla.toLowerCase().replace(',','.') ;
+                      let variation = await Variation.find({ name:vt, gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});	
                       let productVariation;	
                       let discountHandled = false;
 
                       if(!variation || variation.length == 0){	
-                        variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,seller:pro.seller,category:pro.categories[0].id}).fetch();	
+                        variation = await Variation.create({name:vt,gender:pro.gender,seller:pro.seller,category:pro.categories[0].id}).fetch();	
                       }	
 
                       variation = variation.length ? variation[0] : variation;	
