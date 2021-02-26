@@ -1262,7 +1262,6 @@ module.exports = {
           },
           limit: 1
         });
-
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
@@ -1279,6 +1278,8 @@ module.exports = {
         }
 
         if (products.length > 0) {
+          const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+          const priceAjust = pl.channels.length > 0 ? pl.channels[0].price : 0;
           if(req.body.action === 'Image'){
             let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
             const imgxml = jsonxml(imgresult,true);
@@ -1298,18 +1299,26 @@ module.exports = {
                   for (const pro of products) {
                     response.items.push(pro);
                     if(action === 'ProductCreate'){
-                      await ProductChannel.create({
+                      await ProductChannel.findOrCreate({id: productChannelId},{
                         product:pro.id,
                         integration:integration.id,
                         channel:integration.channel.id,
+                        channelid:'',
                         status:false,
                         qc:false,
-                        price: 0,
+                        price:0,
                         iscreated:false
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductChannel.updateOne({id: record.id}).set({
+                            price:priceAjust
+                          });
+                        }
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
                     }
                   }
                 }else{
@@ -1333,7 +1342,6 @@ module.exports = {
           },
           limit: 1
         });
-
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
@@ -1350,6 +1358,8 @@ module.exports = {
         }
 
         if (products.length > 0) {
+          const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+          const priceAjust = pl.channels.length > 0 ? pl.channels[0].price : 0;
           if(req.body.action === 'Image'){
             let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
             const imgxml = jsonxml(imgresult,true);
@@ -1369,18 +1379,26 @@ module.exports = {
                   for (const pro of products) {
                     response.items.push(pro);
                     if(action === 'ProductCreate'){
-                      await ProductChannel.create({
+                      await ProductChannel.findOrCreate({id: productChannelId},{
                         product:pro.id,
                         integration:integration.id,
                         channel:integration.channel.id,
+                        channelid:'',
                         status:false,
                         qc:false,
-                        price: 0,
+                        price:0,
                         iscreated:false
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductChannel.updateOne({id: record.id}).set({
+                            price:priceAjust
+                          });
+                        }
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
                     }
                   }
                 }else{
