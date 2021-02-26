@@ -1175,11 +1175,10 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
     }
     return res.view('pages/front/cms',{content:content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
-
   dafitiSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
-    let integration;
+    let integration = await Integrations.findOne({key: identifier}).populate('channel');;
 
     switch (req.body.event) {
       case 'onOrderCreated':
@@ -1189,9 +1188,6 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           if(!order){
             return res.serverError('No se Localizó la Orden Solicitada'+req.body.payload.OrderId);
           }
-
-          integration = await Integrations.findOne({key : identifier}).populate('channel');
-
           let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller,  ['OrderId='+order]);
           let seller = await Seller.findOne({id: integration.seller});
           if (data && seller.integrationErp) {
@@ -1200,7 +1196,6 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         }
         break;
       case 'onOrderItemsStatusChanged':
-
         let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
 
         if(!state){
@@ -1214,15 +1209,20 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
-
         break;
+      case 'onProductCreated':
+        const skus = req.body.payload.SellerSkus;
+        await sails.helpers.channel.productSync(integration, skus);
+        break;
+      // case 'onProductQcStatusChanged':
+      //   const sellerSkus = req.body.payload.SellerSkus;
+      //   await sails.helpers.channel.productQc(integration, sellerSkus);
+      //   break;
       default:
         break;
     }
-
     return res.ok();
   },
-
   linioSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
@@ -1264,9 +1264,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
       default:
         break;
     }
-
     return res.ok();
   }
-
 };
 

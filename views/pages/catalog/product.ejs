@@ -875,6 +875,11 @@
         });
       });
 
+      io.socket.on("reponse_product_created", (resData)=>{
+        let checkbox = document.getElementById(resData.integration);
+        checkbox.checked = resData.status;
+      });
+
     const pricent = document.querySelector('input[name="price_nt"]');
     const pricewt = document.querySelector('input[name="price_wt"]');
     const taxl = document.querySelector('#tax');
