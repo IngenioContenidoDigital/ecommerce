@@ -146,6 +146,7 @@ module.exports = {
     const PDFDocument = require('pdf-lib').PDFDocument;
     let orderState = await OrderState.findOne({name: 'aceptado'});
     let state = await OrderState.findOne({name: 'empacado'});
+    let stateProcess = await OrderState.findOne({name: 'en procesamiento'});
     const dateStart = req.body.startDate;
     const dateEnd = req.body.endDate;
     let numbers = req.body.numbers;
@@ -157,7 +158,7 @@ module.exports = {
           where: {
             seller: seller,
             channel: ['linio', 'dafiti'],
-            currentstatus: orderState.id,
+            currentstatus: [orderState.id, stateProcess],
             createdAt: { '>': new Date(dateStart).valueOf(), '<': new Date(dateEnd).valueOf() }
           },
           sort: 'createdAt DESC'
@@ -172,7 +173,7 @@ module.exports = {
           where: {
             seller: seller,
             channel: ['linio', 'dafiti'],
-            currentstatus: orderState.id,
+            currentstatus: [orderState.id, stateProcess.id, state.id],
             reference: result
           },
           sort: 'createdAt DESC'
