@@ -135,7 +135,7 @@ module.exports = {
       for(let pchannel of p.channels){
         let cn = await Integrations.findOne({id:pchannel.integration});
         if(cn){
-          const color = pchannel.iscreated === false || (pchannel.reason && pchannel.reason !== '') ? 'has-text-danger' : 'has-text-success';
+          const color = pchannel.iscreated === false || (pchannel.reason && pchannel.reason !== '') ? 'has-text-danger' : pchannel.qc && pchannel.status === false ? 'has-text-warning' : 'has-text-success';
           published +=
           `<div class="icon-text">
             <span class="icon `+color+`">
@@ -533,7 +533,7 @@ module.exports = {
               integration:integrationId,
               channelid: result.id,
               status: true,
-              qc:false,
+              qc:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -541,6 +541,7 @@ module.exports = {
                 await ProductChannel.updateOne({id: record.id}).set({
                   channelid:result.id,
                   status:true,
+                  qc:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -564,6 +565,7 @@ module.exports = {
           await ProductChannel.updateOne({id: record.id}).set({
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
+            qc:false,
             price:0
           });
         }
@@ -687,7 +689,7 @@ module.exports = {
               integration:integrationId,
               channelid: response.data.import_id,
               status: true,
-              qc:false,
+              qc:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -746,6 +748,7 @@ module.exports = {
       await ProductChannel.updateOne({id: productChannelId}).set({
         channelid: '',
         status:false,
+        qc:false,
         price: 0
       });
       return res.send(err.message);
@@ -1487,7 +1490,7 @@ module.exports = {
                     integration:integration.id,
                     channelid:result.id,
                     status:true,
-                    qc:false,
+                    qc:true,
                     price:0
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
@@ -1628,7 +1631,7 @@ module.exports = {
                     integration:integration.id,
                     channelid:response_offer.data.import_id,
                     status:true,
-                    qc:false,
+                    qc:true,
                     price:cpprice
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
