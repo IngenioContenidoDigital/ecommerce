@@ -30,6 +30,10 @@ module.exports = {
         let errors = [];
         let result = [];
 
+        if(product.reference == 'EV07TBL34*'){
+          console.log(product);
+        }
+
         try {
           let pro = await sails.helpers.checkProducts(product, seller, inputs.asColor || false);
 

@@ -2069,6 +2069,7 @@ module.exports = {
                 }
                 if( p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
+
                     if(vr.color && vr.color.length > 0){
                       let prc= await Product.findOne({reference:vr.reference, seller:pro.seller});
                       let vt = vr.size ? vr.size.toLowerCase() : vr.talla.toLowerCase().replace(',','.') ;

@@ -70,6 +70,7 @@ VARIATIONS : `
                             reference
                             talla
                             price
+                            size
                             color
                             size
                             weight
