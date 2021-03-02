@@ -16,6 +16,7 @@ module.exports = {
         qc:{ type:'boolean', defaultsTo:false },
         price:{ type:'number', defaultsTo:0 },
         iscreated:{ type:'boolean' },
-        socketid:{ type:'string', defaultsTo:'' }
+        socketid:{ type:'string', defaultsTo:'' },
+        reason:{ type:'string', defaultsTo:'' }
     }
 };

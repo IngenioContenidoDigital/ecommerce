@@ -134,8 +134,15 @@ module.exports = {
       let published = '';
       for(let pchannel of p.channels){
         let cn = await Integrations.findOne({id:pchannel.integration});
-        if(cn && pchannel.status){
-          published += '<li><small>'+cn.name+'</small></li>';
+        if(cn){
+          const color = pchannel.iscreated === false || (pchannel.reason && pchannel.reason !== '') ? 'has-text-danger' : 'has-text-success';
+          published +=
+          `<div class="icon-text">
+            <span class="icon `+color+`">
+              <i class='bx bxs-circle'></i>
+            </span>
+            <span>`+cn.name+`</span>
+          </div>`;
         }
       }
       let tax = p.tax ? (p.tax.value/100) : 0;
@@ -183,7 +190,7 @@ module.exports = {
     let product = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
-
+    let channelErrors = [];
     if (id !== null) {
       product = await Product.findOne({ id: id })
         .populate('images')
@@ -196,6 +203,11 @@ module.exports = {
         .populate('channels');
       for (let pv in product.variations) {
         product.variations[pv].variation = await Variation.findOne({ id: product.variations[pv].variation });
+      }
+      for (const channel of product.channels) {
+        if (channel.reason && channel.reason !== '') {
+          channelErrors.push({reference: product.reference, reason: channel.reason});
+        }
       }
       product.variations.sort((a, b) => { return parseFloat(a.variation.name) - parseFloat(b.variation.name); });
     }
@@ -212,6 +224,7 @@ module.exports = {
       action: action,
       product: product,
       error: error,
+      channelErrors,
       moment: moment
     });
   },
@@ -457,12 +470,12 @@ module.exports = {
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
-                status:req.body.status,
-                price:req.body.price ? parseFloat(req.body.price) : 0
+                status: record.iscreated ? req.body.status : false,
+                price:req.body.price ? parseFloat(req.body.price) : 0,
+                socketid:sid
               });
             }
           });
-          sails.sockets.broadcast(sid, 'reponse_product_created', {status: action === 'ProductCreate' ? false : req.body.status,integration: integrationId});
           return res.send({error: null});
         }else{
           return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
@@ -598,12 +611,12 @@ module.exports = {
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
-                status:req.body.status,
-                price:req.body.price ? parseFloat(req.body.price) : 0
+                status: record.iscreated ? req.body.status : false,
+                price:req.body.price ? parseFloat(req.body.price) : 0,
+                socketid:sid
               });
             }
           });
-          sails.sockets.broadcast(sid, 'reponse_product_created', {status: action === 'ProductCreate' ? false : req.body.status,integration: integrationId});
           return res.send({error: null});
         }else{
           return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
@@ -1245,6 +1258,7 @@ module.exports = {
       throw 'forbidden';
     }
     var jsonxml = require('jsontoxml');
+    let sid = sails.sockets.getId(req);
     let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
     let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
     let channel = integration.channel.name;
@@ -1278,8 +1292,6 @@ module.exports = {
         }
 
         if (products.length > 0) {
-          const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
-          const priceAjust = pl.channels.length > 0 ? pl.channels[0].price : 0;
           if(req.body.action === 'Image'){
             let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
             const imgxml = jsonxml(imgresult,true);
@@ -1297,7 +1309,8 @@ module.exports = {
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
                   for (const pro of products) {
-                    response.items.push(pro);
+                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
                     if(action === 'ProductCreate'){
                       await ProductChannel.findOrCreate({id: productChannelId},{
                         product:pro.id,
@@ -1307,12 +1320,14 @@ module.exports = {
                         status:false,
                         qc:false,
                         price:0,
-                        iscreated:false
+                        iscreated:false,
+                        socketid:sid
                       }).exec(async (err, record, created)=>{
                         if(err){return new Error(err.message);}
                         if(!created){
                           await ProductChannel.updateOne({id: record.id}).set({
-                            price:priceAjust
+                            price:priceAjust,
+                            socketid:sid
                           });
                         }
                       });
@@ -1320,6 +1335,7 @@ module.exports = {
                     if(action === 'ProductUpdate'){
                       await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
                     }
+                    response.items.push(pro);
                   }
                 }else{
                   throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
@@ -1358,8 +1374,6 @@ module.exports = {
         }
 
         if (products.length > 0) {
-          const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
-          const priceAjust = pl.channels.length > 0 ? pl.channels[0].price : 0;
           if(req.body.action === 'Image'){
             let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
             const imgxml = jsonxml(imgresult,true);
@@ -1377,7 +1391,8 @@ module.exports = {
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
                   for (const pro of products) {
-                    response.items.push(pro);
+                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
                     if(action === 'ProductCreate'){
                       await ProductChannel.findOrCreate({id: productChannelId},{
                         product:pro.id,
@@ -1387,12 +1402,14 @@ module.exports = {
                         status:false,
                         qc:false,
                         price:0,
-                        iscreated:false
+                        iscreated:false,
+                        socketid:sid
                       }).exec(async (err, record, created)=>{
                         if(err){return new Error(err.message);}
                         if(!created){
                           await ProductChannel.updateOne({id: record.id}).set({
-                            price:priceAjust
+                            price:priceAjust,
+                            socketid:sid
                           });
                         }
                       });
@@ -1400,6 +1417,7 @@ module.exports = {
                     if(action === 'ProductUpdate'){
                       await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
                     }
+                    response.items.push(pro);
                   }
                 }else{
                   throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');

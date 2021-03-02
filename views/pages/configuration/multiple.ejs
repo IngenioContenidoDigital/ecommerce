@@ -98,4 +98,19 @@
             mensaje.innerHTML='Proceso Finalizado';
         });
     });
+
+    io.socket.on("reponse_product_created", (resData)=>{
+        let report = document.querySelector('#report');
+        let errors = document.querySelector('#errors');
+        let errorlist = document.querySelector('#error-list');
+        errors.innerHTML=0;
+        errorlist.innerHTML='';
+        errors.innerHTML = resData.errors.length;
+        for(let e of resData.errors){
+            let err = document.createElement('li');
+            err.innerHTML= 'Referencia: ' + e.reference +' <br>Errores: '+ e.message;
+            errorlist.appendChild(err);
+        }
+      });
+
 </script>

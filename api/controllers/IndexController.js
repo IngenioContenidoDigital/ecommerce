@@ -1210,14 +1210,18 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
         break;
+      case 'onFeedCompleted':
+        const feed = req.body.payload.Feed;
+        await sails.helpers.channel.feedSync(integration, feed);
+        break;
       case 'onProductCreated':
         const skus = req.body.payload.SellerSkus;
         await sails.helpers.channel.productSync(integration, skus);
         break;
-      // case 'onProductQcStatusChanged':
-      //   const sellerSkus = req.body.payload.SellerSkus;
-      //   await sails.helpers.channel.productQc(integration, sellerSkus);
-      //   break;
+      case 'onProductQcStatusChanged':
+        const sellerSkus = req.body.payload.SellerSkus;
+        await sails.helpers.channel.productQc(integration, sellerSkus);
+        break;
       default:
         break;
     }
@@ -1259,9 +1263,17 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
         break;
+      case 'onFeedCompleted':
+        const feed = req.body.payload.Feed;
+        await sails.helpers.channel.feedSync(integration, feed);
+        break;
       case 'onProductCreated':
         const skus = req.body.payload.SellerSkus;
         await sails.helpers.channel.productSync(integration, skus);
+        break;
+      case 'onProductQcStatusChanged':
+        const sellerSkus = req.body.payload.SellerSkus;
+        await sails.helpers.channel.productQc(integration, sellerSkus);
         break;
       default:
         break;
