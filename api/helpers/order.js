@@ -114,7 +114,7 @@ module.exports = {
               await sails.helpers.channel.channelSync(uproduct);
             }
           }
-          await sails.helpers.notification(order);
+          await sails.helpers.notification(order, order.currentstatus.id);
         }catch(err){
           return exits.error(err);
         }

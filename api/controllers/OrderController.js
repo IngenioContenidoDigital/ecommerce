@@ -382,10 +382,11 @@ module.exports = {
     }
     let id = req.body.id;
     let user = req.session.user ? req.session.user : null;
+    const ord = await Order.findOne({id:id});
+    await sails.helpers.notification(ord, req.body.orderState);
     let order = await Order.updateOne({id:id}).set({currentstatus:req.body.orderState});
     let newstate = await OrderState.findOne({id:req.body.orderState}).populate('color');
     let seller = await Seller.findOne({id: order.seller});
-    await sails.helpers.notification(order);
     if (seller && seller.integrationErp && newstate) {
       let resultState = newstate.name === 'en procesamiento' ? 'En procesa' : newstate.name === 'reintegrado' ? 'Reintegrad' : newstate.name.charAt(0).toUpperCase() + newstate.name.slice(1);
       await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);

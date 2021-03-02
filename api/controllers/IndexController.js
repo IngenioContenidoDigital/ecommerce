@@ -1206,9 +1206,11 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         if(!state){
           return res.serverError('Nuevo estado del pedido no identificado');
         }
-        let order = await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
+
+        const order = await Order.findOne({channelref:data.OrderId});
+        await sails.helpers.notification(order, state);
+        await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
         let seller = await Seller.findOne({id: order.seller});
-        await sails.helpers.notification(order);
         if (seller && seller.integrationErp && state) {
           let orderstate = await OrderState.findOne({id:state});
           let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
@@ -1252,9 +1254,10 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         if(!state){
           return res.serverError('Nuevo estado del pedido no identificado');
         }
-        let order = await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
+        const order = await Order.findOne({channelref:data.OrderId});
+        await sails.helpers.notification(order, state);
         let seller = await Seller.findOne({id: order.seller});
-        await sails.helpers.notification(order);
+        await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
         if (seller && seller.integrationErp && state) {
           let orderstate = await OrderState.findOne({id:state});
           let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
