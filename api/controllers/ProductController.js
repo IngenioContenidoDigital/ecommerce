@@ -134,8 +134,15 @@ module.exports = {
       let published = '';
       for(let pchannel of p.channels){
         let cn = await Integrations.findOne({id:pchannel.integration});
-        if(cn && pchannel.status){
-          published += '<li><small>'+cn.name+'</small></li>';
+        if(cn){
+          const color = pchannel.iscreated === false || (pchannel.reason && pchannel.reason !== '') ? 'has-text-danger' : pchannel.qc && pchannel.status === false ? 'has-text-warning' : 'has-text-success';
+          published +=
+          `<div class="icon-text">
+            <span class="icon `+color+`">
+              <i class='bx bxs-circle'></i>
+            </span>
+            <span>`+cn.name+`</span>
+          </div>`;
         }
       }
       let tax = p.tax ? (p.tax.value/100) : 0;
@@ -183,7 +190,7 @@ module.exports = {
     let product = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
-
+    let channelErrors = [];
     if (id !== null) {
       product = await Product.findOne({ id: id })
         .populate('images')
@@ -196,6 +203,11 @@ module.exports = {
         .populate('channels');
       for (let pv in product.variations) {
         product.variations[pv].variation = await Variation.findOne({ id: product.variations[pv].variation });
+      }
+      for (const channel of product.channels) {
+        if (channel.reason && channel.reason !== '') {
+          channelErrors.push({reference: product.reference, reason: channel.reason});
+        }
       }
       product.variations.sort((a, b) => { return parseFloat(a.variation.name) - parseFloat(b.variation.name); });
     }
@@ -212,6 +224,7 @@ module.exports = {
       action: action,
       product: product,
       error: error,
+      channelErrors,
       moment: moment
     });
   },
@@ -420,20 +433,20 @@ module.exports = {
   },
   dafitiadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
+    let sid = sails.sockets.getId(req);
     let product = await Product.findOne({ id: req.body.product }).populate('channels');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
-    const productChannelId = productchannel ? productchannel.id : '';
     let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
-    
+    const productChannelId = productchannel ? productchannel.id : '';
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
-      if (!productchannel || !productchannel.channel) {
-        action = 'ProductCreate';
-      } else {
+      if (productchannel && productchannel.iscreated) {
         action = 'ProductUpdate';
+      } else {
+        action = 'ProductCreate';
       }
       let status = req.body.status ? 'active' : 'inactive';
       let result = await sails.helpers.channel.dafiti.product([product], integration, parseFloat(req.body.price), status);
@@ -446,44 +459,35 @@ module.exports = {
           await ProductChannel.findOrCreate({id: productChannelId},{
             product:product.id,
             integration:integrationId,
-            channel : integration.channel.id,
+            channel:integration.channel.id,
             channelid:'',
-            status: true,
+            status:false,
             qc:false,
-            price: req.body.price ? parseFloat(req.body.price) : 0
+            price:req.body.price ? parseFloat(req.body.price) : 0,
+            iscreated:false,
+            socketid:sid
           }).exec(async (err, record, created)=>{
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
-                status:req.body.status,
-                price: req.body.price ? parseFloat(req.body.price) : 0
+                status: record.iscreated ? req.body.status : false,
+                price:req.body.price ? parseFloat(req.body.price) : 0,
+                socketid:sid
               });
             }
           });
-          let imgresult = await sails.helpers.channel.dafiti.images([product], integrationId);
-          var imgxml = jsonxml(imgresult,true);
-          let imgsign = await sails.helpers.channel.dafiti.sign(integrationId, 'Image', product.seller);
-
-          setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
-          return res.send(resData.SuccessResponse.Head.RequestId);
+          return res.send({error: null});
         }else{
-          await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
-            {
-              status: false,
-              price: 0
-            }
-          );
-
-          return res.send(resData.ErrorResponse.Head.ErrorMessage);
+          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
         }
       })
       .catch(err =>{
         console.log(err);
-        throw new Error (err.message);
+        return res.send({error: err.message});
       });
     } catch (err) {
       console.log(err);
-      return res.send(err.message);
+      return res.send({errror: err.message});
     }
   },
   mercadolibreadd: async (req, res) => {
@@ -505,12 +509,12 @@ module.exports = {
       }
       let integration = await sails.helpers.channel.mercadolibre.sign(integrationId);
       let body = await sails.helpers.channel.mercadolibre.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status)
-      .intercept((err) => {return new Error(err.message);});
+      .intercept((err) => {return res.send({error: err.message});});
       if(body){
         if(action==='Update'){
           result = await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT')
           .intercept((err)=>{
-            return new Error(err.message);
+            return res.send({error: err.message});
           });
           await ProductChannel.updateOne({id: productChannelId}).set({
             status: req.body.status ? true : false,
@@ -520,7 +524,7 @@ module.exports = {
         if(action==='Post'){
           result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
           .intercept((err)=>{
-            return new Error(err.message);
+            return res.send({error: err.message});
           });
           if(result.id){
             await ProductChannel.findOrCreate({id: productChannelId},{
@@ -529,7 +533,7 @@ module.exports = {
               integration:integrationId,
               channelid: result.id,
               status: true,
-              qc:false,
+              qc:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -537,6 +541,7 @@ module.exports = {
                 await ProductChannel.updateOne({id: record.id}).set({
                   channelid:result.id,
                   status:true,
+                  qc:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -560,6 +565,7 @@ module.exports = {
           await ProductChannel.updateOne({id: record.id}).set({
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
+            qc:false,
             price:0
           });
         }
@@ -570,71 +576,61 @@ module.exports = {
   },
   linioadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
+    let sid = sails.sockets.getId(req);
     let product = await Product.findOne({ id: req.body.product }).populate('channels');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
-    const productChannelId = productchannel ? productchannel.id : '';
-    const channelPrice = productchannel ? productchannel.price : 0;
     let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
-    
+    const productChannelId = productchannel ? productchannel.id : '';
     try {
       var jsonxml = require('jsontoxml');
       let action = null;
-      if (!productchannel || !productchannel.channel) {
-        action = 'ProductCreate';
-      } else {
+      if (productchannel && productchannel.iscreated) {
         action = 'ProductUpdate';
+      } else {
+        action = 'ProductCreate';
       }
       let status = req.body.status ? 'active' : 'inactive';
       let result = await sails.helpers.channel.linio.product([product], integration, parseFloat(req.body.price), status);
       var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.linio.sign(integrationId, action,product.seller);
-      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml)
+      let sign = await sails.helpers.channel.linio.sign(integrationId, action, product.seller);
+      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
       .then(async (resData)=>{
         resData = JSON.parse(resData);
         if(resData.SuccessResponse){
           await ProductChannel.findOrCreate({id: productChannelId},{
             product:product.id,
             integration:integrationId,
-            channel : integration.channel.id,
-            status: true,
+            channel:integration.channel.id,
+            channelid:'',
+            status:false,
             qc:false,
-            price: req.body.price ? parseFloat(req.body.price) : 0
+            price:req.body.price ? parseFloat(req.body.price) : 0,
+            iscreated:false,
+            socketid:sid
           }).exec(async (err, record, created)=>{
             if(err){return new Error(err.message);}
             if(!created){
               await ProductChannel.updateOne({id: record.id}).set({
-                status:req.body.status,
-                price: req.body.price ? parseFloat(req.body.price) : 0
+                status: record.iscreated ? req.body.status : false,
+                price:req.body.price ? parseFloat(req.body.price) : 0,
+                socketid:sid
               });
             }
           });
-
-          let imgresult = await sails.helpers.channel.dafiti.images([product], integrationId);
-          var imgxml = jsonxml(imgresult,true);
-          let imgsign = await sails.helpers.channel.dafiti.sign(integrationId, 'Image', product.seller);
-          setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
-          return res.send(resData.SuccessResponse.Head.RequestId);
+          return res.send({error: null});
         }else{
-          
-          await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
-            {
-              status: false,
-              price: 0
-            }
-          );
-
-          return res.send(resData.ErrorResponse.Head.ErrorMessage);
+          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
         }
       })
       .catch(err =>{
         console.log(err);
-        throw new Error (err.message);
+        return res.send({error: err.message});
       });
     } catch (err) {
       console.log(err);
-      return res.send(err.message);
+      return res.send({errror: err.message});
     }
   },
   coppeladd: async (req, res) => {
@@ -650,7 +646,7 @@ module.exports = {
     const channelPrice = productchannel ? productchannel.price : 0;
     let integration = await Integrations.findOne({id: integrationId}).populate('channel');
     try {
-      
+
       let action = null;
       let result = null;
       let status = req.body.status ? 'active' : 'paused';
@@ -664,13 +660,13 @@ module.exports = {
         method: 'get',
         url: `${integration.channel.endpoint}api/products?product_references=EAN|${product.id}`,
         headers: {
-            'Authorization':`${integration.key}`,
-            accept: 'application/json'
+          'Authorization':`${integration.key}`,
+          accept: 'application/json'
         }
-      }
-     let created = await axios(options).catch((e) => {result=e.response});
+      };
+      let created = await axios(options).catch((e) => {result=e.response;});
       if(created){
-        if(created.data.total_count==0 && status=="active"){
+        if(created.data.total_count==0 && status=='active'){
           await sails.helpers.channel.coppel.product(product.id, action, parseFloat(channelPrice), status)
           .intercept((err) => {return new Error(err.message);});
           let file = new FormData();
@@ -679,12 +675,12 @@ module.exports = {
             method: 'post',
             url: `${integration.channel.endpoint}api/products/imports`,
             headers: {
-                'Authorization':`${integration.key}`,
-                'content-type': `multipart/form-data; boundary=${file._boundary}`,
-                accept: 'application/json'
+              'Authorization':`${integration.key}`,
+              'content-type': `multipart/form-data; boundary=${file._boundary}`,
+              accept: 'application/json'
             },
             data:file
-          }
+          };
           let response = await axios(options).catch((e) => {result=e.response; console.log(result);});
           if(response){
             await ProductChannel.findOrCreate({id: productChannelId},{
@@ -693,7 +689,7 @@ module.exports = {
               integration:integrationId,
               channelid: response.data.import_id,
               status: true,
-              qc:false,
+              qc:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -717,13 +713,13 @@ module.exports = {
             method: 'post',
             url: `${integration.channel.endpoint}api/offers/imports`,
             headers: {
-                'Authorization':`${integration.key}`,
-                'content-type': `multipart/form-data; boundary=${file._boundary}`,
-                accept: 'application/json'
+              'Authorization':`${integration.key}`,
+              'content-type': `multipart/form-data; boundary=${file._boundary}`,
+              accept: 'application/json'
             },
             data:file
-         }
-         await axios(options).catch((e) => {result=e.response; console.log(result);});
+          };
+          await axios(options).catch((e) => {result=e.response; console.log(result);});
         }else if(action == 'Update'){
           let body = await sails.helpers.channel.coppel.product(product.id, 'Update', parseFloat(req.body.price), status)
           .intercept((err) => {return new Error(err.message);});
@@ -732,19 +728,19 @@ module.exports = {
             method: 'post',
             url: `${integration.channel.endpoint}api/offers`,
             headers: {
-                'Authorization':`${integration.key}`,
-                'content-type': `application/json`,
-                accept: 'application/json'
+              'Authorization':`${integration.key}`,
+              'content-type': `application/json`,
+              accept: 'application/json'
             },
             data:body
-         }
-         let response_offer = await axios(options).catch((e) => {result=e.response; console.log(result);});
-         if(response_offer){
-           await ProductChannel.updateOne({ id: productChannelId }).set({ 
-             status: req.body.status,
-             price: req.body.price ? parseFloat(req.body.price) : 0
-           });
-         }
+          };
+          let response_offer = await axios(options).catch((e) => {result=e.response; console.log(result);});
+          if(response_offer){
+            await ProductChannel.updateOne({ id: productChannelId }).set({
+              status: req.body.status,
+              price: req.body.price ? parseFloat(req.body.price) : 0
+            });
+          }
         }
       }
     } catch (err) {
@@ -752,6 +748,7 @@ module.exports = {
       await ProductChannel.updateOne({id: productChannelId}).set({
         channelid: '',
         status:false,
+        qc:false,
         price: 0
       });
       return res.send(err.message);
@@ -1270,11 +1267,9 @@ module.exports = {
     let channel = integration.channel.name;
     let result = null;
     let response = { items: [], errors: [] };
-    let productlist = [];
     let products = [];
     let action = '';
     try {
-     
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
         products = await Product.find({seller: seller, active: true}).populate('channels',{
@@ -1284,71 +1279,75 @@ module.exports = {
           },
           limit: 1
         });
-
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
-            products = products.filter(pro => pro.channels.length === 0);
+            products = products.filter(pro => pro.channels.length === 0 || (pro.channels.length > 0 && pro.channels[0].iscreated === false));
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0);
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === false);
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
             break;
         }
 
-        for (let pl of products) {
-            if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
-        }
-
         if (products.length > 0) {
-            if(req.body.action == 'Image'){
-              let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
-              var imgxml = jsonxml(imgresult,true);
-              let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
-              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
-              response.items.push(imgresult);
-            }else{
-              let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');
-              var xml = jsonxml(result,true);
-              let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
-              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+          if(req.body.action === 'Image'){
+            let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
+            const imgxml = jsonxml(imgresult,true);
+            let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
+            setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            for (const pro of products) {
+              response.items.push(pro);
+            }
+          }else{
+            let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');
+            const xml = jsonxml(result,true);
+            let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
+            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
-                  response.items.push(resData.SuccessResponse);
-                    for(pro in productlist){
-                      let p  = await Product.findOne({ id : productlist[pro]});
-                        if(action === 'ProductCreate'){
-                          await ProductChannel.create({
-                            product:productlist[pro],
-                            integration:integration.id,
-                            channel : integration.channel.id,
-                            status: false,
-                            qc:false,
-                            price: 0
+                  for (const pro of products) {
+                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
+                    if(action === 'ProductCreate'){
+                      await ProductChannel.findOrCreate({id: productChannelId},{
+                        product:pro.id,
+                        integration:integration.id,
+                        channel:integration.channel.id,
+                        channelid:'',
+                        status:false,
+                        qc:false,
+                        price:0,
+                        iscreated:false,
+                        socketid:sid
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductChannel.updateOne({id: record.id}).set({
+                            price:priceAjust,
+                            socketid:sid
                           });
                         }
-                        
-                        if(action === 'ProductUpdate'){
-                          for(pro in productlist){
-                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true});
-                          }
-                        }
+                      });
                     }
-
-
+                    if(action === 'ProductUpdate'){
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                    }
+                    response.items.push(pro);
+                  }
                 }else{
                   throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
                 }
               })
               .catch(err =>{
                 throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
-              });              
-            }
+              });
+          }
         } else {
           throw new Error('Sin Productos para Procesar');
         }
@@ -1362,69 +1361,75 @@ module.exports = {
           },
           limit: 1
         });
-
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
-            products = products.filter(pro => pro.channels.length === 0);
+            products = products.filter(pro => pro.channels.length === 0 || (pro.channels.length > 0 && pro.channels[0].iscreated === false));
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0);
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === false);
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
             break;
         }
 
-        for (let pl of products) {
-            if (!productlist.includes(pl.id)) { productlist.push(pl.id); }
-        }
-
         if (products.length > 0) {
-            if(req.body.action == 'Image'){
-              let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
-              var imgxml = jsonxml(imgresult,true);
-              let imgsign = await sails.helpers.channel.linio.sign(integration.id, 'Image', seller);
-              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
-              response.items.push(imgresult);
-            }else{
-              let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');
-              var xml = jsonxml(result,true);
-              let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
-              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+          if(req.body.action === 'Image'){
+            let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
+            const imgxml = jsonxml(imgresult,true);
+            let imgsign = await sails.helpers.channel.linio.sign(integration.id, 'Image', seller);
+            setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            for (const pro of products) {
+              response.items.push(pro);
+            }
+          }else{
+            let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');
+            const xml = jsonxml(result,true);
+            let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
+            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
-                  response.items.push(resData.SuccessResponse);
-                    for(pro in productlist){
-                        if(action === 'ProductCreate'){
-                          let p  = await Product.findOne({ id : productlist[pro]});
-                          await ProductChannel.create({
-                            product:productlist[pro],
-                            integration:integration.id,
-                            channel : integration.channel.id,
-                            status: false,
-                            qc:false,
-                            price: 0
+                  for (const pro of products) {
+                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
+                    if(action === 'ProductCreate'){
+                      await ProductChannel.findOrCreate({id: productChannelId},{
+                        product:pro.id,
+                        integration:integration.id,
+                        channel:integration.channel.id,
+                        channelid:'',
+                        status:false,
+                        qc:false,
+                        price:0,
+                        iscreated:false,
+                        socketid:sid
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductChannel.updateOne({id: record.id}).set({
+                            price:priceAjust,
+                            socketid:sid
                           });
                         }
-
-                        if(action === 'ProductUpdate'){
-                          for(pro in productlist){
-                            await ProductChannel.updateOne({ product:productlist[pro] , integration:integration.id }).set({ status: true});
-                          }
-                        }
+                      });
                     }
+                    if(action === 'ProductUpdate'){
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                    }
+                    response.items.push(pro);
+                  }
                 }else{
                   throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
                 }
               })
               .catch(err =>{
                 throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
-              });              
-            }
+              });
+          }
         } else {
           throw new Error('Sin Productos para Procesar');
         }
@@ -1456,7 +1461,7 @@ module.exports = {
         if (products.length > 0) {
           let integration = await sails.helpers.channel.mercadolibre.sign(intgrationId);
           for (let pl of products) {
-            const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
+            const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
             const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
             let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
@@ -1485,15 +1490,15 @@ module.exports = {
                     integration:integration.id,
                     channelid:result.id,
                     status:true,
-                    qc:false,
+                    qc:true,
                     price:0
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
-                    if(!created){	
-                      await ProductChannel.updateOne({id: record.id}).set({	
-                        channelid:result.id,	
-                        price:mlprice	
-                      });	
+                    if(!created){
+                      await ProductChannel.updateOne({id: record.id}).set({
+                        channelid:result.id,
+                        price:mlprice
+                      });
                     }
                   });
                   response.items.push(body);
@@ -1513,7 +1518,7 @@ module.exports = {
         let result;
 
         const intgrationId = integration.id;
-        
+
         let products = await Product.find({seller: seller, active: true}).populate('channels',{
           where:{
             channel: integration.channel.id,
@@ -1538,7 +1543,7 @@ module.exports = {
         if (products.length > 0) {
           for (let pl of products) {
             let productvariations = await ProductVariation.find({product:pl.id}).populate('variation');
-            const cpprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
+            const cpprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
             const cpid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
             const cpstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
@@ -1550,22 +1555,22 @@ module.exports = {
                   method: 'post',
                   url: `${integration.channel.endpoint}api/offers`,
                   headers: {
-                      'Authorization':`${integration.key}`,
-                      'content-type': `application/json`,
-                      accept: 'application/json'
+                    'Authorization':`${integration.key}`,
+                    'content-type': `application/json`,
+                    accept: 'application/json'
                   },
                   data:body
-                }
+                };
                 let response_offer = await axios(options).catch((e) => {
-                  result=e.response.data.message?e.response.data.message:e.response.data; 
+                  result=e.response.data.message?e.response.data.message:e.response.data;
                   response.errors.push('REF: '+pl.reference+' no actualizado en Coppel: '+ result);
                 });
                 if(response_offer){
                   response.items.push(response_offer.data.import_id);
-                  await ProductChannel.updateOne({id: productChannelId}).set({	
-                    channelid:response_offer.data.import_id,	
-                    status:true,	
-                    price:cpprice	
+                  await ProductChannel.updateOne({id: productChannelId}).set({
+                    channelid:response_offer.data.import_id,
+                    status:true,
+                    price:cpprice
                   });
                 }
               }
@@ -1574,11 +1579,11 @@ module.exports = {
                   method: 'get',
                   url: `${integration.channel.endpoint}api/products?product_references=EAN|${pl.id}`,
                   headers: {
-                      'Authorization':`${integration.key}`,
-                      accept: 'application/json'
+                    'Authorization':`${integration.key}`,
+                    accept: 'application/json'
                   }
-                }
-                let created = await axios(options).catch((e) => {result=e.response});
+                };
+                let created = await axios(options).catch((e) => {result=e.response;});
                 if(created){
                   if(created.data.total_count === 0){
                     await sails.helpers.channel.coppel.product(pl.id, action, cpprice, cpstatus)
@@ -1589,12 +1594,12 @@ module.exports = {
                       method: 'post',
                       url: `${integration.channel.endpoint}api/products/imports`,
                       headers: {
-                          'Authorization':`${integration.key}`,
-                          'content-type': `multipart/form-data; boundary=${file._boundary}`,
-                          accept: 'application/json'
+                        'Authorization':`${integration.key}`,
+                        'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                        accept: 'application/json'
                       },
                       data:file
-                    }
+                    };
                     await axios(options).catch((e) => {result=e.response; console.log(result);});
                   }
 
@@ -1607,18 +1612,18 @@ module.exports = {
                     method: 'post',
                     url: `${integration.channel.endpoint}api/offers/imports`,
                     headers: {
-                        'Authorization':`${integration.key}`,
-                        'content-type': `multipart/form-data; boundary=${file._boundary}`,
-                        accept: 'application/json'
+                      'Authorization':`${integration.key}`,
+                      'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                      accept: 'application/json'
                     },
                     data:file
-                  }
+                  };
                   let response_offer = await axios(options).catch((e) => {
-                    result=e.response.data.message?e.response.data.message:e.response.data; 
+                    result=e.response.data.message?e.response.data.message:e.response.data;
                     response.errors.push('REF: '+pl.reference+' no creado en Coppel: '+ result);
                   });
-                  
-                  
+
+
 
                   await ProductChannel.findOrCreate({id: productChannelId},{
                     product:pl.id,
@@ -1626,17 +1631,17 @@ module.exports = {
                     integration:integration.id,
                     channelid:response_offer.data.import_id,
                     status:true,
-                    qc:false,
+                    qc:true,
                     price:cpprice
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
 
-                    if(!created){	
-                      await ProductChannel.updateOne({id: record.id}).set({	
-                        channelid:response_offer.data.import_id,	
-                        status:true,	
-                        price:cpprice	
-                      });	
+                    if(!created){
+                      await ProductChannel.updateOne({id: record.id}).set({
+                        channelid:response_offer.data.import_id,
+                        status:true,
+                        price:cpprice
+                      });
                     }
                   });
 
@@ -1652,22 +1657,22 @@ module.exports = {
                   method: 'post',
                   url: `${integration.channel.endpoint}api/products/imports`,
                   headers: {
-                      'Authorization':`${integration.key}`,
-                      'content-type': `multipart/form-data; boundary=${file._boundary}`,
-                      accept: 'application/json'
+                    'Authorization':`${integration.key}`,
+                    'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                    accept: 'application/json'
                   },
                   data:file
-                }
+                };
                 let response_product = await axios(options).catch((e) => {
-                  result=e.response.data.message?e.response.data.message:e.response.data; 
+                  result=e.response.data.message?e.response.data.message:e.response.data;
                   response.errors.push('REF: '+pl.reference+' no actualizado en Coppel: '+ result);
                 });
                 if(response_product){
                   response.items.push(response_product.data.import_id);
-                  await ProductChannel.updateOne({id: productChannelId}).set({	
-                    channelid:response_product.data.import_id,	
-                    status:true,	
-                    price:cpprice	
+                  await ProductChannel.updateOne({id: productChannelId}).set({
+                    channelid:response_product.data.import_id,
+                    status:true,
+                    price:cpprice
                   });
                 }
               }
@@ -1752,7 +1757,7 @@ module.exports = {
     let lastPage;
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
-    let asColor = req.body.asColor;	
+    let asColor = req.body.asColor;
 
     let next;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
@@ -1788,11 +1793,11 @@ module.exports = {
 
       if (!isEmpty) {
         rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid, {
-          channel : req.body.channel,	
-          pk : req.body.pk,	
-          sk : req.body.sk,	
-          url : req.body.apiUrl,	
-          version : req.body.version	
+          channel : req.body.channel,
+          pk : req.body.pk,
+          sk : req.body.sk,
+          url : req.body.apiUrl,
+          version : req.body.version
         }, req.body.channel, asColor || false ).catch((e)=>console.log(e));
       } else {
         sails.sockets.broadcast(sid, 'product_task_ended', true);
@@ -1895,18 +1900,18 @@ module.exports = {
                               let totalimg = await ProductImage.count({ product: productColor.id});
                               totalimg += 1;
                               if (totalimg > 1) { cover = 0; }
-  
+
                               let rs = await ProductImage.create({
                                 file: file,
                                 position: totalimg,
                                 cover: cover,
                                 product: productColor.id
                               }).fetch();
-  
+
                               if(typeof(rs) === 'object'){
                                 result.push(rs);
                               }
-                              
+
                               sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                             }
                           } catch (err) {
@@ -2080,29 +2085,29 @@ module.exports = {
                         variation = await Variation.create({name:vt,gender:pro.gender,seller:pro.seller,category:pro.categories[0].id}).fetch();	
                       }	
 
-                      variation = variation.length ? variation[0] : variation;	
-                      let pvs = await ProductVariation.find({ product:prc.id,supplierreference:vr.reference}).populate('variation');	
+                      variation = variation.length ? variation[0] : variation;
+                      let pvs = await ProductVariation.find({ product:prc.id,supplierreference:vr.reference}).populate('variation');
                       let pv = pvs.find(pv=> pv.variation.name == variation.name);
-                     
-                      if (!pv) {	
-                        productVariation = await ProductVariation.create({	
-                          product:prc.id,	
-                          variation:variation.id,	
-                          reference: vr.reference ? vr.reference : '',	
-                          supplierreference:prc.reference,	
-                          ean13: vr.ean13 ? vr.ean13.toString() : '',	
-                          upc: vr.upc ? vr.upc : 0,	
-                          skuId: vr.skuId ? vr.skuId : '',	
-                          price: vr.price,	
-                          quantity: vr.quantity ? vr.quantity : 0,	
-                          seller:pr.seller	
-                        }).fetch();	
-                      } else {	
-                        productVariation = await ProductVariation.updateOne({ id: pv.id }).set({	
-                          price: vr.price,	
-                          variation: variation.id,	
-                          quantity: vr.quantity ? vr.quantity : 0,	
-                        });	
+
+                      if (!pv) {
+                        productVariation = await ProductVariation.create({
+                          product:prc.id,
+                          variation:variation.id,
+                          reference: vr.reference ? vr.reference : '',
+                          supplierreference:prc.reference,
+                          ean13: vr.ean13 ? vr.ean13.toString() : '',
+                          upc: vr.upc ? vr.upc : 0,
+                          skuId: vr.skuId ? vr.skuId : '',
+                          price: vr.price,
+                          quantity: vr.quantity ? vr.quantity : 0,
+                          seller:pr.seller
+                        }).fetch();
+                      } else {
+                        productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
+                          price: vr.price,
+                          variation: variation.id,
+                          quantity: vr.quantity ? vr.quantity : 0,
+                        });
                       }
                     }else{
                       let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});
