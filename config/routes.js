@@ -80,6 +80,7 @@ module.exports.routes = {
   'POST /seller/create' : {controller:'SellerController',action:'createseller'},
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},
   'POST /seller/edit/:id' : {controller:'SellerController',action:'editseller'},
+  'GET /showreports/:id' : {controller:'SellerController',action:'showreports'},
   'GET /colors/:action?/:id?' : {controller:'ColorController',action:'showcolors'},
   'POST /color/create' : {controller:'ColorController',action:'createcolor'},
   'POST /color/edit/:id' : {controller:'ColorController',action:'editcolor'},
@@ -207,7 +208,14 @@ module.exports.routes = {
 
   'GET /channels/:action?/:id?' : {controller:'ChannelController',action:'showchannels'},
   'POST /channel/create' : {controller:'ChannelController',action:'createchannel'},
-  'POST /channel/edit/:id' : {controller:'ChannelController',action:'editchannel'}
+  'POST /channel/edit/:id' : {controller:'ChannelController',action:'editchannel'},
+
+  'GET /campaigns/:action?/:id?' : {controller:'CampaignController',action:'showcampaigns'},
+  'POST /campaign/create' : {controller:'CampaignController',action:'createcampaign'},
+  'POST /campaign/edit/:id' : {controller:'CampaignController',action:'editcampaign'},
+  'PUT /campaign/:id' : {controller:'CampaignController',action:'campaignstate'},
+  'GET /campaign/show/:id' : {controller:'CampaignController',action:'campaignshow'}
+
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************

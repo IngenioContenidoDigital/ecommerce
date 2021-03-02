@@ -168,7 +168,7 @@ module.exports = {
 
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:paymentInfo});
           if(payment.success){
-            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,carrier:'coordinadora'});
+            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,carrier:(address.country.iso =='MX') ? 'redpack' :'coordinadora'});
           }else{
             let msg='Error en el proceso. Por favor intenta nuevamente';
             return res.redirect('/checkout?error='+msg);
@@ -201,7 +201,7 @@ module.exports = {
         };
         payment = await sails.helpers.payment.payment({mode:paymentmethod, info:pseInfo});
         if(payment.success){
-          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,carrier:'coordinadora'});
+          order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,carrier:(address.country.iso =='MX') ? 'redpack' :'coordinadora'});
           delete req.session.cart;
           if(payment.data.urlbanco!=='' && payment.data.urlbanco!==null){
             return res.redirect(payment.data.urlbanco);
@@ -239,7 +239,7 @@ module.exports = {
           };
           payment = await sails.helpers.payment.payment({mode:paymentmethod, info:cashInfo, method:req.body.cash});
           if(payment.success){
-            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash,carrier:'coordinadora'});
+            order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.cash,carrier:(address.country.iso ==='MX') ? 'redpack' :'coordinadora'});
           }else{
             let msg='Error en el proceso. Por favor intenta nuevamente';
             if(payment.data.errores[0]!==undefined && payment.data.errores[0]!==null){
@@ -390,8 +390,15 @@ module.exports = {
       let resultState = newstate.name === 'en procesamiento' ? 'En procesa' : newstate.name === 'reintegrado' ? 'Reintegrad' : newstate.name.charAt(0).toUpperCase() + newstate.name.slice(1);
       await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
     }
+
     if(newstate.name==='empacado' && order.tracking===''){
-      await sails.helpers.carrier.shipment(id);
+        let address = await Address.findOne({id:order.addressDelivery}).populate('country');
+
+        if(address.country.iso === 'MX'){
+          await sails.helpers.carrier.redpack.shipment(id);
+        }else{
+          await sails.helpers.carrier.shipment(id);
+        }
     }
 
     if(user!==null && user!== undefined){

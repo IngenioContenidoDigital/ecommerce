@@ -62,7 +62,7 @@ module.exports = {
         throw new Error('Error en la Petición');
       }
     }catch(err){
-      throw new Error(err.message);
+      throw new Error(err.response.data ? err.response.data.message : err.message);
     }
   }
 };
