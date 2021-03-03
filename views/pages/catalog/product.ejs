@@ -839,8 +839,16 @@
             </table>
           </div>
           <div class="column">
-            <div id="report" class="container is-fluid is-hidden">
-              <div class="notification is-danger">
+            <div class="container is-fluid">
+              <div id="reportProcess" class="notification is-danger is-hidden">
+                <p>Hemos identificado <span id="errorsProcess">0</span> error(es).</p>
+                <br>
+                <div class="container is-fluid">
+                  <ol id="error-list-errorsProcess">
+                  </ol>
+                </div>
+              </div>
+              <div id="report" class="notification is-danger is-hidden">
                 <p>Hemos identificado <span id="errors">0</span> error(es).</p>
                 <br>
                 <div class="container is-fluid">
@@ -848,24 +856,26 @@
                   </ol>
                 </div>
               </div>
-          </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <script>
       <%if(channelErrors.length > 0){%>
-        const reusltErrors = <%- JSON.stringify(channelErrors)%>;
+        const integrations = <%- JSON.stringify(integra)%>
+        const resultErrors = <%- JSON.stringify(channelErrors)%>;
         let report = document.querySelector('#report');
         let errors = document.querySelector('#errors');
         let errorlist = document.querySelector('#error-list');
         errors.innerHTML=0;
         errorlist.innerHTML='';
         if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-        errors.innerHTML = reusltErrors.length;
-        for(let e of reusltErrors){
+        errors.innerHTML = resultErrors.length;
+        for(let e of resultErrors){
+          const nameIntegration = integrations.find(i => i.id === e.integration);
           let err = document.createElement('li');
-					err.innerHTML= 'Referencia: ' + e.reference +' <br>Errores: '+ e.reason;
+					err.innerHTML= 'Referencia: ' + e.reference+' <br>Integración: '+nameIntegration.name +' <br>Errores: '+ e.reason;
 					errorlist.appendChild(err);
         }
       <%}%>
@@ -876,14 +886,15 @@
         let channelId = e.target.getAttribute('channelId');
         let price = document.querySelector('select[name="'+integrationId+'price"]').value;
         let report = document.querySelector('#report');
-        let errors = document.querySelector('#errors');
-        let errorlist = document.querySelector('#error-list');
+        let reportprocess = document.querySelector('#reportProcess');
+        let errors = document.querySelector('#errorsProcess');
+        let errorlist = document.querySelector('#error-list-errorsProcess');
         errors.innerHTML=0;
         errorlist.innerHTML='';
-        if(!hasClass(report,'is-hidden')){addClass(report,'is-hidden');}
+        if(!hasClass(reportprocess,'is-hidden')){addClass(reportprocess,'is-hidden');}
         io.socket.post('/'+nameChannel+'/add',{product:p, price, status:e.target.checked,integrationId,channelId}, resData =>{
           if(resData.error){
-            if(hasClass(report),'is-hidden'){removeClass(report,'is-hidden');}
+            if(hasClass(reportprocess),'is-hidden'){removeClass(reportprocess,'is-hidden');}
             errors.innerHTML=1;
             let err = document.createElement('li');
             err.innerHTML='Se generó Error al procesar el producto.';

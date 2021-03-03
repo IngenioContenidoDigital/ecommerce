@@ -206,7 +206,7 @@ module.exports = {
       }
       for (const channel of product.channels) {
         if (channel.reason && channel.reason !== '') {
-          channelErrors.push({reference: product.reference, reason: channel.reason});
+          channelErrors.push({reference: product.reference, reason: channel.reason, integration: channel.integration});
         }
       }
       product.variations.sort((a, b) => { return parseFloat(a.variation.name) - parseFloat(b.variation.name); });
@@ -487,7 +487,7 @@ module.exports = {
       });
     } catch (err) {
       console.log(err);
-      return res.send({errror: err.message});
+      return res.send({error: err.message});
     }
   },
   mercadolibreadd: async (req, res) => {
@@ -630,7 +630,7 @@ module.exports = {
       });
     } catch (err) {
       console.log(err);
-      return res.send({errror: err.message});
+      return res.send({error: err.message});
     }
   },
   coppeladd: async (req, res) => {
