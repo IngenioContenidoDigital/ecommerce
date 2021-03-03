@@ -345,12 +345,12 @@ module.exports = {
                 answer: answer ? answer.id : null,
                 integration: integration.id
               };
-              await Question.findOrCreate({idMl: question.id}, questi).exec(async (err, record, wasCreated)=>{
-                if(err){return res.send('error');}
-                if(!wasCreated){
-                  await Question.updateOne({id: record.id}).set({answer: answer ? answer.id : null, status: question.status});
-                }
-              });
+              const existsQuest = await Question.findOne({idMl: question.id});
+              if (existsQuest) {
+                await Question.updateOne({id: existsQuest.id}).set({answer: answer ? answer.id : null, status: question.status});
+              } else {
+                await Question.create(questi).fetch();
+              }
             }
             let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
             sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
