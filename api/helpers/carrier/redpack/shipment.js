@@ -1,8 +1,7 @@
   
   const axios  = require('axios');
-  const parseString = require('xml2js').parseString;
-
-  module.exports = {
+  const convert = require('xml-js');
+module.exports = {
   friendlyName: 'Shipment',
   description: 'Shipment carrier.',
   inputs: {
@@ -27,7 +26,7 @@
     .populate('carrier');
 
     let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
-    seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city').populate('country');
+    seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city').populate('country').populate("region");
     
     let country = await Country.findOne({id:order.addressDelivery.country});
     let city = await City.findOne({id:order.addressDelivery.city});
@@ -37,6 +36,7 @@
     let integration = await Integrations.findOne({id: order.integration}).populate('channel');
     
     let deliveryAddress = await Address.findOne({id:order.addressDelivery.id}).populate('city').populate('country').populate('region');
+    let seq =  order.carrier.sequential;
 
     if(order.channel==='direct'){
       let url = 'https://ws.redpack.com.mx/RedpackAPI_WS/services/RedpackWS?wsdl';
@@ -54,12 +54,11 @@
         peso+=oitems[p].product.weight;
       }
 
-      let body = `
-      <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.redpack.com" xmlns:xsd="http://vo.redpack.com/xsd">
+      let body = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.redpack.com" xmlns:xsd="http://vo.redpack.com/xsd">
         <soapenv:Header/>
         <soapenv:Body>
             <ws:documentacion>
-              <ws:PIN>QA 0hor16TnlL+3z9ZagvE6PBo8tyWAIReeC6cLtMjXSXI= </ws:PIN>
+              <ws:PIN>QA 0hor16TnlL+3z9ZagvE6PBo8tyWAIReeC6cLtMjXSXI=</ws:PIN>
               <ws:idUsuario>1853</ws:idUsuario>
               <ws:guias>
               <xsd:consignatario>
@@ -95,28 +94,24 @@
               <xsd:referencia>${order.reference}</xsd:referencia>
               <xsd:flag>0</xsd:flag>
               <xsd:moneda>117546</xsd:moneda>
-              <xsd:numeroDeGuia>${order.reference}</xsd:numeroDeGuia>
+              <xsd:numeroDeGuia>${seq}</xsd:numeroDeGuia>
         <xsd:paquetes>
           <xsd:alto>${alto}</xsd:alto>
           <xsd:ancho>${ancho}</xsd:ancho>		
           <xsd:largo>${largo}</xsd:largo>
           <xsd:peso>${peso}</xsd:peso>
           <xsd:consecutivo>0</xsd:consecutivo>
-          <xsd:descripcion>only if necessary</xsd:descripcion>
+          <xsd:descripcion>test</xsd:descripcion>
           </xsd:paquetes>
-
         <xsd:tipoEntrega>
           <xsd:id>2</xsd:id>
         </xsd:tipoEntrega>
-
         <xsd:tipoEnvio>
           <xsd:id>1</xsd:id>
           </xsd:tipoEnvio>
-
         <xsd:tipoServicio>
           <xsd:id>2</xsd:id>
         </xsd:tipoServicio>
-
         <xsd:tipoIdentificacion>
           <xsd:descripcion>0</xsd:descripcion>
           <xsd:id>0</xsd:id>
@@ -124,17 +119,19 @@
         </ws:guias>
             </ws:documentacion>
         </soapenv:Body>
-      </soapenv:Envelope>
-      `;
-      let response = await axios.post('https://ws.redpack.com.mx/RedpackAPI_WS/services/RedpackWS?wsdl', body,  { headers: {'Content-Type': 'text/xml'}});
-      let parsed = await parseString(response.data);
+      </soapenv:Envelope>`;
+      let response = await axios.post('https://ws.redpack.com.mx/RedpackAPI_WS/services/RedpackWS?wsdl', body,  { headers: {'Content-Type': 'text/xml', 'Accept': 'application/xml'}});
+      let parsed = JSON.parse(convert.xml2json(response.data, {compact: true, spaces: 4}));
 
-      if('true' === parsed['soapenv:Envelope']['soapenv:Body'][0]['ns:documentacionResponse'][0]['ns:return'][0]['ax21:guiaAsegurada'][0]){
-        let numeroGuia = parsed['soapenv:Envelope']['soapenv:Body'][0]['ns:documentacionResponse'][0]['ns:return'][0]['ax21:numeroDeGuia'][0];
+      if(response.status == 200 && parsed['soapenv:Envelope']['soapenv:Body']['ns:documentacionResponse']['ns:return']['ax21:resultadoConsumoWS']['ax21:descripcion']['_text'] == 'GENERACIÓN CORRECTA'){
+        
+        let numeroGuia = parsed['soapenv:Envelope']['soapenv:Body']['ns:documentacionResponse']['ns:return']['ax21:numeroDeGuia']['_text'];
+        (seq = seq + 1)
         await Order.updateOne({id:inputs.order}).set({tracking:numeroGuia});
+        await Carrier.updateOne({id : order.carrier.id}).set({ sequential : seq });
         await sails.helpers.carrier.costs(numeroGuia);
       }else{
-        console.log("no asegurada")
+        throw new Error("Ocurrio un error generando la guias");
       }
     }
 

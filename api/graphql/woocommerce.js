@@ -100,5 +100,36 @@ PRODUCT_VARIATION_ID :
                 }
             }
         }
+    }`,
+
+PRODUCTID :
+`query WooCommerceProductIdQuery($productId: String) {
+    WooCommerceProductId(productId: $productId) {
+            product{
+                name
+                simple
+                externalId
+                description
+                reference
+                descriptionShort
+                active
+                price
+                manufacturer
+                color
+                quantity
+                tax{
+                    name
+                    rate
+                }
+                width
+                weight
+                height
+                length
+                images{
+                    file
+                    src
+                }
+            }
+        }
     }`
 }

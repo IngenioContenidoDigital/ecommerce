@@ -16,6 +16,7 @@ module.exports = {
     },
     logo:{type:'string',},
     url:{type:'string',},
+    sequential:{ type:'number'},
     active:{
       type:'boolean',
       required:true

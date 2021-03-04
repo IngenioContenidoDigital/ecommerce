@@ -85,7 +85,9 @@ module.exports = {
                     result.productId
               ).catch((e) => console.log(e));
               if (response) {
-                await sails.helpers.marketplaceswebhooks.woocommerceProduct(response.product, integration.seller).catch((e)=>console.log(e));
+                 await sails.helpers.marketplaceswebhooks.woocommerceProduct(response.product, integration.seller).catch((e)=>{
+                   throw new Error('Error creando producto desde el webhook ' + e.message);
+                 });
               }
             }
           }

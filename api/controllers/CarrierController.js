@@ -33,6 +33,7 @@ module.exports = {
       await Carrier.create({
         name:req.body.name.trim().toLowerCase(),
         url:req.body.url,
+        sequential : req.body.sequential,
         logo: filename[0].filename,
         active:isActive});
     }catch(err){
@@ -59,9 +60,9 @@ module.exports = {
       await Carrier.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         url: req.body.url,
+        sequential : req.body.sequential,
         logo: uploaded[0].filename,
         active:isActive});
-
     }catch(err){
       error=err;
       if(error.code==='badRequest'){

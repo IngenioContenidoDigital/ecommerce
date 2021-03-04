@@ -253,7 +253,7 @@ module.exports = {
         break;
       case 'COD':
         payment={data:{estado:'Pendiente',ref_payco:''}};
-        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.codOp,carrier:'coordinadora'});
+        order = await sails.helpers.order({address:address,user:user,cart:cart,method:paymentmethod,payment:payment,extra:req.body.codOp,carrier:(address.country.iso ==='MX') ? 'redpack' :'coordinadora'});
         break;
     }
     delete req.session.cart;
