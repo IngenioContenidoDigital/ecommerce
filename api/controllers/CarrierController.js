@@ -158,7 +158,7 @@ module.exports = {
           where: {
             seller: seller,
             channel: ['linio', 'dafiti'],
-            currentstatus: [orderState.id, stateProcess],
+            currentstatus: [orderState.id, stateProcess.id],
             createdAt: { '>': new Date(dateStart).valueOf(), '<': new Date(dateEnd).valueOf() }
           },
           sort: 'createdAt DESC'
