@@ -2198,5 +2198,39 @@ module.exports = {
       }
       page++;
     } while ((!isEmpty));
-  }
+  },
+  deleteproduct: async (req, res) => {
+    const jsonxml = require('jsontoxml');
+    const integrationId = req.body.integration;
+    const productchannelId = req.body.productchannel;
+    const channel = req.body.nameChannel
+    let body={Request:[]};
+    try {
+      let integration = await Integrations.findOne({id: integrationId}).populate('channel');
+      let productchannel = await ProductChannel.findOne({id: productchannelId});
+      let productvariations = await ProductVariation.find({product:productchannel.product});
+      for(let pv of productvariations){
+        body.Request.push({Product: {SellerSku:pv.id}});
+      }
+      const xml = jsonxml(body, true);
+      let sign = channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integrationId, 'ProductRemove', integration.seller) : await sails.helpers.channel.linio.sign(integrationId, 'ProductRemove', integration.seller);
+      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+      .then(async (resData)=>{
+        resData = JSON.parse(resData);
+        if(resData.SuccessResponse){
+          await ProductChannel.destroyOne({id: productchannelId});
+          return res.send({error: null});
+        }else{
+          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
+        }
+      })
+      .catch(err =>{
+        console.log(err);
+        return res.send({error: err.message});
+      });
+    } catch (err) {
+      console.log(err);
+      return res.send({error: err.message});
+    }
+  },
 };

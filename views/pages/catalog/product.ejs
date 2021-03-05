@@ -774,6 +774,7 @@
                   <th><small>Nombre</small></th>
                   <th><small>Ajuste Precio</small></th>
                   <th><small>Activo</small></th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -806,6 +807,15 @@
                               <input id="<%= i.id %>" type="checkbox" name="productstatus" channelId='<%= i.channel.id %>' nameChannel="<%= i.channel.name %>" <%if(typeof product=='object' && productchannel && productchannel.status){%>checked<%}%> class="switch is-success">
                               <label for="<%= i.id %>"></label>
                             </td>
+                            <% if(productchannel && (i.channel.name === 'dafiti' || i.channel.name === 'linio')){%>
+                              <td>
+                                <button id="deleteProduct" class="button is-danger is-outlined" integration="<%= i.id %>" productchannel="<%= productchannel.id %>" nameChannel="<%= i.channel.name %>">
+                                  <span class="icon is-small">
+                                    <i class='bx bxs-trash'></i>
+                                  </span>
+                                </button>
+                              </td>
+                            <%}%>
                           </tr>
                           <%}else if(i.channel.name === 'coppel' && product.variations.length === 1){%>
                             <tr>
@@ -885,7 +895,6 @@
         let nameChannel = e.target.getAttribute('nameChannel');
         let channelId = e.target.getAttribute('channelId');
         let price = document.querySelector('select[name="'+integrationId+'price"]').value;
-        let report = document.querySelector('#report');
         let reportprocess = document.querySelector('#reportProcess');
         let errors = document.querySelector('#errorsProcess');
         let errorlist = document.querySelector('#error-list-errorsProcess');
@@ -901,6 +910,33 @@
             errorlist.appendChild(err);
             e.target.checked = false;
             document.querySelector('select[name="'+integrationId+'price"]').value = 0;
+          }
+        });
+      });
+
+      live('#deleteProduct','click',function(){
+        const integration = this.getAttribute('integration');
+        const productchannel = this.getAttribute('productchannel');
+        const nameChannel = this.getAttribute('nameChannel');
+        let reportprocess = document.querySelector('#reportProcess');
+        let errors = document.querySelector('#errorsProcess');
+        let errorlist = document.querySelector('#error-list-errorsProcess');
+        errors.innerHTML=0;
+        errorlist.innerHTML='';
+        addClass(this, 'is-loading');
+        io.socket.post('/delete/product',{integration, productchannel, nameChannel}, resData =>{
+          removeClass(this, 'is-loading');
+          if(resData.error){
+            if(hasClass(reportprocess),'is-hidden'){removeClass(reportprocess,'is-hidden');}
+            errors.innerHTML=1;
+            let err = document.createElement('li');
+            err.innerHTML='Se generó Error al eliminar el producto.';
+            errorlist.appendChild(err);
+          } else {
+            let checkbox = document.getElementById(integration);
+            checkbox.checked = false;
+            document.querySelector('select[name="'+integration+'price"]').value = 0;
+            addClass(this, 'is-hidden');
           }
         });
       });
