@@ -414,9 +414,19 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    var id = req.param('id');
-    var deletedVariation = await ProductVariation.destroyOne({ id: id });
-    return res.send(deletedVariation);
+    try {
+      const id = req.param('id');
+      const productVariation = await ProductVariation.findOne({id: id});
+      const existOrdenItem = await OrderItem.find({product: productVariation.product, productvariation: productVariation.id});
+      if (existOrdenItem.length === 0) {
+        await ProductVariation.destroyOne({id: id});
+        return res.send({result: true});
+      }
+      return res.send({result: false});
+    } catch (error) {
+      console.log(error);
+      return res.send({result: false});
+    }
   },
   productstate: async function (req, res) {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

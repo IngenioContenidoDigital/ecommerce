@@ -425,7 +425,7 @@
                             </div>
                           </div>
                         </td>
-                        <td scope="row" class="align-middle"></td>
+                        <td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>
                       </tr>
                       <% rowcount++%>
                     <%})%>
@@ -487,11 +487,16 @@
         live('.delete-row','click',function(e){
           e.preventDefault();
           let elm = this;
-          let row = elm.parentNode.parentNode;          
-          variations.deleteRow(row.rowIndex);
+          let row = elm.parentNode.parentNode;
           let productvariation = row.getAttribute('productv');
-          if(productvariation>0){
-            io.socket.delete('/variations/remove/'+productvariation);
+          if(productvariation){
+            io.socket.delete('/variations/remove/'+productvariation, resData=>{
+              if (resData.result) {
+                variations.deleteRow(row.rowIndex);
+              }
+            });
+          } else {
+            variations.deleteRow(row.rowIndex);
           }
         });
 
