@@ -68,7 +68,7 @@ module.exports = {
                   password:await sails.helpers.passwords.hashPassword(order.customerOrderId),
                   fullName:order.shippingInfo.postalAddress.name,
                   dniType:'CC',
-                  dni:order.customerOrderId,
+                  dni:0,
                   mobilecountry:city[0].region.country,
                   mobile:0,
                   mobileStatus:'unconfirmed',
@@ -92,7 +92,8 @@ module.exports = {
                     estado:'Aceptado',
                     channel:'walmart',
                     channelref:order_line.id,
-                    integration:integration.id
+                    integration:integration.id,
+                    ref_payco:order.customerOrderId
                   }
                 };
                 // order_line.item.sku = '5fb7b7b605256f4f1910be57';
@@ -130,6 +131,41 @@ module.exports = {
                 if((await CartProduct.count({cart:cart.id}))>0){
                   let corders = await sails.helpers.order({address:address, user:user, cart:cart, method:order.paymentMethod, extra:order.paymentMethod, carrier:order.shipments[j].carrier ? order.shipments[j].carrier : 'coordinadora', payment:payment});
                   await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order.orderDate).valueOf())});
+                  let options = {
+                    method: 'post',
+                    url: `${integration.channel.endpoint}/v3/orders/${order.purchaseOrderId}/acknowledge`,
+                    headers: {
+                        accept: 'application/json',                
+                        'WM_MARKET' : 'mx',
+                        'WM_SEC.ACCESS_TOKEN':token,
+                        'WM_SVC.NAME' : 'Walmart Marketplace',
+                        'WM_QOS.CORRELATION_ID': '11111111',
+                        'Authorization': `Basic ${encodedAuth}`
+                    },
+                    data: {
+                      "orderAcknowledge": {
+                        "orderLines": {
+                          "orderLine": [
+                            {
+                              "lineNumber": order_line.primeLineNumber,
+                              "orderLineStatuses": {
+                                "orderLineStatus": [
+                                  {
+                                    "status": "Acknowledged",
+                                    "statusQuantity": {
+                                      "amount": "1",
+                                      "unitOfMeasurement": "EACH"
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  };
+                  await axios(options).catch((e) => {error=e; console.log(e);});
                 }
               }else{
                 if(oexists!==undefined){

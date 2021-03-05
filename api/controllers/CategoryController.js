@@ -46,6 +46,7 @@ module.exports = {
     let current = await Category.findOne({id:req.body.current});
     let dafiticat = '';
     let liniocat = '';
+    let walmartcat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -60,6 +61,13 @@ module.exports = {
         liniocat = req.body['linio[]'];
       }
     }
+    if(req.body['walmart[]']!==undefined){
+      if(typeof req.body['walmart[]']!=='string'){
+        walmartcat = req.body['walmart[]'].join(',');
+      }else{
+        walmartcat = req.body['walmart[]'];
+      }
+    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
@@ -69,6 +77,7 @@ module.exports = {
         tags: req.body.tags ? req.body.tags : '',
         dafiti:dafiticat,
         linio: liniocat,
+        walmart: walmartcat,
         parent:current.id,
         active:isActive,
         url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
@@ -84,6 +93,7 @@ module.exports = {
           parent:current.id,
           dafiti:dafiticat,
           linio: liniocat,
+          walmart: walmartcat,
           active:isActive,
           url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
           level:current.level+1
@@ -111,6 +121,7 @@ module.exports = {
     let parent = await Category.findOne({id:req.body.current});
     let dafiticat = '';
     let liniocat = '';
+    let walmartcat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -125,6 +136,13 @@ module.exports = {
         liniocat = req.body['linio[]'];
       }
     }
+    if(req.body['walmart[]']!==undefined){
+      if(typeof req.body['walmart[]']!=='string'){
+        walmartcat = req.body['walmart[]'].join(',');
+      }else{
+        walmartcat = req.body['walmart[]'];
+      }
+    }
     if(req.body.activo==='on'){isActive=true;}
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
@@ -135,6 +153,7 @@ module.exports = {
         parent:parent.id,
         dafiti:dafiticat,
         linio: liniocat,
+        walmart: walmartcat,
         logo:uploaded[0].filename,
         url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
         active:isActive,
@@ -150,6 +169,7 @@ module.exports = {
           url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
           dafiti:dafiticat,
           linio: liniocat,
+          walmart: walmartcat,
           active:isActive,
           level:parent.level+1});
       }
@@ -261,6 +281,23 @@ module.exports = {
         let route = await sails.helpers.channel.linio.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
         let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
+      }else{
+        return res.serverError();
+      }
+    }catch(err){
+      return res.serverError(err);
+    }
+  },
+  walmartcategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let channel = await Channel.find({name: 'walmart'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
+      if(integration.length>0){
+        let response = await sails.helpers.channel.walmart.categories();
+        return res.ok(response);
       }else{
         return res.serverError();
       }

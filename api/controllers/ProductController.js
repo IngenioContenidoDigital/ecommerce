@@ -796,7 +796,12 @@ module.exports = {
     
     try {
       let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice, action);
-      const buffer_xml = Buffer.from(xml);
+      const buffer_xml = Buffer.from(xml,'latin1');
+      // console.log(Buffer.from("México",'latin1'));
+      // console.log(Buffer.from("México"));
+
+      // console.log(Buffer.from("México",'latin1').toString('binary'));
+      // console.log(Buffer.from("México").toString('binary'));
      
       let token = await sails.helpers.channel.walmart.sign(integration);
 

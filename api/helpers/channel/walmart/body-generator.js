@@ -42,6 +42,7 @@ module.exports = {
     },
     fn: async function (inputs,exits) {
 
+        var jsonxml = require('jsontoxml');
         let categories = inputs.categories;
         let variant = inputs.variant;
         let action = inputs.action;
@@ -2358,8 +2359,8 @@ module.exports = {
                                     "unit": "cm"
                                 },
                                 "shoeSoleMaterial": "N",
-                                "shortDescription": (product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''),
-                                "keyFeatures": { "keyFeaturesValue": (product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')},
+                                "shortDescription":  jsonxml.cdata((product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
+                                "keyFeatures": { "keyFeaturesValue":  jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))},
                                 "brand": product.manufacturer.name,
                                 "mainImageUrl": images[0],
                                 "productSecondaryImageURL": { "productSecondaryImageURLValue": images[1] },
@@ -2391,7 +2392,7 @@ module.exports = {
                                     "measure": product.length,
                                     "unit": "cm"
                                 },
-                                "countryOfOriginAssembly": "Colombia"
+                                "countryOfOriginAssembly": "M&#233;xico"
                             }
                         }
                         variant_name = 'shoeSize';
@@ -2406,8 +2407,8 @@ module.exports = {
                         case 'Clothing':
                             sub_category= {
                                 "Clothing": {
-                                    "shortDescription": (product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''),
-                                    "keyFeatures": { "keyFeaturesValue": (product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')},
+                                    "shortDescription": jsonxml.cdata((product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
+                                    "keyFeatures": { "keyFeaturesValue": jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))},
                                     "brand": product.manufacturer.name,
                                     "mainImageUrl": images[0],
                                     "productSecondaryImageURL": { "productSecondaryImageURLValue": images[1] },
@@ -2432,7 +2433,7 @@ module.exports = {
                                         "measure": product.length,
                                         "unit": "cm"
                                     },
-                                    "countryOfOriginAssembly": "Colombia"
+                                    "countryOfOriginAssembly": "M&#233;xico"
                                 }
                             }
                             variant_name = 'clothingSize';
@@ -2464,7 +2465,7 @@ module.exports = {
             if(variant){
                 sub_category[categories[1]].variantGroupId = product.id;
                 sub_category[categories[1]].variantAttributeNames = { "variantAttributeName": variant_name };
-                sub_category[categories[1]].isPrimaryVariant = inputs.primary_variant? "Sí" : "No" ;
+                sub_category[categories[1]].isPrimaryVariant = inputs.primary_variant? "S&#237;" : "No" ;
             }
             body = {
                 "MPItem": {
@@ -2502,7 +2503,7 @@ module.exports = {
                         "ProductTaxCode": "0",
                         "sellerWarranty": "Defectos de fábrica",
                         "sellerWarrantyPeriod": "3",
-                        "shippingCountryOfOrigin": "México"
+                        "shippingCountryOfOrigin": "M&#233;xico"
                     }
                 }
             };

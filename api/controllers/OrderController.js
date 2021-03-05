@@ -359,6 +359,13 @@ module.exports = {
         .populate('mainColor');
 
         item.productvariation = await ProductVariation.findOne({id:item.productvariation}).populate('variation');
+        if(order.channel==="walmart"){
+          let seller = await Seller.findOne({id:order.seller});
+          if(seller.currency === '60208459720b921baab8d78a'){
+            let exchange_rate = await sails.helpers.currencyConverter('COP', 'MXN');
+            item.originalPrice = item.originalPrice*exchange_rate.result;
+          }
+        }
       }
 
     }

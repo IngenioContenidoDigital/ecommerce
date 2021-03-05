@@ -161,6 +161,11 @@
                     <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
                   </a>
                 </li>
+                <li>
+                  <a>
+                    <p class="has-text-centered" id="walm"><img src="/images/walmart.png" /></p>
+                  </a>
+                </li>
               </ul>
             </div>
             <div class="setup dafit">
@@ -173,6 +178,11 @@
               <ul class="cattree tree" id="linio">
               </ul>
             </div>
+            <div class="setup is-hidden walm">
+              <h6 class="title is-6 title-markeplace">Categoría en Walmart</h6>
+              <ul class="cattree tree" id="walmart">
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -181,7 +191,7 @@
     const fileInput = document.querySelector('#file-loader input[type=file]');
     let dafiti = '<%= current.dafiti %>' !== '' ? '<%= current.dafiti %>'.split(',') : [];
     let linio = '<%= current.linio %>' !== '' ? '<%= current.linio %>'.split(',') : [];
-
+    let walmart = '<%= current.walmart %>' !== '' ? '<%= current.walmart %>'.split(',') : [];
     fileInput.onchange = () => {
       if (fileInput.files.length > 0) {
         const fileName = document.querySelector('#file-loader .file-name');
@@ -209,6 +219,13 @@
             }else{
               op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
             }
+          } else if (marketplace === 'walmart') {
+            if(walmart.includes(c['Name'])){
+              removeClass(elm,'is-hidden');
+              op.innerHTML='<span><input type="checkbox" name="walmart[]" value="'+c['Name']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }else{
+              op.innerHTML='<span><input type="checkbox" name="walmart[]" value="'+c['Name']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }
           }
         //}
         elm.appendChild(op);
@@ -229,11 +246,20 @@
     const dft = () =>{
       let objDafiti = document.querySelector('#dafiti');
       let objLinio = document.querySelector('#linio');
+      let objWalmart = document.querySelector('#walmart');
       io.socket.get('/integrations/dafiti/categories',(resData, res)=>{
         if(res.statusCode == 200){
           options('dafiti', objDafiti, resData.SuccessResponse.Body.Categories.Category, 1);
         } else {
           document.querySelector('.dafit').innerHTML='';
+        }
+      });
+
+      io.socket.get('/integrations/walmart/categories',(resData, res)=>{
+        if(res.statusCode == 200){
+          options('walmart', objWalmart, resData, 1);
+        } else {
+          document.querySelector('.walm').innerHTML='';
         }
       });
 

@@ -193,6 +193,7 @@ module.exports.routes = {
   'PUT /removecommissiondiscount' : {controller:'SellerController',action:'removecommissiondiscount'},
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
   'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
+  'GET /integrations/walmart/categories' : {controller:'CategoryController',action:'walmartcategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
   'POST /linio/add' : {controller:'ProductController',action:'linioadd'},

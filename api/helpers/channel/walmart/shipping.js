@@ -41,6 +41,7 @@ module.exports = {
         return exits.success(buffer);
       }
     }catch(err){
+      console.log(err);
       return exits.error('Guia No Localizada');
     }
   }
