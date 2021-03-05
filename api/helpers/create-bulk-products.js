@@ -41,10 +41,6 @@ module.exports = {
             } else {
               delete pro.mainCategory;	
               delete pro.categories;
-              delete pro.manufacturer;
-              delete pro.gender;
-              delete pro.tax;
-              delete pro.seller;
               pr = await Product.updateOne({ id: exists.id }).set(pro);
             }
 
@@ -72,10 +68,6 @@ module.exports = {
                       throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
                     }	
 
-                    if(!pro.seller){
-                      console.log(pro);
-                    }
-
                     let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference });	
 
                     if (!exists) {	
@@ -84,10 +76,6 @@ module.exports = {
 
                       delete pro.mainCategory;	
                       delete pro.categories;
-                      delete pro.manufacturer;
-                      delete pro.gender;
-                      delete pro.tax;
-                      delete pro.seller;
 
                       pr = await Product.updateOne({ id: exists.id }).set(pro);	
                     }	
