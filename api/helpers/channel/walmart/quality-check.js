@@ -13,10 +13,6 @@ module.exports = {
             let axios = require('axios');
             let channel = await Channel.findOne({name:'walmart'}); 
             let product_channels = await ProductChannel.find({iscreated:false, channel:channel.id});
-
-            
-            const params = new URLSearchParams()
-            params.append('grant_type', 'client_credentials');
             
             for(let i=0; i<product_channels.length; i++){
 
@@ -24,6 +20,8 @@ module.exports = {
                 let truth_flag_counter = 0;
                 
                 let integration = await Integrations.findOne({id: product_channel.integration}).populate('channel');
+                let resultErrors = [];
+
                 let auth = `${integration.user}:${integration.key}`;
                 const buferArray = Buffer.from(auth);
                 let encodedAuth = buferArray.toString('base64');
@@ -66,41 +64,52 @@ module.exports = {
                             const element = items[index];
                             if(element.ingestionStatus === 'SUCCESS'){
                                 truth_flag_counter++;
-                                let options = {
-                                    method: 'get',
-                                    url: `${integration.channel.endpoint}/v3/items/${element.sku}`,
-                                    headers: headers
-                                };
-                                let response_publishing = await axios(options).catch((e) => {console.log(e.response.data);});
+                                // let options = {
+                                //     method: 'get',
+                                //     url: `${integration.channel.endpoint}/v3/items/${element.sku}`,
+                                //     headers: headers
+                                // };
+                                // let response_publishing = await axios(options).catch((e) => {console.log(e.response.data);});
 
-                                if(response_publishing){
-                                    if(response_publishing.data.ItemResponse[0].publishedStatus === 'PUBLISHED'){
-                                        let pv = await sails.helpers.channel.walmart.price(product_channel, element.sku);
+                                // if(response_publishing){
+                                //     if(response_publishing.data.ItemResponse[0].publishedStatus === 'PUBLISHED'){
+                                //         let pv = await sails.helpers.channel.walmart.price(product_channel, element.sku);
                                         
-                                        let item_price = `<Price xmlns="http://walmart.com/">
-                                            <itemIdentifier>
-                                                <sku>${element.sku}</sku>
-                                            </itemIdentifier>
-                                            <pricingList>
-                                                <pricing>
-                                                     <currentPrice>
-                                                       <value currency="MXN" amount="${pv.price.toString()}"/>
-                                                     </currentPrice>
-                                                    <currentPriceType>BASE</currentPriceType>
-                                                </pricing>
-                                            </pricingList>
-                                         </Price>`;
+                                //         let item_price = `<Price xmlns="http://walmart.com/">
+                                //             <itemIdentifier>
+                                //                 <sku>${element.sku}</sku>
+                                //             </itemIdentifier>
+                                //             <pricingList>
+                                //                 <pricing>
+                                //                      <currentPrice>
+                                //                        <value currency="MXN" amount="${pv.price.toString()}"/>
+                                //                      </currentPrice>
+                                //                     <currentPriceType>BASE</currentPriceType>
+                                //                 </pricing>
+                                //             </pricingList>
+                                //          </Price>`;
 
-                                        let item_inventory = `<inventory xmlns="http://walmart.com/">
-                                            <sku>${element.sku}</sku><quantity><unit>EACH</unit>
-                                                <amount>${pv.quantity.toString()}</amount>
-                                            </quantity>
-                                        </inventory>`;
+                                //         let item_inventory = `<inventory xmlns="http://walmart.com/">
+                                //             <sku>${element.sku}</sku><quantity><unit>EACH</unit>
+                                //                 <amount>${pv.quantity.toString()}</amount>
+                                //             </quantity>
+                                //         </inventory>`;
                                         
-                                        price_body     = price_body + item_price;
-                                        inventory_body = inventory_body + item_inventory;
+                                //         price_body     = price_body + item_price;
+                                //         inventory_body = inventory_body + item_inventory;
+                                //     }
+                                // }
+                            }else if(element.ingestionStatus === 'DATA_ERROR'){
+                                let errors_walmart = element.ingestionErrors.ingestionError;
+                                for (let index = 0; index < errors_walmart.length; index++) {
+                                    const error = errors_walmart[index];
+                                    if (!resultErrors.includes(error.field+' : '+error.description)) {
+                                        resultErrors.push(error.field+' : '+error.description);
                                     }
                                 }
+                                await ProductChannel.updateOne({id: product_channel.id}).set({
+                                    reason: resultErrors.join(' | ')
+                                });
                             }
                         }
                         price_body     = price_body + '</PriceFeed>';
@@ -125,18 +134,27 @@ module.exports = {
 
 
                         if(truth_flag_counter == items.length){
-                            await ProductChannel.updateOne({id:product_channel.id}).set({iscreated:true});
+                            await ProductChannel.updateOne({id:product_channel.id}).set({
+                                iscreated:true,
+                                status: true, 
+                                reason:''
+                            });
                         }
 
                         await axios(options_price).catch((e) => {error=e; console.log(e);});
                         await axios(options_inventory).catch((e) => {error=e; console.log(e.response.data);});
 
+                    } else if(response.data.feedStatus === 'ERROR'){
+                        await ProductChannel.updateOne({id: product_channel.id}).set({
+                            reason: 'Falla en el envío del producto o la API'
+                          });
                     }
                 }
             }
             return exits.success();
       
         }catch(err){
+            console.log(err);
           return exits.error(err);
         }
     }

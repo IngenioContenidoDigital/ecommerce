@@ -10,10 +10,6 @@ module.exports = {
       type:'number',
       defaultsTo:0
     },
-    status:{
-      type:'string',
-      defaultsTo:'active'
-    },
     channelPrice:{
       type:'number',
       defaultsTo:0
@@ -57,7 +53,6 @@ module.exports = {
           });
           
           let seller = await Seller.findOne({id:product.seller}).populate('mainAddress');
-          let status= inputs.status;
           let exchange_rate = await sails.helpers.currencyConverter('COP', 'MXN');
 
           let productimages = await ProductImage.find({product:product.id});
@@ -102,7 +97,7 @@ module.exports = {
 
           for(let pv of productvariation){
             let primary_variant = i == 0 ? true : false;
-            let data = await sails.helpers.channel.walmart.bodyGenerator(categories, variant, inputs.action, pv, images, product, primary_variant, status);
+            let data = await sails.helpers.channel.walmart.bodyGenerator(categories, variant, inputs.action, pv, images, product, primary_variant);
             i++;
             let xml = jsonxml(data);
             body = body + xml;

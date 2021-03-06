@@ -29,10 +29,6 @@ module.exports = {
       primary_variant:{
         type:'boolean',
         required:true,
-      },
-      status:{
-        type:'boolean',
-        required:true,
       }
     },
     exits: {
@@ -49,7 +45,6 @@ module.exports = {
         let productvariation = inputs.productvariation;
         let images = inputs.images;
         let product = inputs.product;
-        let status = inputs.status;
 
         let json = {
             "MPItem": {
@@ -2483,7 +2478,7 @@ module.exports = {
                     },
                     "MPOffer": {
                         "msiEligible": "No",
-                        "price": productvariation.price,
+                        "price": productvariation.price.toFixed(3),
                         "ShippingDimensionsWidth": {
                         "measure": product.width,
                         "unit": "cm"

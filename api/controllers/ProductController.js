@@ -791,10 +791,9 @@ module.exports = {
     } else {
       action = 'ProductCreate';
     }
-    let status = req.body.status;
     
     try {
-      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice, action);
+      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), channelPrice, action);
       const buffer_xml = Buffer.from(xml,'latin1');
      
       let token = await sails.helpers.channel.walmart.sign(integration);
@@ -834,7 +833,7 @@ module.exports = {
           if(err){return new Error(err.message);}
           if(!created){
             await ProductChannel.updateOne({id: record.id}).set({
-              status:req.body.status,
+              status: record.iscreated ? req.body.status : false,
               price: req.body.price ? parseFloat(req.body.price) : 0
             });
           }
@@ -1802,33 +1801,27 @@ module.exports = {
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
-            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            products = products.filter(pro => pro.channels.length === 0 || (pro.channels.length > 0 && pro.channels[0].iscreated === false));
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
             break;
           case 'Image':
             action = 'ProductUpdateImage';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
             break;
-        }
-        // products.splice(0, 302);
-        console.log(products.length);
+        };
         if (products.length > 0) {
           for (let pl of products) {
-            const wmprice = pl.channels.length > 0 ? pl.channels[0].price : 0;	
-            const wmid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const wmprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
-            const wmstatus = pl.channels.length > 0 ? pl.channels[0].status : false;
             
-            let xml = await sails.helpers.channel.walmart.product([pl], wmprice, wmstatus, wmprice, action)
+            let xml = await sails.helpers.channel.walmart.product([pl], wmprice, wmprice, action)
             .tolerate(async (err) => {
               response.errors.push('REF: '+pl.reference+' no ha sido mapeado: '+ err);
             });
             
-            console.log(xml);
-            console.log('...............................');
             if(xml){
               const buffer_xml = Buffer.from(xml);
      
@@ -1861,14 +1854,14 @@ module.exports = {
                   integration: intgrationId,
                   channel : integration.channel.id,
                   channelid: response_xml.data.feedId,
-                  status: true,
+                  status: false,
+                  iscreated:false,
                   qc:false,
                   price: wmprice ? parseFloat(wmprice) : 0
                 }).exec(async (err, record, created)=>{
                   if(err){return new Error(err.message);}
                   if(!created){
                     await ProductChannel.updateOne({id: record.id}).set({
-                      status: wmstatus,
                       price: wmprice ? parseFloat(wmprice) : 0
                     });
                   }
