@@ -12,7 +12,7 @@ module.exports = {
 
             let axios = require('axios');
             let channel = await Channel.findOne({name:'walmart'}); 
-            let product_channels = await ProductChannel.find({qc:false, channel:channel.id});
+            let product_channels = await ProductChannel.find({iscreated:false, channel:channel.id});
 
             
             const params = new URLSearchParams()
@@ -125,7 +125,7 @@ module.exports = {
 
 
                         if(truth_flag_counter == items.length){
-                            await ProductChannel.updateOne({id:product_channel.id}).set({qc:true});
+                            await ProductChannel.updateOne({id:product_channel.id}).set({iscreated:true});
                         }
 
                         await axios(options_price).catch((e) => {error=e; console.log(e);});

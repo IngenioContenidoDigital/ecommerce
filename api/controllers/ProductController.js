@@ -786,29 +786,23 @@ module.exports = {
     
    
     let action = null;
-    if (!productchannel || !productchannel.channel) {
-      action = 'ProductCreate';
-    } else {
+    if (productchannel && productchannel.iscreated) {
       action = 'ProductUpdate';
+    } else {
+      action = 'ProductCreate';
     }
     let status = req.body.status;
-    let error;
     
     try {
       let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), status, channelPrice, action);
       const buffer_xml = Buffer.from(xml,'latin1');
-      // console.log(Buffer.from("México",'latin1'));
-      // console.log(Buffer.from("México"));
-
-      // console.log(Buffer.from("México",'latin1').toString('binary'));
-      // console.log(Buffer.from("México").toString('binary'));
      
       let token = await sails.helpers.channel.walmart.sign(integration);
 
       let auth = `${integration.user}:${integration.key}`;
       const buferArray = Buffer.from(auth);
       let encodedAuth = buferArray.toString('base64');
-      
+
       let options = {
         method: 'post',
         url: `${integration.channel.endpoint}/v3/feeds?feedType=item`,
@@ -832,7 +826,8 @@ module.exports = {
           integration:integrationId,
           channel : integration.channel.id,
           channelid: response_xml.data.feedId,
-          status: true,
+          status: false,
+          iscreated:false,
           qc:false,
           price: req.body.price ? parseFloat(req.body.price) : 0
         }).exec(async (err, record, created)=>{
@@ -2421,25 +2416,41 @@ module.exports = {
       let integration = await Integrations.findOne({id: integrationId}).populate('channel');
       let productchannel = await ProductChannel.findOne({id: productchannelId});
       let productvariations = await ProductVariation.find({product:productchannel.product});
-      for(let pv of productvariations){
-        body.Request.push({Product: {SellerSku:pv.id}});
-      }
-      const xml = jsonxml(body, true);
-      let sign = channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integrationId, 'ProductRemove', integration.seller) : await sails.helpers.channel.linio.sign(integrationId, 'ProductRemove', integration.seller);
-      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
-      .then(async (resData)=>{
-        resData = JSON.parse(resData);
-        if(resData.SuccessResponse){
-          await ProductChannel.destroyOne({id: productchannelId});
-          return res.send({error: null});
-        }else{
-          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
+      if(channel === 'walmart'){
+        await sails.helpers.channel.walmart.deleteProduct(productvariations, integration)
+        .then(async (resData)=>{
+          if(!resData.errors){
+            await ProductChannel.destroyOne({id: productchannelId});
+            return res.send({error: null});
+          }else{
+            return res.send({error: resData.errors});
+          }
+        })
+        .catch(err =>{
+          console.log(err);
+          return res.send({error: err});
+        });
+      }else{
+        for(let pv of productvariations){
+          body.Request.push({Product: {SellerSku:pv.id}});
         }
-      })
-      .catch(err =>{
-        console.log(err);
-        return res.send({error: err.message});
-      });
+        const xml = jsonxml(body, true);
+        let sign = channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integrationId, 'ProductRemove', integration.seller) : await sails.helpers.channel.linio.sign(integrationId, 'ProductRemove', integration.seller);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+        .then(async (resData)=>{
+          resData = JSON.parse(resData);
+          if(resData.SuccessResponse){
+            await ProductChannel.destroyOne({id: productchannelId});
+            return res.send({error: null});
+          }else{
+            return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
+          }
+        })
+        .catch(err =>{
+          console.log(err);
+          return res.send({error: err.message});
+        });
+      }
     } catch (err) {
       console.log(err);
       return res.send({error: err.message});
