@@ -14,8 +14,7 @@ module.exports = {
       required:true
     },
     code:{
-      type:'string',
-      required:true
+      type:'string'
     },
     region:{
       model:'region',
