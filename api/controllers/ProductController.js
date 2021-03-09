@@ -544,6 +544,7 @@ module.exports = {
               channelid: result.id,
               status: true,
               qc:true,
+              iscreated:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -552,6 +553,7 @@ module.exports = {
                   channelid:result.id,
                   status:true,
                   qc:true,
+                  iscreated:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -568,6 +570,7 @@ module.exports = {
         channelid:'',
         status:false,
         qc:false,
+        iscreated:false,
         price:0
       }).exec(async (er, record, created)=>{
         if(er){return res.send({error: er});}
@@ -576,6 +579,7 @@ module.exports = {
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
             qc:false,
+            iscreated:false,
             price:0
           });
         }
@@ -700,6 +704,7 @@ module.exports = {
               channelid: response.data.import_id,
               status: true,
               qc:true,
+              iscreated:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -707,6 +712,7 @@ module.exports = {
                 productChannelId = await ProductChannel.updateOne({id: record.id}).set({
                   channelid: response.data.import_id,
                   status:req.body.status,
+                  iscreated:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -759,6 +765,7 @@ module.exports = {
         channelid: '',
         status:false,
         qc:false,
+        iscreated:false,
         price: 0
       });
       return res.send(err.message);
