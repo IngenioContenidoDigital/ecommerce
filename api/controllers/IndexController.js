@@ -386,7 +386,7 @@ module.exports = {
     let ename = req.param('name');
     let seller = null;
     let object = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/,active:true});}
     let exists = async (element,compare) =>{
       for(let c of element){
         if(c.id === compare.id){return true;}
@@ -399,11 +399,11 @@ module.exports = {
           //let parent = await Category.findOne({url:req.param('parent')});
           if(seller===null){
             object = await Category.findOne({url:ename/*, parent:parent.id*/})
-            .populate('products',{where:{active:true},sort: 'updatedAt DESC'})
+            .populate('products',{where:{active:true, price:{'>':0}},sort: 'updatedAt DESC'})
             .populate('children');
           }else{
             object = await Category.findOne({url:ename/*, parent:parent.id*/})
-            .populate('products',{where:{active:true, seller:seller.id},sort: 'updatedAt DESC'})
+            .populate('products',{where:{active:true, price:{'>':0},seller:seller.id},sort: 'updatedAt DESC'})
             .populate('children');
           }
           object.route = '/images/categories/';
@@ -417,9 +417,9 @@ module.exports = {
       case 'marca':
         try{
           if(seller===null){
-            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true},sort: 'updatedAt DESC'});
+            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true,price:{'>':0}},sort: 'updatedAt DESC'});
           }else{
-            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true, seller:seller.id},sort: 'updatedAt DESC'});
+            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true,price:{'>':0}, seller:seller.id},sort: 'updatedAt DESC'});
           }
           object.route = '/images/brands/';
         }catch(err){
@@ -435,18 +435,17 @@ module.exports = {
     let genders = [];
 
     object.products.forEach(async p=>{
-      p.cover= await ProductImage.findOne({product:p.id,cover:1});
-      p.mainColor=await Color.findOne({id:p.mainColor});
-      p.manufacturer=await Manufacturer.findOne({id:p.manufacturer});
-      p.seller=await Seller.findOne({id:p.seller});
-      p.tax=await Tax.findOne({id:p.tax});
-      p.discount = await sails.helpers.discount(p.id);
-      p.gender = await Gender.findOne({id:p.gender});
+        p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
+        p.mainColor=await Color.findOne({id:p.mainColor});
+        p.manufacturer=await Manufacturer.findOne({id:p.manufacturer});
+        p.seller=await Seller.findOne({id:p.seller});
+        p.tax=await Tax.findOne({id:p.tax});
+        p.discount = await sails.helpers.discount(p.id);
+        p.gender = await Gender.findOne({id:p.gender});
 
-      if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
-      if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
-      if(!await exists(genders, p.gender)){genders.push(p.gender);}
-
+        if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
+        if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
+        if(!await exists(genders, p.gender)){genders.push(p.gender);}
     });
     return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },

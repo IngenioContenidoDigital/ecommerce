@@ -16,43 +16,38 @@
     </div>
     <div id="navbarBasicExample" class="navbar-menu">
       <%if(typeof menu=='object'){%>
-        <% menu.children.forEach(child =>{%>
-            <div class="navbar-item has-dropdown is-hoverable is-mega">
-                <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="/ver/categoria/<%=child.url%>"><%=child.name%></a></div>
-                <div class="navbar-dropdown">
-                  <div class="container is-fluid">
-                    <div class="columns">
-                      <div class="column">
-                        <br>
-                        <div class="columns">
-                        <%child.children.forEach(c =>{%>
-                          <%if(c.active){%>
-                          <div class="column">
-                              <a class="navbar-item is-uppercase" href="/ver/categoria/<%=c.url%>">
-                                <p class="is-size-7 has-text-left has-text-weight-bold"><%=c.name%></p>
-                              </a>
-                              <hr class="is-marginless is-paddingless">
-                              <br>
-                              <div class="navbar-content">
-                                <%if(c.hasChildren){%>
-                                    <%c.children.forEach(d => {%>
-                                      <a class="navbar-item is-uppercase is-size-7" href="/ver/categoria/<%=d.url%>"><%=d.name%></a>
-                                    <%})%>
-                                <%}%>
+        <div class="navbar-item has-dropdown is-hoverable">
+          <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="#">Categorías</a></div>
+            <div class="navbar-dropdown">
+                <% menu.children.forEach(child =>{%>
+                  <div class="nested navbar-item dropdown has-dropdown">
+                    <div class="dropdown-trigger">
+                      <span class="is-uppercase has-text-dark is-size-7"><%=child.name%></span>
+                    </div>
+                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                      <div class="dropdown-content">
+                          <%child.children.forEach(c =>{%>
+                            <div class="nested dropdown dropdown-item ">
+                              <div class="dropdown-trigger">
+                                <span class="is-uppercase has-text-dark is-size-7"><%=c.name%></span>
                               </div>
-                          </div>
-                          <%}%>
-                        <%})%>
-                      </div>
+                              <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                                <div class="dropdown-content">
+                                <%c.children.forEach(d =>{%>
+                                  <a href="/ver/categoria/<%=d.url%>" class="dropdown-item is-uppercase is-size-7"><%=d.name%></a>
+                                <%})%>
+                                </div>
+                              </div>
+                            </div>
+                          <%})%>
                       </div>
                     </div>
                   </div>
-                  <br>
-                </div>
-              </div>
-        <%})%>
+                <%})%>
+            </div>
+          </div>
       <%}%>
-    </div>
+      </div>
     <div class="navbar-end has-text-right">
       <div class="navbar-item has-text-centered">        
         <div class="field has-addons is-inline">
@@ -104,4 +99,45 @@
       document.querySelector('#search-form').submit();
     }
   });
+
+  live('.burger','click', e =>{
+      alert('Menu de Hamburguesa');
+      let men = document.querySelector('#navbarBasicExample');
+      men.innerHTML=`
+      <aside class="menu">
+  <p class="menu-label">
+    General
+  </p>
+  <ul class="menu-list">
+    <li><a>Dashboard</a></li>
+    <li><a>Customers</a></li>
+  </ul>
+  <p class="menu-label">
+    Administration
+  </p>
+  <ul class="menu-list">
+    <li><a>Team Settings</a></li>
+    <li>
+      <a class="is-active">Manage Your Team</a>
+      <ul>
+        <li><a>Members</a></li>
+        <li><a>Plugins</a></li>
+        <li><a>Add a member</a></li>
+      </ul>
+    </li>
+    <li><a>Invitations</a></li>
+    <li><a>Cloud Storage Environment Settings</a></li>
+    <li><a>Authentication</a></li>
+  </ul>
+  <p class="menu-label">
+    Transactions
+  </p>
+  <ul class="menu-list">
+    <li><a>Payments</a></li>
+    <li><a>Transfers</a></li>
+    <li><a>Balance</a></li>
+  </ul>
+</aside>`
+    });
+  
 </script>
