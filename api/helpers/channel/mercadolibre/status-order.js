@@ -34,12 +34,12 @@ module.exports = {
           if(oexists.length > 0){
             let currentStatus = await sails.helpers.orderState(shipping.status);
             for (const ord of oexists) {
+              await sails.helpers.notification(ord, currentStatus);
               await Order.updateOne({id:ord.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus});
               await OrderHistory.create({
                 order:ord.id,
                 state:currentStatus
               });
-              await sails.helpers.notification(ord);
             }
           }
         }catch(err){

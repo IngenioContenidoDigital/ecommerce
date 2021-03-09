@@ -30,12 +30,12 @@ module.exports = {
           if (shipping){
             try{
               let currentStatus = await sails.helpers.orderState(shipping.status);
+              await sails.helpers.notification(order, currentStatus);
               await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus});
               await OrderHistory.create({
                 order:order.id,
                 state:currentStatus
               });
-              await sails.helpers.notification(order);
             }catch(err){
               return exits.error(err);
             }

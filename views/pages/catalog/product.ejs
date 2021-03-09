@@ -2,7 +2,7 @@
 <div class="container">
 <% if (error != undefined || error != null) { %>
   <div class="notification is-danger is-light" id="error">
-      <%= error %>
+    <%= error %>
   </div>
 <% } %>
 <br />
@@ -425,7 +425,7 @@
                             </div>
                           </div>
                         </td>
-                        <td scope="row" class="align-middle"></td>
+                        <td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>
                       </tr>
                       <% rowcount++%>
                     <%})%>
@@ -487,11 +487,16 @@
         live('.delete-row','click',function(e){
           e.preventDefault();
           let elm = this;
-          let row = elm.parentNode.parentNode;          
-          variations.deleteRow(row.rowIndex);
+          let row = elm.parentNode.parentNode;
           let productvariation = row.getAttribute('productv');
-          if(productvariation>0){
-            io.socket.delete('/variations/remove/'+productvariation);
+          if(productvariation){
+            io.socket.delete('/variations/remove/'+productvariation, resData=>{
+              if (resData.result) {
+                variations.deleteRow(row.rowIndex);
+              }
+            });
+          } else {
+            variations.deleteRow(row.rowIndex);
           }
         });
 
@@ -774,6 +779,7 @@
                   <th><small>Nombre</small></th>
                   <th><small>Ajuste Precio</small></th>
                   <th><small>Activo</small></th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -806,6 +812,15 @@
                               <input id="<%= i.id %>" type="checkbox" name="productstatus" channelId='<%= i.channel.id %>' nameChannel="<%= i.channel.name %>" <%if(typeof product=='object' && productchannel && productchannel.status){%>checked<%}%> class="switch is-success">
                               <label for="<%= i.id %>"></label>
                             </td>
+                            <% if(productchannel && (i.channel.name === 'dafiti' || i.channel.name === 'linio')){%>
+                              <td>
+                                <button id="deleteProduct" class="button is-danger is-outlined" integration="<%= i.id %>" productchannel="<%= productchannel.id %>" nameChannel="<%= i.channel.name %>">
+                                  <span class="icon is-small">
+                                    <i class='bx bxs-trash'></i>
+                                  </span>
+                                </button>
+                              </td>
+                            <%}%>
                           </tr>
                           <%}else if(i.channel.name === 'coppel' && product.variations.length === 1){%>
                             <tr>
@@ -839,8 +854,16 @@
             </table>
           </div>
           <div class="column">
-            <div id="report" class="container is-fluid is-hidden">
-              <div class="notification is-danger">
+            <div class="container is-fluid">
+              <div id="reportProcess" class="notification is-danger is-hidden">
+                <p>Hemos identificado <span id="errorsProcess">0</span> error(es).</p>
+                <br>
+                <div class="container is-fluid">
+                  <ol id="error-list-errorsProcess">
+                  </ol>
+                </div>
+              </div>
+              <div id="report" class="notification is-danger is-hidden">
                 <p>Hemos identificado <span id="errors">0</span> error(es).</p>
                 <br>
                 <div class="container is-fluid">
@@ -848,24 +871,45 @@
                   </ol>
                 </div>
               </div>
-          </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
     <script>
+      <%if(channelErrors.length > 0){%>
+        const integrations = <%- JSON.stringify(integra)%>
+        const resultErrors = <%- JSON.stringify(channelErrors)%>;
+        let report = document.querySelector('#report');
+        let errors = document.querySelector('#errors');
+        let errorlist = document.querySelector('#error-list');
+        errors.innerHTML=0;
+        errorlist.innerHTML='';
+        if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+        errors.innerHTML = resultErrors.length;
+        for(let e of resultErrors){
+          const nameIntegration = integrations.find(i => i.id === e.integration);
+          let err = document.createElement('li');
+					err.innerHTML= 'Referencia: ' + e.reference+' <br>Integración: '+nameIntegration.name +' <br>Errores: '+ e.reason;
+					errorlist.appendChild(err);
+        }
+      <%}%>
       live('input[name="productstatus"]','change',e=>{
         let p = document.querySelector('#product-data').value;
         let integrationId = e.target.id;
         let nameChannel = e.target.getAttribute('nameChannel');
         let channelId = e.target.getAttribute('channelId');
         let price = document.querySelector('select[name="'+integrationId+'price"]').value;
+        let reportprocess = document.querySelector('#reportProcess');
+        let errors = document.querySelector('#errorsProcess');
+        let errorlist = document.querySelector('#error-list-errorsProcess');
+        errors.innerHTML=0;
+        errorlist.innerHTML='';
+        if(!hasClass(reportprocess,'is-hidden')){addClass(reportprocess,'is-hidden');}
         io.socket.post('/'+nameChannel+'/add',{product:p, price, status:e.target.checked,integrationId,channelId}, resData =>{
           if(resData.error){
-            if(hasClass(report),'is-hidden'){removeClass(report,'is-hidden');}
-            let errors = document.querySelector('#errors');
+            if(hasClass(reportprocess),'is-hidden'){removeClass(reportprocess,'is-hidden');}
             errors.innerHTML=1;
-            let errorlist = document.querySelector('#error-list');
             let err = document.createElement('li');
             err.innerHTML='Se generó Error al procesar el producto.';
             errorlist.appendChild(err);
@@ -873,6 +917,50 @@
             document.querySelector('select[name="'+integrationId+'price"]').value = 0;
           }
         });
+      });
+
+      live('#deleteProduct','click',function(){
+        const integration = this.getAttribute('integration');
+        const productchannel = this.getAttribute('productchannel');
+        const nameChannel = this.getAttribute('nameChannel');
+        let reportprocess = document.querySelector('#reportProcess');
+        let errors = document.querySelector('#errorsProcess');
+        let errorlist = document.querySelector('#error-list-errorsProcess');
+        errors.innerHTML=0;
+        errorlist.innerHTML='';
+        addClass(this, 'is-loading');
+        io.socket.post('/delete/product',{integration, productchannel, nameChannel}, resData =>{
+          removeClass(this, 'is-loading');
+          if(resData.error){
+            if(hasClass(reportprocess),'is-hidden'){removeClass(reportprocess,'is-hidden');}
+            errors.innerHTML=1;
+            let err = document.createElement('li');
+            err.innerHTML='Se generó Error al eliminar el producto.';
+            errorlist.appendChild(err);
+          } else {
+            let checkbox = document.getElementById(integration);
+            checkbox.checked = false;
+            document.querySelector('select[name="'+integration+'price"]').value = 0;
+            addClass(this, 'is-hidden');
+          }
+        });
+      });
+
+      io.socket.on("reponse_product_created", (resData)=>{
+        let report = document.querySelector('#report');
+        let errors = document.querySelector('#errors');
+        let errorlist = document.querySelector('#error-list');
+        let checkbox = document.getElementById(resData.integration);
+        errors.innerHTML=0;
+        errorlist.innerHTML='';
+        checkbox.checked = false;
+        if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+        errors.innerHTML = resData.errors.length;
+        for(let e of resData.errors){
+          let err = document.createElement('li');
+					err.innerHTML= 'Referencia: ' + e.reference +' <br>Errores: '+ e.message;
+					errorlist.appendChild(err);
+        }
       });
 
     const pricent = document.querySelector('input[name="price_nt"]');

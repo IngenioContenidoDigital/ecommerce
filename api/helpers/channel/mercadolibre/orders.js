@@ -150,12 +150,12 @@ module.exports = {
                   return exits.error(err.message);
                 });
                 let currentStatus = await sails.helpers.orderState(shipping.status);
+                await sails.helpers.notification(ord, currentStatus);
                 await Order.updateOne({id:ord.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus});
                 await OrderHistory.create({
                   order:ord.id,
                   state:currentStatus
                 });
-                await sails.helpers.notification(ord);
               }
             }
           }

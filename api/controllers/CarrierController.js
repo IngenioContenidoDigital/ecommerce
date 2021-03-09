@@ -145,7 +145,9 @@ module.exports = {
   },
   multipleguides: async function(req, res){
     const PDFDocument = require('pdf-lib').PDFDocument;
-    let orderState = await OrderState.findOne({name: 'empacado'});
+    let orderState = await OrderState.findOne({name: 'aceptado'});
+    let state = await OrderState.findOne({name: 'empacado'});
+    let stateProcess = await OrderState.findOne({name: 'en procesamiento'});
     const dateStart = req.body.startDate;
     const dateEnd = req.body.endDate;
     let numbers = req.body.numbers;
@@ -157,7 +159,7 @@ module.exports = {
           where: {
             seller: seller,
             channel: ['linio', 'dafiti'],
-            currentstatus: orderState.id,
+            currentstatus: [orderState.id, stateProcess.id],
             createdAt: { '>': new Date(dateStart).valueOf(), '<': new Date(dateEnd).valueOf() }
           },
           sort: 'createdAt DESC'
@@ -172,7 +174,7 @@ module.exports = {
           where: {
             seller: seller,
             channel: ['linio', 'dafiti'],
-            currentstatus: orderState.id,
+            currentstatus: [orderState.id, stateProcess.id, state.id],
             reference: result
           },
           sort: 'createdAt DESC'
@@ -181,21 +183,29 @@ module.exports = {
       if (orders && orders.length > 0) {
         let documents = [];
         for (const order of orders) {
-          let litems = [];
-          let oitems = await OrderItem.find({order:order.id}).populate('product');
-          let integration = await Integrations.findOne({id: order.integration}).populate('channel');
-          for(let it of oitems){
-            if(!litems.includes(it.externalReference)){
-              litems.push(it.externalReference);
-            }
+          if(!order.tracking){
+            await sails.helpers.carrier.shipment(order.id);
           }
-          let route = order.channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(order.integration, 'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
-            await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
-          let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
-          let result = JSON.parse(respo);
-          if(result.SuccessResponse){
-            const resultBuf = Buffer.from(result.SuccessResponse.Body.Documents.Document.File, 'base64');
-            documents.push(resultBuf);
+          const resultOrder = await Order.findOne({id: order.id});
+          if (resultOrder.tracking) {
+            await Order.updateOne({id: order.id}).set({currentstatus: state.id});
+            await OrderHistory.create({order: order.id, state: state.id});
+            let litems = [];
+            let oitems = await OrderItem.find({order:order.id}).populate('product');
+            let integration = await Integrations.findOne({id: order.integration}).populate('channel');
+            for(let it of oitems){
+              if(!litems.includes(it.externalReference)){
+                litems.push(it.externalReference);
+              }
+            }
+            let route = order.channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(order.integration, 'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
+              await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
+            let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
+            let result = JSON.parse(respo);
+            if(result.SuccessResponse){
+              const resultBuf = Buffer.from(result.SuccessResponse.Body.Documents.Document.File, 'base64');
+              documents.push(resultBuf);
+            }
           }
         }
         const mergedPdf = await PDFDocument.create();
