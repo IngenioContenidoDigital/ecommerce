@@ -84,8 +84,11 @@ module.exports = {
                       if(item.item['seller_sku']){
                         productvariation = await ProductVariation.findOne({id:item.item['seller_sku']});
                       }else{
-                        let pr = await Product.findOne({mlid:item.item.id}).populate('variations');
-                        productvariation = pr.variations[0];
+                        let pr = await ProductChannel.findOne({channelid:item.item.id});
+                        if (pr) {
+                          pr = await Product.findOne({id:pr.product}).populate('variations');
+                          productvariation = pr.variations[0];
+                        }
                       }
                       if(productvariation){
                         for (let i = 1; i <= item.quantity; i++) {
@@ -107,6 +110,8 @@ module.exports = {
                     let carrier = shipping['tracking_method'].split(' ');
                     let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:carrier[0]});
                     await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:shipping.id});
+                  } else {
+                    return exits.error('No se pudo crear la orden');
                   }
                 }else{
                   return exits.error('Ciudad No Localizada');
@@ -119,8 +124,11 @@ module.exports = {
                     if(item.item['seller_sku']){
                       productvariation = await ProductVariation.findOne({id:item.item['seller_sku']});
                     }else{
-                      let pr = await Product.findOne({mlid:item.item.id}).populate('variations');
-                      productvariation = pr.variations[0];
+                      let pr = await ProductChannel.findOne({channelid:item.item.id});
+                      if (pr) {
+                        pr = await Product.findOne({id:pr.product}).populate('variations');
+                        productvariation = pr.variations[0];
+                      }
                     }
                     if(productvariation){
                       for (let i = 1; i <= item.quantity; i++) {
