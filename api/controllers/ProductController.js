@@ -1321,7 +1321,9 @@ module.exports = {
               response.items.push(pro);
             }
           }else{
-            let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');
+            let result = null;
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active',false);}
             const xml = jsonxml(result,true);
             let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
             await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1403,7 +1405,9 @@ module.exports = {
               response.items.push(pro);
             }
           }else{
-            let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');
+            let result = null;
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active',false);}
             const xml = jsonxml(result,true);
             let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
             await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
