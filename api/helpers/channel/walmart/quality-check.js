@@ -11,7 +11,7 @@ module.exports = {
         try{
 
             let axios = require('axios');
-            let channel = await Channel.findOne({name:'walmart'}); 
+            let channel = await Channel.findOne({name:'walmart'}).populate('currency'); 
             let product_channels = await ProductChannel.find({iscreated:false, channel:channel.id});
             
             for(let i=0; i<product_channels.length; i++){
@@ -64,41 +64,41 @@ module.exports = {
                             const element = items[index];
                             if(element.ingestionStatus === 'SUCCESS'){
                                 truth_flag_counter++;
-                                // let options = {
-                                //     method: 'get',
-                                //     url: `${integration.channel.endpoint}/v3/items/${element.sku}`,
-                                //     headers: headers
-                                // };
-                                // let response_publishing = await axios(options).catch((e) => {console.log(e.response.data);});
+                                let options = {
+                                    method: 'get',
+                                    url: `${integration.channel.endpoint}/v3/items/${element.sku}`,
+                                    headers: headers
+                                };
+                                let response_publishing = await axios(options).catch((e) => {console.log(e.response.data);});
 
-                                // if(response_publishing){
-                                //     if(response_publishing.data.ItemResponse[0].publishedStatus === 'PUBLISHED'){
-                                //         let pv = await sails.helpers.channel.walmart.price(product_channel, element.sku);
+                                if(response_publishing){
+                                    if(response_publishing.data.ItemResponse[0].publishedStatus === 'PUBLISHED'){
+                                        let pv = await sails.helpers.channel.walmart.price(product_channel, element.sku);
                                         
-                                //         let item_price = `<Price xmlns="http://walmart.com/">
-                                //             <itemIdentifier>
-                                //                 <sku>${element.sku}</sku>
-                                //             </itemIdentifier>
-                                //             <pricingList>
-                                //                 <pricing>
-                                //                      <currentPrice>
-                                //                        <value currency="MXN" amount="${pv.price.toString()}"/>
-                                //                      </currentPrice>
-                                //                     <currentPriceType>BASE</currentPriceType>
-                                //                 </pricing>
-                                //             </pricingList>
-                                //          </Price>`;
+                                        let item_price = `<Price xmlns="http://walmart.com/">
+                                            <itemIdentifier>
+                                                <sku>${element.sku}</sku>
+                                            </itemIdentifier>
+                                            <pricingList>
+                                                <pricing>
+                                                     <currentPrice>
+                                                       <value currency=${channel.currency.isocode} amount="${pv.price.toString()}"/>
+                                                     </currentPrice>
+                                                    <currentPriceType>BASE</currentPriceType>
+                                                </pricing>
+                                            </pricingList>
+                                         </Price>`;
 
-                                //         let item_inventory = `<inventory xmlns="http://walmart.com/">
-                                //             <sku>${element.sku}</sku><quantity><unit>EACH</unit>
-                                //                 <amount>${pv.quantity.toString()}</amount>
-                                //             </quantity>
-                                //         </inventory>`;
+                                        let item_inventory = `<inventory xmlns="http://walmart.com/">
+                                            <sku>${element.sku}</sku><quantity><unit>EACH</unit>
+                                                <amount>${pv.quantity.toString()}</amount>
+                                            </quantity>
+                                        </inventory>`;
                                         
-                                //         price_body     = price_body + item_price;
-                                //         inventory_body = inventory_body + item_inventory;
-                                //     }
-                                // }
+                                        price_body     = price_body + item_price;
+                                        inventory_body = inventory_body + item_inventory;
+                                    }
+                                }
                             }else if(element.ingestionStatus === 'DATA_ERROR'){
                                 let errors_walmart = element.ingestionErrors.ingestionError;
                                 for (let index = 0; index < errors_walmart.length; index++) {
@@ -141,8 +141,8 @@ module.exports = {
                             });
                         }
 
-                        await axios(options_price).catch((e) => {error=e; console.log(e);});
-                        await axios(options_inventory).catch((e) => {error=e; console.log(e.response.data);});
+                        await axios(options_price).catch((e) => {console.log(e);});
+                        await axios(options_inventory).catch((e) => {console.log(e.response.data);});
 
                     } else if(response.data.feedStatus === 'ERROR'){
                         await ProductChannel.updateOne({id: product_channel.id}).set({

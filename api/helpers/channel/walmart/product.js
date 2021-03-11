@@ -17,6 +17,10 @@ module.exports = {
     action:{
       type:'string',
       required:true
+    },
+    channel:{
+      type:'string',
+      required:true
     }
   },
   exits: {
@@ -33,6 +37,8 @@ module.exports = {
     let body = `<MPItemFeed xmlns="http://walmart.com/"><MPItemFeedHeader><version>3.2</version><locale>es_MX</locale><mart>WALMART_MEXICO</mart></MPItemFeedHeader>`;
     let variant = false;
     let price;
+    let channel = await Channel.findOne({id:inputs.channel}).populate('currency');
+    
       for(let p of inputs.products){
         let priceadjust = padj > 0 ? padj : inputs.channelPrice ;
         try{
@@ -42,7 +48,9 @@ module.exports = {
           .populate('manufacturer')
           .populate('mainCategory')
           .populate('tax')
-          .populate('categories')
+          .populate('categories',{
+            sort: 'level ASC'
+          })
           .populate('discount',{
             where:{
               to:{'>=':moment().valueOf()},
@@ -51,9 +59,8 @@ module.exports = {
             sort: 'createdAt DESC',
             limit: 1
           });
-          
-          let seller = await Seller.findOne({id:product.seller}).populate('mainAddress');
-          let exchange_rate = await sails.helpers.currencyConverter('COP', 'MXN');
+          console.log(product.categories);
+          let seller = await Seller.findOne({id:product.seller}).populate('mainAddress').populate('currency');
 
           let productimages = await ProductImage.find({product:product.id});
           productimages.forEach(image =>{
@@ -62,7 +69,8 @@ module.exports = {
 
           let productvariation = await ProductVariation.find({product:product.id}).populate('variation');
           if(productvariation.length>1){variant = true;}
-          productvariation.forEach(variation =>{
+          for (let index = 0; index < productvariation.length; index++) {
+            const variation = productvariation[index];
             if(product.discount.length>0){
               let discPrice=0;
               switch(product.discount[0].type){
@@ -77,22 +85,26 @@ module.exports = {
             }else{
               price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(2);
             }
-            if(seller.mainAddress.country==='5eeb7a88cc42a6289844ec83'){
+            if(seller.currency.isocode !== channel.currency.isocode){
+              let exchange_rate = await sails.helpers.currencyConverter(seller.currency.isocode, channel.currency.isocode);
               price = price*exchange_rate.result;
             }
             variation.price = price;
-          });
+            
+          }
           
           let categories = [];
           for (let c of product.categories){
-            let cd = c.walmart.split(',');
-            for(let dd of cd){
-              if(!categories.includes(dd) && dd!=='' && dd!== null){
-                categories.push(dd);
+            if(c.walmart){
+              let cd = c.walmart.split(',');
+              for(let dd of cd){
+                if(!categories.includes(dd) && dd!=='' && dd!== null){
+                  categories.push(dd);
+                }
               }
             }
           }
-          
+          console.log(categories);
           let i=0;
 
           for(let pv of productvariation){
@@ -104,7 +116,6 @@ module.exports = {
           }
          
           body = body +'</MPItemFeed>';
-
         }catch(err){
           return exits.error(err);    
         }

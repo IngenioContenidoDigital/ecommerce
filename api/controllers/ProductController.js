@@ -783,7 +783,6 @@ module.exports = {
     const productChannelId = productchannel ? productchannel.id : '';
     const channelPrice = productchannel ? productchannel.price : 0;
     let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
-    
    
     let action = null;
     if (productchannel && productchannel.iscreated) {
@@ -793,7 +792,7 @@ module.exports = {
     }
     
     try {
-      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), channelPrice, action);
+      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), channelPrice, action, integration.channel.id);
       const buffer_xml = Buffer.from(xml,'latin1');
      
       let token = await sails.helpers.channel.walmart.sign(integration);
@@ -1817,7 +1816,7 @@ module.exports = {
             const wmprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
             
-            let xml = await sails.helpers.channel.walmart.product([pl], wmprice, wmprice, action)
+            let xml = await sails.helpers.channel.walmart.product([pl], wmprice, wmprice, action, integration.channel.id)
             .tolerate(async (err) => {
               response.errors.push('REF: '+pl.reference+' no ha sido mapeado: '+ err);
             });

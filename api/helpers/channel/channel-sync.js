@@ -60,7 +60,7 @@ module.exports = {
           let axios = require('axios');
           let product = await Product.findOne({ id: inputs.product.id }).populate('channels');
           try {
-            let xml = await sails.helpers.channel.walmart.product([product], parseFloat(item.price), parseFloat(item.price), 'ProductUpdate');
+            let xml = await sails.helpers.channel.walmart.product([product], parseFloat(item.price), parseFloat(item.price), 'ProductUpdate', integration.channel.id);
             const buffer_xml = Buffer.from(xml,'latin1');
             let token = await sails.helpers.channel.walmart.sign(integration);
             let auth = `${integration.user}:${integration.key}`;

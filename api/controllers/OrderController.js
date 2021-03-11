@@ -360,9 +360,10 @@ module.exports = {
 
         item.productvariation = await ProductVariation.findOne({id:item.productvariation}).populate('variation');
         if(order.channel==="walmart"){
-          let seller = await Seller.findOne({id:order.seller});
-          if(seller.currency === '60208459720b921baab8d78a'){
-            let exchange_rate = await sails.helpers.currencyConverter('COP', 'MXN');
+          let seller = await Seller.findOne({id:order.seller}).populate('currency');
+          let channel = await Channel.findOne({name:order.channel}).populate('currency');
+          if(seller.currency.isocode !== channel.currency.isocode){
+            let exchange_rate = await sails.helpers.currencyConverter(seller.currency.isocode, channel.currency.isocode);
             item.originalPrice = item.originalPrice*exchange_rate.result;
           }
         }

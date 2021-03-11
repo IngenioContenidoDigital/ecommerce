@@ -38,13 +38,13 @@ module.exports = {
     },
     fn: async function (inputs,exits) {
 
-        var jsonxml = require('jsontoxml');
         let categories = inputs.categories;
         let variant = inputs.variant;
         let action = inputs.action;
         let productvariation = inputs.productvariation;
         let images = inputs.images;
         let product = inputs.product;
+        let chars = {'á':'&#225;','é':'&#233;','í':'&#237;','ó':'&#243;','ú':'&#250;','ñ':'&#241;','Á':'&#193;','É':'&#221;','Í':'&#205;','Ó':'&#211;','Ú':'&#218;','Ñ':'&#;209'};
 
         let json = {
             "MPItem": {
@@ -2281,57 +2281,40 @@ module.exports = {
         };
         let sub_category = {};
         let color;
+        let talla;
+        let gender;
         let body;
         let variant_name;
-        
+        let country = "México";
+        country = country.replace(/[áéíóúñ]/gi, m => chars[m]);
+
+        switch (productvariation.variation.name) {
+            case 's':
+                talla = 'T CH';
+                break;
+            case 'm':
+                talla = 'T M';
+                break;
+            case 'l':
+                talla = 'T G';
+                break;
+            case 'xl':
+                talla = 'T EG';
+                break;
+            case 'xxl':
+                talla = 'T EEG';
+                break;           
+            default:
+                talla = 'Única';
+                break;
+        }
+        console.log(productvariation.variation);
         switch (product.mainColor.name) {
-            case 'blanco':
-                color = 'Blanco';
-                break;
-            case 'negro':
-                color = 'Negro';
-                break;
-            case 'café':
-                color = 'Negro';
-                break;
-            case 'azul':
-                color = 'Azul';
-                break;
-            case 'verde':
-                color = 'Verde';
-                break;
-            case 'amarillo':
-                color = 'Amarillo';
-                break;
-            case 'rojo':
-                color = 'Rojo';
-                break;
             case 'naranja':
                 color = 'Anaranjado';
                 break;
-            case 'fucsia':
-                color = 'Fucsia';
-                break;
-            case 'lila':
-                color = 'Lila';
-                break;
             case 'celeste':
                 color = 'Turquesa';
-                break;
-            case 'rosa':
-                color = 'Rosa';
-                break;
-            case 'beige':
-                color = 'Beige';
-                break;
-            case 'chocolate':
-                color = 'Chocolate';
-            break;
-            case 'dorado':
-                color = 'Dorado';
-                break;
-            case 'plateado':
-                color = 'Plateado';
                 break;
             case 'violeta':
                 color = 'Morado';
@@ -2340,8 +2323,63 @@ module.exports = {
                 color = 'Blanco';
                 break;      
             default:
+                color = (product.mainColor.name.charAt(0).toUpperCase() + product.mainColor.name.slice(1)).replace(/[áéíóúñ]/gi, m => chars[m]);
                 break;
         }
+        switch (product.gender.name) {
+            case 'masculino':
+                gender = 'Hombre';
+                break;
+            case 'femenino':
+                gender = 'Mujer';
+                break;
+            case 'niños':
+                gender = 'Niño';
+                break;
+            case 'niñas':
+                gender = 'Niña';
+                break;
+            case 'bebés niña':
+                gender = 'Niña';
+                break;
+            case 'bebés niño':
+                gender = 'Niño';
+                break;
+            case 'recién nacido':
+                color = 'Niño';
+                break;
+            case 'recién nacida':
+                gender = 'Niña';
+                break;                
+            default:
+                gender = 'Unisex' ;
+                break;
+        }
+        let basic_info =    {
+            "shortDescription": product.descriptionShort.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'').replace(/\&nbsp;/g, ' '),
+            "keyFeatures": { "keyFeaturesValue": product.description.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'').replace(/\&nbsp;/g, ' ')},
+            "brand": product.manufacturer.name,
+            "mainImageUrl": images[0],
+            "productSecondaryImageURL": { "productSecondaryImageURLValue": images[1] },
+            "modelStyleType": product.reference,
+            "assembledProductWeight": {
+                "measure": product.weight,
+                "unit": "kg"
+            },
+            "assembledProductHeight": {
+                "measure": product.height,
+                "unit": "cm"
+            },
+            "assembledProductWidth": {
+                "measure": product.width,
+                "unit": "cm"
+            },
+            "assembledProductLength": {
+                "measure": product.length,
+                "unit": "cm"
+            },
+            "countryOfOriginAssembly": country
+        };
 
         switch (categories[0]) {
             case 'FootwearCategory':
@@ -2353,46 +2391,22 @@ module.exports = {
                                     "measure": productvariation.variation.cm.toString(),
                                     "unit": "cm"
                                 },
-                                "shoeSoleMaterial": "N",
-                                "shortDescription":  jsonxml.cdata((product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
-                                "keyFeatures": { "keyFeaturesValue":  jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))},
-                                "brand": product.manufacturer.name,
-                                "mainImageUrl": images[0],
-                                "productSecondaryImageURL": { "productSecondaryImageURLValue": images[1] },
                                 "color": product.mainColor.name,
+                                "shoeSoleMaterial": "N",
                                 "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
                                 "shoeSize": `${productvariation.variation.cm} cm`,
                                 "material": "N",
                                 "heelHeight": {
                                     "measure": "0",
                                     "unit": "cm"
                                 },
-                                "shoeStyle": categories[2],
-                                "fabricCareInstructions": { "fabricCareInstruction": "None" },
-                                "modelStyleType": product.reference,
-                                "itemsIncluded": product.name,
-                                "assembledProductWeight": {
-                                    "measure": product.weight,
-                                    "unit": "kg"
-                                },
-                                "assembledProductHeight": {
-                                    "measure": product.height,
-                                    "unit": "cm"
-                                },
-                                "assembledProductWidth": {
-                                    "measure": product.width,
-                                    "unit": "cm"
-                                },
-                                "assembledProductLength": {
-                                    "measure": product.length,
-                                    "unit": "cm"
-                                },
-                                "countryOfOriginAssembly": "M&#233;xico"
+                                "shoeStyle": product.name,
+                                "fabricCareInstructions": { "fabricCareInstruction": "None" }
                             }
                         }
                         variant_name = 'shoeSize';
                         break;
-                
                     default:
                         break;
                 }
@@ -2402,35 +2416,14 @@ module.exports = {
                         case 'Clothing':
                             sub_category= {
                                 "Clothing": {
-                                    "shortDescription": jsonxml.cdata((product.descriptionShort).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,'')),
-                                    "keyFeatures": { "keyFeaturesValue": jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))},
-                                    "brand": product.manufacturer.name,
-                                    "mainImageUrl": images[0],
-                                    "productSecondaryImageURL": { "productSecondaryImageURLValue": images[1] },
-                                    "colorCategory": { "colorCategoryValue": color },
                                     "fabricCareInstructions": { "fabricCareInstruction": "None" },
-                                    "clothingStyle": categories[2],
+                                    "clothingStyle": product.name,
+                                    "colorCategory": { "colorCategoryValue": color },
+                                    "clothingSize": talla,
                                     "modelStyleType": product.reference,
-                                    "itemsIncluded": product.name,
-                                    "assembledProductWeight": {
-                                        "measure": product.weight,
-                                        "unit": "kg"
-                                    },
-                                    "assembledProductHeight": {
-                                        "measure": product.height,
-                                        "unit": "cm"
-                                    },
-                                    "assembledProductWidth": {
-                                        "measure": product.width,
-                                        "unit": "cm"
-                                    },
-                                    "assembledProductLength": {
-                                        "measure": product.length,
-                                        "unit": "cm"
-                                    },
-                                    "countryOfOriginAssembly": "M&#233;xico"
+                                    "itemsIncluded": product.name
                                 }
-                            }
+                            };
                             variant_name = 'clothingSize';
                             break;
                     
@@ -2438,8 +2431,797 @@ module.exports = {
                             break;
                     }
                     break;    
-            default:
+            case 'JewelryCategory': {
+                switch (categories[1]) {
+                    case 'Jewelry':
+                        sub_category= {
+                            "Jewelry": {
+                                "itemsIncluded": product.name,
+                                "material": "a",
+                                "metalStamp": { "metalStampValue": ".800: 80% Plata" },
+                                "colorCategory": { "colorCategoryValue": color },
+                                "size": talla,
+                                "color": product.mainColor.name
+                            }
+                        };
+                    break;
+                
+                    default:
+                        break;
+                }
+            }
+            break;
+            case 'Electronics': {
+                switch (categories[1]) {
+                    case 'VideoGames':
+                        sub_category= {
+                            "VideoGames": {
+                                "mexicoMediaRating": "C (Mayores de 18 Años)",
+                                "videoGameType": "Pase de Temporada",
+                                "warningText": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "videoGameGenre": { "videoGameGenreValue": "Aventura" }
+                            }
+                        };
+                    break;
+                    case 'VideoProjectors':
+                        sub_category= {
+                            "VideoProjectors": {
+                                "wireless": "Sí",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "screenSize": {
+                                    "measure": "0",
+                                    "itemsIncluded": product.name,
+                                    "unit": "Pulgadas"
+                                }
+                            }
+                        };
+                    break;
+                    case 'ElectronicsAccessories':
+                        sub_category= {
+                            "ElectronicsAccessories": {
+                                "wireless": "Sí",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "warningText": "a",
+                                "volts": {
+                                    "measure": "0",
+                                    "unit": "VDC"
+                                },
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                }
+                            }
+                        };
+                    break;
+                    case 'ElectronicsCables':
+                        sub_category= {
+                            "ElectronicsCables": {
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "warningText": "a"
+                            }
+                        };
+                    break;
+                    case 'ComputerComponents':
+                        sub_category= {
+                            "ComputerComponents": {
+                                "wireless": "No",
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name
+                            }
+                        };
+                    break;
+                    case 'Software':
+                        sub_category= {
+                            "Software": {
+                                "softwareCategory": { "softwareCategoryValue": "a" },
+                                "itemsIncluded": product.name,
+                                "softwareLicense": "Para 5 equipos/usuarios"
+                            }
+                        };
+                    break;
+                    case 'TVsAndVideoDisplays':
+                        sub_category= {
+                            "TVsAndVideoDisplays": {
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                },
+                                "displayTechnology": "a",
+                                "color": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "watts": {
+                                    "measure": "0",
+                                    "unit": "W"
+                                },
+                                "maximumTotalWattage": {
+                                    "measure": "0",
+                                    "unit": "Joules"
+                                }
+                            }
+                        };
+                    break;
+                    case 'CellPhones':
+                        sub_category= {
+                            "CellPhones": {
+                                "plugType": { "plugTypeValue": "Americano" },
+                                "color": product.mainColor.name,
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                },
+                                "cellPhoneServiceProvider": "a",
+                                "hardDriveCapacity": {
+                                    "measure": "0",
+                                    "unit": "GB"
+                                },
+                                "ramMemory": {
+                                    "measure": "0",
+                                    "unit": "PB"
+                                },
+                                "processorType": { "processorTypeValue": "a" },
+                                "itemsIncluded": product.name,
+                                "wireless": "Sí"
+                            }
+                        };
+                    break;
+                    case 'Computers':
+                        sub_category= {
+                            "Computers": {
+                                "color": product.mainColor.name,
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                },
+                                "ramMemory": {
+                                    "measure": "0",
+                                    "unit": "PB"
+                                },
+                                "processorType": { "processorTypeValue": "a" },
+                                "wireless": "No",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "hardDriveCapacity": {
+                                    "measure": "0",
+                                    "unit": "TB"
+                                }
+                        }
+                    };
+                    break;
+                    case 'PrintersScannersAndImaging':
+                        sub_category= {
+                            "PrintersScannersAndImaging": {
+                                "wireless": "No",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name
+                            }
+                        };
+                        delete basic_info.countryOfOriginAssembly;
+                    break;
+                    case 'ElectronicsOther':
+                        sub_category= {
+                            "ElectronicsOther": {
+                                "processorType": { "processorTypeValue": "a" },
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                },
+                                "softwareLicense": "Para 2 equipos/usuarios",
+                                "watts": {
+                                    "measure": "0",
+                                    "unit": "KW"
+                                },
+                                "hasOpticalConnection": "No",
+                                "volts": {
+                                    "measure": "0",
+                                    "unit": "VAC"
+                                },
+                                "rmsPowerRating": {
+                                    "measure": "100",
+                                    "unit": "Watts"
+                                },
+                                "maximumTotalWattage": {
+                                    "measure": "0",
+                                    "unit": "Horsepower"
+                                },
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "wireless": "Sí",
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                },
+                                "hardDriveCapacity": {
+                                    "measure": "0",
+                                    "unit": "TB"
+                                }
+                            }
+                        };
+                        delete basic_info.modelStyleType;
+                    break;    
+                    default:
+                        break;
+                }
+            }
+            break;
+            case 'SportAndRecreation': {
+                switch (categories[1]) {
+                    case 'Cycling':
+                        sub_category= {
+                            "Cycling": {
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "months"
+                                },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'SportAndRecreationOther':
+                        sub_category= {
+                            "SportAndRecreationOther": {
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "sport": product.name,
+                                "gender": gender,
+                                "size": talla,
+                                "capacity": "a",
+                                "itemsIncluded": product.name,
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                },
+                                "numberOfPlayers": {
+                                    "minimumNumberOfPlayers": "0",
+                                    "maximumNumberOfPlayers": "0"
+                                }
+                            }
+                        };
+                        variant_name = 'size';    
+                    break;
+                }
+            }
+            break;
+            case 'HealthAndBeauty': {
+                switch (categories[1]) {
+                    case 'MedicalAids':
+                        sub_category= {
+                            "MedicalAids": {
+                                "volts": {
+                                    "measure": "0",
+                                    "unit": "kV"
+                                },
+                                "color": product.mainColor.name
+                            }
+                        };
+                    break;
+                    case 'Optical':
+                        sub_category= {
+                            "Optical": {
+                                "frameColor": color,
+                                "uvProtection": "Sí",
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "isPolarized": "Sí",
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'MedicineAndSupplements':
+                        sub_category= {
+                            "MedicineAndSupplements": {
+                                "itemsIncluded": product.name,
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "months"
+                                },
+                            }
+                        };
+                    break;
+                    case 'PersonalCare':
+                        sub_category= {
+                            "PersonalCare": {
+                                "color": product.mainColor.name,
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "warrantyText": "a",
+                                "scentFamily": "a",
+                                "countPerPack": "0",
+                                "gender": gender,
+                                "spfValue": "0",
+                                "colorCategory": { "colorCategoryValue": color }
+                            }
+                        };
+                    break;
+                    case 'HealthAndBeautyElectronics':
+                        sub_category= {
+                            "HealthAndBeautyElectronics": {
+                                "volts": {
+                                    "measure": "0",
+                                    "unit": "kVAC"
+                                },
+                                "watts": {
+                                    "measure": "0",
+                                    "unit": "KW"
+                                },
+                                "gender": gender,
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name
+                            }
+                        };
+                    break;
+                }
+            }
+            break;
+            case 'FurnitureCategory':
+                switch (categories[1]) {
+                    case 'Furniture':
+                        sub_category= {
+                            "Furniture": {
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                },
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "material": "N",
+                                "isAssemblyRequired": "No",
+                                "recommendedUses": { "recommendedUse": "a" }
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
                 break;
+            case 'Home': {
+                switch (categories[1]) {
+                    case 'Bedding':
+                        sub_category= {
+                            "Bedding": {
+                                "bedSize": "Matrimonial",
+                                "itemsIncluded": "a",
+                                "material": "a",
+                                "color": product.mainColor.name
+                            }
+                        };
+                    break;
+                    case 'LargeAppliances':
+                        sub_category= {
+                            "LargeAppliances": {
+                                "color": product.mainColor.name,
+                                "size": "a",
+                                "material": "a",
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'HomeOther':
+                        sub_category= {
+                            "HomeOther": {
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name
+                            }
+                        };
+                    break;
+                }
+            }
+            break;
+            case 'ArtAndCraftCategory':
+                switch (categories[1]) {
+                    case 'ArtAndCraft':
+                        sub_category= {
+                            "ArtAndCraft": {
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            break;
+            case 'FoodAndBeverageCategory': {
+                switch (categories[1]) {
+                    case 'AlcoholicBeverages':
+                        sub_category= {
+                            "AlcoholicBeverages": {
+                                "itemsIncluded": product.name,
+                                "ingredients": "a"
+                            }
+                        };
+                    break;
+                    case 'FoodAndBeverage':
+                        sub_category= {
+                            "FoodAndBeverage": {
+                                "saturatedFatPerServing": {
+                                    "measure": "0",
+                                    "unit": "cal"
+                                },
+                                "sodiumPerServing": {
+                                    "measure": "0",
+                                    "unit": "mg"
+                                },
+                                "sugarPerServing": {
+                                    "measure": "0",
+                                    "unit": "mg"
+                                },
+                                "calories": {
+                                    "measure": "0",
+                                    "unit": "kcal"
+                                },
+                                "totalFat": {
+                                    "measure": "0",
+                                    "unit": "cal"
+                                },
+                                "itemsIncluded": product.name,
+                                "ingredients": "a",
+                                "servingsPerContainer": "0",
+                            }
+                        };   
+                    break;
+                }
+            }
+            break;    
+            case 'ToolsAndHardware': {
+                switch (categories[1]) {
+                    case 'Tools':
+                        sub_category= {
+                            "Tools": {
+                                "isCordless": "No",
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'Hardware':
+                        sub_category= {
+                            "Hardware": {
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'PlumbingAndHVAC':
+                        sub_category= {
+                            "PlumbingAndHVAC": {
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'Electrical':
+                        sub_category= {
+                            "Electrical": {
+                                "material": "a",
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'ToolsAndHardwareOther':
+                        sub_category= {
+                            "ToolsAndHardwareOther": {
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;   
+                    default:
+                        break;
+                }
+            }
+            break;
+            case 'Photography': {
+                switch (categories[1]) {
+                    case 'CamerasAndLenses':
+                        sub_category= {
+                            "CamerasAndLenses": {
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                },
+                                "itemsIncluded": product.name,
+                                "batteryTechnologyType": "Botón",
+                                "memoryCardType": { "memoryCardTypeValue": "a" },
+                                "keywords": "a",
+                                "cameraLensType": "Fijo",
+                                "modelStyleType": "a",
+                                "graphicsInformation": "1080p (FHD)"
+                            }
+                        };
+                    break;
+                    case 'PhotoAccessories':
+                        sub_category= {
+                            "PhotoAccessories": {
+                                "color": product.mainColor.name,
+                                "keywords": "a",
+                                "itemsIncluded": product.name
+                            }
+                        };  
+                    break;
+                }
+            }
+            break;
+            case 'Animal': {
+                switch (categories[1]) {
+                    case 'AnimalHealthAndGrooming':
+                        sub_category= {
+                            "AnimalHealthAndGrooming": {
+                                "scent": "Pase de Temporada",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'AnimalAccessories':
+                        sub_category= {
+                            "AnimalAccessories": {                    
+                                "color": product.mainColor.name,
+                                "size": talla,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'AnimalFood':
+                        sub_category= {
+                            "AnimalFood": {
+                                "flavor": "Sí",
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'AnimalEverythingElse':
+                        sub_category= {
+                            "AnimalEverythingElse": {
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "size": "a"
+                            }
+                        };
+                    break;
+
+                        default:
+                        break;
+                }
+            }
+            break;
+            case 'GardenAndPatioCategory': {
+                switch (categories[1]) {
+                    case 'GrillsAndOutdoorCooking':
+                        sub_category= {
+                            "GrillsAndOutdoorCooking": {
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "isAssemblyRequired": "No",
+                                "recommendedUses": { "recommendedUse": "a" },
+                                "material": "a"
+                            }
+                        };
+                    break;
+                    case 'GardenAndPatio':
+                        sub_category= {
+                            "GardenAndPatio": {
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "isAssemblyRequired": "No",
+                                "recommendedUses": { "recommendedUse": "a" },
+                                "material": "a"
+                            }
+                        };  
+                    break;
+                }
+            }
+            break;
+            case 'OtherCategory':
+                switch (categories[1]) {
+                    case 'fuelsAndLubricants':
+                        sub_category= {
+                            "fuelsAndLubricants": {
+                                "itemsIncluded": product.name
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case 'OccasionAndSeasonal': {
+                switch (categories[1]) {
+                    case 'DecorationsAndFavors':
+                        sub_category= {
+                            "DecorationsAndFavors": {
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "size": talla
+                            }
+                        };
+                    break;
+                    case 'Costumes':
+                        sub_category= {
+                            "Costumes": {
+                                "colorCategory": { "colorCategoryValue": color },
+                                "itemsIncluded": product.name,
+                                "clothingSize": talla
+                            }
+                        };
+                        variant_name = 'clothingSize';  
+                    break;
+                }
+            }
+            break; 
+            case 'ToysCategory':
+                switch (categories[1]) {
+                    case 'Toys':
+                        sub_category= {
+                            "Toys": {
+                                "isRemoteControlIncluded": "Sí",
+                                "collection": "a",
+                                "productLine": "a",
+                                "isArticulated": "Sí",
+                                "warningText": "a",
+                                "shoeSize": "25.5 (MX)",
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "gender": gender,
+                                "size": talla,
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                },
+                                "educationalFocus": { "educationalFocus": "Lectura" },
+                                "character": "a",
+                                "activity": "Pinceles",
+                                "numberOfPlayers": {
+                                    "minimumNumberOfPlayers": "0",
+                                    "maximumNumberOfPlayers": "0"
+                                },
+                                "material": "a",
+                                "seatingCapacity": "5",
+                                "recommendedUses": { "recommendedUse": "a" },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case 'Baby': {
+                switch (categories[1]) {
+                    case 'BabyFood':
+                        sub_category= {
+                            "BabyFood": {
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "months"
+                                },
+                                "recommendedUses": { "recommendedUse": "a" },
+                                "warningText": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'BabyOther':
+                        sub_category= {
+                            "BabyOther": {
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "diaperSize": talla,
+                                "material": "a",
+                                "gender": gender,
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                },
+                                "recommendedUses": { "recommendedUse": "a" }
+                            }
+                        };
+                    break;
+                    case 'ChildCarSeats':
+                        sub_category= {
+                            "ChildCarSeats": {
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "material": "a",
+                                "gender": gender,
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                }
+                            }
+                        };
+                    break;
+                    case 'BabyFurniture':
+                        sub_category= {
+                            "BabyFurniture": {
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "material": "a",
+                                "gender": gender,
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                }
+                            }
+                        };
+                    break;
+                    case 'BabyToys':
+                        sub_category= {
+                            "BabyToys": {
+                                "warningText": "a",
+                                "recommendedUses": { "recommendedUse": "a" },
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "material": "a",
+                                "gender": gender,
+                                "size": "a",
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                }
+                            }
+                        };
+                    break;   
+                    default:
+                        break;
+                }
+            }
+            break;
+            default:
+            break;
         }
 
         switch (action) {
@@ -2455,7 +3237,7 @@ module.exports = {
             default:
                 break;
         }
-
+        Object.assign(sub_category[inputs.categories[1]], basic_info)
         if(sub_category){
             if(variant){
                 sub_category[categories[1]].variantGroupId = product.id;
@@ -2498,12 +3280,14 @@ module.exports = {
                         "ProductTaxCode": "0",
                         "sellerWarranty": "Defectos de fábrica",
                         "sellerWarrantyPeriod": "3",
-                        "shippingCountryOfOrigin": "M&#233;xico"
+                        "shippingCountryOfOrigin": country
                     }
                 }
             };
             if(action === 'PARTIAL_UPDATE'){delete body.MPItem.MPOffer;}
         }
+        console.log(body.MPItem.MPProduct.category);
+        console.log(body);
 
         return exits.success(body);
     }
