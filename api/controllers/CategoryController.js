@@ -342,7 +342,7 @@ module.exports = {
         ["masculino","hombre","señor","caballero","ombre","macho","hombres","viejo"],
         ["femenino","mujer","dama","señora","mujeres","hembra","vieja","femenina"],
         ["niño","muchacho","joven","junior","infante","niños"],
-        ["niña","muchacha","jovencita","junior","infanta"]
+        ["niña","muchacha","jovencita","junior","infanta", "niñas"]
       ],
       aliases : {}
     };
