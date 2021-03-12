@@ -36,7 +36,7 @@ module.exports = {
         .populate('region')
         .populate('city');
       }
-      channels = await Channel.find({where:{type: { '!=': 'messenger' }}});
+      channels = await Channel.find({});
       integrations = await Integrations.find({
         where:{seller:id},
       }).populate('channel');
@@ -68,7 +68,7 @@ module.exports = {
         city:req.body.city,
         zipcode:req.body.zipcode,
         notes:req.body.notes
-      }
+      };
 
       let sellerData = {
         name:req.body.name.trim().toLowerCase(),
@@ -83,7 +83,7 @@ module.exports = {
         salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp
-      }
+      };
 
       try{
         filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
@@ -138,8 +138,8 @@ module.exports = {
     }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      
-       await Seller.updateOne({id:id}).set({
+
+      await Seller.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
         contact:req.body.contact,
@@ -155,7 +155,7 @@ module.exports = {
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp});
 
-    }catch(err){      
+    }catch(err){
       error=err;
       if(err.code==='badRequest'){
         await Seller.updateOne({id:id}).set({
@@ -267,38 +267,47 @@ module.exports = {
     let channel = req.param('channel');
     const nameChannel = req.param('namechannel');
     let integration = req.body.integration;
-    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.'
+    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.';
     let edit = false;
-
-    Integrations.findOrCreate({id: integration},{
-      channel:channel,
-      name: req.body.name,
-      url:req.body.url ? req.body.url : '',
-      user:req.body.user,
-      key:req.body.key,
-      secret:req.body.secret ? req.body.secret : '',
-      version:req.body.version ? req.body.version : '',
-      seller:seller
-    }).exec(async (err, record, created)=>{
-      if(err){return res.redirect('/sellers?error='+err);}
-      integration = record.id;
-      if(!created){
-        record = await Integrations.updateOne({id:record.id}).set({
-          name: req.body.name,
-          url:req.body.url ? req.body.url : record.url,
-          user:req.body.user ? req.body.user : record.user,
-          key:req.body.key ? req.body.key : record.key,
-          secret:req.body.secret ? req.body.secret : record.secret,
-          version:req.body.version ? req.body.version : record.version
-        });
-        edit = record.useridml !== '' && record.secret !== '' ? true : false;
-      }
-      if(nameChannel == 'mercadolibre' && !edit){
-        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
-      }else{
+    channel = await Channel.findOne({id: channel});
+    if (channel.type !== 'messenger') {
+      Integrations.findOrCreate({id: integration},{
+        channel:channel,
+        name: req.body.name,
+        url:req.body.url ? req.body.url : '',
+        user:req.body.user,
+        key:req.body.key,
+        secret:req.body.secret ? req.body.secret : '',
+        version:req.body.version ? req.body.version : '',
+        seller:seller
+      }).exec(async (err, record, created)=>{
+        if(err){return res.redirect('/sellers?error='+err);}
+        integration = record.id;
+        if(!created){
+          record = await Integrations.updateOne({id:record.id}).set({
+            name: req.body.name,
+            url:req.body.url ? req.body.url : record.url,
+            user:req.body.user ? req.body.user : record.user,
+            key:req.body.key ? req.body.key : record.key,
+            secret:req.body.secret ? req.body.secret : record.secret,
+            version:req.body.version ? req.body.version : record.version
+          });
+          edit = record.useridml !== '' && record.secret !== '' ? true : false;
+        }
+        if(nameChannel == 'mercadolibre' && !edit){
+          return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
+        }else{
+          return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
+        }
+      });
+    } else {
+      const result = await sails.helpers.channel.messenger.createWhatsapp(seller,channel.id,req.body.name,req.body.user,req.body.indicative);
+      if (result.error) {
+        return res.redirect('/sellers?error='+result.error);
+      } else {
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
-    });
+    }
   },
   showmessages: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
