@@ -3220,6 +3220,251 @@ module.exports = {
                 }
             }
             break;
+            case 'MusicalInstrument': {
+                switch (categories[1]) {
+                    case 'MusicalInstruments':
+                        sub_category= {
+                            "MusicalInstruments": {
+                                "warrantyText": "a",
+                                "powerType": "Continua",
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'SoundAndRecording':
+                        sub_category= {
+                            "SoundAndRecording": {
+                                "powerType": "Directa",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "modelStyleType": "a",
+                                "itemsIncluded": "a",
+                                "wireless": "No",
+                                "rmsPowerRating": {
+                                    "measure": "500",
+                                    "unit": "Watts"
+                                },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'MusicCasesAndBags':
+                        sub_category= {
+                            "MusicCasesAndBags": {
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'InstrumentAccessories':
+                        sub_category= {
+                            "InstrumentAccessories": {
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;   
+                    default:
+                        break;
+                }
+            }
+            break;
+            case 'CarriersAndAccessoriesCategory':
+                switch (categories[1]) {
+                    case 'CasesAndBags':
+                        sub_category= {
+                            "CasesAndBags": {
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                        break;
+                    default:
+                        break;
+                }
+                break;
+            case 'WatchesCategory':
+                switch (categories[1]) {
+                    case 'Watches':
+                        sub_category= {
+                            "Watches": {
+                                "compatibleDevices": "a",
+                                "wireless": "Sí",
+                                "gender": "Mujer",
+                                "material": "a",
+                                "colorCategory": { "colorCategoryValue": color },
+                                "color": product.mainColor.name,
+                                "itemsIncluded": product.name
+                            }
+                        };
+                        break;
+                    default:
+                        break;
+                }
+                break;    
+            case 'OfficeCategory':
+                switch (categories[1]) {
+                    case 'Office':
+                        sub_category= {
+                            "Office": {
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "months"
+                                },
+                                "warningText": "a",
+                                "itemsIncluded": product.name
+                            }
+                        };
+                        break;
+                    default:
+                        break;
+                }
+                break;   
+            case 'Media': {
+                switch (categories[1]) {
+                    case 'TVShows':
+                        sub_category= {
+                            "TVShows": {
+                                "mexicoMediaRating": "B15 (Mayores de 15 Años)",
+                                "physicalMediaFormat": "DVD",
+                                "ratingReason": "a",
+                                "subtitledLanguages": { "subtitledLanguage": "a" },
+                                "dubbedLanguages": { "dubbedLanguage": "a" },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'Movies':
+                        sub_category= {
+                            "Movies": {
+                                "mexicoMediaRating": "B15 (Mayores de 15 Años)",
+                                "physicalMediaFormat": "DVD",
+                                "movieGenre": "a",
+                                "ratingReason": "a",
+                                "subtitledLanguages": { "subtitledLanguage": "a" },
+                                "dubbedLanguages": { "dubbedLanguage": "a" },
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'BooksAndMagazines':
+                        sub_category= {
+                            "BooksAndMagazines": {
+                                "year": "0",
+                                "bookCoverType": "Pasta Dura",
+                                "bookFormat": "Fisico",
+                                "author": { "authorValue": "a" },
+                                "publisher": "a",
+                                "genre": "Lectores Intermedios",
+                                "issue": "a",
+                                "edition": "a",
+                                "numberOfPages": "0",
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                },
+                                "itemsIncluded": product.name,
+                                "wireless": "Sí",
+                                "screenSize": {
+                                    "measure": "0",
+                                    "unit": "Pulgadas"
+                                }
+                            }
+                        };
+                    break;
+                        default:
+                        break;
+                }
+            }
+            break;
+            case 'Vehicle': {
+                switch (categories[1]) {
+                    case 'Tires':
+                        sub_category= {
+                            "Tires": {
+                                "vehicleType": "Moto",
+                                "warningText": "a",
+                                "itemsIncluded": product.name
+                            }
+                        };
+                    break;
+                    case 'VehiclePartsAndAccessories':
+                        sub_category= {
+                            "VehiclePartsAndAccessories": {
+                                "bciGroupNumber": "a",
+                                "orientation": "Trasera",
+                                "compatibleBrands": { "compatibleBrand": "a" },
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "vehicleModel": "a"
+                            }
+                        };
+                    break;
+                    case 'LandVehicles':
+                        sub_category= {
+                            "ChildCarSeats": {
+                                "vehicleYear": "0",
+                                "vehicleModel": "a",
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color }
+                            }
+                        };
+                    break;
+                    case 'WheelsAndWheelComponents':
+                        sub_category= {
+                            "BabyFurniture": {
+                                "warningText": "a",
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "material": "a",
+                                "gender": gender,
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                }
+                            }
+                        };
+                    break;
+                    case 'VehicleOther':
+                        sub_category= {
+                            "BabyToys": {
+                                "warningText": "a",
+                                "recommendedUses": { "recommendedUse": "a" },
+                                "itemsIncluded": product.name,
+                                "color": product.mainColor.name,
+                                "colorCategory": { "colorCategoryValue": color },
+                                "material": "a",
+                                "gender": gender,
+                                "size": "a",
+                                "ageRange": {
+                                    "RangeMinimum": "0",
+                                    "RangeMaximum": "0",
+                                    "unit": "years"
+                                }
+                            }
+                        };
+                    break;   
+                    default:
+                        break;
+                }
+            }
+            break;
             default:
             break;
         }
