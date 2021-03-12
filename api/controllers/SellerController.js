@@ -380,6 +380,42 @@ module.exports = {
     }
     return res.status(404).send('No se encontró integracion para el seller');
   },
+  webhookmessenger: async function(req, res){
+    // let moment = require('moment');
+    let identifier = req.param('uuid');
+    const body = req.body;
+
+    let integration = await Integrations.findOne({secret: identifier});
+    if (body.challenge) {
+      if (!integration) {
+        return res.status(403).send('Not authorized');
+      }
+      return res.send({challenge: body.challenge});
+    }
+    console.log(body);
+    if (integration && body.uuid) {
+      let conversation = await Conversation.findOne({identifier: body.identifier})
+      if (!conversation) {
+        conversation = await Conversation.create({
+          seller: integration.seller,
+          identifier: body.identifier,
+          recipient: body.recipient,
+          integration: integration.id
+        }).fetch();
+      }
+      let questi = {
+        idMl: body.uuid,
+        seller: integration.seller,
+        text: body.type === 'text' ? body.payload.text : '',
+        status: 'UNANSWERED',
+        dateCreated: parseInt(body.created),
+        product: conversation.id,
+        answer: null,
+        integration: integration.id
+      };
+    }
+    return res.send();
+  },
   filtermessages: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
