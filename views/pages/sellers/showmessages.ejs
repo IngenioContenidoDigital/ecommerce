@@ -65,7 +65,7 @@
               </div>
             </div>
             <div class="media-right">
-              <span class="has-text-grey-light message-right time-questions"><a href="#">`+moment(message.created).locale('es').startOf('day').fromNow()+`</a></span>
+              <span class="has-text-grey-light message-right time-questions"><a href="#">`+moment(message.created).locale('es').startOf('minute').fromNow()+`</a></span>
               <span class="has-text-grey-light"><i class='bx bx-conversation'></i>`+message.questions.length+`</span>
             </div>
           </div>
@@ -101,7 +101,7 @@
     listAnswers.innerHTML = '';
     questions.forEach(question => {
       const answer = question.answer !== null ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answer.text +'&nbsp;</p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'
-      const quest = '<div class="media"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('day').fromNow() +'</span></div></div>'
+      const quest = '<div class="media"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('minute').fromNow() +'</span></div></div>'
       listAnsw += quest
     });
     const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="/product/edit/`+questions[0].product.id+`" target="_blank" class="title-questions">`+questions[0].product.name.toUpperCase()+`</a><article class="post">`+ listAnsw +`</article>`;

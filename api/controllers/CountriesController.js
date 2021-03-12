@@ -193,7 +193,7 @@ module.exports = {
     try{
       await City.create({
         name:req.body.name.trim().toLowerCase(),
-        code:req.body.code,
+        code:req.body.code ? req.body.code : '',
         region:req.body.region,
         active:isActive});
     }catch(err){
@@ -216,7 +216,7 @@ module.exports = {
     try{
       await City.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
-        code:req.body.code,
+        code:req.body.code ? req.body.code : '',
         region:req.body.region,
         active:isActive});
     }catch(err){

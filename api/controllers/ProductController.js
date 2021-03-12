@@ -544,6 +544,7 @@ module.exports = {
               channelid: result.id,
               status: true,
               qc:true,
+              iscreated:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -552,6 +553,7 @@ module.exports = {
                   channelid:result.id,
                   status:true,
                   qc:true,
+                  iscreated:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -568,6 +570,7 @@ module.exports = {
         channelid:'',
         status:false,
         qc:false,
+        iscreated:false,
         price:0
       }).exec(async (er, record, created)=>{
         if(er){return res.send({error: er});}
@@ -576,6 +579,7 @@ module.exports = {
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
             qc:false,
+            iscreated:false,
             price:0
           });
         }
@@ -700,6 +704,7 @@ module.exports = {
               channelid: response.data.import_id,
               status: true,
               qc:true,
+              iscreated:true,
               price: req.body.price ? parseFloat(req.body.price) : 0
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
@@ -707,6 +712,7 @@ module.exports = {
                 productChannelId = await ProductChannel.updateOne({id: record.id}).set({
                   channelid: response.data.import_id,
                   status:req.body.status,
+                  iscreated:true,
                   price: req.body.price ? parseFloat(req.body.price) : 0
                 });
               }
@@ -759,6 +765,7 @@ module.exports = {
         channelid: '',
         status:false,
         qc:false,
+        iscreated:false,
         price: 0
       });
       return res.send(err.message);
@@ -1300,7 +1307,7 @@ module.exports = {
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
+            products = products.filter(pro => pro.channels.length > 0 && !pro.channels[0].iscreated);
             break;
         }
 
@@ -1314,7 +1321,9 @@ module.exports = {
               response.items.push(pro);
             }
           }else{
-            let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');
+            let result = null;
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active',false);}
             const xml = jsonxml(result,true);
             let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
             await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
@@ -1382,7 +1391,7 @@ module.exports = {
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
+            products = products.filter(pro => pro.channels.length > 0 && !pro.channels[0].iscreated);
             break;
         }
 
@@ -1396,7 +1405,9 @@ module.exports = {
               response.items.push(pro);
             }
           }else{
-            let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');
+            let result = null;
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active',false);}
             const xml = jsonxml(result,true);
             let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
             await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
