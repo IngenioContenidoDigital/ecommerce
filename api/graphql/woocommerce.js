@@ -89,6 +89,8 @@ PRODUCT_VARIATION_ID :
 `query WooCommerceProductVariationQuery($productId: String) {
     WooCommerceProductVariation(productId: $productId) {
             data{
+                quantity
+                price
                 reference
                 simple
                 color
@@ -96,6 +98,52 @@ PRODUCT_VARIATION_ID :
                 images{
                     file
                     src
+                }
+            }
+        }
+    }`,
+PRODUCTID :
+`query WooCommerceProductIdQuery($productId: String) {
+    WooCommerceProductId(productId: $productId) {
+            product{
+                name
+                simple
+                externalId
+                description
+                reference
+                descriptionShort
+                active
+                price
+                manufacturer
+                color
+                quantity
+                tax{
+                    name
+                    rate
+                }
+                width
+                weight
+                height
+                length
+                images{
+                    file
+                    src
+                }
+                variations{
+                    quantity
+                    reference
+                    talla
+                    price
+                    color
+                    size
+                    weight
+                    discount{
+                        name
+                        from
+                        to
+                        type
+                        value
+                    }
                 }
             }
         }
