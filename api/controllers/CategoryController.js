@@ -341,8 +341,8 @@ module.exports = {
         ["cinturón","correa"],
         ["masculino","hombre","señor","caballero","ombre","macho","hombres","viejo"],
         ["femenino","mujer","dama","señora","mujeres","hembra","vieja","femenina"],
-        ["niño","muchacho","joven","junior","infante","niños"],
-        ["niña","muchacha","jovencita","junior","infanta"]
+        ["niño","muchacho","joven","junior masculino","infante","niños", "junior niño"],
+        ["niña","muchacha","jovencita","junior femenino","infanta", "niñas", "junior niñas"]
       ],
       aliases : {}
     };

@@ -19,6 +19,7 @@ module.exports = {
     let seller = inputs.seller;
     let productId = inputs.productId;
     let productVariation = inputs.productVariation;
+     
     let pro = await Product.findOne({id: productId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
       where:{
         to:{'>=':moment().valueOf()}
@@ -48,7 +49,7 @@ module.exports = {
         }
       }
       try {
-        if(pro.categories[0] && productVariation.variations && productVariation.variations.length > 0){
+        if(pro.categories[0] && productVariation.variations  && productVariation.variations.length > 0){
           for(let vr of productVariation.variations){
             let variation = await Variation.find({name: vr.talla.toLowerCase().replace(',','.'), gender: pro.gender, seller: pro.seller,category: pro.categories[0].id});
             let discountHandled = false;
