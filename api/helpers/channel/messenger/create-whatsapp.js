@@ -44,7 +44,7 @@ module.exports = {
       if (integration || (resultCustomer && !resultCustomer.error)) {
         const clientId = resultCustomer ? resultCustomer.data.client.client_id : integration.key;
         const clientSecret = resultCustomer ? resultCustomer.data.client.client_secret : integration.secret;
-        const token = await sails.helpers.channel.messenger.createToken(clientId, clientSecret, 'messenger:settings');
+        const token = await sails.helpers.channel.messenger.createToken(clientId, clientSecret, 'messenger:settings webhooks:create subscriptions:create crm:admin');
         const data = {
           'wb_display_name': inputs.name,
           'fb_business_manager_id': inputs.phonenumber,
@@ -67,17 +67,22 @@ module.exports = {
         };
         const response = await axios(options);
         if (response.data.uuid) {
-          const integrat = resultCustomer ? resultCustomer.data.integration : integration;
+          const uuidChannel = response.data.uuid;
+          const integrat = resultCustomer ? resultCustomer.integration : integration;
           if (!integrat.user) {
             await Integrations.updateOne({id:integrat.id}).set({
               user: response.data.uuid,
               url: response.data.fb_business_manager_id
             });
+            const resultWeb = await sails.helpers.channel.messenger.createWebhook(token,uuidChannel,seller.email,seller.name,seller.id);
+            if (resultWeb.error) {
+              return exits.success({error: resultWeb.error});
+            }
           }
+          return exits.success({});
         } else {
           return exits.success({error: response.data.error});
         }
-        return exits.success({});
       } else {
         return exits.success({error: 'No existe la integracion.'});
       }

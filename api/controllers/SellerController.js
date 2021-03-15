@@ -384,8 +384,7 @@ module.exports = {
     // let moment = require('moment');
     let identifier = req.param('uuid');
     const body = req.body;
-
-    let integration = await Integrations.findOne({secret: identifier});
+    let integration = await Integrations.findOne({user: identifier});
     if (body.challenge) {
       if (!integration) {
         return res.status(403).send('Not authorized');
