@@ -448,7 +448,7 @@ module.exports = {
   },  
   report: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name!=='superadmin' && rights.name!=='admin' && rights.name!=='operaciones') {
+    if (rights.name!=='superadmin' && !_.contains(rights.permissions,'report')) {
       throw 'forbidden';
     }
     let sellers = [];
@@ -469,7 +469,7 @@ module.exports = {
     }
 
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && rights.name!=='admin' && rights.name!=='operaciones'){
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
     }
  
