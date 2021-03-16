@@ -5,7 +5,8 @@ module.exports = {
     inputs: {
       product: {type:'json'},
       seller: {type : 'string'},
-      integration :  {type:'json'}
+      integration :  {type:'json'},
+      separate_product_by_color : {type:'boolean'}
     },
     exits: {
       success: {
@@ -30,7 +31,7 @@ module.exports = {
           if (!exists) {
             let pr  =  await Product.create(pro).fetch();
             try {	
-              if(inputs.integration.channel.name == sails.config.custom.WOOCOMMERCE_CHANNEL && product.color && product.color.length > 0 && !product.simple){	
+              if(inputs.separate_product_by_color && inputs.integration.channel.name == sails.config.custom.WOOCOMMERCE_CHANNEL && product.color && product.color.length > 0 && !product.simple){	
                 let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(	
                   inputs.integration.channel.name, 	
                   inputs.integration.key,	
