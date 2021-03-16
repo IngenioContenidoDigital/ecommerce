@@ -7,9 +7,9 @@
 
 module.exports = {
   attributes: {
+    name: {type:'string'},
     identifier: {type:'string'},
     recipient: {type:'string'},
-    seller: {model:'seller'},
     integration:{ model:'integrations' }
   }
 };

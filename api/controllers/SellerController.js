@@ -309,17 +309,6 @@ module.exports = {
       }
     }
   },
-  showmessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let seller = req.param('seller');
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let channels = await Channel.find({type: 'messenger'});
-    let countQuestion = await Question.count({status: 'UNANSWERED', seller: seller});
-
-    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, countQuestion, seller});
-  },
   notificationml: async function(req, res){
     let moment = require('moment');
     let resource = req.body.resource;
@@ -396,7 +385,7 @@ module.exports = {
       let conversation = await Conversation.findOne({identifier: body.identifier})
       if (!conversation) {
         conversation = await Conversation.create({
-          seller: integration.seller,
+          name: body.payload.user.name,
           identifier: body.identifier,
           recipient: body.recipient,
           integration: integration.id
@@ -408,12 +397,28 @@ module.exports = {
         text: body.type === 'text' ? body.payload.text : '',
         status: 'UNANSWERED',
         dateCreated: parseInt(body.created),
-        product: conversation.id,
+        conversation: conversation.id,
         answer: null,
         integration: integration.id
       };
     }
     return res.send();
+  },
+  showmessages: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    let seller = req.param('seller');
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
+      throw 'forbidden';
+    }
+    const questionsChannel = [];
+    let channels = await Channel.find({type: 'messenger'});
+    let integrations = await Integrations.find({seller: seller}).populate('channel');
+    for (const inte of integrations) {
+      const channel = inte.channel.name === 'mercadolibre' ? channels[0].id : inte.channel.id;
+      const count = await Question.count({status: 'UNANSWERED', seller: seller, integration: inte.id});
+      questionsChannel.push({channel, count, integration: inte.id});
+    }
+    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, questionsChannel, seller});
   },
   filtermessages: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -421,17 +426,19 @@ module.exports = {
       throw 'forbidden';
     }
     let seller = req.body.seller || req.session.user.seller;
+    const integration = req.body.integration;
     let messages = [];
-
-    let questions = await Question.find({seller: seller, status: 'UNANSWERED'}).sort('createdAt DESC')
-      .populate('product');
+    let questions = await Question.find({seller: seller, status: 'UNANSWERED', integration: integration}).sort('createdAt DESC')
+      .populate('product').populate('conversation');
 
     for(let q of questions){
-      if(!messages.some(m => m.id === q.product.id)){
-        const questi = questions.filter(item => item.product.id === q.product.id && item.status === 'UNANSWERED');
+      const identifier = q.product ? q.product.id : q.conversation.id;
+      if(!messages.some(m => m.id === identifier)){
+        const questi = q.product ? questions.filter(item => item.product.id === identifier) : questions.filter(item => item.conversation.id === identifier);
         messages.push({
-          id: q.product.id,
-          name: q.product.name.toUpperCase(),
+          id: identifier,
+          isproduct: q.product ? true : false,
+          name: q.product ? q.product.name.toUpperCase() : q.conversation.name.toUpperCase(),
           created: q.dateCreated,
           questions: questi
         });
@@ -444,10 +451,12 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
       throw 'forbidden';
     }
-    let productId = req.body.productId;
-
-    let questions = await Question.find({product: productId}).sort('createdAt DESC').populate('product').populate('answer');
-    questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
+    let identifier = req.body.productId;
+    const isproduct = req.body.isproduct;
+    let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answer') : await Question.find({conversation: identifier}).sort('createdAt DESC').populate('conversation').populate('answer');
+    if (isproduct) {
+      questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
+    }
     return res.send({questions});
   },
   answerquestion: async function(req, res){
