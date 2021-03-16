@@ -7,6 +7,7 @@ module.exports = {
             productId,
             key,
             channel
+            separate_product_by_color
         }
     }`
 };

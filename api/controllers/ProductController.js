@@ -2097,7 +2097,7 @@ module.exports = {
                   for(let vr of p.variations){
                     if(vr.color && vr.color.length > 0){
                       let prc= await Product.findOne({reference:vr.reference, seller:pro.seller});
-                      let vt = vr.size ? vr.size.toLowerCase() : vr.talla.toLowerCase().replace(',','.') ;
+                      let vt =  vr.size ? vr.size.toLowerCase() : ( vr.talla ? vr.talla.toLowerCase().replace(',','.') : "única");
                       let variation = await Variation.find({ name:vt, gender:pro.gender,seller:pro.seller,category:pro.categories[0].id});	
                       let productVariation;	
                       let discountHandled = false;
