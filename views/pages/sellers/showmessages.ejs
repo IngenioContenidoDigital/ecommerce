@@ -82,6 +82,7 @@
     addClass(listQuestions,'is-hidden');
     addClass(listAnswers,'container-message');
     removeClass(listAnswers,'is-hidden');
+    listAnswers.innerHTML = '';
     io.socket.post('/getquestions', {productId, isproduct}, (resData, jwRes) => {
       if(jwRes.statusCode == 200) {
         createHtmlQuestions(resData.questions, isproduct);
@@ -92,7 +93,6 @@
   function createHtmlQuestions(questions, isproduct) {
     let listAnswers = document.querySelector("#listAnswers");
     let listAnsw = '';
-    listAnswers.innerHTML = '';
     if (isproduct) {
       questions.forEach(question => {
         const answer = question.answer !== null ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answer.text +'&nbsp;</p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'

@@ -272,7 +272,7 @@ module.exports = {
     channel = await Channel.findOne({id: channel});
     if (channel.type !== 'messenger') {
       Integrations.findOrCreate({id: integration},{
-        channel:channel,
+        channel:channel.id,
         name: req.body.name,
         url:req.body.url ? req.body.url : '',
         user:req.body.user,
