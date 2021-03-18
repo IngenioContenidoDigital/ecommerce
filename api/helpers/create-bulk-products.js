@@ -37,7 +37,11 @@ module.exports = {
             let pr;
             let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference});
             if (!exists) {
-              pr = await Product.create(pro).fetch();
+                if(inputs.provider != sails.config.custom.WOOCOMMERCE_CHANNEL){
+                    pr = await Product.create(pro).fetch();
+                }else if(product.simple && (product.color && product.color.length == 1)){
+                    pr = await Product.create(pro).fetch();
+                }
             } else {
               delete pro.mainCategory;	
               delete pro.categories;
@@ -46,6 +50,7 @@ module.exports = {
 
             try {	
               if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL && inputs.asColor && product.color && product.color.length > 0 && !product.simple){	
+                
                 let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(	
                   inputs.credentials.channel, 	
                   inputs.credentials.pk,	
@@ -56,38 +61,49 @@ module.exports = {
                   product.externalId	
                 );	
 
-                for (let index = 0; index < product_variables.data.length; index++) {	
-                  const product_variable = product_variables.data[index];	
-                  if(product_variable.color && product.color.length > 0){	
-                    pro.reference = product_variable.reference;	
-                    let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);	
+                let parent_category;
 
-                    if(color && color.length > 0){	
-                      pro.mainColor = color[0];	
-                    }else{	
-                      throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
-                    }	
+                if(product_variables && product_variables.data){
+                  for (let index = 0; index < product_variables.data.length; index++) {	
+                      const product_variable = product_variables.data[index];
+                      if(product_variable.color && product.color.length > 0){	
+                       
+                        pro.reference = product_variable.reference;	
+                        pro.externalId = product_variable.externalId;
+                        
+                        let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);	
+                        
+                        if(parent_category){
+                          pro.categories =  parent_category;
+                        }
 
-                    let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference });	
+                        if(color && color.length > 0){	
+                          pro.mainColor = color[0];	
+                        }else{	
+                          throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
+                        }	
 
-                    if (!exists) {	
-                        pr = await Product.create(pro).fetch();	
-                    } else {	
+                        let exists = await Product.findOne({ externalId:product_variable.externalId, seller:pro.seller, reference : product_variable.reference });	
 
-                      delete pro.mainCategory;	
-                      delete pro.categories;
+                        if (!exists) {	
+                            parent_category = pro.categories;
+                            pr = await Product.create(pro).fetch();	
+                        } else {	
 
-                      pr = await Product.updateOne({ id: exists.id }).set(pro);	
-                    }	
+                          delete pro.mainCategory;	
+                          delete pro.categories;
+
+                          pr = await Product.updateOne({ id: exists.id }).set(pro);	
+                        }	
+                      }	
+
                   }	
 
-                }	
-
-                result.push(pr);	
-                sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
+                  result.push(pr);	
+                  sails.sockets.broadcast(sid, 'product_processed', { errors, result });	                  
+                }
           }	
             } catch (error) {	
-              console.log(error);
               errors.push({ name:'ERRDATA', message:error.message });	
               sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
             }	
