@@ -104,7 +104,8 @@ module.exports = {
               discount:cp.totalDiscount,
               originalPrice:cp.productvariation.price,
               externalReference:cp.externalReference,
-              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : resultseller.salesCommission
+              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : resultseller.salesCommission,
+              shippingType: cp.shippingType ? cp.shippingType : ''
             });
             let pv = await ProductVariation.findOne({id:cp.productvariation.id});
             if(pv){
