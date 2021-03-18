@@ -59,7 +59,7 @@ module.exports = {
         images.push({'source':sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file});
         vimages.push(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
       });
-      let integration = await Integrations.findOne({id: inputs.integration});
+      let integration = await Integrations.findOne({id: inputs.integration}).populate('channel');
       let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
 
       productvariations.forEach(variation =>{
