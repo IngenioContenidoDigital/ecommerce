@@ -47,6 +47,7 @@ IMAGES : `
                 data{
                         externalId
                         simple
+                        color
                         reference
                         images{
                             file
@@ -92,6 +93,7 @@ PRODUCT_VARIATION_ID :
                 quantity
                 price
                 reference
+                externalId
                 simple
                 color
                 size
