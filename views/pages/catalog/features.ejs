@@ -1,0 +1,164 @@
+<div class="container">
+<% if (error != undefined || error != null) { %>
+  <div class="notification is-danger is-light" id="error">
+    <button class="delete"></button>
+      <%= error %>
+  </div>
+<% } %>
+<% if(action=='create' || action=='edit'){ %> 
+    <br /> 
+    <h4 class="title is-4">Característica de Producto</h4>
+    <hr>
+    <% if(action=='edit'){ %>
+      <form action="/features/edit/<%= feature.id %>" method="POST" enctype="multipart/form-data">
+    <% } else { %>
+      <form action="/features/create" method="POST" enctype="multipart/form-data">
+    <% } %>
+    <div class="box">
+      <div class="columns is-mobile is-centered">
+        <div class="column">
+          <p class="has-text-right">
+            <% if(action=='edit'){ %>
+              <input id="activo" type="checkbox" <% if(feature.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+              <label for="activo">Característica: <span id="state"><% if(feature.active){ %> <b style="color:green;">activa</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
+            <% }else{ %>
+              <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+              <label for="activo">Característica: <span id="state"><b style="color:green;">activa</b></span></label>  
+            <% } %>
+            </p>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Nombre</label>
+        <div class="control">
+          <input class="input is-capitalized" type="text" name="nombre" required="true" placeholder="Nombre de la característica del producto" <%if(action=='edit'){%>value="<%=feature.name%>"<%}%>>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Valor</label>
+        <div class="control">
+          <input class="input is-capitalized" type="text" name="value" required="true" placeholder="Valor de la característica del producto" <%if(action=='edit'){%>value="<%=feature.value%>"<%}%>>
+        </div>
+      </div>
+      <div class="field">
+        <label class="label">Descripción</label>
+        <div class="control">
+          <textarea class="textarea" name="descripcion" placeholder="Descripción de la característica del producto"><%if(action=='edit'){%><%-feature.description%><%}%></textarea>
+        </div>
+      </div>
+      <div class="control buttons is-right">
+        <% if(action=='edit'){ %> 
+          <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Característica</button>
+        <% }else if (action=='create'){ %>
+          <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Característica</button>
+        <% } %>
+      </div>
+    </div>
+    </form>
+  <script>
+  </script>
+<% }else{ %>
+    <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+      <a href="/features/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+    </p>
+    <div class="table-container">
+        <table class="table is-hoverable" id="features-table">
+            <thead>
+            <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Activa</th>
+                <th scope="col">Opciones</th>
+            </tr>
+            </thead>
+            <tbody>
+              <% features.forEach(function(feature){ %>
+                <tr>
+                  <td class="align-middle is-capitalized"><%= feature.name %></td>
+                  <td class="align-middle"><%= feature.description %></td>
+                  <td class="align-middle">
+                    <span class="action">
+                    <% if(feature.active===true) { %>
+                      <i feature="<%= feature.id %>" class="state bx bx-check-circle"></i>
+                    <% }else{ %>
+                      <i feature="<%= feature.id %>" class="state bx bx-x-circle"></i>
+                    <%}%>
+                  </span>
+                  </td>
+                  <td class="align-middle">
+                    <a href="/features/edit/<%= feature.id %>" class="button is-small">
+                      <span class="icon">
+                        <i class="bx bxs-edit"></i>
+                      </span>
+                    </a>
+                    <a id="delete" href="/features/delete/" feature="<%= feature.id %>" class="delete-feature button is-small">
+                      <span class="icon">
+                        <i class="bx bx-trash"></i>
+                      </span>
+                    </a>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+        </table>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        let table = new simpleDatatables.DataTable('#features-table',{
+          searchable:true,
+          sortable:true,
+          paging:true,
+          labels: {
+            placeholder: "Buscar...",
+            perPage: "{select} registros por página",
+            noRows: "No se encontraron datos",
+            info: "Mostrando {start} a {end} de {rows} registros",
+          }
+        });  
+      });
+
+      live('.delete-feature','click',e=>{
+        e.preventDefault();
+        if(confirm('Seguro Desea Continuar?')){
+          let dest = document.querySelector('#delete');
+          io.socket.delete(dest.href,{feature:dest.getAttribute('feature')},(response)=>{
+            if(response=='deleted'){
+              window.location.href='/features';
+            }
+          });
+        }
+      });
+    </script>
+<% } %>
+</div>
+<script>
+  live('#activo','click',function(){
+      let elm = this;
+      let state = elm.checked;
+      var sp = document.querySelector('#state');
+      if(state){
+        sp.innerHTML='<b style="color:green;">activada</b>';
+      }else{
+        sp.innerHTML='<b style="color:red;">inactiva</b>';
+      }
+    });
+
+  live('.state', 'click', function(){ 
+    if(confirm('Seguro Desea Continuar')){
+      var elm = this;
+      var id = this.getAttribute('feature');
+      var status = null;
+      if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+      io.socket.put('/features/'+id,{active:status},function(resData, jwr){
+        if(resData.active===false){
+          removeClass(elm, 'bx-check-circle');
+          addClass(elm,'bx-x-circle');
+        }else{
+          removeClass(elm, 'bx-x-circle');
+          addClass(elm,'bx-check-circle');
+        }
+      });
+    }
+});
+</script>
