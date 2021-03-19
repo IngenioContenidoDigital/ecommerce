@@ -21,7 +21,7 @@ module.exports = {
     }
   },
   fn: async function (inputs,exits) {
-
+    const _ = require("lodash");
     let seller = inputs.seller;
     let sid = inputs.socketId;
 
@@ -64,26 +64,34 @@ module.exports = {
                 let parent_category;
 
                 if(product_variables && product_variables.data){
-                  for (let index = 0; index < product_variables.data.length; index++) {	
-                      const product_variable = product_variables.data[index];
+                  products_colors = _.uniqBy(product_variables.data.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
+                 
+                  console.log(products_colors);
+                  for (let index = 0; index < products_colors.length; index++) {	
+                      const product_variable = products_colors[index];
+
                       if(product_variable.color && product.color.length > 0){	
-                       
-                        pro.reference = product_variable.reference;	
-                        pro.externalId = product_variable.externalId;
                         
-                        let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);	
+                        let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
+
+                        if(color && color.length > 0){
+                          color = await Color.findOne({id : color[0]});
+                        }
+
+                        if(color){
+                          pro.mainColor = color.id;	
+                          pro.reference = `${product_variable.reference}-${color.name}`.toUpperCase();	
+                        }else{
+                          throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
+                        }
+                        
+                        pro.externalId = product_variable.externalId;
                         
                         if(parent_category){
                           pro.categories =  parent_category;
                         }
 
-                        if(color && color.length > 0){	
-                          pro.mainColor = color[0];	
-                        }else{	
-                          throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
-                        }	
-
-                        let exists = await Product.findOne({ externalId:product_variable.externalId, seller:pro.seller, reference : product_variable.reference });	
+                        let exists = await Product.findOne({ externalId:product_variable.externalId, seller:pro.seller, reference : pro.reference });	
 
                         if (!exists) {	
                             parent_category = pro.categories;
@@ -99,8 +107,11 @@ module.exports = {
 
                   }	
 
-                  result.push(pr);	
-                  sails.sockets.broadcast(sid, 'product_processed', { errors, result });	                  
+                  if(typeof(pr) == 'object'){
+                    result.push(pr);	
+                    sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
+                  }
+
                 }
           }	
             } catch (error) {	
