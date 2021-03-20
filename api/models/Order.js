@@ -87,6 +87,10 @@ module.exports = {
     },
     integration:{
       model:'integrations',
+    },
+    manifest: {
+      type:'string',
+      defaultsTo:''
     }
   },
   beforeCreate (obj, cb) {
