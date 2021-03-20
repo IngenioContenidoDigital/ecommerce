@@ -14,6 +14,7 @@
     <ul class="menu-list">
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('listorders')){%><li><a class="navbar-item" href="/orders">Pedidos</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('liststates')){%><li><a class="navbar-item" href="/order/state">Estados</a></li><%}%>
+      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/manifest">Generar manifiesto</a></li><%}%>
     </ul>
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showproducts') || req.session.user.rights.permissions.includes('showcolors')|| req.session.user.rights.permissions.includes('showvariations')|| req.session.user.rights.permissions.includes('showcategories')|| req.session.user.rights.permissions.includes('listbrands')){%>
@@ -57,7 +58,6 @@
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/campaigns">Campañas</a></li><%}%>
       <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/showreports/<%=session.user.seller%>">Reportes</a></li><%}%>
-    </ul>
     <%}%>
     <p class="menu-label is-size-7">
       <i class='bx bxs-truck' ></i>&nbsp;Transporte & Envíos
