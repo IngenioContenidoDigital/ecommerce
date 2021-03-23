@@ -29,7 +29,7 @@
     let oitems = await OrderItem.find({order:order.id}).populate('product');
     let items = oitems.length;
     let integration = await Integrations.findOne({id: order.integration}).populate('channel');
-
+    
     if(order.channel==='direct'){
       let soap = require('strong-soap').soap;
       //let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
@@ -186,7 +186,7 @@
           await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
         }
       } else {
-        let route = await sails.helpers.channel.dafiti.sign(order.integration, 'SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=']);
+        let route = await sails.helpers.channel.dafiti.sign(order.integration, 'SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega']);
         let response = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'POST');
         let result = JSON.parse(response);
         if(result.SuccessResponse){
@@ -201,7 +201,7 @@
           }
           let tracking = items.OrderItem[0].TrackingCode;
           await Order.updateOne({id:order.id}).set({tracking:tracking});
-          let rts = await sails.helpers.channel.dafiti.sign(order.integration,'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=','TrackingNumber='+tracking]);
+          let rts = await sails.helpers.channel.dafiti.sign(order.integration,'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','ShippingProvider=Servientrega','TrackingNumber='+tracking]);
           await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
         }
       }
