@@ -20,6 +20,7 @@ module.exports = {
     tagManager:{type:'string'},
     salesCommission:{type:'number', defaultsTo:0},
     skuPrice:{type:'number', defaultsTo:0},
+    activeSku:{type:'boolean', defaultsTo:false},
     integrationErp:{type:'boolean', defaultsTo:false},
     currency:{
       model:'currency'

@@ -9,6 +9,7 @@ module.exports = {
   attributes: {
     month: {type:'string'},
     seller: {model:'seller'},
-    price:{type:'number',defaultsTo:0}
+    price:{type:'number',defaultsTo:0},
+    totalProducts:{type:'number',defaultsTo:0}
   }
 };

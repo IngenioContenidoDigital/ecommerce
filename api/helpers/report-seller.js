@@ -30,6 +30,8 @@ module.exports = {
     let totalCommissionVat = 0;
     let totalRetFte = 0;
     let totalRetIca = 0;
+    let totalSkuInactive = 0;
+    let totalSkuActive = 0;
     let orders = await Order.find({
       where: {
         seller: inputs.sellerId,
@@ -37,7 +39,27 @@ module.exports = {
         updatedAt: { '>': dateStart, '<': dateEnd }
       }
     });
-    let totalProducts = await Product.count({
+    totalSkuInactive = await Product.count({
+      where: {
+        seller: inputs.sellerId,
+        createdAt: { '<': dateEnd },
+        active: false
+      }
+    });
+    totalSkuActive = await Product.count({
+      where: {
+        seller: inputs.sellerId,
+        createdAt: { '<': dateEnd },
+        active: true
+      }
+    });
+    let totalProducts = seller.activeSku ? await Product.count({
+      where: {
+        seller: inputs.sellerId,
+        createdAt: { '<': dateEnd },
+        active: true
+      }
+    }) : await Product.count({
       where: {
         seller: inputs.sellerId,
         createdAt: { '<': dateEnd }
@@ -47,11 +69,13 @@ module.exports = {
     let reportSkuPrice = await ReportSkuPrice.findOne({seller: seller.id, month: inputs.month});
     if (reportSkuPrice) {
       skuPrice = reportSkuPrice.price;
+      totalProducts = reportSkuPrice.totalProducts;
     } else {
-      reportSkuPrice = await ReportSkuPrice.create({month: inputs.month,seller: seller.id,price: skuPrice}).fetch();
+      reportSkuPrice = await ReportSkuPrice.create({month: inputs.month,seller: seller.id,price: skuPrice, totalProducts: totalProducts}).fetch();
       skuPrice = reportSkuPrice.price;
+      totalProducts = reportSkuPrice.totalProducts;
     }
-    let totalSku = (Math.ceil(totalProducts /100)) * skuPrice * 1.19;
+    let totalSku = totalProducts ? (Math.ceil(totalProducts /100)) * skuPrice * 1.19 : 0;
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
       for (const item of items) {
@@ -77,7 +101,9 @@ module.exports = {
       totalSku,
       totalRetFte,
       totalRetIca,
-      totalBalance
+      totalBalance,
+      totalSkuInactive,
+      totalSkuActive
     });
   }
 };

@@ -190,14 +190,16 @@ module.exports = {
     try{
       await Seller.updateOne({id: id}).set({
         salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
-        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0
+        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
+        activeSku: (req.body.activeSku ==='on') ? true : false
       });
     }catch(err){
       error=err;
       if(err.code==='badRequest'){
         await Seller.updateOne({id:id}).set({
           salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
-          skuPrice: req.body.skuPrice ? req.body.skuPrice : 0
+          skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
+          activeSku: (req.body.activeSku ==='on') ? true : false
         });
       }
     }
@@ -462,7 +464,7 @@ module.exports = {
       const dateStart = order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
       const dateEnd = moment().format('YYYY/MM');
       let numberMonth = moment(dateEnd, 'YYYY/MM').diff(moment(dateStart, 'YYYY/MM'), 'months');
-      const number = numberMonth >= 14 ? 14 : numberMonth - 1;
+      const number = numberMonth >= 14 ? 14 : numberMonth === 0 ? 0 : numberMonth - 1;
       for (let i = number; i >= 0; i--) {
         let month = moment().subtract(i+1, 'months').locale('es').format('MMMM YYYY');
         let available = moment().subtract(i, 'months').locale('es').format('MMMM YYYY');

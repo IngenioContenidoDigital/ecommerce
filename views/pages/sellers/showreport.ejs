@@ -62,7 +62,12 @@
       <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Detalles Conceptos:&nbsp;</span></p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Referencias Activas (SKU)</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.totalSku).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Total Referencias Inactivas (SKU)</span></td><td><p class="has-text-dark has-text-right"><%= data.totalSkuInactive %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Total Referencias Activas (SKU)</span></td><td><p class="has-text-dark has-text-right"><%= data.totalSkuActive %>&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Total Referencias:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.totalSkuInactive + data.totalSkuActive %>&nbsp;</p></td></tr>
+        </table>
+        <table class="table is-fullwidth">
+          <tr><td><span class="is-size-7"><%= data.seller.activeSku ? 'Referencias Activas (SKU)' : 'Referencias (SKU)' %></span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.totalSku).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
           <tr><td><span class="is-size-7">Fotografia (FTG)</span></td><td><p class="has-text-dark has-text-right">$0&nbsp;</p></td></tr>
           <tr><td><span class="is-size-7">Marketing (MKT)</span></td><td><p class="has-text-dark has-text-right">$0&nbsp;</p></td></tr>
           <tr><td><span class="is-size-7">Serv Envio (ENV)</span></td><td><p class="has-text-dark has-text-right">$0&nbsp;</p></td></tr>
