@@ -39,6 +39,7 @@ module.exports = {
         await ProductChannel.updateOne({id: productChannelId}).set({
           iscreated:true,
           status:true,
+          qc:true,
           reason: ''
         });
         let imgresult = integration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.images([product], integration.id) : await sails.helpers.channel.linio.images([product], integration.id);

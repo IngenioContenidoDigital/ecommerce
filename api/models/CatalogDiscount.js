@@ -26,6 +26,7 @@ module.exports = {
     },
     value:{
       type:'number',
+      min:1,
       required:true
     },
     seller:{

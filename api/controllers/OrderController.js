@@ -553,5 +553,63 @@ module.exports = {
       console.log(e);
     }
   },
+  manifest: async function(req, res){
+    res.view('pages/orders/manifest',{layout:'layouts/admin'});
+  },
+  generatemanifest: async (req, res) =>{
+    const jsonxml = require('jsontoxml');
+    let numbers = req.body.numbers;
+    const seller = req.session.user.seller;
+    const result = [];
+    let listItems = [];
+    numbers = numbers.split(',');
+    numbers.forEach(n => {
+      result.push(parseInt(n));
+    });
+    try {
+      let orders = await Order.find({where: {seller: seller, channel: 'dafiti', reference: result}});
+      for (const order of orders) {
+        if (!order.manifest) {
+          const orderItems = await OrderItem.find({order:order.id});
+          for(let item of orderItems){
+            if(!listItems.includes(item.externalReference)){
+              listItems.push(item.externalReference);
+            }
+          }
+        }
+      }
+      if (listItems.length > 0) {
+        const OrderItemIds = listItems.join(',');
+        const body = {
+          Request: {
+            OrderItemIds
+          }
+        }
+        let integration = await Integrations.findOne({id: orders[0].integration}).populate('channel');
+        const xml = jsonxml(body, true);
+        let sign = await sails.helpers.channel.dafiti.sign(integration.id,'CreateForwardManifest',order.seller);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml).then(async (resData)=>{
+          resData = JSON.parse(resData);
+          if(resData.SuccessResponse.Body.ManifestId){
+            const manifest = resData.SuccessResponse.Body.TrackingCode;
+            for (const order of orders) {
+              await Order.updateOne({id:order.id}).set({manifest:manifest});
+            }
+            const resultManifest = await sails.helpers.channel.dafiti.manifest(manifest, integration);
+            if (resultManifest.guia) {
+              return res.send({guia: resultManifest.guia, error: null});
+            } else {
+              return res.send({guia: null, error: 'Error al generar el pdf'});
+            }
+          }else{
+            return res.send({guia: null, error: resData.ErrorResponse.Head.ErrorMessage});
+          }
+        })
+      } else {
+        return res.send({guia: null, error: 'No hay items para generar el manifiesto'});
+      }
+    } catch (error) {
+      return res.send({guia: null, error: 'Error al generar el manifiesto'});
+    }
+  }
 };
-
