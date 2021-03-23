@@ -1903,7 +1903,7 @@ module.exports = {
                   for (let index = 0; index < colors.length; index++) {
                     const pcolor = colors[index];
                     try {
-                      let productColor =  await Product.findOne({externalId :pcolor.externalId});
+                      let productColor =  await Product.findOne({externalId :pcolor.externalId, seller : seller});
                       if(productColor && await ProductImage.count({product:productColor.id}) == 0){
                         for (let im of pcolor.images) {
                           try {
@@ -1950,7 +1950,7 @@ module.exports = {
                 }
               }
           }else{
-            let product = await Product.findOne({externalId : p.externalId});
+            let product = await Product.findOne({externalId : p.externalId, seller : seller});
             if(product &&  await ProductImage.count({product:product.id}) == 0){
               for (let im of p.images) {
                 try {

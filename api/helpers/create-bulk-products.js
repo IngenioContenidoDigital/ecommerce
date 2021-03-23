@@ -65,8 +65,6 @@ module.exports = {
 
                 if(product_variables && product_variables.data){
                   products_colors = _.uniqBy(product_variables.data.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
-                 
-                  console.log(products_colors);
                   for (let index = 0; index < products_colors.length; index++) {	
                       const product_variable = products_colors[index];
 
