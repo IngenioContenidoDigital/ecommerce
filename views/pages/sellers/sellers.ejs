@@ -589,6 +589,15 @@
                   </div>
                 </div>
               </div>
+              <div class="column">
+                <div class="field">
+                  <div class="control">
+                    <label class="label is-size-7">SKU activos</label>
+                    <input id="activeSku" type="checkbox" name="activeSku" class="switch is-success" <% if(action=='edit' && seller.activeSku){%>checked<%}%>>
+                    <label for="activeSku"></label>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="control buttons is-right">
               <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Comisión</button>
