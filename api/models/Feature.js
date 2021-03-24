@@ -11,7 +11,10 @@ module.exports = {
     name:{type:'string', required:true, unique:true},
     description:{type:'string'},
     active:{type:'boolean', required:true},
-    value:{type:'string', required:true}
+    categories:{
+      collection:'category',
+      via:'features'
+    }
     /*
     name:{type:'string', required:true, unique:true},
     code:{type:'string', required:true, unique:true}

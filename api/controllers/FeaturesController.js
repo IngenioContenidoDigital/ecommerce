@@ -18,9 +18,11 @@ module.exports = {
     let features = await Feature.find();
     let feature=null;
     if(id){
-      feature = await Feature.findOne({id:id});
+      feature = await Feature.findOne({id:id}).populate('categories');
     }
-    res.view('pages/catalog/features',{layout:'layouts/admin',features:features, action:action, error:error, feature:feature});
+    categories = await Category.find({level:2}).populate('features');
+    // console.log(categories);
+    res.view('pages/catalog/features',{layout:'layouts/admin',features:features, action:action, error:error, feature:feature, categories:categories});
   },
   addfeature: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -29,17 +31,48 @@ module.exports = {
     }
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
+    let categories = req.body.categories;
+
     try{
-      await Feature.create({
-        name:req.body.nombre.trim().toLowerCase(),
-        description:req.body.descripcion,
-        active: isActive,
-        value: req.body.value
-      });
+      if(categories.length>0){
+        let feature = await Feature.create({
+          name:req.body.nombre.trim().toLowerCase(),
+          description:req.body.descripcion,
+          active: isActive
+        }).fetch();
+        await Feature.addToCollection(feature.id,'categories').members(categories);
+      }
     }catch(err){
       error=err;
     }
 
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/features');
+    }else{
+      return res.redirect('/features?error='+error);
+    }
+  },
+  editfeature: async (req,res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editfeature')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let isActive = (req.body.activo==='on') ? true : false;
+    let id = req.param('id');
+    let categories = req.body.categories;
+
+    try{
+      let feature = await Feature.updateOne({id:id}).set({
+        name:req.body.nombre.trim().toLowerCase(),
+        description:req.body.description,
+        active:isActive
+      });
+      await Feature.replaceCollection(feature.id,'categories').members(categories);
+
+    }catch(err){
+      error=err;
+    }
     if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/features');
     }else{
@@ -59,34 +92,13 @@ module.exports = {
     var updatedFeature = await Feature.updateOne({id:id}).set({active:state});
     return res.send(updatedFeature);
   },
-  editfeature: async (req,res)=>{
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editfeature')){
-      throw 'forbidden';
-    }
-    let error=null;
-    let isActive = (req.body.activo==='on') ? true : false;
-    let id = req.param('id');
-    try{
-      await Feature.updateOne({id:id}).set({
-        name:req.body.nombre.trim().toLowerCase(),
-        description:req.body.description,
-        active:isActive,
-      });
-    }catch(err){
-      error=err;
-    }
-    if (error===undefined || error===null || error.code==='badRequest'){
-      return res.redirect('/features');
-    }else{
-      return res.redirect('/features?error='+error);
-    }
-  },
   deletefeature:async(req, res)=>{
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let feature = await Feature.findOne({id:req.body.feature});
+    let feature = await Feature.findOne({id:req.body.feature}).populate('categories');
+    let result = feature.categories.map(a => a.id);
+    await Feature.removeFromCollection(feature.id,'categories').members(result);
     await Feature.destroyOne({id:feature.id});
     return res.send('deleted');
   },
