@@ -461,10 +461,10 @@ module.exports = {
         sort: 'createdAt ASC',
         limit: 1
       });
-      const dateStart = order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
+      const dateStart = order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : seller.skuPrice ? moment(seller.createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
       const dateEnd = moment().format('YYYY/MM');
       let numberMonth = moment(dateEnd, 'YYYY/MM').diff(moment(dateStart, 'YYYY/MM'), 'months');
-      const number = numberMonth >= 14 ? 14 : numberMonth === 0 ? 0 : numberMonth - 1;
+      const number = numberMonth >= 14 ? 14 : seller.skuPrice && numberMonth === 0 ? 0 : numberMonth - 1;
       for (let i = number; i >= 0; i--) {
         let month = moment().subtract(i+1, 'months').locale('es').format('MMMM YYYY');
         let available = moment().subtract(i, 'months').locale('es').format('MMMM YYYY');
