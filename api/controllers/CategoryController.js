@@ -315,8 +315,8 @@ module.exports = {
     let categories = await Category.find({
       where:{level:{'>=':4}},
       select: ['name', 'tags']
-      /*skip:50,
-      limit:69*/
+      /*skip:50,*/
+      //limit:560
     });
     let params = {
       AnalysisScheme: { /* required */
@@ -332,10 +332,15 @@ module.exports = {
     };
     let aliases = {
       groups: [
-        ["cangurera","riñonera"],
-        ["morral","mochila"],
+        ["cangurera","riñonera","canguro"],
+        ["morral","mochila","tula"],
         ["hip hop","hiphop","hip-hop"],
         ["nailon","nylon"],
+        ["medias","calcetines"],
+        ["juego","set","kit"],
+        ["binoculos","binoculares","binóculos"],
+        ["sleeping bag","sleeping","saco dormir","bolsa dormir"],
+        ["pava","sombrero"],
         ["balón","bola","pelota","balon"],
         ["panti","panties","panty"],
         ["campismo","camping","campamento","acampar","acampada"],
@@ -345,7 +350,7 @@ module.exports = {
         ["fiambrera","portacomida","porta comida"],
         ["catre","cama"],
         ["conjunto deportivo","sudadera","pantalón sudadera","sudaderas","sweat pants"],
-        ["camiseta polo","polo"],
+        ["camiseta polo","polo","tipo polo"],
         ["chaqueta","chamarra"],
         ["cinturón","correa"],
         ["abrigo","abrigos"],
@@ -363,17 +368,20 @@ module.exports = {
     };
     for(let category of categories){
       if(category.tags !== null && category.tags !== '' && category.tags.length >= 3  && category.tags !== ' '){
-        aliases.aliases[category.name] = category.tags.split(',');
+        let tags = category.tags.split(',').filter(x => x);
+        aliases.aliases[category.name.trim().toLowerCase()] = tags;
       }
     }
     params.AnalysisScheme.AnalysisOptions.Synonyms = JSON.stringify(aliases);
+    
     cloudsearch.defineAnalysisScheme(params, function(err, data) {
-      if (err){console.log(err, err.stack);} // an error occurred
-      cloudsearch.indexDocuments({ DomainName: 'predictor-1ecommerce' }, (err, data) => {
-        if (err) { console.log(err); }
-        console.log(data);
-        return res.redirect('/inicio');
-      });
+      if (err){throw 'Error de Esquema:'+err.message;} // an error occurred
+      if(data){
+        cloudsearch.indexDocuments({ DomainName: 'predictor-1ecommerce' }, (err, data) => {
+          if (err) { throw 'Error Indexando: '+err.message};
+          return res.redirect('/inicio');
+        });
+      }
     });
   }
 };
