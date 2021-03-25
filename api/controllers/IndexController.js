@@ -226,6 +226,8 @@ module.exports = {
     let date = moment(month, 'MMMM YYYY').subtract(1, 'months').locale('es').format('MMMM YYYY');
     const totalReferences = data.totalSkuInactive + data.totalSkuActive;
     const text = data.seller.activeSku ? 'Referencias Activas (SKU)' : 'Referencias (SKU)';
+    const totalOrders = data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total;
+    const totalPriceOrders = data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price;
     try {
       const html =
       `<html lang="en">
@@ -252,10 +254,10 @@ module.exports = {
             </div>
           </div>
           <div style="padding: 0mm 6.5mm;display: table;clear: both;">
-            <div style="float: left;width: 40.5%;">
+            <div style="float: left;width: 33.5%;">
               <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ordenes (CR)</h5>
               <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 194px;margin-bottom: 0px;">Reembolsos (CAN)</h5>
-              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 40px;margin-bottom: 0px;">Otros Conceptos</h5>
+              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 70px;margin-bottom: 0px;">Otros Conceptos</h5>
               
               <div style="margin-top: 195px">
                 <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion por servicios</h5>
@@ -276,7 +278,9 @@ module.exports = {
                 <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketplace en siniestros</p>
               </div>
               <div style="margin-top: 30px">
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes devueltas y/o canceladas</p>
+                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes Devueltas</p>
+                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes Canceladas</p>
+                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes Fallidas</p>
               </div>
               <div style="margin-top: 30px">
                 <p style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Total Referencias (SKU)</p>
@@ -307,15 +311,17 @@ module.exports = {
               <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
               
               <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 54px;margin-bottom: 0px;">0</p>
+                <div style="margin-left: 91px;float: left;width: 100%;">
+                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 50px;margin-bottom: 0px;">`+ totalOrders +`&emsp;`+ Math.round(totalPriceOrders).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">0</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 7px;margin-bottom: 0px;">`+ data.ordersReturn.total +`&emsp;`+ Math.round(data.ordersReturn.price).toLocaleString('es-CO') +`</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ data.ordersCancel.total +`&emsp;`+ Math.round(data.ordersCancel.price).toLocaleString('es-CO') +`</p>
+              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ data.ordersFailed.total +`&emsp;`+ Math.round(data.ordersFailed.price).toLocaleString('es-CO') +`</p>
               
               <div style="padding: 0rem 1.5rem;display: table;clear: both;">
                 <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 20px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
+                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 13px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
                 </div>
               </div>
               <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 5px;margin-bottom: 0px;">`+ totalReferences +`</p>
@@ -331,7 +337,7 @@ module.exports = {
               </div>
             </div>
           </div>
-          <h2 style="color: #4a4a4a;font-size: 110%;line-height: 1.25;font-weight: bold;margin-top: 22px;margin-left: 306px;">Balance Total  $`+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
+          <h2 style="color: #4a4a4a;font-size: 110%;line-height: 1.25;font-weight: bold;margin-top: 22px;margin-left: 306px;">Balance Total  $ `+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
         </body>
       </html>`;
       const options = { format: 'Letter' };
