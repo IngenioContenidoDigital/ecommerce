@@ -369,7 +369,7 @@ module.exports = {
     for(let category of categories){
       if(category.tags !== null && category.tags !== '' && category.tags.length >= 3  && category.tags !== ' '){
         let tags = category.tags.split(',').filter(x => x);
-        aliases.aliases[category.name.trim().toLowerCase()] = tags;
+        aliases.aliases[category.name.trim().toLowerCase()] = tags.map(t => t.trim().toLowerCase());
       }
     }
     params.AnalysisScheme.AnalysisOptions.Synonyms = JSON.stringify(aliases);
