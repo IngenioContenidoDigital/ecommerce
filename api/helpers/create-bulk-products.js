@@ -73,12 +73,12 @@ module.exports = {
                         let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
 
                         if(color && color.length > 0){
-                          color = await Color.findOne({id : color[0]});
+                          db_color = await Color.findOne({id : color[0]});
                         }
 
-                        if(color){
-                          pro.mainColor = color.id;	
-                          pro.reference = `${product_variable.reference}-${color.name}`.toUpperCase();	
+                        if(db_color){
+                          pro.mainColor = db_color.id;	
+                          pro.reference = `${product_variable.reference}-${db_color.name}`.toUpperCase();	
                         }else{
                           throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
                         }
@@ -101,8 +101,10 @@ module.exports = {
 
                           pr = await Product.updateOne({ id: exists.id }).set(pro);	
                         }	
-                      }	
 
+                        delete db_color;
+                      
+                      }	
                   }	
 
                   if(typeof(pr) == 'object'){
