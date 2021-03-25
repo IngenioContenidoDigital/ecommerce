@@ -1289,7 +1289,7 @@ module.exports = {
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller, active: true}).populate('channels',{
+        products = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -1373,7 +1373,7 @@ module.exports = {
       }
       if (channel === 'linio') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller, active: true}).populate('channels',{
+        products = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -1457,7 +1457,7 @@ module.exports = {
       }
       if (channel === 'mercadolibre') {
         const intgrationId = integration.id;
-        let products = await Product.find({seller: seller, active: true}).populate('channels',{
+        let products = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
