@@ -35,7 +35,7 @@ module.exports = {
 
           if(typeof(pro) === 'object'){
             let pr;
-            let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference});
+            let exists = await Product.findOne({ externalId:pro.externalId, seller:seller, reference : pro.reference});
             if (!exists) {
                 if(inputs.provider != sails.config.custom.WOOCOMMERCE_CHANNEL){
                     pr = await Product.create(pro).fetch();
@@ -45,6 +45,7 @@ module.exports = {
             } else {
               delete pro.mainCategory;	
               delete pro.categories;
+              delete pro.manufacturer;
               pr = await Product.updateOne({ id: exists.id }).set(pro);
             }
 
@@ -89,7 +90,7 @@ module.exports = {
                           pro.categories =  parent_category;
                         }
 
-                        let exists = await Product.findOne({ externalId:product_variable.externalId, seller:pro.seller, reference : pro.reference });	
+                        let exists = await Product.findOne({ externalId:product_variable.externalId, seller:seller, reference : pro.reference });	
 
                         if (!exists) {	
                             parent_category = pro.categories;
@@ -98,6 +99,10 @@ module.exports = {
 
                           delete pro.mainCategory;	
                           delete pro.categories;
+                          delete pro.manufacturer;
+                          delete pro.gender;
+                          delete pro.tax;
+                          delete pro.seller;
 
                           pr = await Product.updateOne({ id: exists.id }).set(pro);	
                         }	

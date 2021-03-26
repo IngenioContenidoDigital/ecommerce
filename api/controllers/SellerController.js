@@ -452,17 +452,23 @@ module.exports = {
       let currentDay =  moment().format('DD');
       let availableOptions = false;
       seller = await Seller.findOne({id:id}).populate('mainAddress').populate('currency');
-      const status = await OrderState.findOne({name: 'entregado'});
       let order = await Order.find({
         where:{
-          seller: seller.id,
-          currentstatus: status.id
+          seller: seller.id
         },
         sort: 'createdAt ASC',
         limit: 1
       });
-      const dateStart = order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : seller.skuPrice ? moment(seller.createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
+      let report = await ReportSkuPrice.count({seller: seller.id});
       const dateEnd = moment().format('YYYY/MM');
+      const product = await Product.find({
+        where:{
+          seller: seller.id
+        },
+        sort: 'createdAt ASC',
+        limit: 1
+      });
+      const dateStart = report > 0 ? moment(product[0].createdAt).format('YYYY/MM') : seller.skuPrice ? moment(product[0].createdAt).format('YYYY/MM') : order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
       let numberMonth = moment(dateEnd, 'YYYY/MM').diff(moment(dateStart, 'YYYY/MM'), 'months');
       const number = numberMonth >= 14 ? 14 : seller.skuPrice && numberMonth === 0 ? 0 : numberMonth - 1;
       for (let i = number; i >= 0; i--) {
