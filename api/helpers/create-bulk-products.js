@@ -45,7 +45,6 @@ module.exports = {
             } else {
               delete pro.mainCategory;	
               delete pro.categories;
-              delete pro.manufacturer;
               pr = await Product.updateOne({ id: exists.id }).set(pro);
             }
 

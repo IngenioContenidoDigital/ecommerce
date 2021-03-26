@@ -2067,100 +2067,102 @@ module.exports = {
               },
               sort: 'createdAt DESC'
             });
-            
+
             if(!pro){
-              if(p.variations && p.variations.length > 0){
-                let pvrs = require("lodash").uniqBy(p.variations.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
-
-                for (let index = 0; index < pvrs.length; index++) {
-                    pvrs[index].variations = p.variations.filter((v)=>v.color[0] == pvrs[index].color[0]).map((v)=>{
-                      return {
-                        talla : v.talla,
-                        stock : v.quantity
-                      }
-                    });
-                }
-
-                for (let index = 0;index < pvrs.length; index++) {
-                      let vr = pvrs[index];
-                      let reference;
-
-                      let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
-
-                      if(color && color.length > 0){
-                        color = await Color.findOne({id : color[0]});
-                      }
-
-                      if(color){
-                         reference = `${vr.reference}-${color.name}`;
-                      }else{
-                        throw new Error(`Ref : ${vr.reference} no pudimos identificar este color ${vr.color[0]}.`);
-                      }
-
-                      let prc= await Product.findOne({reference:reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
-                     
-                      if(!prc){
-                        throw new Error(`Ref : ${vr.reference} no pudimos encontrar este producto.`);
-                      }
-
-                      if(vr.variations && vr.variations.length > 0){
-                        for (let index = 0; index < vr.variations.length; index++) {
-                            let pdv = vr.variations[index];
-                            let vt_name;
-
-                            if(pdv.talla){
-                              vt_name = pdv.talla.toLowerCase().replace(',','.');
-                            }else if(vr.size){
-                              vt_name = vr.size.toLowerCase();
-                            }else{
-                              vt_name = 'único';
-                            }
-
-                            let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,category:prc.categories[0].id});	
-                            let productVariation;	
-
-                            if(!variation || variation.length == 0){	
-                              variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,category:prc.categories[0].id}).fetch();	
-                            }	
-        
-                            variation = variation.length ? variation[0] : variation;
-                            let pvs = await ProductVariation.find({ product:prc.id,supplierreference:vr.reference}).populate('variation');
-                            let pv = pvs.find(pv=> pv.variation.name == variation.name);
-        
-                            if (!pv) {
-                              productVariation = await ProductVariation.create({
-                                product:prc.id,
-                                variation:variation.id,
-                                reference: vr.reference ? vr.reference : '',
-                                supplierreference:`${prc.reference}-${color.name}`,
-                                ean13: vr.ean13 ? vr.ean13.toString() : '',
-                                upc: vr.upc ? vr.upc : 0,
-                                skuId: vr.skuId ? vr.skuId : '',
-                                price: vr.price,
-                                quantity: pdv.stock ? pdv.stock : 0,
-                                seller:prc.seller
-                              }).fetch();
-                            } else {
-                              productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                                price: vr.price,
-                                variation: variation.id,
-                                quantity: pdv.stock ? pdv.stock : 0,
-                              });
-                            }
-                            
-                            if(typeof(productVariation) == 'object' ){
-                              result.push(productVariation);
-                              sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                            }
-                        }
-
-                      }
-                }
-              }else{
-                throw new Error(`Ref : ${vr.reference} no pudimos encontrar este producto.`);
-              }
+              throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
             }
+            
+            if(req.body.channel == sails.config.custom.WOOCOMMERCE_CHANNEL){
+                  if(p.variations && p.variations.length > 0){
+                    let pvrs = require("lodash").uniqBy(p.variations.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
 
+                    for (let index = 0; index < pvrs.length; index++) {
+                        pvrs[index].variations = p.variations.filter((v)=>v.color[0] == pvrs[index].color[0]).map((v)=>{
+                          return {
+                            talla : v.talla,
+                            stock : v.quantity
+                          }
+                        });
+                    }
+
+                    for (let index = 0;index < pvrs.length; index++) {
+                          let vr = pvrs[index];
+                          let reference;
+
+                          let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
+
+                          if(color && color.length > 0){
+                            color = await Color.findOne({id : color[0]});
+                          }
+
+                          if(color){
+                            reference = `${vr.reference}-${color.name}`;
+                          }else{
+                            throw new Error(`Ref : ${vr.reference} no pudimos identificar este color ${vr.color[0]}.`);
+                          }
+
+                          let prc= await Product.findOne({reference:reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
+                        
+                          if(!prc){
+                            throw new Error(`Ref : ${vr.reference} no pudimos encontrar este producto.`);
+                          }
+
+                          if(vr.variations && vr.variations.length > 0){
+                            for (let index = 0; index < vr.variations.length; index++) {
+                                let pdv = vr.variations[index];
+                                let vt_name;
+
+                                if(pdv.talla){
+                                  vt_name = pdv.talla.toLowerCase().replace(',','.');
+                                }else if(vr.size){
+                                  vt_name = vr.size.toLowerCase();
+                                }else{
+                                  vt_name = 'único';
+                                }
+
+                                let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,category:prc.categories[0].id});	
+                                let productVariation;	
+
+                                if(!variation || variation.length == 0){	
+                                  variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,category:prc.categories[0].id}).fetch();	
+                                }	
+            
+                                variation = variation.length ? variation[0] : variation;
+                                let pvs = await ProductVariation.find({ product:prc.id,supplierreference:vr.reference}).populate('variation');
+                                let pv = pvs.find(pv=> pv.variation.name == variation.name);
+            
+                                if (!pv) {
+                                  productVariation = await ProductVariation.create({
+                                    product:prc.id,
+                                    variation:variation.id,
+                                    reference: vr.reference ? vr.reference : '',
+                                    supplierreference:`${prc.reference}-${color.name}`,
+                                    ean13: vr.ean13 ? vr.ean13.toString() : '',
+                                    upc: vr.upc ? vr.upc : 0,
+                                    skuId: vr.skuId ? vr.skuId : '',
+                                    price: vr.price,
+                                    quantity: pdv.stock ? pdv.stock : 0,
+                                    seller:prc.seller
+                                  }).fetch();
+                                } else {
+                                  productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
+                                    price: vr.price,
+                                    variation: variation.id,
+                                    quantity: pdv.stock ? pdv.stock : 0,
+                                  });
+                                }
+                                
+                                if(typeof(productVariation) == 'object' ){
+                                  result.push(productVariation);
+                                  sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
+                                }
+                            }
+
+                          }
+                    }
+                  }               
+              }
+              
             if(pro){
               if (discount && p.discount && p.discount.length > 0) {
                 for (const disc of p.discount) {
