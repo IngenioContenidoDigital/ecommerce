@@ -332,7 +332,7 @@ module.exports = {
     };
     let aliases = {
       groups: [
-        ["cangurera","riñonera","canguro"],
+        ["cangurera","riñonera","canguro","cancgurera"],
         ["morral","mochila","tula"],
         ["hip hop","hiphop","hip-hop"],
         ["nailon","nylon"],
@@ -345,12 +345,15 @@ module.exports = {
         ["panti","panties","panty"],
         ["campismo","camping","campamento","acampar","acampada"],
         ["portafolio","portfolio"],
-        ["termo","caramañola","botilito"],
+        ["termo","caramañola","botilito","caramau00d1ola"],
+        ["pantaloneta","short","bermudas"],
+        ["gorro","gorra","cachucha"],
         ["nevera","cooler","refrigerador"],
         ["fiambrera","portacomida","porta comida"],
         ["catre","cama"],
         ["conjunto deportivo","sudadera","pantalón sudadera","sudaderas","sweat pants"],
         ["camiseta polo","polo","tipo polo"],
+        ["camiseta","camisetas","tshirt","t-shirt"],
         ["chaqueta","chamarra"],
         ["cinturón","correa"],
         ["abrigo","abrigos"],
