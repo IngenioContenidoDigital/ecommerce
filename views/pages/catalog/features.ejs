@@ -10,9 +10,9 @@
     <h4 class="title is-4">Característica de Producto</h4>
     <hr>
     <% if(action=='edit'){ %>
-      <form action="/features/edit/<%= feature.id %>" method="POST" enctype="multipart/form-data">
+      <form id="form_feature" action="/features/edit/<%= feature.id %>" method="POST" enctype="multipart/form-data">
     <% } else { %>
-      <form action="/features/create" method="POST" enctype="multipart/form-data">
+      <form id="form_feature" action="/features/create" method="POST" enctype="multipart/form-data">
     <% } %>
     <div class="box">
       <div class="field is-pulled-right">
@@ -40,41 +40,73 @@
       </div>
       <div class="field">
         <article class="panel is-primary is-size-7">
-            <p class="panel-heading">
-              Categorías
-            </p>
+          <p class="panel-heading">
+            Categorías
+          </p>
             <ul>
-            <% categories.forEach(function(category){ %>
               <li>
-                <% if(action === 'edit'){ %>
-                    <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
-                      <input type="checkbox" name="categories" value="<%= category.id %>" <% if(feature.categories.find(c=>c.id===category.id)){ %><%= checked %><% } %> />&nbsp;
-                      <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
-                      <%= category.name %>
-                    </a>
-                <% }else{ %>
-                    <a class="panel-block" category="<%= category.id %>" level="<%= category.level %>">
-                      <input type="checkbox" name="categories" value="<%= category.id %>"  />&nbsp;
-                      <span class="panel-icon"><i class="bx bx-book" aria-hidden="true"></i></span>
-                      <%= category.name %>
-                    </a>
-                <% } %>
+                  <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
+                    <input type="checkbox" name="<%= category.name %>" value="<%= category.id %>" disabled />&nbsp;
+                    <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                    <%= category.name %>
+                  </a>
               </li>
-            <% }); %>
             </ul>
-          </article>
+        </article>
     </div>
       <div class="control buttons is-right">
         <% if(action=='edit'){ %> 
-          <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Característica</button>
+          <button id="submit_button" type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Característica</button>
         <% }else if (action=='create'){ %>
-          <button type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Característica</button>
+          <button id="submit_button" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Característica</button>
         <% } %>
       </div>
     </div>
     </form>
-  <script>
-  </script>
+      <script>
+        const feature = <%- JSON.stringify(feature)%>
+          function childTree(elm){
+            return new Promise(resolve =>{
+              elm.forEach((child) =>{
+                if(!hasClass(child,'visited')){
+                  io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
+                      var d = document.createElement('ul');
+                      resData.forEach(function(son){
+                        let ca = document.createElement('li');
+                        ca.style.paddingLeft = 5*son.level+'px';
+                        if(!son.hasChildren){
+                          if(feature){
+                            if(feature.categories.find(x => x.id == son.id)){
+                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                            } else {
+                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                            }
+                          } else {
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                          }
+                        } else {
+                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="" categories="'+son.id+'" disabled />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                        }
+                        d.appendChild(ca);
+                      });
+                      insertAfter(d,child);
+                      addClass(child,'visited');
+                      childTree(d.querySelectorAll('a.panel-block'));
+                  });
+                }
+              })
+              setTimeout(() => {resolve("finish");},200);
+            });
+          };
+
+        async function init(){
+          let result = await childTree(document.querySelectorAll('a.panel-block'));
+        }
+
+          document.addEventListener('DOMContentLoaded', function(){
+            init();
+          });
+      </script>
 <% }else{ %>
     <p style="text-align: right;font-size: 20px; margin-right: 5px;">
       <a href="/features/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
@@ -134,7 +166,6 @@
           }
         });  
       });
-
       live('.delete-feature','click',e=>{
         e.preventDefault();
         if(confirm('Seguro Desea Continuar?')){
@@ -161,6 +192,15 @@
       }
     });
 
+  live('#submit_button','click',e=>{
+      e.preventDefault();
+      let inputs = document.querySelectorAll("input[name='categories']:checked");
+      if(inputs.length>0){
+        document.getElementById("form_feature").submit();
+      }else{
+        alert('Seleccione al menos una categoría');
+      }
+    });
   live('.state', 'click', function(){ 
     if(confirm('Seguro Desea Continuar')){
       var elm = this;

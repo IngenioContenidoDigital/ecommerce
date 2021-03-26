@@ -42,6 +42,10 @@ module.exports = {
       collection:'productchannel',
       via:'product'
     },
+    features:{
+      collection:'productfeature',
+      via:'product'
+    },
     suppliers:{
       collection:'supplier',
       via:'products'

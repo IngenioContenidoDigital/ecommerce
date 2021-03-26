@@ -224,6 +224,7 @@ module.exports = {
         .populate('categories')
         .populate('variations')
         .populate('discount')
+        .populate('features')
         .populate('channels');
       for (let pv in product.variations) {
         product.variations[pv].variation = await Variation.findOne({ id: product.variations[pv].variation });

@@ -78,6 +78,7 @@ module.exports.routes = {
   'PUT /features/:id' : {controller:'FeaturesController',action:'featurestate'},
   'POST /features/edit/:id' : {controller:'FeaturesController',action:'editfeature'},
   'DELETE /features/delete' :{controller:'FeaturesController', action:'deletefeature'},
+  'POST /addproductfeature' :{controller:'FeaturesController', action:'addproductfeature'},
   'GET /sellers/:action?/:id?' : {controller:'SellerController',action:'showsellers'},
   'POST /hash' : {controller:'SellerController', action:'createhash'},
   'GET /channelmessages/:seller' : {controller:'ConversationController',action:'showmessages'},

@@ -595,100 +595,52 @@
       <div class="box">
         <h6 class="title is-7 is-uppercase"><%if(product!==undefined && product !== null){%><%=product.name%><%}%></h6>
         <h6 class="subtitle is-7 is-uppercase"><%if(product!==undefined && product !== null){%>REF:&nbsp;<%=product.reference%><%}%></h6>
-        <% features.forEach(feature =>{ %>
-          <div class="columns">
+        <div class="columns">
           <div class="column">
-              <div class="columns is-mobile">
-                  <div class="column">
-                    <div class="field">
-                        <label class="label">Característica</label>
-                        <div class="select is-fullwidth">
-                            <select name="feature">
-                                <option value="P"><%=feature.name%></option>
-                            </select>
-                        </div>
-                    </div>
-                  </div>
-                  <div class="column">
-                    <div class="field">
-                        <label class="label">Valor</label>
-                        <div class="control">
-                          <input class="input" type="text" name="feature_value" required="true" placeholder="Valor de la característica" />
-                        </div>
-                    </div>
-                  </div>
-              </div>
+              <div id="feature-container">
+                <table class="table is-striped is-hoverable is-fullwidth">
+                  <thead>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Valor</th>
+                  </thead>
+                  <tbody>
+                  <%if(features.length>0){%>
+                    <% features.forEach(feature =>{ %>
+                      <tr>
+                        <td name="feature_name" id=<%=feature.id%>><%=feature.name%></td>
+                        <td name="feature_description"><%=feature.description%></td>
+                        <td><input class="input" type="text" name="feature_value" required="true" value='<%if(product.features.length>0){%><%if(product.features.find(x => x.feature === feature.id)){%><%=product.features.filter(x => x.feature === feature.id)[0].value%><%}%><%}%>' placeholder="Valor de la característica" /></td>
+                      </tr>
+                    <%})%>
+                  <%}%>
+                </tbody>
+                </table>
+            </div>
           </div>
         </div>
-        <%})%>
         <div class="buttons is-right">
-          <button id="add-discount" class="button is-primary"><i class="bx bx-save"></i>&nbsp;Guardar y Continuar</button>
+          <button id="save-feature-value" class="button is-primary"><i class="bx bx-save"></i>&nbsp;Guardar y Continuar</button>
         </div>
       </div>
       <script>
-        // Initialize all input of date type.
-        const calendars = bulmaCalendar.attach('[type="date"]', {
-            type:'datetime',
-            isRange: true,
-            allowSameDayRange: true,
-            dateFormat:'YYYY-MM-DD',
-            timeFormat:'HH:mm:ss',
-            displayMode:'dialog',
-            cancelLabel:'Cancelar',
-            clearLabel:'Limpiar',
-            todayLabel:'Hoy',
-            nowLabel:'Ahora',
-            validateLabel:'Seleccionar',
-            minDate: new Date()
-        });
-
-        // Loop on each calendar initialized
-        calendars.forEach(calendar => {
-            // Add listener to date:selected event
-            calendar.on('date:selected', date => {
-                console.log(date);
-            });
-        });
-
-        // To access to bulmaCalendar instance of an element
-        const element = document.querySelector('#my-element');
-        if (element) {
-            // bulmaCalendar instance is available as element.bulmaCalendar
-            element.bulmaCalendar.on('select', datepicker => {
-                console.log(datepicker.data.value());
-            });
-        }
-        
-        live('#add-discount','click', e =>{
+        live('#save-feature-value','click', e =>{
           let p = document.querySelector('#product-data').value;
-          let range = document.querySelector('input[name="range"]').value;
-          let type= document.querySelector('select[name="type"]').value;
-          let dvalue = document.querySelector('input[name="value"]').value
-          let table = document.getElementById('discount-container').querySelector('.table')
-          if(range!=='' && type!=='' && dvalue!==''){
-            io.socket.post('/productdiscount',{product:p, range:range,type:type,value:dvalue},resData =>{
-              let sign = '';
-              if(resData.type=='P'){sign ='% ';}else{sign ='$ ';}
-              let newrow=[
-                '<td>'+resData.name+'</td>',
-                '<td>'+sign+'</td>',
-                '<td>'+resData.value+'</td>',
-                '<td>'+moment(resData.from).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
-                '<td>'+moment(resData.to).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
-                '<td><a did="'+resData.id+'" class="delete-discount"><i class="bx bx-trash"></i></a></td>'
-              ];
-              let row = table.getElementsByTagName('tbody')[0].insertRow(-1);
-              newrow.forEach((cell, index)=>{
-                row.insertCell(index).innerHTML=cell;
-              });
-              
-            });
-          }else{
-            alert('Todos los campos son requeridos');
+          let data = [];
+          let table = document.getElementById('feature-container').querySelector('.table');
+          for(let i=0; i<table.tBodies[0].rows.length; i++){
+            let celldata = {};
+            celldata['product'] = p;
+            celldata['feature'] = table.tBodies[0].rows[i].cells[0].id;
+            celldata['value'] = table.tBodies[0].rows[i].cells[2].querySelector('input[name="feature_value"]').value;
+            data.push(celldata);
           }
+          io.socket.post('/addproductfeature',{data:data},resData =>{
+                window.location.href='/product/edit/'+p;
+          });
         });
 
-        live('.delete-discount','click', e =>{
+        live('.delete-feature','click', e =>{
           e.preventDefault();
           let elm = e.target;
           if(e.target.tagName=='I'){
