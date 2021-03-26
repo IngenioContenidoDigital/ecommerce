@@ -193,6 +193,8 @@ module.exports.routes = {
   'POST /commission/set/:seller' : {controller:'SellerController',action:'setcommission'},
   'POST /commissiondiscount/create/:seller' : {controller:'SellerController',action:'createcommissiondiscount'},
   'PUT /removecommissiondiscount' : {controller:'SellerController',action:'removecommissiondiscount'},
+  'POST /commissionchannel/:seller' : {controller:'SellerController',action:'commissionchannel'},
+  'PUT /removecommission' : {controller:'SellerController',action:'removecommissionchannel'},
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
   'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},

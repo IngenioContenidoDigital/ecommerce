@@ -21,6 +21,7 @@ module.exports = {
     let integrations = null;
     let channels = null;
     let commissiondiscount = null;
+    let commissionchannel = null;
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(rights.name!=='superadmin' && rights.name!=='admin'){
@@ -40,13 +41,12 @@ module.exports = {
       integrations = await Integrations.find({
         where:{seller:id},
       }).populate('channel');
-      commissiondiscount = await CommissionDiscount.find({
-        where:{seller:id},
-      });
+      commissiondiscount = await CommissionDiscount.find({seller:id});
+      commissionchannel = await CommissionChannel.find({seller: id}).populate('channel');
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -80,7 +80,6 @@ module.exports = {
         domain:req.body.url ? req.body.url : '',
         active:isActive,
         currency : req.body.currency,
-        salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp
       }
@@ -151,7 +150,6 @@ module.exports = {
         mainAddress:address.id,
         active:isActive,
         currency : req.body.currency,
-        salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp});
 
@@ -169,7 +167,6 @@ module.exports = {
           mainAddress:address.id,
           active:isActive,
           currency : req.body.currency,
-          salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           integrationErp});
       }
@@ -189,7 +186,6 @@ module.exports = {
     let id = req.param('seller');
     try{
       await Seller.updateOne({id: id}).set({
-        salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         activeSku: (req.body.activeSku ==='on') ? true : false
       });
@@ -197,7 +193,6 @@ module.exports = {
       error=err;
       if(err.code==='badRequest'){
         await Seller.updateOne({id:id}).set({
-          salesCommission: req.body.salesCommission ? req.body.salesCommission : 0,
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           activeSku: (req.body.activeSku ==='on') ? true : false
         });
@@ -245,6 +240,52 @@ module.exports = {
     try{
       let discountId = req.body.id;
       await CommissionDiscount.destroyOne({id: discountId});
+      return res.send('ok');
+    }catch(err){
+      console.log(err);
+      return res.send(err.message);
+    }
+  },
+  commissionchannel:async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let id = req.param('seller');
+    const text = req.body.idcommission ? 'Se Actualizó Correctamente la comisión.' : 'Se Agrego Correctamente la comisión.';
+    try{
+      if (req.body.idcommission) {
+        await CommissionChannel.updateOne({id: req.body.idcommission}).set({
+          value: req.body.commission
+        });
+      } else {
+        await CommissionChannel.create({
+          value: req.body.commission,
+          channel: req.body.channel,
+          seller: id
+        });
+      }
+    }catch(err){
+      error=err;
+    }
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/sellers/edit/'+id+'?success='+text);
+    }else{
+      return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
+  removecommissionchannel: async (req, res) =>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    try{
+      let commission = req.body.id;
+      await CommissionChannel.destroyOne({id: commission});
       return res.send('ok');
     }catch(err){
       console.log(err);
