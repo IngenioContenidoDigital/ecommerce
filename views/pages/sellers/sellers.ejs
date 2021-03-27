@@ -729,7 +729,7 @@
             e.preventDefault();
             let modal = document.querySelector('#modal-commission');
             addClass(modal,'is-active');
-            createColumnImages();
+            createImg();
           });
 
           live('#close-modal','click',function(e){
@@ -818,7 +818,7 @@
             });
           });
 
-          function createColumnImages() {
+          function createImg() {
             let channels = <%- JSON.stringify(channels) %>;
             channels = channels.filter(chan => chan.type === 'marketplace');
             let div = document.createElement('div');
