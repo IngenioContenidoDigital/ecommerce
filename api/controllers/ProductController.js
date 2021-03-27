@@ -1309,10 +1309,13 @@ module.exports = {
             action = 'Image';
             products = products.filter(pro => pro.channels.length > 0 && !pro.channels[0].iscreated);
             break;
+          case 'ProductQcStatus':
+            action = 'ProductQcStatus';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && !pro.channels[0].qc);
+            break;
         }
-
         if (products.length > 0) {
-          if(req.body.action === 'Image'){
+          if(action === 'Image'){
             let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
             const imgxml = jsonxml(imgresult,true);
             let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
@@ -1320,6 +1323,18 @@ module.exports = {
             for (const pro of products) {
               response.items.push(pro);
             }
+          } else if(action === 'ProductQcStatus'){
+            const skus = [];
+            for (const product of products) {
+              const productVariations = await ProductVariation.find({product: product.id});
+              for (const variation of productVariations) {
+                if(!skus.includes(variation.id)){
+                  skus.push(variation.id);
+                }
+              }
+              response.items.push(product);
+            }
+            await sails.helpers.channel.productQc(integration, skus);
           }else{
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');}
@@ -1393,10 +1408,14 @@ module.exports = {
             action = 'Image';
             products = products.filter(pro => pro.channels.length > 0 && !pro.channels[0].iscreated);
             break;
+          case 'ProductQcStatus':
+            action = 'ProductQcStatus';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && !pro.channels[0].qc);
+            break;
         }
 
         if (products.length > 0) {
-          if(req.body.action === 'Image'){
+          if(action === 'Image'){
             let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
             const imgxml = jsonxml(imgresult,true);
             let imgsign = await sails.helpers.channel.linio.sign(integration.id, 'Image', seller);
@@ -1404,6 +1423,18 @@ module.exports = {
             for (const pro of products) {
               response.items.push(pro);
             }
+          }else if(action === 'ProductQcStatus'){
+            const skus = [];
+            for (const product of products) {
+              const productVariations = await ProductVariation.find({product: product.id});
+              for (const variation of productVariations) {
+                if(!skus.includes(variation.id)){
+                  skus.push(variation.id);
+                }
+              }
+              response.items.push(product);
+            }
+            await sails.helpers.channel.productQc(integration, skus);
           }else{
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');}
@@ -1455,7 +1486,7 @@ module.exports = {
           throw new Error('Sin Productos para Procesar');
         }
       }
-      if (channel === 'mercadolibre') {
+      if (channel === 'mercadolibre' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
         let products = await Product.find({seller: seller}).populate('channels',{
           where:{
@@ -1531,7 +1562,7 @@ module.exports = {
           throw new Error('Sin Productos para Procesar');
         }
       }
-      if (channel === 'coppel') {
+      if (channel === 'coppel' && req.body.action !== 'ProductQcStatus') {
 
         let axios = require('axios');
         let fs = require('fs');
