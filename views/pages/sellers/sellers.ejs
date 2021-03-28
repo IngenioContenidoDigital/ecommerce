@@ -561,23 +561,17 @@
         </script>
       </div>
       <div class="is-hidden" id="commissions">
-        <p style="text-align: right;font-size: 15px; margin-right: 5px;">            
-          <a href="#" class="has-text-primary" id="add-commission"><i class="is-size-4 bx bxs-plus-square"></i></a>
-        </p>
+        <div class="control buttons is-right">
+          <button id="add-commission" class="button is-small is-rounded is-primary">
+            <span class="icon is-small">
+              <i class='bx bxs-briefcase'></i>
+            </span>
+            <span>Gestionar Comisiones</span>
+          </button>
+        </div>
         <%if(action==='edit'){%>
           <form method="POST" action="/commission/set/<%=seller.id%>">
             <div class="columns">
-              <div class="column">
-                <div class="field">
-                  <label class="label is-size-7">Comisión por Venta</label>
-                  <div class="control has-icons-left">
-                    <input class="input is-size-7" type="number" step="any" name="salesCommission" placeholder="Comisión por Venta" <% if(action=='edit'){ %>value="<%= seller.salesCommission %>"<% }%>/>
-                    <span class="icon-input-left is-small is-left">
-                      <i class="bx bxs-offer "></i>
-                    </span>
-                  </div>
-                </div>
-              </div>
               <div class="column">
                 <div class="field">
                   <label class="label is-size-7">Costo por SKU</label>
@@ -599,63 +593,132 @@
                 </div>
               </div>
             </div>
-            <div class="control buttons is-right">
+            <div class="control buttons">
               <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Comisión</button>
             </div>
           </form>
           <br><br>
-          <div id="discount-container">
-            <table class="table is-hoverable is-size-6 is-fullwidth">
-              <thead>
-                <tr>
-                  <th><small>Fecha</small></th>
-                  <th><small>Comisión x Venta</small></th>
-                  <th><small>Opciones</small></th>
-                </tr>
-              </thead>
-              <tbody>
-                <% if(commissiondiscount){%>
-                  <% commissiondiscount.forEach(discount => { %>
-                    <tr>
-                      <td><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss'); %> - <%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
-                      <td>
-                        <%= discount.value %>%
-                      </td>
-                      <td>
-                        <a href="#" class="has-text-info" id="delete-discount" discountId="<%= discount.id %>"><i class="is-size-4 bx bx-trash"></i></a>
-                      </td>
-                    </tr>
-                  <% }) %>
-                <% } %>
-              </tbody>
-            </table>        
+          <h6 class="title is-6">Comisiones por Canal</h4>
+          <hr>
+          <div class="columns">
+            <div class="column" id="commission-container">
+              <table class="table is-hoverable is-size-6 is-fullwidth">
+                <thead>
+                  <tr>
+                    <th><small>Canal</small></th>
+                    <th><small>Comisión</small></th>
+                    <th><small>Opciones</small></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if(commissionchannel){%>
+                    <% commissionchannel.forEach(commission => { %>
+                      <tr>
+                        <td><img src="<%=imgurl%>/images/channels/<%= commission.channel.logo %>" width="100px"/></td>
+                        <td>
+                          <%= commission.value %>
+                        </td>
+                        <td>
+                          <a href="#" class="has-text-info" id="delete-commission" commissionId="<%= commission.id %>"><i class="is-size-4 bx bx-trash"></i></a>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+            <div class="column"></div>
+          </div>
+          <br><br>
+          <h6 class="title is-6">Descuentos de Comisiones</h4>
+          <hr>
+          <div class="columns">
+            <div class="column" id="discount-container">
+              <table class="table is-hoverable is-size-6 is-fullwidth">
+                <thead>
+                  <tr>
+                    <th><small>Fecha</small></th>
+                    <th><small>Comisión</small></th>
+                    <th><small>Opciones</small></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if(commissiondiscount){%>
+                    <% commissiondiscount.forEach(discount => { %>
+                      <tr>
+                        <td><%= moment(discount.from).locale('es').format('DD MMMM YYYY HH:mm:ss'); %> - <%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
+                        <td>
+                          <%= discount.value %>%
+                        </td>
+                        <td>
+                          <a href="#" class="has-text-info" id="delete-discount" discountId="<%= discount.id %>"><i class="is-size-4 bx bx-trash"></i></a>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+            <div class="column"></div>
           </div>
           <div id="modal-commission" class="modal">
             <div class="modal-background"></div>
             <div class="modal-card">
               <section class="modal-card-body">
-                <form method="POST" action="/commissiondiscount/create/<%=seller.id%>">
-                  <div class="box">
-                    <div class="field">
-                      <label class="label is-size-7">Comisión por Venta</label>
-                      <div class="control has-icons-left">
-                        <input class="input is-size-7" type="number" step="any" name="commission" placeholder="Comisión por venta"/>
-                        <span class="icon-input-left is-small is-left">
-                          <i class="bx bxs-offer"></i>
-                        </span>
-                      </div>
+                <div class="box">  
+                  <div id="tabs-with-content">
+                    <div class="tabs tabs-commission is-centered">
+                      <ul>
+                        <li><a>Agregar Comisión</a></li>
+                        <li><a>Agregar Descuento</a></li>
+                      </ul>
                     </div>
-                    <div class="field">
-                      <label class="label is-size-7">Intervalo de Fecha</label>
-                      <div class="is-right input-datepiker">
-                        <input class="input" type="date" name="range"/>
-                      </div>
-                    </div>
+                    <section class="tab-content">
+                      <form method="POST" action="/commissionchannel/<%=seller.id%>">
+                        <div class="field">
+                          <label class="label is-size-7">Marketplace</label>
+                          <div id="img-channels"></div>
+                        </div>
+                        <br/>
+                        <div class="field">
+                          <label class="label is-size-7">Comisión por Venta</label>
+                          <div class="control has-icons-left">
+                            <input class="input is-size-7" id="commissionValue" type="number" step="any" name="commission" placeholder="Comisión por venta"/>
+                            <span class="icon-input-left is-small is-left">
+                              <i class="bx bxs-offer"></i>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="control buttons is-right">
+                          <button type="submit" id="btnCommission" class="button is-primary is-small"><i class="bx bx-plus-circle"></i>&nbsp;Agregar Comisión</button>
+                        </div>
+                      </form>
+                    </section>
+                    <section class="tab-content" >
+                      <form method="POST" action="/commissiondiscount/create/<%=seller.id%>">
+                        <div class="field">
+                          <label class="label is-size-7">Comisión por Venta</label>
+                          <div class="control has-icons-left">
+                            <input class="input is-size-7" type="number" step="any" name="commission" placeholder="Comisión por venta"/>
+                            <span class="icon-input-left is-small is-left">
+                              <i class="bx bxs-offer"></i>
+                            </span>
+                          </div>
+                        </div>
+                        <div class="field">
+                          <label class="label is-size-7">Intervalo de Fecha</label>
+                          <div class="is-right input-datepiker">
+                            <input class="input" type="date" name="range"/>
+                          </div>
+                        </div>
+                        <div class="control buttons is-right">
+                          <button type="submit" class="button is-primary is-small"><i class="bx bx-plus-circle"></i>&nbsp;Agregar Descuento</button>
+                        </div>
+                      </form>
+                    </section>
                   </div>
-                  <div class="control buttons is-right">
-                    <button type="submit" class="button is-primary is-small"><i class="bx bx-plus-circle"></i>&nbsp;Agregar Comisión</button>
-                  </div>
-                </form>
+                  <br>
+                </div>
               </section>
             </div>
             <button class="modal-close is-large" id="close-modal"></button>
@@ -666,6 +729,7 @@
             e.preventDefault();
             let modal = document.querySelector('#modal-commission');
             addClass(modal,'is-active');
+            createImg();
           });
 
           live('#close-modal','click',function(e){
@@ -688,6 +752,46 @@
                 table.deleteRow(row.rowIndex);
               }
             });
+          });
+
+          live('#delete-commission','click', e =>{
+            e.preventDefault();
+            let elm = e.target;
+            if(e.target.tagName=='I'){
+              elm = e.target.parentNode;
+            }
+            let id = elm.getAttribute('commissionId');
+            io.socket.put('/removecommission',{id},resData =>{
+              if(resData==='ok'){
+                let row = elm.parentNode.parentNode;
+                let table = document.getElementById('commission-container').querySelector('.table')          
+                table.deleteRow(row.rowIndex);
+              }
+            });
+          });
+
+          live('.menu-channel', 'click', e =>{
+            let commission = <%- JSON.stringify(commissionchannel) %>;
+            const channel = document.querySelector('input[name="channel"]');
+            const inputIdComm = document.querySelector('input[name="idcommission"]');
+            const inputCommission = document.querySelector('#commissionValue');
+            const images = document.querySelectorAll('.menu-channel');
+            const btn = document.querySelector('#btnCommission');
+            const chan = e.target.id;
+            commission = commission.find(c => c.channel.id === chan);
+            channel.value = chan;
+            images.forEach(img =>{
+              removeClass(img, 'img-multiple');
+            });
+            addClass(e.target,'img-multiple');
+            if (!commission) {
+              inputCommission.value = '';
+              btn.innerHTML  = `<i class="bx bx-plus-circle"></i>&nbsp;Agregar Comisión`;
+            } else {
+              inputIdComm.value = commission.id;
+              inputCommission.value = commission.value;
+              btn.innerHTML  = `<i class='bx bx-edit'></i>&nbsp;Actualizar Comisión`;
+            }
           });
 
            // Initialize all input of date type.
@@ -713,6 +817,62 @@
               console.log(date);
             });
           });
+
+          function createImg() {
+            let channels = <%- JSON.stringify(channels) %>;
+            channels = channels.filter(chan => chan.type === 'marketplace');
+            let div = document.createElement('div');
+            let columnsIntegration = document.querySelector('#img-channels');
+            columnsIntegration.innerHTML = '';
+            let content = `<input class="is-hidden" name="channel" value=""/><input class="is-hidden" name="idcommission" value=""/>`;
+            for (const channel of channels) {
+              content += `<div class="column">
+                <img class="menu-title menu-channel image-integration" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.id}"/>
+              </div>`
+            }
+            addClass(div, 'columns');
+            addClass(div, 'is-gapless');
+            div.innerHTML = content;
+            columnsIntegration.appendChild(div);
+          }
+
+          document.addEventListener("DOMContentLoaded", function(event) {
+            let tabsWithContent = (function () {
+              let tabs = document.querySelectorAll('.tabs-commission li');
+              let tabsContent = document.querySelectorAll('.tab-content');
+
+              let deactvateAllTabs = function () {
+                tabs.forEach(function (tab) {
+                  tab.classList.remove('is-active');
+                });
+              };
+
+              let hideTabsContent = function () {
+                tabsContent.forEach(function (tabContent) {
+                  tabContent.classList.remove('is-active');
+                });
+              };
+
+              let activateTabsContent = function (tab) {
+                tabsContent[getIndex(tab)].classList.add('is-active');
+              };
+
+              let getIndex = function (el) {
+                return [...el.parentElement.children].indexOf(el);
+              };
+
+              tabs.forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                  deactvateAllTabs();
+                  hideTabsContent();
+                  tab.classList.add('is-active');
+                  activateTabsContent(tab);
+                });
+              })
+              tabs[0].click();
+            })();
+          });
+         
         </script>
       </div>
     </div>
@@ -770,7 +930,7 @@
         });
       });
       
-      live('.tabs ul li','click',(e)=>{
+      live('.product-tab ul li','click',(e)=>{
         e = e || window.event;
         let element = e.target || e.srcElement;
         let option = element.getAttribute('option');

@@ -39,8 +39,14 @@ module.exports = {
             totalProducts: order.totalProducts + carttotal,
             productsDiscount: order.productsDiscount + productsdiscount
           });
-
-          const resultseller = await Seller.findOne({id:order.seller});
+          const integrat = await Integrations.findOne({id:order.integration});
+          const commissionChannel = await CommissionChannel.find({
+            where:{
+              channel: integrat.channel,
+              seller: seller
+            },
+            limit: 1
+          });
           const commissionDiscount = await CommissionDiscount.find({
             where:{
               to:{'>=':moment().valueOf()},
@@ -60,7 +66,7 @@ module.exports = {
               discount:cp.totalDiscount,
               originalPrice:cp.productvariation.price,
               externalReference:cp.externalReference,
-              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : resultseller.salesCommission
+              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : commissionChannel.length > 0 ? commissionChannel[0].value : 0
             });
             let pv = await ProductVariation.findOne({id:cp.productvariation.id});
             if(pv){
