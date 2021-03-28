@@ -36,7 +36,6 @@ module.exports = {
           Order:[]
         };
         orders['Order'].push(result.SuccessResponse.Body.Orders.Order);
-        console.log(orders.Order);
         for(let order of orders.Order){
           let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId,seller:inputs.seller, integration : integration.id});
           data = {channel: 'dafiti', channelref: order.OrderId, seller: inputs.seller};
