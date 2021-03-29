@@ -1015,6 +1015,7 @@
     let childTree = (elm) => {
       elm.forEach((child) =>{
         if(!hasClass(child,'visited')){
+          let opened = false;
           io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
               var d = document.createElement('ul');
               resData.forEach(function(son){
@@ -1025,8 +1026,11 @@
                 } else {
                   if(catlist.includes(son.id)){
                     ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                    removeClass(d,'is-hidden');
+                    opened = true;
                   }else{
-                    ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                    ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bxs-book-add" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                    if(son.level>2 && !opened){addClass(d,'is-hidden');}
                   }
                 }
                 d.appendChild(ca);
@@ -1041,6 +1045,20 @@
   
     childTree(document.querySelectorAll('a.panel-block'));
     
+    live('.cat_name','click',(e)=>{
+      let element = e.target || e.srcElement;
+      let group = element.parentNode.parentNode.querySelector('ul');
+      let icon = element.parentNode.querySelector('i');
+      if(hasClass(group,'is-hidden')){
+        removeClass(group,'is-hidden');
+        addClass(icon,'bx-book-open');
+        removeClass(icon,'bxs-book-add');
+      }else{
+        addClass(group,'is-hidden');
+        removeClass(icon,'bx-book-open');
+        addClass(icon,'bxs-book-add');
+      }
+    });
 
     const descriptionshort = SUNEDITOR.create(document.querySelector('#descriptionshort'),{
         showPathLabel : false,
@@ -1078,13 +1096,14 @@
   
     live('input[name="categories[]"]','click',function(){
       let cat = this;
+      let catlevel = cat.parentNode.getAttribute('level');
       let catname = cat.parentElement.querySelector('.cat_name');
       let select = document.querySelector('#mainCategory');
       if (cat.checked){
         let op = document.createElement('option');
         op.value=cat.value;
         op.innerHTML=catname.innerHTML;
-        op.setAttribute('level',cat.parentNode.getAttribute('level'));
+        op.setAttribute('level',catlevel);
         select.appendChild(op);
       }else{
         let op = select.querySelector('option[value="'+cat.value+'"]');
