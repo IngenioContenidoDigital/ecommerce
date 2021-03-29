@@ -911,7 +911,7 @@
             if(hasClass(reportprocess),'is-hidden'){removeClass(reportprocess,'is-hidden');}
             errors.innerHTML=1;
             let err = document.createElement('li');
-            err.innerHTML='Se generó Error al procesar el producto.';
+            err.innerHTML = typeof resData.error === 'string' ? resData.error : 'Se generó Error al procesar el producto.';
             errorlist.appendChild(err);
             e.target.checked = false;
             document.querySelector('select[name="'+integrationId+'price"]').value = 0;

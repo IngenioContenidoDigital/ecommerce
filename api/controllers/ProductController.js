@@ -518,24 +518,17 @@ module.exports = {
         action = 'Post';
       }
       let integration = await sails.helpers.channel.mercadolibre.sign(integrationId);
-      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status)
-      .intercept((err) => {return res.send({error: err.message});});
+      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status);
       if(body){
         if(action==='Update'){
-          result = await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT')
-          .intercept((err)=>{
-            return res.send({error: err.message});
-          });
+          result = await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
           await ProductChannel.updateOne({id: productChannelId}).set({
             status: req.body.status ? true : false,
             price: req.body.price ? parseFloat(req.body.price) : 0
           });
         }
         if(action==='Post'){
-          result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
-          .intercept((err)=>{
-            return res.send({error: err.message});
-          });
+          result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST');
           if(result.id){
             await ProductChannel.findOrCreate({id: productChannelId},{
               product:product.id,
@@ -545,7 +538,8 @@ module.exports = {
               status: true,
               qc:true,
               iscreated:true,
-              price: req.body.price ? parseFloat(req.body.price) : 0
+              price: req.body.price ? parseFloat(req.body.price) : 0,
+              reason: ''
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
               if(!created){
@@ -554,7 +548,8 @@ module.exports = {
                   status:true,
                   qc:true,
                   iscreated:true,
-                  price: req.body.price ? parseFloat(req.body.price) : 0
+                  price: req.body.price ? parseFloat(req.body.price) : 0,
+                  reason: ''
                 });
               }
             });
@@ -571,7 +566,8 @@ module.exports = {
         status:false,
         qc:false,
         iscreated:false,
-        price:0
+        price:0,
+        reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
       }).exec(async (er, record, created)=>{
         if(er){return res.send({error: er});}
         if(!created){
@@ -580,12 +576,12 @@ module.exports = {
             status:false,
             qc:false,
             iscreated:false,
-            price:0
+            price:0,
+            reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
           });
         }
       });
-      console.log(err);
-      return res.send({error: err});
+      return res.send({error: err.message});
     }
   },
   linioadd: async (req, res) => {
