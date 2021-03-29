@@ -49,7 +49,7 @@ module.exports = {
             }
 
             try {	
-              if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL && inputs.asColor && product.color && product.color.length > 0 && !product.simple){	
+              if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL && inputs.asColor && product.color && product.color.length > 1 && !product.simple){	
                 
                 let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(	
                   inputs.credentials.channel, 	
@@ -64,13 +64,14 @@ module.exports = {
                 let parent_category;
 
                 if(product_variables && product_variables.data){
+                  let db_color;
                   products_colors = _.uniqBy(product_variables.data.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
                   for (let index = 0; index < products_colors.length; index++) {	
                       const product_variable = products_colors[index];
 
                       if(product_variable.color && product.color.length > 0){	
                         
-                        let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
+                      let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
 
                         if(color && color.length > 0){
                           db_color = await Color.findOne({id : color[0]});
