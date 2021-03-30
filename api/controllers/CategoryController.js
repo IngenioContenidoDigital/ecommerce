@@ -315,8 +315,8 @@ module.exports = {
     let categories = await Category.find({
       where:{level:{'>=':4}},
       select: ['name', 'tags']
-      /*skip:50,
-      limit:69*/
+      /*skip:50,*/
+      //limit:560
     });
     let params = {
       AnalysisScheme: { /* required */
@@ -325,40 +325,66 @@ module.exports = {
         AnalysisOptions: {
           AlgorithmicStemming: 'full',
           //StemmingDictionary: 'STRING_VALUE',
-          Stopwords: JSON.stringify(["adultos","de","la","que","el","en","y","a","los","del","se","las","por","un","para","con","no","una","su","al","lo","como","más","pero","sus","le","ya","o","este","sí","porque","esta","entre","cuando","muy","sin","sobre","también","me","hasta","hay","donde","quien","desde","todo","nos","durante","todos","uno","les","ni","contra","otros","ese","eso","ante","ellos","e","esto","mí","antes","algunos","qué","unos","yo","otro","otras","otra","él","tanto","esa","estos","mucho","quienes","nada","muchos","cual","poco","ella","estar","estas","algunas","algo","nosotros","mi","mis","tú","te","ti","tu","tus","ellas","nosotras","vosotros","vosotras","os","mío","mía","míos","mías","tuyo","tuya","tuyos","tuyas","suyo","suya","suyos","suyas","nuestro","nuestra","nuestros","nuestras","vuestro","vuestra","vuestros","vuestras","esos","esas","estoy","estás","está","estamos","estáis","están","esté","estés","estemos","estéis","estén","estaré","estarás","estará","estaremos","estaréis","estarán","estaría","estarías","estaríamos","estaríais","estarían","estaba","estabas","estábamos","estabais","estaban","estuve","estuviste","estuvo","estuvimos","estuvisteis","estuvieron","estuviera","estuvieras","estuviéramos","estuvierais","estuvieran","estuviese","estuvieses","estuviésemos","estuvieseis","estuviesen","estando","estado","estada","estados","estadas","estad","he","has","ha","hemos","habéis","han","haya","hayas","hayamos","hayáis","hayan","habré","habrás","habrá","habremos","habréis","habrán","habría","habrías","habríamos","habríais","habrían","había","habías","habíamos","habíais","habían","hube","hubiste","hubo","hubimos","hubisteis","hubieron","hubiera","hubieras","hubiéramos","hubierais","hubieran","hubiese","hubieses","hubiésemos","hubieseis","hubiesen","habiendo","habido","habida","habidos","habidas","soy","eres","es","somos","sois","son","sea","seas","seamos","seáis","sean","seré","serás","será","seremos","seréis","serán","sería","serías","seríamos","seríais","serían","era","eras","éramos","erais","eran","fui","fuiste","fue","fuimos","fuisteis","fueron","fuera","fueras","fuéramos","fuerais","fueran","fuese","fueses","fuésemos","fueseis","fuesen","siendo","sido","tengo","tienes","tiene","tenemos","tenéis","tienen","tenga","tengas","tengamos","tengáis","tengan","tendré","tendrás","tendrá","tendremos","tendréis","tendrán","tendría","tendrías","tendríamos","tendríais","tendrían","tenía","tenías","teníamos","teníais","tenían","tuve","tuviste","tuvo","tuvimos","tuvisteis","tuvieron","tuviera","tuvieras","tuviéramos","tuvierais","tuvieran","tuviese","tuvieses","tuviésemos","tuvieseis","tuviesen","teniendo","tenido","tenida","tenidos","tenidas","tened"]),
+          Stopwords: JSON.stringify(["tipo","pack","tela","moda","adultos","adulto","am","pm","fm","all","dr","ds","in","de","la","que","el","en","y","a","los","del","se","las","por","un","para","con","no","una","su","al","lo","como","más","pero","sus","le","ya","o","este","sí","porque","esta","entre","cuando","muy","sin","sobre","también","me","hasta","hay","donde","quien","desde","todo","nos","durante","todos","uno","les","ni","contra","otros","ese","eso","ante","ellos","e","esto","mí","antes","algunos","qué","unos","yo","otro","otras","otra","él","tanto","esa","estos","mucho","quienes","nada","muchos","cual","poco","ella","estar","estas","algunas","algo","nosotros","mi","mis","tú","te","ti","tu","tus","ellas","nosotras","vosotros","vosotras","os","mío","mía","míos","mías","tuyo","tuya","tuyos","tuyas","suyo","suya","suyos","suyas","nuestro","nuestra","nuestros","nuestras","vuestro","vuestra","vuestros","vuestras","esos","esas","estoy","estás","está","estamos","estáis","están","esté","estés","estemos","estéis","estén","estaré","estarás","estará","estaremos","estaréis","estarán","estaría","estarías","estaríamos","estaríais","estarían","estaba","estabas","estábamos","estabais","estaban","estuve","estuviste","estuvo","estuvimos","estuvisteis","estuvieron","estuviera","estuvieras","estuviéramos","estuvierais","estuvieran","estuviese","estuvieses","estuviésemos","estuvieseis","estuviesen","estando","estado","estada","estados","estadas","estad","he","has","ha","hemos","habéis","han","haya","hayas","hayamos","hayáis","hayan","habré","habrás","habrá","habremos","habréis","habrán","habría","habrías","habríamos","habríais","habrían","había","habías","habíamos","habíais","habían","hube","hubiste","hubo","hubimos","hubisteis","hubieron","hubiera","hubieras","hubiéramos","hubierais","hubieran","hubiese","hubieses","hubiésemos","hubieseis","hubiesen","habiendo","habido","habida","habidos","habidas","soy","eres","es","somos","sois","son","sea","seas","seamos","seáis","sean","seré","serás","será","seremos","seréis","serán","sería","serías","seríamos","seríais","serían","era","eras","éramos","erais","eran","fui","fuiste","fue","fuimos","fuisteis","fueron","fuera","fueras","fuéramos","fuerais","fueran","fuese","fueses","fuésemos","fueseis","fuesen","siendo","sido","tengo","tienes","tiene","tenemos","tenéis","tienen","tenga","tengas","tengamos","tengáis","tengan","tendré","tendrás","tendrá","tendremos","tendréis","tendrán","tendría","tendrías","tendríamos","tendríais","tendrían","tenía","tenías","teníamos","teníais","tenían","tuve","tuviste","tuvo","tuvimos","tuvisteis","tuvieron","tuviera","tuvieras","tuviéramos","tuvierais","tuvieran","tuviese","tuvieses","tuviésemos","tuvieseis","tuviesen","teniendo","tenido","tenida","tenidos","tenidas","tened"]),
         }
       },
       DomainName: 'predictor-1ecommerce' /* required */
     };
     let aliases = {
       groups: [
-        ["cangurera","riñonera"],
-        ["morral","mochila"],
+        ["cangurera","riñonera","canguro","cancgurera"],
+        ["morral","mochila","tula"],
+        ["hip hop","hiphop","hip-hop"],
+        ["nailon","nylon"],
+        ["medias","calcetines"],
+        ["juego","set","kit"],
+        ["binoculos","binoculares","binóculos"],
+        ["sleeping bag","sleeping","saco dormir","bolsa dormir"],
+        ["pava","sombrero"],
         ["balón","bola","pelota","balon"],
-        ["termo","caramañola","botilito"],
-        ["conjunto deportivo","sudadera"],
-        ["chaqueta","chammara"],
+        ["panti","panties","panty"],
+        ["campismo","camping","campamento","acampar","acampada"],
+        ["portafolio","portfolio"],
+        ["termo","caramañola","botilito","caramau00d1ola","carimañola"],
+        ["pantaloneta","short","bermudas"],
+        ["gorro","gorra","cachucha"],
+        ["nevera","cooler","refrigerador"],
+        ["fiambrera","portacomida","porta comida"],
+        ["catre","cama"],
+        ["conjunto deportivo","sudadera","pantalón sudadera","sudaderas","sweat pants"],
+        ["camiseta polo","polo","tipo polo"],
+        ["camiseta","camisetas","tshirt","t-shirt"],
+        ["chaqueta","chamarra"],
         ["cinturón","correa"],
-        ["masculino","hombre","señor","caballero","ombre","macho","hombres","viejo"],
-        ["femenino","mujer","dama","señora","mujeres","hembra","vieja","femenina"],
-        ["niño","muchacho","joven","junior","infante","niños"],
-        ["niña","muchacha","jovencita","junior","infanta"]
+        ["abrigo","abrigos"],
+        ["masculino","hombre","señor","caballero","ombre","macho","hombres","viejo","men","man"],
+        ["femenino","mujer","dama","señora","mujeres","hembra","vieja","femenina","women","woman"],
+        ["niño","muchacho","joven","junior masculino","infante","niños", "junior niño"],
+        ["niña","muchacha","jovencita","junior femenino","infanta", "niñas", "junior niñas"],
+        ["perro","perra","canino","canina","caninos", "perros cachorrros", "perro cachorro","perros"],
+        ["gato","gata","felino","felina","felinos", "gatos cachorrros", "gato cachorro","gatos"],
+        ["cicla","bicicleta","monareta"],
+        ["moto","motocicleta"],
+        ["auto","automovil","auto móvil","automobil"],
       ],
       aliases : {}
     };
     for(let category of categories){
       if(category.tags !== null && category.tags !== '' && category.tags.length >= 3  && category.tags !== ' '){
-        aliases.aliases[category.name] = category.tags.split(',');
+        let tags = category.tags.split(',').filter(x => x);
+        aliases.aliases[category.name.trim().toLowerCase()] = tags.map(t => t.trim().toLowerCase());
       }
     }
     params.AnalysisScheme.AnalysisOptions.Synonyms = JSON.stringify(aliases);
+    
     cloudsearch.defineAnalysisScheme(params, function(err, data) {
-      if (err){console.log(err, err.stack);} // an error occurred
-      cloudsearch.indexDocuments({ DomainName: 'predictor-1ecommerce' }, (err, data) => {
-        if (err) { console.log(err); }
-        console.log(data);
-        return res.redirect('/inicio');
-      });
+      if (err){throw 'Error de Esquema:'+err.message;} // an error occurred
+      if(data){
+        cloudsearch.indexDocuments({ DomainName: 'predictor-1ecommerce' }, (err, data) => {
+          if (err) { throw 'Error Indexando: '+err.message};
+          return res.redirect('/inicio');
+        });
+      }
     });
   }
 };

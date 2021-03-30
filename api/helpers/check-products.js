@@ -27,7 +27,7 @@ module.exports = {
     if(!inputs.product.reference){
       throw new Error(`${pro.name} sin referencia`);
     }
-
+    
     pro.reference = inputs.product.reference.toUpperCase().trim();
     pro.description = inputs.product.description.trim();
     pro.descriptionShort = inputs.product.descriptionShort.trim();

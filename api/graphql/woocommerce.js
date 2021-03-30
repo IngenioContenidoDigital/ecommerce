@@ -47,6 +47,7 @@ IMAGES : `
                 data{
                         externalId
                         simple
+                        color
                         reference
                         images{
                             file
@@ -90,7 +91,10 @@ PRODUCT_VARIATION_ID :
 `query WooCommerceProductVariationQuery($productId: String) {
     WooCommerceProductVariation(productId: $productId) {
             data{
+                quantity
+                price
                 reference
+                externalId
                 simple
                 color
                 size
@@ -101,7 +105,10 @@ PRODUCT_VARIATION_ID :
             }
         }
     }`,
+<<<<<<< HEAD
 
+=======
+>>>>>>> a84a489cfaa012e6a17d3baca904c5fab6d38012
 PRODUCTID :
 `query WooCommerceProductIdQuery($productId: String) {
     WooCommerceProductId(productId: $productId) {
@@ -129,6 +136,25 @@ PRODUCTID :
                     file
                     src
                 }
+<<<<<<< HEAD
+=======
+                variations{
+                    quantity
+                    reference
+                    talla
+                    price
+                    color
+                    size
+                    weight
+                    discount{
+                        name
+                        from
+                        to
+                        type
+                        value
+                    }
+                }
+>>>>>>> a84a489cfaa012e6a17d3baca904c5fab6d38012
             }
         }
     }`

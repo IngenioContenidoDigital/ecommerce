@@ -85,16 +85,31 @@ module.exports = {
           order.currentstatus = await OrderState.findOne({id:order.currentstatus});
           const resultseller = await Seller.findOne({id:order.seller});
           order.seller = resultseller;
-          const commissionDiscount = await CommissionDiscount.find({
-            where:{
-              to:{'>=':moment().valueOf()},
-              from:{'<=':moment().valueOf()},
-              seller: seller
-            },
-            sort: 'createdAt DESC',
-            limit: 1
-          });
+          const integrat = await Integrations.findOne({id:order.integration});
+          let commission = 0;
+          if(integrat){
+            const commissionDiscount = await CommissionDiscount.find({
+              where:{
+                to:{'>=':moment().valueOf()},
+                from:{'<=':moment().valueOf()},
+                seller: seller
+              },
+              sort: 'createdAt DESC',
+              limit: 1
+            });
+            const commissionChannel = await CommissionChannel.find({
+              where:{
+                channel: integrat.channel,
+                seller: seller
+              },
+              limit: 1
+            });
+            commission = commissionDiscount.length > 0 ? commissionDiscount[0].value : commissionChannel.length > 0 ? commissionChannel[0].value : 0;
+          }else{
+            commission = 20;
+          }
           orders.push(order);
+          
           for(let cp of sellerproducts){
             await OrderItem.create({
               order:order.id,
@@ -104,7 +119,8 @@ module.exports = {
               discount:cp.totalDiscount,
               originalPrice:cp.productvariation.price,
               externalReference:cp.externalReference,
-              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : resultseller.salesCommission
+              commission: commission,
+              shippingType: cp.shippingType ? cp.shippingType : ''
             });
             let pv = await ProductVariation.findOne({id:cp.productvariation.id});
             if(pv){
@@ -116,6 +132,7 @@ module.exports = {
           }
           await sails.helpers.notification(order, order.currentstatus.id);
         }catch(err){
+          console.log(err);
           return exits.error(err);
         }
       }

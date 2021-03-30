@@ -1,0 +1,74 @@
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/js/bulma-tagsinput.min.js"></script>
+<link href='https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/css/bulma-tagsinput.min.css' rel='stylesheet'>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<div class="container">
+    <h4 class="title is-4">Generar manifiesto Cross-Docking</h4>
+    <hr>
+    <div class="columns is-gapless">
+        <div class="column">
+            <div class="box">
+                <div class="field">
+                    <label class="label">Números de pedidos</label>
+                    <div class="control">
+                        <input class="input" type="tags" name='tags' placeholder="Agrega tu número" value="">
+                    </div>
+                </div>
+                <br />
+                <div class="buttons is-right is-fixed-bottom">
+                    <br><br><br>
+                    <button id="process" type="submit" class="button is-primary"><i class='bx bxs-file-export'></i>&nbsp;Generar</button>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="loading container is-fluid"></div>
+            <div id="report" class="container is-fluid is-hidden">
+                <div class="notification is-danger">
+                    <p id="errors"></p>
+                </div>
+            </div>
+            <div id="notifi" class="container is-fluid is-hidden">
+                <div class="notification is-primary">
+                    Se ha generado las guias correctamente.
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="columns">
+        <div class="column" id="pdf">
+        </div>
+    </div>
+</div>
+<script>
+    bulmaTagsinput.attach();
+
+    live('#process','click',e=>{
+        e.preventDefault();
+        let numbers = document.querySelector('input[name="tags"]').value;
+        let loading = document.querySelector('.loading');
+        let errors = document.querySelector('#errors');
+        let report = document.querySelector('#report');
+        let notifi = document.querySelector('#notifi');
+        let pdf = document.querySelector('#pdf');
+        loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+        errors.innerHTML= '';
+        pdf.innerHTML = '';
+        if(!hasClass(report,'is-hidden')){addClass(report,'is-hidden');}
+        if(!hasClass(notifi,'is-hidden')){addClass(notifi,'is-hidden');}
+        io.socket.post('/generatemanifest',{numbers}, resData =>{
+            loading.innerHTML= '';
+            if (resData.guia) {
+                pdf.innerHTML =
+                `<div class="box">
+                    <p class="container has-text-centered">
+                        <embed src="data:application/pdf;base64,`+ resData.guia +`" width="100%" height="500">
+                    </p>
+                </div>`;
+                if(hasClass(notifi,'is-hidden')){removeClass(notifi,'is-hidden');}
+            } else {
+                if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+                errors.innerHTML = resData.error ? resData.error : 'Error al procesar el manifiesto';
+            }
+        });
+    });
+</script>

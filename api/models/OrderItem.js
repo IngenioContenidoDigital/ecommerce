@@ -6,9 +6,7 @@
  */
 
 module.exports = {
-
   attributes: {
-
     order:{model:'order'},
     product:{model:'product'},
     productvariation:{model:'productvariation'},
@@ -26,9 +24,9 @@ module.exports = {
     },
     externalReference:{
       type:'string'
+    },
+    shippingType: {
+      type:'string'
     }
-
   },
-
 };
-

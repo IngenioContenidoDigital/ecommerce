@@ -21,7 +21,7 @@ module.exports = {
     }
   },
   fn: async function (inputs,exits) {
-
+    const _ = require("lodash");
     let seller = inputs.seller;
     let sid = inputs.socketId;
 
@@ -39,9 +39,13 @@ module.exports = {
 
           if(typeof(pro) === 'object'){
             let pr;
-            let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference});
+            let exists = await Product.findOne({ externalId:pro.externalId, seller:seller, reference : pro.reference});
             if (!exists) {
-              pr = await Product.create(pro).fetch();
+                if(inputs.provider != sails.config.custom.WOOCOMMERCE_CHANNEL){
+                    pr = await Product.create(pro).fetch();
+                }else if(product.simple && (product.color && product.color.length == 1)){
+                    pr = await Product.create(pro).fetch();
+                }
             } else {
               delete pro.mainCategory;	
               delete pro.categories;
@@ -49,7 +53,8 @@ module.exports = {
             }
 
             try {	
-              if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL && inputs.asColor && product.color && product.color.length > 0 && !product.simple){	
+              if(inputs.provider == sails.config.custom.WOOCOMMERCE_CHANNEL && inputs.asColor && product.color && product.color.length > 1 && !product.simple){	
+                
                 let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(	
                   inputs.credentials.channel, 	
                   inputs.credentials.pk,	
@@ -60,38 +65,65 @@ module.exports = {
                   product.externalId	
                 );	
 
-                for (let index = 0; index < product_variables.data.length; index++) {	
-                  const product_variable = product_variables.data[index];	
-                  if(product_variable.color && product.color.length > 0){	
-                    pro.reference = product_variable.reference;	
-                    let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);	
+                let parent_category;
 
-                    if(color && color.length > 0){	
-                      pro.mainColor = color[0];	
-                    }else{	
-                      throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
-                    }	
+                if(product_variables && product_variables.data){
+                  let db_color;
+                  products_colors = _.uniqBy(product_variables.data.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
+                  for (let index = 0; index < products_colors.length; index++) {	
+                      const product_variable = products_colors[index];
 
-                    let exists = await Product.findOne({ externalId:pro.externalId, seller:pro.seller, reference : pro.reference });	
+                      if(product_variable.color && product.color.length > 0){	
+                        
+                      let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
 
-                    if (!exists) {	
-                        pr = await Product.create(pro).fetch();	
-                    } else {	
+                        if(color && color.length > 0){
+                          db_color = await Color.findOne({id : color[0]});
+                        }
 
-                      delete pro.mainCategory;	
-                      delete pro.categories;
+                        if(db_color){
+                          pro.mainColor = db_color.id;	
+                          pro.reference = `${product_variable.reference}-${db_color.name}`.toUpperCase();	
+                        }else{
+                          throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
+                        }
+                        
+                        pro.externalId = product_variable.externalId;
+                        
+                        if(parent_category){
+                          pro.categories =  parent_category;
+                        }
 
-                      pr = await Product.updateOne({ id: exists.id }).set(pro);	
-                    }	
+                        let exists = await Product.findOne({ externalId:product_variable.externalId, seller:seller, reference : pro.reference });	
+
+                        if (!exists) {	
+                            parent_category = pro.categories;
+                            pr = await Product.create(pro).fetch();	
+                        } else {	
+
+                          delete pro.mainCategory;	
+                          delete pro.categories;
+                          delete pro.manufacturer;
+                          delete pro.gender;
+                          delete pro.tax;
+                          delete pro.seller;
+
+                          pr = await Product.updateOne({ id: exists.id }).set(pro);	
+                        }	
+
+                        delete db_color;
+                      
+                      }	
                   }	
 
-                }	
+                  if(typeof(pr) == 'object'){
+                    result.push(pr);	
+                    sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
+                  }
 
-                result.push(pr);	
-                sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
+                }
           }	
             } catch (error) {	
-              console.log(error);
               errors.push({ name:'ERRDATA', message:error.message });	
               sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
             }	

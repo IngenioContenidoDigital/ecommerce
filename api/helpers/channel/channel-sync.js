@@ -19,7 +19,7 @@ module.exports = {
       for (const item of productChannels) {
         let integration = await Integrations.findOne({id: item.integration}).populate('channel');
         if (integration.channel.name === 'dafiti' && item.status) {
-          let result = await sails.helpers.channel.dafiti.product([inputs.product], integration, item.price);
+          let result = await sails.helpers.channel.dafiti.product([inputs.product], integration, item.price,undefined,false);
           const xml = jsonxml(result,true);
           let sign = await sails.helpers.channel.dafiti.sign(integration.id,'ProductUpdate',inputs.product.seller);
           await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml);
@@ -35,7 +35,7 @@ module.exports = {
           }
         }
         if (integration.channel.name === 'linio' && item.status) {
-          let result = await sails.helpers.channel.linio.product([inputs.product], integration, item.price);
+          let result = await sails.helpers.channel.linio.product([inputs.product], integration, item.price,undefined,false);
           const xml = jsonxml(result,true);
           let sign = await sails.helpers.channel.linio.sign(integration.id,'ProductUpdate',inputs.product.seller);
           await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml);
