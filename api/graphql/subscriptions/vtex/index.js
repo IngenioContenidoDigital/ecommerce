@@ -6,7 +6,8 @@ module.exports = {
       VtexProducts{
         productId,
         key,
-        channel
+        channel,
+        discount
       }
     }`
 };

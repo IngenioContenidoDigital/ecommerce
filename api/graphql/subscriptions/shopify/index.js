@@ -6,7 +6,8 @@ module.exports = {
         ShopifyProducts{
             productId,
             key,
-            channel
+            channel,
+            discount
         }
     }`
 };
