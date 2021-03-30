@@ -404,6 +404,9 @@ module.exports = {
           case 'orders_v2':
             await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
             break;
+          case 'items':
+            await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
+            break;
           default:
             break;
         }
