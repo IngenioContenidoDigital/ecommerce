@@ -3,7 +3,8 @@ module.exports = {
   description: 'Proceso para crear producto webhook',
   inputs: {
     product: {type:'json'},
-    seller: {type : 'string'}
+    seller: {type: 'string'},
+    discount: {type: 'boolean',defaultsTo:true}
   },
   exits: {
     success: {
@@ -27,7 +28,7 @@ module.exports = {
           if (variations.variations.length > 0) {
             const createdProduct = await Product.create(pro).fetch();
             if (createdProduct) {
-              await sails.helpers.marketplaceswebhooks.variations(variations, createdProduct.id, seller);
+              await sails.helpers.marketplaceswebhooks.variations(variations, createdProduct.id, seller, inputs.discount);
               await sails.helpers.marketplaceswebhooks.images(images, createdProduct.id, seller);
             }
           }
@@ -36,7 +37,7 @@ module.exports = {
           delete pro.categories;
           const updatedProduct = await Product.updateOne({id: exists.id}).set(pro);
           if (updatedProduct) {
-            await sails.helpers.marketplaceswebhooks.variations(variations, updatedProduct.id, seller);
+            await sails.helpers.marketplaceswebhooks.variations(variations, updatedProduct.id, seller, inputs.discount);
             await sails.helpers.channel.channelSync(exists);
           }
         }

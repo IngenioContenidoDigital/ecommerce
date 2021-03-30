@@ -4,7 +4,8 @@ module.exports = {
   inputs: {
     productVariation: {type: 'json'},
     productId: {type : 'string'},
-    seller: {type : 'string'}
+    seller: {type : 'string'},
+    discount: {type: 'boolean'}
   },
   exits: {
     success: {
@@ -19,7 +20,6 @@ module.exports = {
     let seller = inputs.seller;
     let productId = inputs.productId;
     let productVariation = inputs.productVariation;
-     
     let pro = await Product.findOne({id: productId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
       where:{
         to:{'>=':moment().valueOf()}
@@ -27,7 +27,7 @@ module.exports = {
       sort: 'createdAt DESC'
     });
     if(pro){
-      if (productVariation.discount && productVariation.discount.length > 0) {
+      if (inputs.discount && productVariation.discount && productVariation.discount.length > 0) {
         for (const disc of productVariation.discount) {
           let exists = pro.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
           if (exists) {
