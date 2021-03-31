@@ -52,16 +52,18 @@
         <div class="box">
           <h7 class="title is-7">Dirección de Entrega</h7>
           <hr>
-          <p class="container"><%= order.addressDelivery.addressline1 %></p>
-          <%= order.addressDelivery.addressline2 %>
-          <span class="is-capitalized"><%= order.addressDelivery.region.name %>, </span>
-          <span class="is-capitalized"><%= order.addressDelivery.city.name %></span>
-          <span class="is-uppercase"><%= order.addressDelivery.zipcode %></span>
-          <p class="container is-capitalized"><%= order.addressDelivery.country.name %></p>
-          <br>
-          <p class="container"><h7 class="subtitle is-7 has-text-weight-bold">Observaciones:</h7></p>
-          <p><%= order.addressDelivery.notes %></p>
-          <br>
+          <%if(order.addressDelivery){%>
+            <p class="container"><%= order.addressDelivery.addressline1 %></p>
+            <%= order.addressDelivery.addressline2 %>
+            <span class="is-capitalized"><%= order.addressDelivery.region.name %>, </span>
+            <span class="is-capitalized"><%= order.addressDelivery.city.name %></span>
+            <span class="is-uppercase"><%= order.addressDelivery.zipcode %></span>
+            <p class="container is-capitalized"><%= order.addressDelivery.country.name %></p>
+            <br>
+            <p class="container"><h7 class="subtitle is-7 has-text-weight-bold">Observaciones:</h7></p>
+            <p><%= order.addressDelivery.notes %></p>
+            <br>
+          <%}%>
           <%if(order.tracking!=='' && order.tracking!==null){%>
           <div class="columns is-mobile">
             <div class="column">
@@ -153,6 +155,101 @@
       </div>
       <button class="modal-close is-large" id="close-modal" aria-label="close"></button>
     </div>
+    <div id="modal-address" class="is-hidden columns modal">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <section class="modal-card-body">
+          <div class="box">
+            <div class="field">
+              <label class="label">Agregar Dirección de Entrega</label>
+            </div>
+            <form method="POST" action="/guideprocess/<%= order.id %>">
+              <input class="is-hidden" name="status" value=""/>
+              <div class="column">
+                <div class="field">
+                  <label class="label is-size-7">Transportadora</label>
+                  <div class="control">
+                    <div class="select is-fullwidth is-size-7">
+                      <select required class="select is-capitalized" name="transport">
+                        <option value="">-- Elegir Transportadora --</option>
+                        <option class="is-capitalized" value="coordinadora">Coordinadora</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label is-size-7">Dirección</label>
+                  <div class="control">
+                    <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..."/>
+                  </div>
+                  <br>
+                  <div class="control">
+                    <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..."/>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">País</label>
+                      <div class="control">
+                        <div class="select is-fullwidth is-size-7">
+                          <select required class="select is-capitalized" name="country">
+                            <option value="0">Elegir País</option>
+                            <% countries.forEach((country) =>{ %>
+                              <option class="is-capitalized" value="<%=country.id%>"><%=country.name%></option>
+                            <%})%>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field is-hidden" id="estados">
+                      <label class="label is-size-7">Estado</label>
+                      <div class="select control is-size-7 is-fullwidth">
+                        <select class="is-capitalized" name="region" required >
+                          <option value="">-- Elegir Región --</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field is-hidden" id="ciudades">
+                      <label class="label is-size-7">Ciudad</label>
+                      <div class="control select is-size-7 is-fullwidth">
+                        <select class="is-capitalized" name="city" required>
+                          <option value="">-- Elegir Ciudad --</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">Código Postal</label>
+                      <div class="control">
+                        <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
+                  <div class="control">
+                    <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."></textarea>
+                  </div>
+                </div>
+              </div>
+              <div class="control buttons is-right">
+                <button type="submit" class="button is-primary is-small"><i class='bx bxs-detail'></i>&nbsp;Procesar</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+      <button class="modal-close is-large" id="close-modal-address" aria-label="close"></button>
+    </div>
     <script>
       let totals = <%- JSON.stringify(printed) %>;
 
@@ -180,25 +277,49 @@
         e.preventDefault();
         let channel='<%- order.channel %>';
         let order= document.getElementById('order').getAttribute('order');
-        let state= document.querySelector('select[name="orderState"]').value;
+        let state = document.querySelector('select[name="orderState"]');
+        const nameState = state.options[state.selectedIndex].text;
+        state = state.value;
         let tracking= '<%- order.tracking %>';
         if(channel == 'coppel' && state =='5eeceb61c7b6fb0418019db2' && tracking == ''){
           let modal = document.querySelector('#modal-integration');
           removeClass(modal, 'is-hidden');
           createTrackingForm();
         }else{
-          io.socket.put('/order/update',{id:order,orderState:state},(resData) =>{
-            let colorcode = resData.newstate.color.code;
-            document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
-          });
+          if (nameState === 'empacado') {
+            io.socket.post('/verifyorder', {id:order}, resData =>{
+              if (resData.stateOrder) {
+                const modalAddress = document.querySelector('#modal-address');
+                const status = document.querySelector('input[name="status"]');
+                removeClass(modalAddress, 'is-hidden');
+                status.value = state;
+              } else {
+                io.socket.put('/order/update',{id:order,orderState:state}, resData =>{
+                  let colorcode = resData.newstate.color.code;
+                  document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
+                });
+              }
+            }); 
+          } else {
+            io.socket.put('/order/update',{id:order,orderState:state}, resData =>{
+              let colorcode = resData.newstate.color.code;
+              document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
+            });
+          }
         }
       });
 
       live('#close-modal','click',function(e){
-            e.preventDefault();
-            let modal = document.querySelector('#modal-integration');
-            addClass(modal,'is-hidden');
-          });
+        e.preventDefault();
+        let modal = document.querySelector('#modal-integration');
+        addClass(modal,'is-hidden');
+      });
+
+      live('#close-modal-address','click',function(e){
+        e.preventDefault();
+        let modal = document.querySelector('#modal-address');
+        addClass(modal,'is-hidden');
+      });
 
       function createTrackingForm() {
             let div = document.createElement('div');
@@ -239,6 +360,7 @@
               div.innerHTML = form;
               formIntegration.appendChild(div);
           }
+      
       live('#status-change','click',(e) =>{
         e.preventDefault();
         let formIntegration = document.querySelector('#tracking-form');
@@ -261,6 +383,48 @@
             addClass(modal, 'is-hidden');
           });
         }
+      });
+
+      live('select[name="country"]','change',e =>{
+        let country = e.target.value;
+        
+        let regions = document.querySelector('#estados')
+        regions.querySelector('select').innerHTML='<option value="">-- Elegir Región --</option>';
+        addClass(regions,'is-hidden');
+        
+        let cities = document.querySelector('#ciudades')
+        cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+        addClass(cities,'is-hidden');
+        
+        io.socket.get('/find/regions/'+country,resdata =>{
+          if(resdata.regions.length>0){
+            for(let s of resdata.regions){
+              let option = document.createElement('option');
+              option.value = s.id;
+              option.innerHTML = s.name
+              regions.querySelector('select').appendChild(option);
+            }
+            removeClass(regions,'is-hidden');
+          }
+        });
+      });
+
+      live('select[name="region"]','change',e =>{
+        let region = e.target.value;
+        let cities = document.querySelector('#ciudades')
+        cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+        addClass(cities,'is-hidden');
+        io.socket.get('/find/cities/'+region,resdata =>{
+          if(resdata.cities.length>0){
+            for(let s of resdata.cities){
+              let option = document.createElement('option');
+              option.value = s.id;
+              option.innerHTML = s.name
+              cities.querySelector('select').appendChild(option);
+            }
+            removeClass(cities,'is-hidden');
+          }
+        });
       });
     </script>
 </div>

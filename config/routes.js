@@ -165,6 +165,8 @@ module.exports.routes = {
   'POST /generatemanifest': {controller:'OrderController', action:'generatemanifest'},
   'GET /respuesta' : {controller: 'OrderController', action: 'response'},
   'POST /confirmacion' : {controller:'OrderController', action:'confirmation', csrf:false},
+  'POST /verifyorder' : {controller:'OrderController', action:'verifyorder'},
+  'POST /guideprocess/:id' : {controller:'OrderController', action:'guideprocess'},
   'GET /discounts/:action?/:id?' : {controller:'DiscountController',action:'discounts'},
   'POST /discount/:action/:id?' : {controller:'DiscountController',action:'creatediscount'},
   'POST /productdiscount' : {controller:'DiscountController',action:'productdiscount'},

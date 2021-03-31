@@ -63,7 +63,7 @@ module.exports = {
             productsDiscount:productsdiscount,
             conversionRate:1,
             customer:user.id,
-            addressDelivery:address.id,
+            addressDelivery: address ? address.id : null,
             cart:cart.id,
             currentstatus:await sails.helpers.orderState(payment.data.estado),
             paymentMethod:inputs.data.method,
