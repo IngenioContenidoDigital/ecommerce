@@ -101,7 +101,7 @@ module.exports = {
     let guia=null;
     let label=null;
     for(let order of orders){
-      if(order.channel==='direct'){
+      if(order.channel==='direct' || (order.transport && order.transport === 'coordinadora')){
         guia = await sails.helpers.carrier.guia(tracking);
         label = await sails.helpers.carrier.label(tracking);
       }

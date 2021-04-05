@@ -1,4 +1,4 @@
-  module.exports = {
+module.exports = {
   friendlyName: 'Shipment',
   description: 'Shipment carrier.',
   inputs: {
@@ -29,8 +29,8 @@
     let oitems = await OrderItem.find({order:order.id}).populate('product');
     let items = oitems.length;
     let integration = await Integrations.findOne({id: order.integration}).populate('channel');
-    
-    if(order.channel==='direct'){
+
+    if(order.channel==='direct' || (order.transport && order.transport === 'coordinadora')){
       let soap = require('strong-soap').soap;
       //let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
       let url = 'http://guias.coordinadora.com/ws/guias/1.6/server.php?wsdl';
@@ -140,14 +140,14 @@
         }
       };
 
-      /**
-     *   Guias_generarGuiaInter - Generar Guía de Despacho Internacional
-     *   Guias_generarGuia - Generar Guía de Despacho Nacional
-     *   Guias_imprimirRotulos - Imprimir Rotulos para Paquetes
-     *   Cotizador_cotizar - Cotizar Costo de la guía
-     *   Seguimiento_simple - Verificación de Estado de Entrega
-     *   Guias_liquidacionGuia - Consultar el Valor de la Guía
-     */
+      //   /**
+      //  *   Guias_generarGuiaInter - Generar Guía de Despacho Internacional
+      //  *   Guias_generarGuia - Generar Guía de Despacho Nacional
+      //  *   Guias_imprimirRotulos - Imprimir Rotulos para Paquetes
+      //  *   Cotizador_cotizar - Cotizar Costo de la guía
+      //  *   Seguimiento_simple - Verificación de Estado de Entrega
+      //  *   Guias_liquidacionGuia - Consultar el Valor de la Guía
+      //  */
       let options = {};
       soap.createClient(url, options, (err, client) =>{
         let method = client['Guias_generarGuia'];

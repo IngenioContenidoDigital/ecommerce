@@ -91,6 +91,10 @@ module.exports = {
     manifest: {
       type:'string',
       defaultsTo:''
+    },
+    transport: {
+      type:'string',
+      defaultsTo:''
     }
   },
   beforeCreate (obj, cb) {

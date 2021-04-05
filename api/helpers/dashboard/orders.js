@@ -50,7 +50,7 @@ module.exports = {
     }
 
     for(let order of orders){
-      if (order.currentstatus.name !== 'cancelado' && order.currentstatus.name !== 'fallido' && order.currentstatus.name !== 'rechazado') {
+      if (order.addressDelivery && order.currentstatus.name !== 'cancelado' && order.currentstatus.name !== 'fallido' && order.currentstatus.name !== 'rechazado') {
         totalOrders += 1;
         totalSales += order.totalOrder;
         totalProducts += await OrderItem.count({order: order.id});
