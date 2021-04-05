@@ -32,10 +32,10 @@ module.exports = {
         try{
           let oexists = await Order.find({channel:'mercadolibre', channelref:order.id, integration: integration.id});
           if(oexists.length === 0 && order.status==='paid'){
-            let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
-              return exits.error(err.message);
-            });
-            if(shipping){
+            if(order.shipping.id){
+              let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
+                return exits.error(err.message);
+              });
               let existShipping = await Order.find({channel:'mercadolibre', tracking: order.shipping.id, integration: integration.id});
               if (existShipping.length === 0) {
                 let cityname = shipping['receiver_address'].city.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -158,7 +158,7 @@ module.exports = {
                 fullName:order.buyer['first_name']+' '+order.buyer['last_name'],
                 dniType:'CC',
                 dni:order.buyer['billing_info']['doc_number'],
-                mobilecountry:city[0].region.country,
+                mobilecountry:null,
                 mobile:0,
                 mobileStatus:'unconfirmed',
                 profile:profile.id
@@ -203,9 +203,8 @@ module.exports = {
                 }
               }
               if((await CartProduct.count({cart:cart.id}))>0){
-                let carrier = shipping['tracking_method'].split(' ');
-                let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:carrier[0]});
-                await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:shipping.id});
+                let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:''});
+                await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:''});
               } else {
                 return exits.error('No se pudo crear la orden');
               }
@@ -227,6 +226,7 @@ module.exports = {
             }
           }
         }catch(err){
+          console.log(err);
           return exits.error(err);
         }
         return exits.success();
