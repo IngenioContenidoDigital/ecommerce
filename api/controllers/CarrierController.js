@@ -135,10 +135,12 @@ module.exports = {
 
       if(order.channel==='direct'){
          guia = await CarrierData.find({ order : order.id});
-         console.log(guia);
+         if(guia && guia.length > 0){
+            guia = guia[0];
+         }
       }
     }
-    return res.view('pages/pdf',{layout:'layouts/admin',guia:guia[0].data, label:null});
+    return res.view('pages/pdf',{layout:'layouts/admin',guia:guia.data, label:null});
   },
   generateguides: async function(req, res){
     res.view('pages/carriers/generateguides',{layout:'layouts/admin'});
