@@ -2095,12 +2095,11 @@ module.exports = {
               },
               sort: 'createdAt DESC'
             });
-
-            if(!pro &&  req.body.channel != sails.config.custom.WOOCOMMERCE_CHANNEL){
+            if(!pro){
               throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
-            }else{
+            }
+            if(req.body.channel === sails.config.custom.WOOCOMMERCE_CHANNEL){
               if(p.variations && p.variations.length > 0){
-
                 let pvrs = require("lodash").uniqBy(p.variations.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
 
                 if(pvrs.length > 0){
