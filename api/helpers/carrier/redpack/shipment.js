@@ -127,9 +127,19 @@ module.exports = {
         
         let numeroGuia = parsed['soapenv:Envelope']['soapenv:Body']['ns:documentacionResponse']['ns:return']['ax21:numeroDeGuia']['_text'];
         (seq = seq + 1)
+        let embed = parsed['soapenv:Envelope']['soapenv:Body']['ns:documentacionResponse']["ns:return"]["ax21:paquetes"]["ax21:formatoEtiqueta"]["_text"];
         await Order.updateOne({id:inputs.order}).set({tracking:numeroGuia});
-        await Carrier.updateOne({id : order.carrier.id}).set({ sequential : seq });
-        await sails.helpers.carrier.costs(numeroGuia);
+        
+        let carrierData = await CarrierData.create({
+          order : order.id,
+          data : embed
+        }).fetch();
+
+      await Carrier.updateOne({id : order.carrier.id}).set({ sequential : seq });
+        await sails.helpers.carrier.redpack.costs(numeroGuia);
+
+      }else if(parsed['soapenv:Envelope']['soapenv:Body']['ns:documentacionResponse']['ns:return']['ax21:resultadoConsumoWS']['ax21:descripcion']['_text'] == 'LA GUÍA YA ESTÁ DOCUMENTADA'){
+        console.log("Esta guia ya se encuentra documentada")
       }else{
         throw new Error("Ocurrio un error generando la guias");
       }

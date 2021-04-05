@@ -20,8 +20,6 @@ module.exports = {
       const _ = require("lodash");
       let seller = inputs.seller;
       let product = inputs.product;
-      let variations = inputs.product.variations;
-      let images  = inputs.product.images;
 
       try {
         let pro = await sails.helpers.checkProducts(product, seller);
@@ -33,10 +31,12 @@ module.exports = {
           if (!exists) {
               if(product.simple && (product.color && product.color.length == 1)){
                   pr = await Product.create(pro).fetch();
+                  
                   let variations  = inputs.product.variations;
                   let images =  inputs.product.images;
+
                   await sails.helpers.marketplaceswebhooks.variations({variations} , pr.id, seller);
-            await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller);
+                  await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller);
               }
           } else {
             delete pro.mainCategory;	
@@ -280,7 +280,7 @@ module.exports = {
               }
         }	
           } catch (error) {	
-console.log(error)
+            console.log(error)
           }	
 
         }

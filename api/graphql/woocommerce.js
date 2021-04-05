@@ -105,10 +105,6 @@ PRODUCT_VARIATION_ID :
             }
         }
     }`,
-<<<<<<< HEAD
-
-=======
->>>>>>> a84a489cfaa012e6a17d3baca904c5fab6d38012
 PRODUCTID :
 `query WooCommerceProductIdQuery($productId: String) {
     WooCommerceProductId(productId: $productId) {
@@ -136,8 +132,6 @@ PRODUCTID :
                     file
                     src
                 }
-<<<<<<< HEAD
-=======
                 variations{
                     quantity
                     reference
@@ -154,7 +148,6 @@ PRODUCTID :
                         value
                     }
                 }
->>>>>>> a84a489cfaa012e6a17d3baca904c5fab6d38012
             }
         }
     }`
