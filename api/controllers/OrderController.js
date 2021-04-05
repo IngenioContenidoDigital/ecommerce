@@ -636,7 +636,8 @@ module.exports = {
         zipcode: req.body.zipcode,
         user: order.customer,
       });
-      order = await Order.updateOne({id:id}).set({transport:req.body.transport,currentstatus:req.body.status,addressDelivery: address.id});
+      const carrier = await Carrier.findOne({name:req.body.transport.trim().toLowerCase()});
+      order = await Order.updateOne({id:id}).set({transport:req.body.transport,currentstatus:req.body.status,addressDelivery: address.id, carrier: carrier.id});
       if(order.tracking === ''){
         await sails.helpers.carrier.shipment(id);
       }
