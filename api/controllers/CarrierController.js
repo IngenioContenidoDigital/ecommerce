@@ -102,11 +102,10 @@ module.exports = {
     let guia=null;
     let label=null;
     for(let order of orders){
-      if(order.channel==='direct'){
+      if(order.channel==='direct' || (order.transport && order.transport === 'coordinadora')){
         guia = await sails.helpers.carrier.guia(tracking);
         label = await sails.helpers.carrier.label(tracking);
-      }
-      if(order.channel==='dafiti'){
+      }else if(order.channel==='dafiti'){
         let oitems = await OrderItem.find({order:order.id});
         let litems = [];
         for(let it of oitems){
@@ -118,9 +117,7 @@ module.exports = {
         let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
         let result = JSON.parse(response);
         guia = result.SuccessResponse.Body.Documents.Document.File;
-      }
-
-      if(order.channel==='linio'){
+      }else if(order.channel==='linio'){
         let oitems = await OrderItem.find({order:order.id});
         let litems = [];
         for(let it of oitems){
@@ -132,9 +129,7 @@ module.exports = {
         let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'GET');
         let result = JSON.parse(response);
         guia = result.SuccessResponse.Body.Documents.Document.File;
-      }
-
-      if(order.channel==='mercadolibre'){
+      }else if(order.channel==='mercadolibre'){
         guia = await sails.helpers.channel.mercadolibre.shipping(order);
       }
 

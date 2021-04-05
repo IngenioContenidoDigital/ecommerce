@@ -336,16 +336,17 @@ module.exports = {
     let order = null;
     let ostates = null;
     let items = null;
+    let countries = null;
     if(id){
       order = await Order.findOne({id:id})
       .populate('addressDelivery')
       .populate('customer')
       .populate('currentstatus');
 
-      order.addressDelivery = await Address.findOne({id:order.addressDelivery.id})
+      order.addressDelivery = order.addressDelivery ? await Address.findOne({id:order.addressDelivery.id})
       .populate('country')
       .populate('region')
-      .populate('city');
+      .populate('city') : null;
       order.currentstatus = await OrderState.findOne({id:order.currentstatus.id}).populate('color');
 
       ostates = await OrderState.find().populate('color');
@@ -360,7 +361,7 @@ module.exports = {
 
         item.productvariation = await ProductVariation.findOne({id:item.productvariation}).populate('variation');
       }
-
+      countries = await Country.find();
     }
 
     return res.view('pages/orders/order',{layout:'layouts/admin',
@@ -369,7 +370,8 @@ module.exports = {
       action:action,
       order:order,
       items:items,
-      states:ostates
+      states:ostates,
+      countries
     });
   },
   updateorder: async (req, res) =>{
@@ -539,9 +541,9 @@ module.exports = {
         item.channelref = order.channelref;
         item.orderref = order.reference;
         item.tracking = order.tracking;
-        item.city = address[0].city.name;
-        item.region = address[0].region.name;
-        item.address = address[0].addressline1;
+        item.city = address.length > 0 ? address[0].city.name : '';
+        item.region = address.length > 0 ? address[0].region.name : '';
+        item.address = address.length > 0 ? address[0].addressline1 : '';
         ordersItem.push(item);
       });
     }
@@ -617,6 +619,38 @@ module.exports = {
       }
     } catch (error) {
       return res.send({guia: null, error: 'Error al generar el manifiesto'});
+    }
+  },
+  verifyorder: async (req, res) =>{
+    if (!req.isSocket) {return res.badRequest();}
+    let id = req.body.id;
+    const order = await Order.findOne({id:id});
+    let stateOrder = order.addressDelivery ? false : true;
+    return res.send({stateOrder});
+  },
+  guideprocess: async (req, res) =>{
+    let id = req.param('id');
+    try {
+      let order = await Order.findOne({id:id});
+      let address = await Address.findOrCreate({addressline1:req.body.addressline1},{
+        name: req.body.addressline1,
+        addressline1: req.body.addressline1,
+        addressline2: req.body.addressline2,
+        country: req.body.country,
+        region: req.body.region,
+        city: req.body.city,
+        notes: req.body.notes,
+        zipcode: req.body.zipcode,
+        user: order.customer,
+      });
+      const carrier = await Carrier.findOne({name:req.body.transport.trim().toLowerCase()});
+      order = await Order.updateOne({id:id}).set({transport:req.body.transport,currentstatus:req.body.status,addressDelivery: address.id, carrier: carrier.id});
+      if(order.tracking === ''){
+        await sails.helpers.carrier.shipment(id);
+      }
+      return res.redirect('/order/edit/'+order.id);
+    } catch (err) {
+      return res.redirect('/order/edit/'+order.id+'?error='+err.message);
     }
   }
 };

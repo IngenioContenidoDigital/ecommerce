@@ -32,10 +32,10 @@ module.exports = {
         try{
           let oexists = await Order.find({channel:'mercadolibre', channelref:order.id, integration: integration.id});
           if(oexists.length === 0 && order.status==='paid'){
-            let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
-              return exits.error(err.message);
-            });
-            if(shipping){
+            if(order.shipping.id){
+              let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
+                return exits.error(err.message);
+              });
               let existShipping = await Order.find({channel:'mercadolibre', tracking: order.shipping.id, integration: integration.id});
               if (existShipping.length === 0) {
                 let cityname = shipping['receiver_address'].city.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -150,6 +150,64 @@ module.exports = {
                 }
                 await sails.helpers.channel.mercadolibre.orderShipping({cartProducts, order: existShipping[0]});
               }
+            } else {
+              let user = await User.findOrCreate({emailAddress:order.buyer.email},{
+                emailAddress:order.buyer.email,
+                emailStatus:'confirmed',
+                password:await sails.helpers.passwords.hashPassword(order.buyer['billing_info']['doc_number']),
+                fullName:order.buyer['first_name']+' '+order.buyer['last_name'],
+                dniType:'CC',
+                dni:order.buyer['billing_info']['doc_number'],
+                mobilecountry:null,
+                mobile:0,
+                mobileStatus:'unconfirmed',
+                profile:profile.id
+              });
+              let address = null;
+              let payment = {
+                data:{
+                  estado:'Aceptado',
+                  channel:'mercadolibre',
+                  channelref:order.id,
+                  integration:integration.id
+                }
+              };
+              payment.data['ref_payco'] = order.id;
+              let cart = await Cart.create().fetch();
+              for(let item of order['order_items']){
+                try{
+                  let productvariation;
+                  if(item.item['seller_sku']){
+                    productvariation = await ProductVariation.findOne({id:item.item['seller_sku']});
+                  }else{
+                    let pr = await ProductChannel.findOne({channelid:item.item.id});
+                    if (pr) {
+                      pr = await Product.findOne({id:pr.product}).populate('variations');
+                      productvariation = pr.variations[0];
+                    }
+                  }
+                  if(productvariation){
+                    for (let i = 1; i <= item.quantity; i++) {
+                      await CartProduct.create({
+                        cart:cart.id,
+                        product:productvariation.product,
+                        productvariation:productvariation.id,
+                        totalDiscount:parseFloat(0),
+                        totalPrice:parseFloat(item['full_unit_price']),
+                        externalReference:item.item['variation_id'] ? item.item['variation_id'] : ''
+                      });
+                    }
+                  }
+                }catch(err){
+                  return exits.error(err.message);
+                }
+              }
+              if((await CartProduct.count({cart:cart.id}))>0){
+                let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:''});
+                await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:''});
+              } else {
+                return exits.error('No se pudo crear la orden');
+              }
             }
           }else{
             if(oexists.length > 0){
@@ -168,6 +226,7 @@ module.exports = {
             }
           }
         }catch(err){
+          console.log(err);
           return exits.error(err);
         }
         return exits.success();
