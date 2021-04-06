@@ -1513,46 +1513,44 @@ module.exports = {
             const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
             const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
-            if(mlid==='MCO594416334'){
-              let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
-              .tolerate(async (err) => {
-                response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
-              });
-              if(body){
-                if(action==='Update'){
-                  result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
-                  .tolerate((err)=>{ console.log('Request Error'); console.log(err); return;});
-                  if(result){
-                    response.items.push(body);
-                    await ProductChannel.updateOne({ id: productChannelId }).set({
-                      status:true,
-                      price:mlprice
-                    });
-                  }
+            let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
+            .tolerate(async (err) => {
+              response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
+            });
+            if(body){
+              if(action==='Update'){
+                result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
+                .tolerate((err)=>{return;});
+                if(result){
+                  response.items.push(body);
+                  await ProductChannel.updateOne({ id: productChannelId }).set({
+                    status:true,
+                    price:mlprice
+                  });
                 }
-                if(action==='Post'){
-                  result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
-                  .tolerate((err)=>{return;});
-                  if(result.id.length>0){
-                    await ProductChannel.findOrCreate({id: productChannelId},{
-                      product:pl.id,
-                      channel:integration.channel.id,
-                      integration:integration.id,
-                      channelid:result.id,
-                      status:true,
-                      qc:true,
-                      price:0
-                    }).exec(async (err, record, created)=>{
-                      if(err){return new Error(err.message);}
-                      if(!created){
-                        await ProductChannel.updateOne({id: record.id}).set({
-                          channelid:result.id,
-                          price:mlprice
-                        });
-                      }
-                    });
-                    response.items.push(body);
-                  }
+              }
+              if(action==='Post'){
+                result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
+                .tolerate((err)=>{return;});
+                if(result.id.length>0){
+                  await ProductChannel.findOrCreate({id: productChannelId},{
+                    product:pl.id,
+                    channel:integration.channel.id,
+                    integration:integration.id,
+                    channelid:result.id,
+                    status:true,
+                    qc:true,
+                    price:0
+                  }).exec(async (err, record, created)=>{
+                    if(err){return new Error(err.message);}
+                    if(!created){
+                      await ProductChannel.updateOne({id: record.id}).set({
+                        channelid:result.id,
+                        price:mlprice
+                      });
+                    }
+                  });
+                  response.items.push(body);
                 }
               }
             }
