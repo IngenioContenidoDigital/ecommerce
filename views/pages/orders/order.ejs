@@ -153,7 +153,7 @@
           </div>
         </section>
       </div>
-      <button class="modal-close is-large" id="close-modal" aria-label="close"></button>
+      <button class="modal-close is-large" aria-label="close"></button>
     </div>
     <div id="modal-address" class="is-hidden columns modal">
       <div class="modal-background"></div>
@@ -248,7 +248,7 @@
           </div>
         </section>
       </div>
-      <button class="modal-close is-large" id="close-modal-address" aria-label="close"></button>
+      <button class="modal-close is-large" aria-label="close"></button>
     </div>
     <script>
       let totals = <%- JSON.stringify(printed) %>;
@@ -307,18 +307,6 @@
             });
           }
         }
-      });
-
-      live('#close-modal','click',function(e){
-        e.preventDefault();
-        let modal = document.querySelector('#modal-integration');
-        addClass(modal,'is-hidden');
-      });
-
-      live('#close-modal-address','click',function(e){
-        e.preventDefault();
-        let modal = document.querySelector('#modal-address');
-        addClass(modal,'is-hidden');
       });
 
       function createTrackingForm() {
@@ -424,6 +412,13 @@
             }
             removeClass(cities,'is-hidden');
           }
+        });
+      });
+      
+      live('.modal-background, .modal-close','click',e=>{
+        let modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+          addClass(modal, 'is-hidden');
         });
       });
     </script>

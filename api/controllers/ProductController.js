@@ -40,6 +40,7 @@ module.exports = {
       filter.seller = req.param('seller');
       seller = req.param('seller');
     }
+    const root = await Category.findOne({ name: 'inicio' });
     totalproducts = await Product.count(filter);
     let pages = Math.ceil(totalproducts / perPage);
     let moment = require('moment');
@@ -49,7 +50,8 @@ module.exports = {
       error: error,
       pages: pages,
       seller:seller,
-      moment: moment
+      moment: moment,
+      root
     });
   },
   downloadproducts: async function (req, res) {
@@ -148,6 +150,10 @@ module.exports = {
       let tax = p.tax ? (p.tax.value/100) : 0;
       let price = p.price ? p.price : 0;
       row = [
+        `<td class="align-middle><div class="field">
+          <input class="is-checkradio is-small is-info" id="checkboxselect${p.id}" data-product="${p.id}" type="checkbox" name="checkboxselect">
+          <label for="checkboxselect${p.id}"></label>
+        </div></td>`,
         `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="` + p.id + `">` + p.name + `</a></td>`,
         `<td class="align-middle">` + p.reference + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
@@ -159,8 +165,11 @@ module.exports = {
         '<td class="align-middle"><span>' + p.seller.name + '</span></td>',
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
-      if (rights.name !== 'superadmin' && rights.name !== 'admin') { row.splice(8, 1); }
-      if(p.images.length<1){row[0]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
+      if (rights.name !== 'superadmin' && rights.name !== 'admin') { 
+        row.splice(9, 1);
+        row.splice(0, 1);
+      }
+      if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
       productdata.push(row);
     }
     return res.send(productdata);
@@ -2435,4 +2444,18 @@ module.exports = {
       return res.send({error: err.message});
     }
   },
+  updatemultipleproduct: async (req, res) => {
+    const productsSelected = req.body.productsSelected;
+    try {
+      for (const id of productsSelected) {
+        const product = await Product.updateOne({id: id}).set({
+          mainCategory: req.body.mainCategory
+        });
+        await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
+      }
+      return res.send({error: null, message: 'Se actualizaron correctamente los productos'});
+    } catch (err) {
+      return res.send({error: err.message, message: ''});
+    }
+  }
 };

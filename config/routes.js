@@ -204,6 +204,7 @@ module.exports.routes = {
   'POST /linio/add' : {controller:'ProductController',action:'linioadd'},
   'POST /coppel/add' : {controller:'ProductController',action:'coppeladd'},
   'POST /delete/product' : {controller:'ProductController',action:'deleteproduct'},
+  'POST /updatemultiple/products' : {controller:'ProductController',action:'updatemultipleproduct'},
   'GET /token' : {action:'security/grant-csrf-token'},
   'PUT /menu' : {controller:'UserController',action:'menuvisible'},
   'GET /mlauth/:appid' : {controller:'IntegrationsController', action:'meliauth'},
