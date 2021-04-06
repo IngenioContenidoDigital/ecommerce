@@ -53,13 +53,30 @@ module.exports = {
       });
       let body = null;
       let price = 0;
+      let stock = 0;
       let padj = inputs.mlprice ? parseFloat(inputs.mlprice) : inputs.channelPrice;
+      let integration = await Integrations.findOne({id: inputs.integration}).populate('channel');
+      /** ELIMINAR LAS PROMOCIONES ASOCIADAS A UN PRODUCTO */
+      /*
+      let promotions = null;
+      let pchannel = await ProductChannel.findOne({product:inputs.product,integration:inputs.integration});
+      if(pchannel && pchannel.channelid){
+        promotions = await sails.helpers.channel.mercadolibre.request('seller-promotions/items/'+pchannel.channelid,integration.channel.endpoint,integration.secret);
+      }
+
+      if(promotions){
+        for(let prom of promotions){
+            await sails.helpers.channel.mercadolibre.request('seller-promotions/items/'+pchannel.channelid+'?promotion_type='+prom.type+'&deal_id='+prom.id,integration.channel.endpoint,integration.secret,null,'DELETE');
+        }
+      }
+      */
+     /** FIN ELIMINAR PROMOCIONES ASOCIADAS A UN PRODUCTO */
+
       let productimages = await ProductImage.find({product:product.id});
       productimages.forEach(image =>{
         images.push({'source':sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file});
         vimages.push(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
       });
-      let integration = await Integrations.findOne({id: inputs.integration}).populate('channel');
       let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
 
       productvariations.forEach(variation =>{
@@ -94,6 +111,7 @@ module.exports = {
           }],
           'picture_ids':vimages
         };
+        stock+=parseInt(variation.quantity);
         variations.push(v);
       });
 
@@ -176,7 +194,7 @@ module.exports = {
       let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration, brand);
       if(storeid>0){body['official_store_id']=storeid;}
       if(inputs.action==='ProductUpdate' || inputs.action==='Update'){
-        body['status']=status;
+        if(stock>0){body['status']=status;}
         //if(product.ml && !product.mlstatus){
         delete body['title'];
         delete body['listing_type_id'];
