@@ -103,22 +103,22 @@
     <button class="modal-close is-large" aria-label="close"></button>
   </div>
   <script>
-      let cont = 0;
-      let productsSelected = [];
-      let checkboxChecked = [];
-      let datatable = new simpleDatatables.DataTable('#products-table',{
-        searchable:true,
-        sortable:true,
-        paging:true,
-        perPageSelect:[5,10,20,30,50],
-        perPage:50,
-        labels: {
-          placeholder: "Buscar...",
-          perPage: "{select} registros por página",
-          noRows: "No se encontraron datos",
-          info: "Mostrando {start} a {end} de {rows} registros",
-        }
-      });  
+    let cont = 0;
+    let productsSelected = [];
+    let checkboxChecked = [];
+    let datatable = new simpleDatatables.DataTable('#products-table',{
+      searchable:true,
+      sortable:true,
+      paging:true,
+      perPageSelect:[5,10,20,30,50],
+      perPage:50,
+      labels: {
+        placeholder: "Buscar...",
+        perPage: "{select} registros por página",
+        noRows: "No se encontraron datos",
+        info: "Mostrando {start} a {end} de {rows} registros",
+      }
+    });  
 
     live('.state', 'click', function(){ 
         var elm = this;
@@ -162,7 +162,6 @@
       if (selectall === 'checkboxselectall') {
         addClass(divSelectedAll,'is-hidden');
         let checkboxs = document.querySelectorAll('.is-checkradio');
-        console.log(checkboxs.length);
         checkboxs.forEach(check =>{
           if (check.id !== 'checkboxselectall') {
             let productId = check.getAttribute('data-product');
@@ -296,31 +295,17 @@
               removeClass(el,'is-danger');
             }, 4000);
           } else {
-            for(let s=0; s<=select.options.length; s++){
-              select.removeChild(select.lastChild);
-            }
-            cats.forEach(elem =>{
-              let group = elem.parentNode.parentNode.querySelector('ul');
-              let icon = elem.parentNode.querySelector('i');
-              addClass(group,'is-hidden');
-              removeClass(icon,'bx-book-open');
-              addClass(icon,'bxs-book-add');
-            });
-            inputCate.forEach(input =>{
-              if(input.checked){input.checked = false;}
-            });
-            const el = document.getElementById('notificationmessage');
-            el.textContent = resData.message;
-            datatable.refresh();
-            cleanCheckbox();
-            addClass(el,'is-success');
-            removeClass(el,'is-hidden');
-            setTimeout(function() {
-              addClass(el,'is-hidden');
-              removeClass(el,'is-success');
-            }, 5000);
+            window.location.href='/products/'+resData.seller;
           };
         });
+      }
+    });
+
+    datatable.on('datatable.page', function(page) {
+      const divSelectedAll = document.querySelector('#selectedall');
+      if (hasClass(divSelectedAll, 'is-hidden')) {
+        removeClass(divSelectedAll,'is-hidden');
+        document.querySelector('#checkboxselectall').checked = false;
       }
     });
 

@@ -2451,15 +2451,17 @@ module.exports = {
   updatemultipleproduct: async (req, res) => {
     const productsSelected = req.body.productsSelected;
     try {
+      let seller = null;
       for (const id of productsSelected) {
         const product = await Product.updateOne({id: id}).set({
           mainCategory: req.body.mainCategory
         });
         await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
+        seller = product.seller;
       }
-      return res.send({error: null, message: 'Se actualizaron correctamente los productos'});
+      return res.send({error: null,seller});
     } catch (err) {
-      return res.send({error: err.message, message: ''});
+      return res.send({error: err.message,seller});
     }
   }
 };
