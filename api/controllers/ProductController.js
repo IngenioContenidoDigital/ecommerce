@@ -2156,7 +2156,7 @@ module.exports = {
                                   }else if(vr.size){
                                     vt_name = vr.size.toLowerCase();
                                   }else{
-                                    vt_name = 'único';
+                                    vt_name = 'única';
                                   }
 
                                   let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,category:prc.categories[0].id});	
@@ -2167,7 +2167,7 @@ module.exports = {
                                   }	
               
                                   variation = variation.length ? variation[0] : variation;
-                                  let pvs = await ProductVariation.find({ product:prc.id,supplierreference:vr.reference}).populate('variation');
+                                  let pvs = await ProductVariation.find({ product:prc.id,supplierreference:`${prc.reference}-${color.name}`}).populate('variation');
                                   let pv = pvs.find(pv=> pv.variation.name == variation.name);
               
                                   if (!pv) {
