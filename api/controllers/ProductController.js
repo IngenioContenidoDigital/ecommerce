@@ -126,6 +126,7 @@ module.exports = {
       .populate('tax')
       .populate('mainColor')
       .populate('manufacturer')
+      .populate('mainCategory')
       .populate('seller')
       .populate('channels');
     for (let p of products) {
@@ -159,6 +160,7 @@ module.exports = {
         `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
         `<td class="align-middle">$ ` + parseInt(price * (1 + tax)).toFixed(2) + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.mainColor ? p.mainColor.name : '') + `</td>`,
+        `<td class="align-middle is-capitalized">` + (p.mainCategory ? p.mainCategory.name : '') + `</td>`,
         `<td class="align-middle">` + p.stock + `</td>`,
         `<td class="align-middle"><span class="action"><i product="` + p.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
         `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
@@ -166,7 +168,7 @@ module.exports = {
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
       if (rights.name !== 'superadmin' && rights.name !== 'admin') { 
-        row.splice(9, 1);
+        row.splice(10, 1);
         row.splice(0, 1);
       }
       if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}

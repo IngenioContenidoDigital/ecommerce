@@ -24,13 +24,21 @@
           <thead>
           <tr>
             <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-              <th scope="col"></th>
+              <th scope="col">
+                <div class="field" id="selectedall">
+                  <input class="is-checkradio is-small is-info" id="checkboxselectall" type="checkbox" name="checkboxselect">
+                  <label for="checkboxselectall"></label>
+                </div>
+              </th>
             <%}%>
             <th scope="col">Nombre</th>
             <th scope="col">SKU</th>
             <th scope="col">Marca</th>
             <th scope="col">Precio</th>
             <th scope="col">Color</th>
+            <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+              <th scope="col">Categoría Principal</th>
+            <%}%>
             <th scope="col">Inventario</th>
             <th scope="col">Activo</th>
             <th scope="col">Opciones</th>
@@ -146,21 +154,40 @@
     
     live('.is-checkradio','click',e=>{
       let element = e.target;
-      let productId = element.getAttribute('data-product');
+      const selectall = e.target.id;
       const divDatatable = document.querySelector('.dataTable-container');
       const spanNumber = document.querySelector('#numberselected');
       const divOptions = document.querySelector('#optionEdit');
-      let checkboxs = document.querySelectorAll('.is-checkradio');
-      if (hasClass(element,'has-background-color')) {
-        cont--;
-        productsSelected = productsSelected.filter(item => item !== productId);
-        checkboxChecked = checkboxChecked.filter(item => item !== element);
-        removeClass(element,'has-background-color');
+      const divSelectedAll = document.querySelector('#selectedall');
+      if (selectall === 'checkboxselectall') {
+        addClass(divSelectedAll,'is-hidden');
+        let checkboxs = document.querySelectorAll('.is-checkradio');
+        console.log(checkboxs.length);
+        checkboxs.forEach(check =>{
+          if (check.id !== 'checkboxselectall') {
+            let productId = check.getAttribute('data-product');
+            if(!productsSelected.includes(productId) && !checkboxChecked.includes(check)){
+              productsSelected.push(productId);
+              checkboxChecked.push(check);
+              cont++;
+              check.checked = true;
+              addClass(check,'has-background-color');
+            }
+          }
+        });
       } else {
-        cont++;
-        productsSelected.push(productId);
-        checkboxChecked.push(element);
-        addClass(element,'has-background-color');
+        let productId = element.getAttribute('data-product');
+        if (hasClass(element,'has-background-color')) {
+          cont--;
+          productsSelected = productsSelected.filter(item => item !== productId);
+          checkboxChecked = checkboxChecked.filter(item => item !== element);
+          removeClass(element,'has-background-color');
+        } else {
+          cont++;
+          productsSelected.push(productId);
+          checkboxChecked.push(element);
+          addClass(element,'has-background-color');
+        }
       }
       if (checkboxChecked.length > 0 && !spanNumber) {
         let div = document.createElement('div');
@@ -171,7 +198,7 @@
               <span class="icon is-small has-text-info">
                 <i class='bx bxs-minus-square bx-sm'></i>
               </span>
-              <span id="numberselected" style="margin-left:10px">1 Seleccionados</span>
+              <span id="numberselected" style="margin-left:10px">${cont > 0 ? cont : 1} Seleccionados</span>
             </button>
           </p>
           <p class="control">
@@ -284,19 +311,21 @@
             });
             const el = document.getElementById('notificationmessage');
             el.textContent = resData.message;
+            datatable.refresh();
             cleanCheckbox();
             addClass(el,'is-success');
             removeClass(el,'is-hidden');
             setTimeout(function() {
               addClass(el,'is-hidden');
               removeClass(el,'is-success');
-            }, 4000);
+            }, 5000);
           };
         });
       }
     });
 
     function cleanCheckbox() {
+      const divSelectedAll = document.querySelector('#selectedall');
       const divOptions = document.querySelector('#optionEdit');
       cont = 0;
       checkboxChecked.forEach(check =>{
@@ -304,6 +333,10 @@
         removeClass(check,'has-background-color');
       });
       divOptions.remove();
+      document.querySelector('#checkboxselectall').checked = false;
+      removeClass(divSelectedAll,'is-hidden');
+      checkboxChecked = [];
+      productsSelected = [];
     }
 
     let childTree = (elm) => {
