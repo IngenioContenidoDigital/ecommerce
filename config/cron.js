@@ -90,7 +90,37 @@ module.exports.cron = {
       }
     },
     timezone: 'America/Bogota'
-  },  
+  },
+  stockProductsSpeedo:{
+    schedule: '00 00 03 * * *',
+    onTick: async () =>{
+      console.log('Iniciando Sincronizacion de Stock Speedo');
+      try {
+        const seller = await Seller.findOne({name: 'creaciones nadar sa'});
+        const products = await Product.find({seller: seller.id});
+        const channel = await Channel.findOne({name: 'vtex'});
+        const integration = await Integrations.findOne({channel: channel.id, seller: seller.id}).populate('channel');
+        for(const prod of products){
+          let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+            integration.channel.name,
+            integration.key,
+            integration.secret,
+            integration.url,
+            integration.version,
+            'PRODUCTID',
+            prod.externalId
+          ).catch((e) => console.log(e));
+          if (product) {
+            await sails.helpers.marketplaceswebhooks.product(product, integration.seller, true).catch((e)=>console.log(e));
+          }
+        }
+      } catch (err) {
+        console.log(`Se produjo un error. ${err.message}`);
+      }
+      console.log('Sincronizacion de Stock Speedo Finalizada');
+    },
+    timezone: 'America/Bogota'
+  },
   /*coppelOrders:{
     schedule: '30 50 * * * *',
     onTick: async () =>{
