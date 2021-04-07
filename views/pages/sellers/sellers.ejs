@@ -1096,5 +1096,11 @@
         });
       }
     });
+    live('.modal-background, .delete, .modal-close','click',e=>{
+      let modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        removeClass(modal,'is-active');
+      });
+    });
   </script>
 </div>

@@ -1,9 +1,12 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-pageloader@2.2.0/dist/css/bulma-pageloader.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
 <div class="container">
+<div class="notification is-hidden" id="notificationmessage">
+</div>
 <% if (error != undefined || error != null) { %>
   <div class="notification is-danger is-light" id="error">
-      <%= error %>
+    <%= error %>
   </div>
 <% } %>
 <div class="pageloader is-active"><span class="title">Buscando Productos ...</span></div>
@@ -20,18 +23,29 @@
       <table class="table is-hoverable is-size-7" id="products-table">
           <thead>
           <tr>
-              <th scope="col">Nombre</th>
-              <th scope="col">SKU</th>
-              <th scope="col">Marca</th>
-              <th scope="col">Precio</th>
-              <th scope="col">Color</th>
-              <th scope="col">Inventario</th>
-              <th scope="col">Activo</th>
-              <th scope="col">Opciones</th>
-              <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-              <th scope="col">Seller</th>
-              <%}%>
-              <th scope="col">Publicaciones</th>
+            <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+              <th scope="col">
+                <div class="field" id="selectedall">
+                  <input class="is-checkradio is-small is-info" id="checkboxselectall" type="checkbox" name="checkboxselect">
+                  <label for="checkboxselectall"></label>
+                </div>
+              </th>
+            <%}%>
+            <th scope="col">Nombre</th>
+            <th scope="col">SKU</th>
+            <th scope="col">Marca</th>
+            <th scope="col">Precio</th>
+            <th scope="col">Color</th>
+            <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+              <th scope="col">Categoría Principal</th>
+            <%}%>
+            <th scope="col">Inventario</th>
+            <th scope="col">Activo</th>
+            <th scope="col">Opciones</th>
+            <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+            <th scope="col">Seller</th>
+            <%}%>
+            <th scope="col">Publicaciones</th>
           </tr>
           </thead>
           <tbody>
@@ -39,7 +53,7 @@
           </tbody>
       </table>
   </div>
-  <div class="modal">
+  <div id="modal-image" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
       <header class="modal-card-head">
@@ -54,8 +68,44 @@
       </section>
     </div>
   </div>
+  <div id="modal-address" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <section class="modal-card-body">
+        <div style="margin: 5px 5px; " class="field is-pulled-right">
+          <div class="control">
+            <div class="select is-small is-danger">
+              <select name="mainCategory" id="mainCategory">
+                <option level="0">Categoría Principal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <article class="panel is-primary is-size-7">
+          <p class="panel-heading">
+            Categorías
+          </p>
+            <ul>
+              <li>
+                <a style="display:none;" class="panel-block is-active" category="<%= root.id %>" level="<%= root.level %>">
+                  <input type="radio" name="root" id="root" value="<%= root.id %>" />&nbsp;
+                  <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                  <%= root.name %>
+                </a>
+              </li>
+            </ul>
+        </article>
+        <div class="control buttons is-right">
+          <button id="updateProducts" class="button is-primary is-small"><i class="bx bxs-pencil"></i>&nbsp;Modificar Productos</button>
+        </div>
+      </section>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
   <script>
-
+      let cont = 0;
+      let productsSelected = [];
+      let checkboxChecked = [];
       let datatable = new simpleDatatables.DataTable('#products-table',{
         searchable:true,
         sortable:true,
@@ -88,11 +138,12 @@
           }
         });
     });
+    
     live('.product-image','click',(e)=>{
       let id = e.target.getAttribute('data-product');
       io.socket.get('/getcover/'+id,resData=>{
         if(resData){
-          let modal = document.querySelector('.modal');
+          let modal = document.querySelector('#modal-image');
           modal.querySelector('.modal-card-title').innerHTML = resData.name.toUpperCase();
           modal.querySelector('.modal-reference').innerHTML = 'REF:&nbsp;'+resData.reference.toUpperCase();
           modal.querySelector('.image > img').setAttribute('src',resData.image);
@@ -100,10 +151,218 @@
         }
       });
     });
-    live('.modal-background, .delete','click',e=>{
-      let modal = document.querySelector('.modal');
-      removeClass(modal,'is-active');
+    
+    live('.is-checkradio','click',e=>{
+      let element = e.target;
+      const selectall = e.target.id;
+      const divDatatable = document.querySelector('.dataTable-container');
+      const spanNumber = document.querySelector('#numberselected');
+      const divOptions = document.querySelector('#optionEdit');
+      const divSelectedAll = document.querySelector('#selectedall');
+      if (selectall === 'checkboxselectall') {
+        addClass(divSelectedAll,'is-hidden');
+        let checkboxs = document.querySelectorAll('.is-checkradio');
+        console.log(checkboxs.length);
+        checkboxs.forEach(check =>{
+          if (check.id !== 'checkboxselectall') {
+            let productId = check.getAttribute('data-product');
+            if(!productsSelected.includes(productId) && !checkboxChecked.includes(check)){
+              productsSelected.push(productId);
+              checkboxChecked.push(check);
+              cont++;
+              check.checked = true;
+              addClass(check,'has-background-color');
+            }
+          }
+        });
+      } else {
+        let productId = element.getAttribute('data-product');
+        if (hasClass(element,'has-background-color')) {
+          cont--;
+          productsSelected = productsSelected.filter(item => item !== productId);
+          checkboxChecked = checkboxChecked.filter(item => item !== element);
+          removeClass(element,'has-background-color');
+        } else {
+          cont++;
+          productsSelected.push(productId);
+          checkboxChecked.push(element);
+          addClass(element,'has-background-color');
+        }
+      }
+      if (checkboxChecked.length > 0 && !spanNumber) {
+        let div = document.createElement('div');
+        div.id = "optionEdit";
+        div.innerHTML = `<br/><div class="field has-addons" style="margin-left:4px">
+          <p class="control">
+            <button id="btnSelected" class="button is-small">
+              <span class="icon is-small has-text-info">
+                <i class='bx bxs-minus-square bx-sm'></i>
+              </span>
+              <span id="numberselected" style="margin-left:10px">${cont > 0 ? cont : 1} Seleccionados</span>
+            </button>
+          </p>
+          <p class="control">
+            <button id="editCategory" class="button is-small">
+              <span>Editar Categoría</span>
+            </button>
+          </p>
+        </div>`;
+        divDatatable.prepend(div);
+      } else if (cont != 0) {
+        spanNumber.textContent = `${cont} Seleccionados`;
+      } else if (cont === 0) {
+        divOptions.remove();
+      }
     });
+
+    live('#editCategory','click',e=> {
+      childTree(document.querySelectorAll('a.panel-block'));
+      let modal = document.querySelector('#modal-address');
+      addClass(modal,'is-active');
+    });
+
+    live('#btnSelected','click',e=> {
+      cleanCheckbox();
+    });
+
+    live('.modal-background, .delete, .modal-close','click',e=>{
+      let modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        removeClass(modal,'is-active');
+      });
+    });
+
+    live('.cat_name','click',(e)=>{
+      let element = e.target || e.srcElement;
+      let group = element.parentNode.parentNode.querySelector('ul');
+      let icon = element.parentNode.querySelector('i');
+      if(hasClass(group,'is-hidden')){
+        removeClass(group,'is-hidden');
+        addClass(icon,'bx-book-open');
+        removeClass(icon,'bxs-book-add');
+      }else{
+        addClass(group,'is-hidden');
+        removeClass(icon,'bx-book-open');
+        addClass(icon,'bxs-book-add');
+      }
+    });
+
+    live('input[name="categories[]"]','click',function(){
+      let cat = this;
+      let catlevel = cat.parentNode.getAttribute('level');
+      let catname = cat.parentElement.querySelector('.cat_name');
+      let select = document.querySelector('#mainCategory');
+      if (cat.checked){
+        let op = document.createElement('option');
+        op.value=cat.value;
+        op.innerHTML=catname.innerHTML;
+        op.setAttribute('level',catlevel);
+        select.appendChild(op);
+      }else{
+        let op = select.querySelector('option[value="'+cat.value+'"]');
+        select.removeChild(op);
+      }
+      let lowest = select.options[0];
+      for(let o=0; o<select.options.length; o++){
+        if(parseInt(lowest.getAttribute('level'))<=parseInt(select.options[o].getAttribute('level'))){
+          lowest = select.options[o];
+        }
+      }
+      for(let s=0; s<select.options.length; s++){
+        if(select.options[s].value==lowest.value){
+          select.options[s].selected=true;
+        }
+      }
+    });
+
+    live('#updateProducts','click', e =>{
+      e.preventDefault();
+      let categories = validateCategories(document.getElementsByName('categories[]'));
+      let lcat = CategoriesJSON(document.getElementsByName('categories[]'));
+      let inputCate = document.getElementsByName('categories[]');
+      let modal = document.querySelector('#modal-address');
+      const cats = document.querySelectorAll('.cat_name');
+      const select = document.querySelector('#mainCategory');
+      if(categories){
+        io.socket.post('/updatemultiple/products',{productsSelected,mainCategory:document.querySelector('select[name="mainCategory"]').value, categories:lcat}, resData => {
+          removeClass(modal,'is-active');
+          if(resData.error){
+            const el = document.getElementById('notificationmessage');
+            el.textContent = resData.error;
+            addClass(el,'is-danger');
+            removeClass(el,'is-hidden');
+            setTimeout(function() {
+              addClass(el,'is-hidden');
+              removeClass(el,'is-danger');
+            }, 4000);
+          } else {
+            for(let s=0; s<=select.options.length; s++){
+              select.removeChild(select.lastChild);
+            }
+            cats.forEach(elem =>{
+              let group = elem.parentNode.parentNode.querySelector('ul');
+              let icon = elem.parentNode.querySelector('i');
+              addClass(group,'is-hidden');
+              removeClass(icon,'bx-book-open');
+              addClass(icon,'bxs-book-add');
+            });
+            inputCate.forEach(input =>{
+              if(input.checked){input.checked = false;}
+            });
+            const el = document.getElementById('notificationmessage');
+            el.textContent = resData.message;
+            datatable.refresh();
+            cleanCheckbox();
+            addClass(el,'is-success');
+            removeClass(el,'is-hidden');
+            setTimeout(function() {
+              addClass(el,'is-hidden');
+              removeClass(el,'is-success');
+            }, 5000);
+          };
+        });
+      }
+    });
+
+    function cleanCheckbox() {
+      const divSelectedAll = document.querySelector('#selectedall');
+      const divOptions = document.querySelector('#optionEdit');
+      cont = 0;
+      checkboxChecked.forEach(check =>{
+        check.checked = false;
+        removeClass(check,'has-background-color');
+      });
+      divOptions.remove();
+      document.querySelector('#checkboxselectall').checked = false;
+      removeClass(divSelectedAll,'is-hidden');
+      checkboxChecked = [];
+      productsSelected = [];
+    }
+
+    let childTree = (elm) => {
+      elm.forEach((child) =>{
+        if(!hasClass(child,'visited')){
+          let opened = false;
+          io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
+              var d = document.createElement('ul');
+              resData.forEach(function(son){
+                let ca = document.createElement('li');
+                ca.style.paddingLeft = 5*son.level+'px';
+                if(son.id==document.querySelector('#root').value){
+                  ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                } else {
+                  ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bxs-book-add" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                  if(son.level>2 && !opened){addClass(d,'is-hidden');}
+                }
+                d.appendChild(ca);
+              });
+              insertAfter(d,child);
+              addClass(child,'visited');
+              childTree(d.querySelectorAll('a.panel-block'));
+          });
+        }
+      })
+    };
 
     let pages = parseInt(<%= pages; %>);
     <% if(seller!==undefined && seller!==null){%>let seller = '<%= seller%>';<%}else{%>let seller = null;<%} %>;
