@@ -100,6 +100,7 @@ module.exports.cron = {
         const products = await Product.find({seller: seller.id});
         const channel = await Channel.findOne({name: 'vtex'});
         const integration = await Integrations.findOne({channel: channel.id, seller: seller.id}).populate('channel');
+        await ProductVariation.update({seller:seller.id}).set({quantity:0});
         for(const prod of products){
           let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
             integration.channel.name,
