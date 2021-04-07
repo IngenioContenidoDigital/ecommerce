@@ -2145,7 +2145,7 @@ module.exports = {
                                 to:{'>=':moment().valueOf()}
                               },
                               sort: 'createdAt DESC'
-                            });;
+                            });
                           
                             if(!prc){
                               throw new Error(`Ref : ${vr.reference} no pudimos encontrar este producto.`);
