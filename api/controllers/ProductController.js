@@ -2140,10 +2140,39 @@ module.exports = {
                               throw new Error(`Ref : ${vr.reference} no pudimos identificar este color ${vr.color[0]}.`);
                             }
 
-                            let prc= await Product.findOne({reference:reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
+                            let prc= await Product.findOne({reference:reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
+                              where:{
+                                to:{'>=':moment().valueOf()}
+                              },
+                              sort: 'createdAt DESC'
+                            });;
                           
                             if(!prc){
                               throw new Error(`Ref : ${vr.reference} no pudimos encontrar este producto.`);
+                            }
+
+                            if(discount && vr.discount && vr.discount.length > 0){
+                              for (const disc of vr.discount) {
+                                let exists = prc.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
+                                if (exists) {
+                                  await CatalogDiscount.updateOne({ id: exists.id }).set({
+                                    from: moment(new Date(disc.from)).valueOf(),
+                                    to: moment(new Date(disc.to)).valueOf()
+                                  });
+                                } else {
+                                  const discountresult = await CatalogDiscount.create({
+                                    name: disc.name ? disc.name.trim().toLowerCase() : prc.name,
+                                    from: moment(new Date(disc.from)).valueOf(),
+                                    to: moment(new Date(disc.to)).valueOf(),
+                                    type: disc.type,
+                                    value: parseFloat(disc.value),
+                                    seller: prc.seller
+                                  }).fetch();
+  
+                                  await CatalogDiscount.addToCollection(discountresult.id,'products').members([prc.id]);
+                                }
+                              }
+  
                             }
 
                             if(vr.variations && vr.variations.length > 0){
@@ -2178,7 +2207,7 @@ module.exports = {
                                       supplierreference:`${prc.reference}-${color.name}`,
                                       ean13: vr.ean13 ? vr.ean13.toString() : '',
                                       upc: vr.upc ? vr.upc : 0,
-                                      skuId: vr.skuId ? vr.skuId : '',
+                                      skuId:  vr.variationId ? vr.variationId : '',
                                       price: vr.price,
                                       quantity: pdv.stock ? pdv.stock : 0,
                                       seller:prc.seller
@@ -2196,7 +2225,6 @@ module.exports = {
                                     sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
                                   }
                               }
-
                             }
                       }
                     }else{
@@ -2248,6 +2276,30 @@ module.exports = {
                             variation: variation.id,
                             quantity: pdv.quantity || 0,
                           });
+                        }
+
+                        if(discount && pdv.discount && pdv.discount.length > 0){
+                          for (const disc of pdv.discount) {
+                            let exists = prc.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
+                            if (exists) {
+                              await CatalogDiscount.updateOne({ id: exists.id }).set({
+                                from: moment(new Date(disc.from)).valueOf(),
+                                to: moment(new Date(disc.to)).valueOf()
+                              });
+                            } else {
+                              const discountresult = await CatalogDiscount.create({
+                                name: disc.name ? disc.name.trim().toLowerCase() : prc.name,
+                                from: moment(new Date(disc.from)).valueOf(),
+                                to: moment(new Date(disc.to)).valueOf(),
+                                type: disc.type,
+                                value: parseFloat(disc.value),
+                                seller: prc.seller
+                              }).fetch();
+
+                              await CatalogDiscount.addToCollection(discountresult.id,'products').members([prc.id]);
+                            }
+                          }
+
                         }
                         
                         if(typeof(productVariation) == 'object' ){

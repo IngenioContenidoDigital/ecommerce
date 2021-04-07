@@ -69,6 +69,7 @@ VARIATIONS : `
                         variations{
                             quantity
                             reference
+                            variationId
                             talla
                             price
                             color
