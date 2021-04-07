@@ -21,6 +21,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     try {
       await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCTS, callback : async (response)=>{
+        console.log(response)
         if (response.data.ShopifyProducts) {
           let result = response.data.ShopifyProducts;
           let channel = await Channel.findOne({name: result.channel});
