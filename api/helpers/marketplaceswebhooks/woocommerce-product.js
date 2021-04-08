@@ -147,7 +147,7 @@ module.exports = {
                       for (let index = 0; index < pvrs.length; index++) {
                         pvrs[index].variations = inputs.product.variations.filter((v)=>v.color[0] == pvrs[index].color[0]).map((v)=>{
                           return {
-                            talla : v.talla,
+                            talla : v.size || v.talla,
                             stock : v.quantity,
                             price : v.price
                           }
@@ -211,10 +211,6 @@ module.exports = {
 
                             if(pdv.talla){
                               vt_name = pdv.talla.toLowerCase().replace(',','.');
-                            }else if(vr.size){
-                              vt_name = vr.size.toLowerCase();
-                            }else{
-                              vt_name = 'único';
                             }
 
                             let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,category:prc.categories[0].id});	
@@ -259,10 +255,6 @@ module.exports = {
   
                       if(pdv.talla){
                         vt_name = pdv.talla.toLowerCase().replace(',','.');
-                      }else if(vr.size){
-                        vt_name = vr.size.toLowerCase();
-                      }else{
-                        vt_name = 'único';
                       }
   
                       let prc= await Product.findOne({reference:pdv.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });

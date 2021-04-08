@@ -2119,7 +2119,7 @@ module.exports = {
                         for (let index = 0; index < pvrs.length; index++) {
                           pvrs[index].variations = p.variations.filter((v)=>v.color[0] == pvrs[index].color[0]).map((v)=>{
                             return {
-                              talla : v.talla,
+                              talla : v.size || v.talla,
                               stock : v.quantity,
                               price : v.price
                             }
@@ -2130,7 +2130,7 @@ module.exports = {
                             let vr = pvrs[index];
                             let reference;
 
-                            let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
+                          let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
 
                             if(color && color.length > 0){
                               color = await Color.findOne({id : color[0]});
@@ -2184,10 +2184,6 @@ module.exports = {
 
                                   if(pdv.talla){
                                     vt_name = pdv.talla.toLowerCase().replace(',','.');
-                                  }else if(vr.size){
-                                    vt_name = vr.size.toLowerCase();
-                                  }else{
-                                    vt_name = 'única';
                                   }
 
                                   let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,category:prc.categories[0].id});	
@@ -2235,11 +2231,7 @@ module.exports = {
                         let vt_name;
 
                         if(pdv.talla){
-                          vt_name = pdv.talla.toLowerCase().replace(',','.');
-                        }else if(vr.size){
-                          vt_name = vr.size.toLowerCase();
-                        }else{
-                          vt_name = 'único';
+                            vt_name = pdv.size || pdv.talla.toLowerCase().replace(',','.');
                         }
 
                         let prc= await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
