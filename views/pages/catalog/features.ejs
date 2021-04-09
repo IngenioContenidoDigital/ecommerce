@@ -69,6 +69,7 @@
             return new Promise(resolve =>{
               elm.forEach((child) =>{
                 if(!hasClass(child,'visited')){
+                  let opened = false;
                   io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
                       var d = document.createElement('ul');
                       resData.forEach(function(son){
@@ -77,20 +78,22 @@
                         if(!son.hasChildren){
                           if(feature){
                             if(feature.categories.find(x => x.id == son.id)){
-                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                             } else {
-                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                             }
                           } else {
-                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                           }
                         } else {
-                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="" categories="'+son.id+'" disabled />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>'+son.name+'</a>';
+                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="" categories="'+son.id+'" disabled />&nbsp;<span class="panel-icon"><i class="bx bxs-book-add" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                         }
+                        if(son.level>2){addClass(ca,'is-hidden');}
                         d.appendChild(ca);
                       });
                       insertAfter(d,child);
                       addClass(child,'visited');
+                      if(d.querySelectorAll('input:checked').length>0){hidecategories(d);};
                       childTree(d.querySelectorAll('a.panel-block'));
                   });
                 }
@@ -99,12 +102,47 @@
             });
           };
 
-        async function init(){
-          let result = await childTree(document.querySelectorAll('a.panel-block'));
-        }
+          async function init(){
+            let result = await childTree(document.querySelectorAll('a.panel-block'));
+          }
 
           document.addEventListener('DOMContentLoaded', function(){
             init();
+          });
+
+          function hidecategories(elm){
+            let node = elm;
+            let categories = node.querySelectorAll(':scope > li');
+            if(categories){
+              for (let index = 0; index < categories.length; index++) {
+                const category = categories[index];
+                let icon = category.parentNode.parentNode.querySelector('i');
+                removeClass(category,'is-hidden');
+                if(category.querySelectorAll('input:checked').length>0){
+                  addClass(icon,'bx-book-open');
+                  removeClass(icon,'bxs-book-add');
+                }
+              }
+              hidecategories(elm.parentNode.parentNode);
+            }
+          }
+
+          live('.cat_name','click',(e)=>{
+            let element = e.target || e.srcElement;
+            let group = element.parentNode.parentNode.querySelectorAll(':scope > ul > li');
+            for (let index = 0; index < group.length; index++) {
+              const element = group[index];
+              let icon = element.parentNode.parentNode.querySelector('i');
+              if(hasClass(element,'is-hidden')){
+                removeClass(element,'is-hidden');
+                addClass(icon,'bx-book-open');
+                removeClass(icon,'bxs-book-add');
+              }else{
+                addClass(element,'is-hidden');
+                removeClass(icon,'bx-book-open');
+                addClass(icon,'bxs-book-add');
+              }
+            }
           });
       </script>
 <% }else{ %>
