@@ -1,3 +1,5 @@
+const { empty } = require('apollo-link');
+
 /**
  * ProductController
  *
@@ -2111,15 +2113,15 @@ module.exports = {
             }else{
               if( req.body.channel == sails.config.custom.WOOCOMMERCE_CHANNEL){
                   if(p.variations && p.variations.length > 0){
-
                     let pvrs = require("lodash").uniqBy(p.variations.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
 
                     if(pvrs.length > 0){
                         for (let index = 0; index < pvrs.length; index++) {
                           pvrs[index].variations = p.variations.filter((v)=>v.color[0] == pvrs[index].color[0]).map((v)=>{
                             return {
-                              talla : v.talla,
-                              stock : v.quantity
+                              talla : v.size || v.talla,
+                              stock : v.quantity,
+                              price : v.price
                             }
                           });
                       }
@@ -2128,7 +2130,7 @@ module.exports = {
                             let vr = pvrs[index];
                             let reference;
 
-                            let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
+                          let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
 
                             if(color && color.length > 0){
                               color = await Color.findOne({id : color[0]});
@@ -2182,10 +2184,6 @@ module.exports = {
 
                                   if(pdv.talla){
                                     vt_name = pdv.talla.toLowerCase().replace(',','.');
-                                  }else if(vr.size){
-                                    vt_name = vr.size.toLowerCase();
-                                  }else{
-                                    vt_name = 'única';
                                   }
 
                                   let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,category:prc.categories[0].id});	
@@ -2208,13 +2206,13 @@ module.exports = {
                                       ean13: vr.ean13 ? vr.ean13.toString() : '',
                                       upc: vr.upc ? vr.upc : 0,
                                       skuId:  vr.variationId ? vr.variationId : '',
-                                      price: vr.price,
+                                      price:pdv.price,
                                       quantity: pdv.stock ? pdv.stock : 0,
                                       seller:prc.seller
                                     }).fetch();
                                   } else {
                                     productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                                      price: vr.price,
+                                      price: pdv.price,
                                       variation: variation.id,
                                       quantity: pdv.stock ? pdv.stock : 0,
                                     });
@@ -2233,17 +2231,13 @@ module.exports = {
                         let vt_name;
 
                         if(pdv.talla){
-                          vt_name = pdv.talla.toLowerCase().replace(',','.');
-                        }else if(vr.size){
-                          vt_name = vr.size.toLowerCase();
-                        }else{
-                          vt_name = 'único';
+                            vt_name = pdv.size || pdv.talla.toLowerCase().replace(',','.');
                         }
 
-                        let prc= await Product.findOne({reference:pdv.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
+                        let prc= await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
 
                         if(!prc){
-                          throw new Error(`Ref o externalId: ${pdv.reference ? pdv.reference : pdv.externalId} no pudimos encontrar este producto.`);
+                          throw new Error(`Ref o externalId: ${p.reference} no pudimos encontrar este producto.`);
                         }
 
                         let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,category:prc.categories[0].id});	
@@ -2254,7 +2248,7 @@ module.exports = {
                         }	
 
                         variation = variation.length ? variation[0] : variation;
-                        let pvs = await ProductVariation.find({ product:prc.id,supplierreference:pdv.reference}).populate('variation');
+                        let pvs = await ProductVariation.find({ product:prc.id,supplierreference:prc.reference}).populate('variation');
                         let pv = pvs.find(pv=> pv.variation.name == variation.name);
 
                         if (!pv) {
@@ -2262,7 +2256,7 @@ module.exports = {
                             product:prc.id,
                             variation:variation.id,
                             reference: pdv.reference ? pdv.reference : '',
-                            supplierreference:`${pdv.reference}`,
+                            supplierreference:`${prc.reference}`,
                             ean13: pdv.ean13 ? pdv.ean13.toString() : '',
                             upc: pdv.upc ? pdv.upc : 0,
                             skuId: pdv.skuId ? pdv.skuId : '',
@@ -2301,18 +2295,18 @@ module.exports = {
                           }
 
                         }
-                        
                         if(typeof(productVariation) == 'object' ){
                           result.push(productVariation);
                           sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
                         }
+                     }
                     }
-                    }
-                  }                  
+                    
+                  } 
               }
             }
 
-          if(pro){
+          if(pro && req.body.channel != sails.config.custom.WOOCOMMERCE_CHANNEL){
               if (discount && p.discount && p.discount.length > 0) {
                 for (const disc of p.discount) {
                   let exists = pro.discount.find(dis => dis.value == disc.value && dis.type == disc.type);

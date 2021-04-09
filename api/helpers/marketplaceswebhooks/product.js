@@ -23,7 +23,12 @@ module.exports = {
       let pro = await sails.helpers.checkProducts(product, seller);
 
       if(typeof(pro) === 'object'){
-        let exists = await Product.findOne({externalId: pro.externalId, seller: pro.seller});
+        let exists = await Product.findOne({
+          or : [
+            {externalId: pro.externalId, seller: pro.seller},
+            {reference: pro.reference, seller: pro.seller}
+          ]
+        });
         if (!exists) {
           if (variations.variations.length > 0) {
             const createdProduct = await Product.create(pro).fetch();
