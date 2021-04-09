@@ -113,12 +113,15 @@ module.exports = {
               data.Product.Condition='new';
               data.Product.Variation=pv.variation.col.replace(/\.5/,'½').toString();
 
-              data.Product.ProductData = {
-                Gender:product.gender.name,
-                ColorNameBrand:product.mainColor.name,
-                ColorFamily:product.mainColor.name,
-                Color:product.mainColor.name,
-              };
+              if(product.gender && product.gender.name){
+                data.Product.ProductData.Gender=product.gender.name;
+              }
+
+              if(product.mainColor && product.mainColor.name){
+                data.Product.ProductData.ColorNameBrand=product.mainColor.name;
+                data.Product.ProductData.ColorFamily=product.mainColor.name;
+                data.Product.ProductData.Color=product.mainColor.name;
+              }
 
               if(categories.length<2){delete data.Product.Categories;}
               if(categories.includes('2')/** Accesorios */ || categories.includes('138')/** Deportes */){delete data.Product.ProductData.ShortDescription;}
