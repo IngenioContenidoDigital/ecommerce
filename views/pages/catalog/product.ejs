@@ -71,17 +71,6 @@
             </div>
           </div>
           <div class="column">
-            <label class="label is-inline is-size-7" for="price_nt">Precio sin impuestos</label>
-            <div class="field">
-              <p class="control has-icons-left">
-                <input class="input is-size-7" name="price_nt" type="number" placeholder="Sin impuestos" <% if(action=='edit'){ %> value="<%= product.price.toFixed(2) %>" <% } else { %> value="0.00" <% } %>/>
-                <span class="icon is-small is-left is-size-7">
-                  <i class="bx bx-dollar"></i>
-                </span>
-              </p>
-            </div>
-          </div>
-          <div class="column">
             <div class="control">
               <label class="label is-inline is-size-7" for="tax">Impuesto</label>
               <div class="select is-fullwidth is-size-7">
@@ -91,23 +80,6 @@
                   <%})%>
                 </select>
               </div>
-            </div>
-          </div>
-          <%let tax = 0;%>
-          <%let price = 0; %>
-          <% if(action=='edit'){%>
-          <% tax = product.tax ? (product.tax.value/100) : 0; %>
-          <% price = product.price ? product.price : 0; %>
-          <%}%>
-          <div class="column">
-            <label class="label is-inline is-size-7" for="price_wt">Precio IVA incluído</label>
-            <div class="field">
-              <p class="control has-icons-left">
-                <input class="input is-size-7" type="number" name="price_wt" placeholder="Con impuestos" <% if(action=='edit'){ %> value="<%= parseInt(price * (1 + tax)).toFixed(2)%>" <% } else { %> value="0.00" <%}%>/>
-                <span class="icon is-small is-left is-size-7">
-                  <i class="bx bx-dollar"></i>
-                </span>
-              </p>
             </div>
           </div>
         </div>
@@ -449,9 +421,12 @@
       live('#add-row','click',function(e){
         e.preventDefault();
         let rowid = variations.tBodies[0].rows.length;
-        let pricep = document.querySelector('input[name="price_wt"]').value;
+        let rowprice = 0;
         let referencep = document.querySelector('input[name="reference"]').value;
-
+        if(rowid>0){
+          let lastrow = variations.tBodies[0].rows[rowid-1].querySelector('.prices');
+          rowprice = lastrow.value;
+        }
         let newrow=[
           `<td scope="row" class="align-middle"><div class="dropdown is-small is-fullwidth is-hoverable">
               <input type="hidden" field="variation" name="variations[`+rowid+`][variation]" value="0" />
@@ -473,7 +448,7 @@
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small" type="text" field="supplierreference" name="variations['+rowid+'][supplierreference]" <% if(action=='edit'){ %> value="<%= product.reference %>" <%}else{%>value="'+referencep+'"<%}%> placeholder="Referencia Proveedor"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="text" field="ean13" name="variations['+rowid+'][ean13]" value="" placeholder="EAN13"/></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" min="111111111111" max="999999999999" field="upc" name="variations['+rowid+'][upc]" value="" placeholder="UPC"/></div></div></td>',
-          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" value="'+parseFloat(pricep).toFixed(2)+'" placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
+          '<td scope="row" class="align-middle"><div class="field"><div class="control has-icons-left"><input required class="input is-primary is-small has-text-right prices" type="number" field="price" name="variations['+rowid+'][price]" value="'+rowprice+'" placeholder="Precio"/><span class="icon is-small is-left"><i class="bx bx-dollar"></i></span></div></div></td>',
           '<td scope="row" class="align-middle"><div class="field is-small"><div class="control"><input class="input is-primary is-small has-text-right" type="number" field="quantity" name="variations['+rowid+'][quantity]" value="0" placeholder="Cantidad"/></div></div></td>',
           '<td scope="row" class="align-middle"><a class="delete-row"><i class="bx bx-trash"></i></a></td>'
         ];
@@ -961,37 +936,7 @@
 					err.innerHTML= 'Referencia: ' + e.reference +' <br>Errores: '+ e.message;
 					errorlist.appendChild(err);
         }
-      });
-
-    const pricent = document.querySelector('input[name="price_nt"]');
-    const pricewt = document.querySelector('input[name="price_wt"]');
-    const taxl = document.querySelector('#tax');
-    pricent.onkeyup = price;
-    pricewt.onkeyup = price;
-    taxl.onchange = price;
-    
-    function price(e){
-      let tax = document.querySelector('#tax');
-      let range = tax.options[tax.selectedIndex].getAttribute('tax');
-      let name = this.getAttribute('name');
-      let target = this;
-      switch(name){
-        case 'tax':
-          target = pricewt;
-          target.value=(Math.ceil((pricent.value * (1 + (range / 100)))*100)/100).toFixed(2);
-          break;
-        case 'price_nt':
-          target = pricewt;
-          target.value=(Math.ceil((pricent.value * (1 + (range / 100)))*100)/100).toFixed(2);
-          break;
-        case 'price_wt':
-          target = pricent;
-          target.value=(pricewt.value/(1+(range/100))).toFixed(2);
-          break;
-      }
-    }
-  
-    
+      });  
   
     live('#activo','click',function(){
       let elm = this;
@@ -1150,7 +1095,6 @@
           mainCategory:form.querySelector('select[name="mainCategory"]').value,
           gender:form.querySelector('select[name="gender"]').value,
           categories:lcat,
-          price:form.querySelector('input[name="price_nt"]').value,
           tax:form.querySelector('select[name="tax"]').value,
           width:form.querySelector('input[name="width"]').value,
           height:form.querySelector('input[name="height"]').value,
@@ -1163,7 +1107,6 @@
         function (resData, jwRes) {
           if(jwRes.statusCode==200){
             let productdata = document.querySelector('#product-data');
-            let pricep = document.querySelector('input[name="price_wt"]');
             let referencep = document.querySelector('input[name="reference"]');
             productdata.value=resData.id;
 

@@ -37,7 +37,7 @@ module.exports = {
         }
         pshow = pshow.reverse().slice(-4);
         if(pshow.length>0){
-          let products = await Product.find({id:pshow})
+          let products = await Product.find({id:pshow,active:true})
           .populate('mainColor')
           .populate('tax')
           .populate('gender')
@@ -47,6 +47,7 @@ module.exports = {
           for(let p of products){
             p.cover= await ProductImage.findOne({product:p.id,cover:1});
             p.discount = await sails.helpers.discount(p.id);
+            p.price = (await ProductVariation.find({product:p.id}))[0].price;
             viewed.push(p);
           }
         }
@@ -451,19 +452,21 @@ module.exports = {
     let brands = [];
     let genders = [];
 
-    object.products.forEach(async p=>{
-        p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
-        p.mainColor=await Color.findOne({id:p.mainColor});
-        p.manufacturer=await Manufacturer.findOne({id:p.manufacturer});
-        p.seller=await Seller.findOne({id:p.seller});
-        p.tax=await Tax.findOne({id:p.tax});
-        p.discount = await sails.helpers.discount(p.id);
-        p.gender = await Gender.findOne({id:p.gender});
+    for(let p of object.products){
+      p.cover= await ProductImage.findOne({product:p.id,cover:1});
+      p.mainColor=await Color.findOne({id:p.mainColor});
+      p.manufacturer=await Manufacturer.findOne({id:p.manufacturer});
+      p.seller=await Seller.findOne({id:p.seller});
+      p.tax=await Tax.findOne({id:p.tax});
+      p.discount = await sails.helpers.discount(p.id);
+      p.gender = await Gender.findOne({id:p.gender});
+      p.price = (await ProductVariation.find({product:p.id}))[0].price;
 
-        if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
-        if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
-        if(!await exists(genders, p.gender)){genders.push(p.gender);}
-    });
+      if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
+      if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
+      if(!await exists(genders, p.gender)){genders.push(p.gender);}
+
+    };
     return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
   search: async(req, res) =>{
@@ -542,7 +545,7 @@ module.exports = {
       .populate('manufacturer')
       .populate('mainColor')
       .populate('tax')
-      .populate('variations')
+      .populate('variations',{sort: 'createdAt ASC'})
       .populate('images');
 
     if(req.session.viewed===undefined){
@@ -579,6 +582,24 @@ module.exports = {
       keywords:keywords,
       tag:await sails.helpers.getTag(req.hostname),
       menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+  },
+  variationPrices: async (req, res)=>{
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let prices ={};
+    let productvariation = await ProductVariation.findOne({ id: req.body.variation});
+    if(productvariation){
+      let discount = await sails.helpers.discount(productvariation.product,productvariation.id);
+      prices.price = productvariation.price;
+      if(discount){
+        prices.highPrice = productvariation.price;
+        prices.lowPrice = discount.price;
+        prices.savings = discount.amount;
+        prices.price = discount.price;
+      }
+    }
+    return res.send(prices);
   },
   cms: async (req,res)=>{
     let seller = null;

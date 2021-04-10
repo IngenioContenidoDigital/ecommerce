@@ -131,6 +131,12 @@ module.exports = {
       .populate('mainCategory')
       .populate('seller')
       .populate('channels');
+
+    const formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+
     for (let p of products) {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
@@ -150,8 +156,8 @@ module.exports = {
           </div>`;
         }
       }
-      let tax = p.tax ? (p.tax.value/100) : 0;
-      let price = p.price ? p.price : 0;
+
+      let price = await ProductVariation.avg('price', { product: p.id }); //p.price ? p.price : 0;
       row = [
         `<td class="align-middle><div class="field">
           <input class="is-checkradio is-small is-info" id="checkboxselect${p.id}" data-product="${p.id}" type="checkbox" name="checkboxselect">
@@ -160,7 +166,7 @@ module.exports = {
         `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="` + p.id + `">` + p.name + `</a></td>`,
         `<td class="align-middle">` + p.reference + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
-        `<td class="align-middle">$ ` + parseInt(price * (1 + tax)).toFixed(2) + `</td>`,
+        `<td class="align-middle"> ` + (price ? formatter.format(price) : formatter.format(0)) + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.mainColor ? p.mainColor.name : '') + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.mainCategory ? p.mainCategory.name : '') + `</td>`,
         `<td class="align-middle">` + p.stock + `</td>`,
@@ -261,7 +267,6 @@ module.exports = {
           descriptionShort: req.body.descriptionshort,
           register:req.body.register ? req.body.register : '',
           active: req.body.active,
-          price: req.body.price,
           tax: req.body.tax,
           mainCategory: req.body.mainCategory,
           mainColor: req.body.mainColor,
@@ -282,7 +287,6 @@ module.exports = {
           descriptionShort: req.body.descriptionshort,
           register:req.body.register ? req.body.register : '',
           active: req.body.active,
-          price: req.body.price,
           tax: req.body.tax,
           mainCategory: req.body.mainCategory,
           mainColor: req.body.mainColor,
@@ -1013,7 +1017,6 @@ module.exports = {
         prod.weight = parseFloat(req.body.product.weight.replace(',', '.'));
         prod.seller = seller;
         prod.register = req.body.product.register || '';
-        prod.price = parseFloat(req.body.product.price.replace(',', '.'));
         prod.description = req.body.product.description;
         prod.descriptionShort = req.body.product.descriptionShort;
 
@@ -1176,7 +1179,6 @@ module.exports = {
       prod.height = (req.body.product.height === undefined || req.body.product.height === null || req.body.product.height < 1) ? 15 : req.body.product.height;
       prod.length = (req.body.product.length === undefined || req.body.product.length === null || req.body.product.length < 1) ? 32 : req.body.product.length;
       prod.weight = (req.body.product.weight === undefined || req.body.product.weight === null || req.body.product.weight === 0) ? 1 : req.body.product.weight;
-      prod.price =  (req.body.product.price / (1 + (req.body.product.tax.rate/100)));
       prod.description = req.body.product.description;
       prod.descriptionShort = req.body.product.descriptionShort;
       prod.seller = seller;

@@ -2,9 +2,12 @@ module.exports = {
   friendlyName: 'Discount',
   description: 'Localiza los descuentos activos de un producto',
   inputs: {
-    id:{
+    productid:{
       type:'string',
       required:true,
+    },
+    productvariation:{
+      type:'string'
     }
   },
   exits: {
@@ -13,10 +16,12 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    let id = inputs.id;
     let moment = require('moment');
-    let product = await Product.findOne({id:id})
+    let filter = {};
+    if(inputs.productvariation){filter.id = inputs.productvariation;}
+    let product = await Product.findOne({id:inputs.productid})
     .populate('tax')
+    .populate('variations',filter)
     .populate('discount',
     {
       where:{
@@ -32,11 +37,11 @@ module.exports = {
     if(product.discount.length>0){
       switch(product.discount[0].type){
         case 'P':
-          discPrice+=((product.price)-(product.price*(product.discount[0].value/100)))*(1+(product.tax.value/100));
-          discAmount+=(product.price*(product.discount[0].value/100));
+          discPrice+=((product.variations[0].price)-(product.variations[0].price*(product.discount[0].value/100)));
+          discAmount+=(product.variations[0].price*(product.discount[0].value/100));
           break;
         case 'C':
-          discPrice+=(product.price*(1+(product.tax.value/100)))-product.discount[0].value;
+          discPrice+=(product.variations[0].price)-product.discount[0].value;
           discAmount+=product.discount[0].value;
           break;
       }

@@ -82,10 +82,9 @@
                     <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
                         <span class="is-hidden productid" itemprop="productID"><%=product.id%></span>
 
-                        <%let discval = 0%>
-                        <%let pricewt = (product.price*(1+(product.tax.value/100)))%>
+                        <%let discval = 0%>                       
                         <%if(product.discount!==null && product.discount!==undefined){%>
-                        <%if(product.discount.type==='C'){%><% discval= ((product.discount.value/pricewt)*100).toFixed(0) %><%}%>
+                        <%if(product.discount.type==='C'){%><% discval= ((product.discount.value/product.price)*100).toFixed(0) %><%}%>
                         <%if(product.discount.type==='P'){%><% discval= product.discount.value %><%}%>
                         <%}%>
 
@@ -103,13 +102,14 @@
                                     <meta itemprop="priceCurrency" content="COP">
                                     <%if(product.discount!==null && product.discount!==undefined){%>
                                         <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
-                                            <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
-                                            <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                            <span itemprop="highPrice" class="is-size-7 has-text-danger old-price highPrice">$ <%= Math.round(product.price).toLocaleString("es-CO");%></span>
+                                            <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold lowPrice">$ <%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                                             <span class="is-hidden" itemprop="offerCount">1</span>
+                                            <span class="is-hidden savings"></span>
                                         </div>
-                                        <span itemprop="price" class="is-hidden">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                        <span itemprop="price" class="is-hidden bestPrice">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                                     <%}else{%>
-                                        <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span>
+                                        <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold price bestPrice">$<%= Math.round(product.price).toLocaleString("es-CO");%></span>
                                     <%}%>
                                 </div>
                                 </p>
