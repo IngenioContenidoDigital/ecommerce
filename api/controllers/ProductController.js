@@ -141,7 +141,7 @@ module.exports = {
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle'; }
-      if(p.active && (p.stock<1 || p.images.length <1)){ await sails.helpers.tools.productState(p.id,false); cl = 'bx-x-circle';}
+      if(p.active && (p.stock<1 || p.images.length <1)){ await sails.helpers.tools.productState(p.id,false,p.seller.active); cl = 'bx-x-circle';}
       let published = '';
       for(let pchannel of p.channels){
         let cn = await Integrations.findOne({id:pchannel.integration});
@@ -170,7 +170,7 @@ module.exports = {
         `<td class="align-middle is-capitalized">` + (p.mainColor ? p.mainColor.name : '') + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.mainCategory ? p.mainCategory.name : '') + `</td>`,
         `<td class="align-middle">` + p.stock + `</td>`,
-        `<td class="align-middle"><span class="action"><i product="` + p.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
+        `<td class="align-middle"><span class="action"><i product="` + p.id + `" seller="` + p.seller.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
         `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
         '<td class="align-middle"><span>' + p.seller.name + '</span></td>',
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
@@ -258,6 +258,7 @@ module.exports = {
     var error = null;
     let product = null;
     try {
+      let seller = await Seller.findOne({id:req.body.seller});
       let exists = await Product.findOne({ reference: req.body.reference.toUpperCase().trim(), seller: req.body.seller });
       if (!exists) {
         product = await Product.create({
@@ -299,7 +300,7 @@ module.exports = {
           weight: req.body.weight
         });
         await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
-        await sails.helpers.tools.productState(product.id,product.active,true);
+        await sails.helpers.tools.productState(product.id,product.active,true,seller.active);
       }
       product.priceWt = product.price * (1 + ((await Tax.findOne({ id: product.tax })).value / 100));
       if((await ProductVariation.count({product:product.id}))>0){
@@ -389,7 +390,7 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let product = await Product.findOne({ id: req.body[0].product });
+    let product = await Product.findOne({ id: req.body[0].product }).populate('seller');
     for (let list of req.body) {
       ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller })
         .exec(async (err, record, wasCreated) => {
@@ -399,7 +400,7 @@ module.exports = {
           }
         });
     }
-    await sails.helpers.tools.productState(product.id,product.active,true);
+    await sails.helpers.tools.productState(product.id,product.active,true,product.seller.active);
 
     return res.send('ok');
   },
@@ -455,7 +456,9 @@ module.exports = {
     }
     var id = req.param('id');
     var state = req.param('active');
-    await sails.helpers.tools.productState(id,state,true);
+    let seller = await Seller.findOne({id:req.param('seller')});
+
+    await sails.helpers.tools.productState(id,state,seller.active,true);
     return res.send(state);
   },
   dafitiadd: async (req, res) => {

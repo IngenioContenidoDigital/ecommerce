@@ -40,7 +40,7 @@
                   <span class="is-hidden productid" itemprop="productID"><%=vw.id%></span>
                   <div class="card-image has-badge-danger has-badge-rounded has-badge-medium" <%if(vw.discount!==null && vw.discount!==undefined){%>data-badge="<%=vw.discount.value%>%"<%}%>>
                       <figure class="image is-256x256 is-inline-block">
-                          <a itemprop="url" href="/list/product/<%=encodeURIComponent((vw.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(vw.reference)%>"><%if(vw.cover!==undefined){%><img async itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=vw.id%>/<%= vw.cover.file %>" alt="<%vw.manufacturer.name%> - <%vw.reference%>"><%}%></a>
+                          <a itemprop="url" href="/list/product/<%=encodeURIComponent((vw.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(vw.reference)%>"><%if(vw.cover!==undefined){%><img itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=vw.id%>/<%= vw.cover.file %>" alt="<%vw.manufacturer.name%> - <%vw.reference%>"><%}%></a>
                       </figure>
                   </div>
                   <div class="card-content">

@@ -303,6 +303,9 @@ module.exports = {
     var id = req.param('id');
     var state = req.body.active;
     var updatedSeller = await Seller.updateOne({id:id}).set({active:state});
+    if(!state){
+      await Product.update({seller:updatedSeller.id}).set({active:false});
+    }
     return res.send(updatedSeller);
   },
   setintegration:async (req,res)=>{

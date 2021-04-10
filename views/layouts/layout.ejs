@@ -166,7 +166,7 @@
             if(resData.price){elm.parentNode.querySelector('.bestPrice').innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");}
         });
 
-        selected.setAttribute('qty',option.getAttribute('qty'))
+        selected.setAttribute('qty',option.getAttribute('qty') ? option.getAttribute('qty') : 0)
         selected.setAttribute('value',option.getAttribute('value'))
         selected.innerHTML=option.text;
         removeClass(elm,'is-active');

@@ -57,7 +57,7 @@
         </div>
         <div class="column is-10">
             <%if(object.logo!== undefined && object.logo!== null && object.logo!==''){%>
-                <p class="has-text-centered"><img async src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
+                <p class="has-text-centered"><img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
             <%}%>
             <!--            
             <%#if(typeof object.children == 'object' && object.children.length>0){%>
@@ -77,8 +77,7 @@
             -->
             <% let count = 0 %>
             <div class="container" itemscope itemtype="https://schema.org/ItemList">
-            <% object.products.forEach((product)=>{ %>
-                <%if(product.active){ %>
+            <% object.products.forEach((product)=>{ %>               
                     <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
                         <span class="is-hidden productid" itemprop="productID"><%=product.id%></span>
 
@@ -89,12 +88,14 @@
                         <%}%>
 
                         <div class="card-image has-badge-danger has-badge-rounded has-badge-medium" <%if(product.discount!==null && product.discount!==undefined){%>data-badge="<%=discval%>%"<%}%>>
-                            <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><%if(product.cover!==undefined){%><img async itemprop="image" style="justify-content: center; max-height: 256px;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"><%}%></a>
+                            <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><%if(product.cover!==undefined){%><img itemprop="image" style="justify-content: center; max-height: 256px;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%product.manufacturer.name%> - <%product.reference%>"><%}%></a>
                         </div>
                         <div class="card-content">
                                 <div itemprop="description" class="is-hidden"><%-product.description%></div>
                                 <div itemprop="disambiguatingDescription" class="is-hidden"><%-product.descriptionShort%></div>
+                                <% if(product.mainColor){ %>
                                 <p><span class="is-pulled-right"><span class="is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></span>
+                                <%}%>
                                 <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>&nbsp;-&nbsp;<span gender="<%=product.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=product.gender.name%></span></p>
                                 <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span itemprop="name" class="has-text-weight-bold is-uppercase"><%=product.name%></span></p>
                                 <p><span class="is-hidden" itemprop="sku"><%=product.reference%></span>
@@ -129,18 +130,11 @@
                                     </div>
                                 </div>
                                 <br>
-                                <!--<div class="select is-primary is-size-7 is-fullwidth">
-                                    <select class="is-uppercase s-variation" name="variations">
-                                        <option style="min-height:30px;" value="0"></option>                                        
-                                            <option class="is-uppercase" qty="<%#=v.quantity%>" value="<%#=v.id%>"><%#=v.variation.name%></option>
-                                    </select>
-                                </div>-->
                                 <div class="buttons">
                                     <button id="push-to-cart" product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
                                 </div>
                         </div>
                     </div>
-                <%} %>
             <%})%>
             </div>
         </div>        

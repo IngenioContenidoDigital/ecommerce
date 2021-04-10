@@ -29,7 +29,7 @@ actually logged in.  (If they weren't, then this action is just a no-op.)`,
 
     // Clear the `userId` property from this session.
     delete this.req.session.user;
-
+    delete this.req.session.menu;
     // Then finish up, sending an appropriate response.
     // > Under the covers, this persists the now-logged-out session back
     // > to the underlying session store.

@@ -121,12 +121,11 @@
     live('.state', 'click', function(){ 
         var elm = this;
         var id = this.getAttribute('product');
+        var seller = this.getAttribute('seller');
         var status = null;
         if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
 
-        io.socket.put('/products/'+id,{active:status},function(resData, jwr){
-          console.log('----');
-          console.log(resData);
+        io.socket.put('/products/'+id,{active:status,seller:seller},function(resData, jwr){
           if(resData){
             removeClass(elm, 'bx-x-circle');
             addClass(elm,'bx-check-circle');

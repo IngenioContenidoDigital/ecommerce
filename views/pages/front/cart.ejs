@@ -128,7 +128,9 @@
             let order = document.querySelector('#order')
             addClass(order,'is-hidden');
             let button = order.querySelector('button')
-            button.disabled=true;
+            if(button){
+                button.disabled=true;
+            }
             }
             let subtotal = document.querySelector('#cart-total');
             subtotal.innerHTML='$&nbsp;'+Math.round(res.value).toLocaleString("es-CO");

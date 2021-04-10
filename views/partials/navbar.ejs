@@ -14,40 +14,7 @@
         <span aria-hidden="true"></span>
       </a>
     </div>
-    <div id="navbarBasicExample" class="navbar-menu">
-      <%if(typeof menu=='object'){%>
-        <div class="navbar-item has-dropdown is-hoverable">
-          <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="#">Categorías</a></div>
-            <div class="navbar-dropdown">
-                <% menu.children.forEach(child =>{%>
-                  <div class="nested navbar-item dropdown has-dropdown">
-                    <div class="dropdown-trigger">
-                      <span class="is-uppercase has-text-dark is-size-7"><%=child.name%></span>
-                    </div>
-                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                      <div class="dropdown-content">
-                          <%child.children.forEach(c =>{%>
-                            <div class="nested dropdown dropdown-item ">
-                              <div class="dropdown-trigger">
-                                <span class="is-uppercase has-text-dark is-size-7"><%=c.name%></span>
-                              </div>
-                              <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                                <div class="dropdown-content">
-                                <%c.children.forEach(d =>{%>
-                                  <a href="/ver/categoria/<%=d.url%>" class="dropdown-item is-uppercase is-size-7"><%=d.name%></a>
-                                <%})%>
-                                </div>
-                              </div>
-                            </div>
-                          <%})%>
-                      </div>
-                    </div>
-                  </div>
-                <%})%>
-            </div>
-          </div>
-      <%}%>
-      </div>
+    <div id="navbarContainer" class="navbar-menu"></div>
     <div class="navbar-end has-text-right">
       <div class="navbar-item has-text-centered">        
         <div class="field has-addons is-inline">
@@ -100,44 +67,49 @@
     }
   });
 
-  live('.burger','click', e =>{
-      alert('Menu de Hamburguesa');
-      let men = document.querySelector('#navbarBasicExample');
-      men.innerHTML=`
-      <aside class="menu">
-  <p class="menu-label">
-    General
-  </p>
-  <ul class="menu-list">
-    <li><a>Dashboard</a></li>
-    <li><a>Customers</a></li>
-  </ul>
-  <p class="menu-label">
-    Administration
-  </p>
-  <ul class="menu-list">
-    <li><a>Team Settings</a></li>
-    <li>
-      <a class="is-active">Manage Your Team</a>
-      <ul>
-        <li><a>Members</a></li>
-        <li><a>Plugins</a></li>
-        <li><a>Add a member</a></li>
-      </ul>
-    </li>
-    <li><a>Invitations</a></li>
-    <li><a>Cloud Storage Environment Settings</a></li>
-    <li><a>Authentication</a></li>
-  </ul>
-  <p class="menu-label">
-    Transactions
-  </p>
-  <ul class="menu-list">
-    <li><a>Payments</a></li>
-    <li><a>Transfers</a></li>
-    <li><a>Balance</a></li>
-  </ul>
-</aside>`
+  live('.burger','click', e =>{     
+      let men = document.querySelector('#navbarContainer');
+      if(hasClass(men,'navbar-menu')){
+        removeClass(men,'navbar-menu')
+      }else{
+        addClass(men,'navbar-menu')
+      }
     });
+
+  live('.menu-item','click', e =>{     
+    let menuopt = e.target;
+    let mmenu = document.querySelector('aside');
+    let oplists = mmenu.querySelectorAll('.menu-item');
+    for(let op of oplists){
+      removeClass(op,'is-active');
+      let opl = op.parentNode.querySelectorAll('ul');
+      for(let upl of opl){
+        addClass(upl,'is-hidden');
+      }
+    }
+    let clist = menuopt.parentNode.parentNode.querySelector('ul');
+    if(hasClass(menuopt,'is-active')){
+      removeClass(menuopt,'is-active');
+    }else{
+      addClass(menuopt,'is-active');
+    }
+    if(hasClass(clist,'is-hidden')){
+        removeClass(clist,'is-hidden');
+      }else{
+        addClass(clist,'is-hidden');
+      }
+  });
   
+  document.addEventListener("DOMContentLoaded", (event) => {
+    io.socket.get('/buildmenu/'+window.innerWidth,resData =>{
+      document.querySelector('#navbarContainer').innerHTML=resData;
+    });
+  });
+
+  window.addEventListener('resize',() => {
+    io.socket.get('/buildmenu/'+window.innerWidth,resData =>{
+      document.querySelector('#navbarContainer').innerHTML=resData;
+    });
+  });
+
 </script>

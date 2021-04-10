@@ -10,6 +10,10 @@ module.exports = {
       type:'boolean',
       required:true
     },
+    sellerstatus:{
+      type:'boolean',
+      required:true
+    },
     sync:{
       type:'boolean',
       defaultsTo:false
@@ -24,6 +28,7 @@ module.exports = {
     let images = await ProductImage.count({product:inputs.product});
     let stock = await ProductVariation.sum('quantity', {product:inputs.product});
     let updated=null;
+    if(!inputs.sellerstatus){inputs.status = false;}
     if(inputs.status && images>0 && stock>0){
       updated = await Product.updateOne({ id: inputs.product }).set({ active: inputs.status });
     }else{
