@@ -152,14 +152,21 @@
         }
     });
 
-    live('.dropdown-content','mouseout',e=>{
+    /*live('.dropdown-content','mouseout',e=>{
           let node = e.target.parentNode.parentNode;
           removeClass(node,'is-active');
-        });
+        });*/
     live('.dropdown-item','click',e=>{
         let option = e.target
         let elm = e.target.parentNode.parentNode.parentNode;
         let selected = elm.querySelector('#drop-selected');
+        io.socket.post('/findprice',{variation:option.getAttribute('value')},(resData) => {
+            if(resData.highPrice){elm.parentNode.querySelector('.highPrice').innerHTML = '$ '+Math.round(resData.highPrice).toLocaleString("es-CO");}
+            if(resData.lowPrice){elm.parentNode.querySelector('.lowPrice').innerHTML = '$ '+Math.round(resData.lowPrice).toLocaleString("es-CO");}
+            if(resData.savings){elm.parentNode.querySelector('.savings').innerHTML = '$ '+Math.round(resData.savings).toLocaleString("es-CO");}
+            if(resData.price){elm.parentNode.querySelector('.bestPrice').innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");}
+        });
+
         selected.setAttribute('qty',option.getAttribute('qty'))
         selected.setAttribute('value',option.getAttribute('value'))
         selected.innerHTML=option.text;

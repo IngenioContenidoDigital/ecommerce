@@ -54,13 +54,14 @@
                         <meta itemprop="priceCurrency" content="COP">
                         <%if(vw.discount!==null && vw.discount!==undefined){%>
                             <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
-                                <span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$&nbsp;<%= Math.round((vw.price*(1+(vw.tax.value/100)))).toLocaleString("es-CO");%></span>
-                                <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
+                                <span itemprop="highPrice" class="is-size-7 has-text-danger old-price highPrice">$&nbsp;<%= Math.round(vw.price).toLocaleString("es-CO");%></span>
+                                <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold lowPrice">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
                                 <span class="is-hidden" itemprop="offerCount">1</span>
+                                <span class="is-hidden savings"></span>
                             </div>
-                            <span itemprop="price" class="is-hidden">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
+                            <span itemprop="price" class="is-hidden bestPrice">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
                         <%}else{%>
-                            <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold">$&nbsp;<%= Math.round((vw.price*(1+(vw.tax.value/100)))).toLocaleString("es-CO");%></span>
+                            <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold bestPrice">$&nbsp;<%= Math.round(vw.price).toLocaleString("es-CO");%></span>
                         <%}%>
                     </div>
                     </p>

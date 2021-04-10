@@ -51,9 +51,9 @@
                         <div class="column is-one-fifth">
                             <%if(cartproduct.product.discount!==null && cartproduct.product.discount!==undefined ){%>
                                 <span id="item-old" price="<%=cartproduct.productvariation.price%>" style="text-decoration: line-through;" class="is-size-7">$&nbsp;<%= Math.round(cartproduct.productvariation.price).toLocaleString("es-CO");%></span>
-                                <span id="item-price" price="<%=cartproduct.product.discount.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.product.discount.price).toLocaleString("es-CO");%></span>
+                                <span id="item-price" price="<%=cartproduct.totalPrice%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.totalPrice).toLocaleString("es-CO");%></span>
                             <%}else{%>
-                                <span id="item-price" price="<%=cartproduct.productvariation.price%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.productvariation.price).toLocaleString("es-CO");%></span>
+                                <span id="item-price" price="<%=cartproduct.totalPrice%>" class="has-text-danger is-size-5">$&nbsp;<%= Math.round(cartproduct.totalPrice).toLocaleString("es-CO");%></span>
                             <%}%>
                         </div>
                     </div>

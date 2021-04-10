@@ -45,9 +45,9 @@ module.exports = {
       await CartProduct.destroy({cart:cart.id,product:productvariation.product,productvariation:productvariation.id});
     }else{
       await CartProduct.destroy({cart:cart.id,product:productvariation.product,productvariation:productvariation.id});
-      let discount = await sails.helpers.discount(productvariation.product);
+      let discount = await sails.helpers.discount(productvariation.product,productvariation.id);
       for(let i=0; i<req.body.quantity; i++){
-        if(discount!==null && discount!==undefined){
+        if(discount){
           await CartProduct.create({cart:cart.id,product:productvariation.product,productvariation:productvariation.id,totalDiscount:discount.amount,totalPrice:discount.price});
         }else{
           await CartProduct.create({cart:cart.id,product:productvariation.product,productvariation:productvariation.id,totalDiscount:0,totalPrice:productvariation.price});
@@ -55,12 +55,9 @@ module.exports = {
       }
     }
 
-    let items = await CartProduct.find({cart:cart.id}).populate('productvariation');
-    let cartvalue = 0;
-    for(let item of items){
-      cartvalue += parseFloat(item.totalPrice);
-    }
-    req.session.cart.totalProducts = cartvalue;
+    let cartvalue = await CartProduct.sum('totalPrice',{cart:cart.id});
+    let items = await CartProduct.count({cart:cart.id});
+    req.session.cart.totalProducts = cartvalue ? cartvalue : 0;
     if(cart.discount!==undefined && cart.discount!==null){
       if(cart.discount.type==='P'){
         discount = cartvalue*(cart.discount.value/100);
@@ -73,14 +70,14 @@ module.exports = {
       req.session.cart.total = cartvalue;
     }
 
-    if(items.length<1){
+    if(items<1){
       await Cart.destroyOne({id:cart.id});
       delete req.session.cart;
     }else{
-      req.session.cart.items = items.length;
+      req.session.cart.items = items;
     }
-    sails.sockets.blast('addtocart', {items: items.length, value:cartvalue});
-    return res.send({items: items.length, value:cartvalue});
+    sails.sockets.blast('addtocart', {items: items, value:cartvalue});
+    return res.send({items: items, value:cartvalue});
   },
   applycoupon: async (req,res)=>{
     if (!req.isSocket) {

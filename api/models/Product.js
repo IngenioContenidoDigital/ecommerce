@@ -13,7 +13,7 @@ module.exports = {
     descriptionShort:{type:'string'},
     register:{type:'string'},
     active:{type:'boolean',required:true},
-    price:{type:'number'},
+    price:{type:'number',defaultsTo:0},
     tax:{model:'tax'},
     mainCategory: {model:'category'},
     mainColor: {model:'color'},

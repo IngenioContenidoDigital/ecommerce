@@ -35,19 +35,19 @@
                 <span class="is-x-small">Referencia: <%=product.reference.toUpperCase()%></span>
                 <br><br>
                 <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                    <meta itemprop="priceCurrency" content="COP">
+                <meta itemprop="priceCurrency" content="COP">
                 <table class="table is-size-6 is-fullwidth">
                     <%if(discount!==null && discount!==undefined){%>
                         <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
-                            <tr><td>Precio recomendado:</td><td class="has-text-right"><span itemprop="highPrice" class="is-size-7 has-text-danger old-price">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO");%></span></td></tr>
-                            <tr><td>Precio:</td><td class="has-text-right" itemprop="lowPrice">$<%= Math.round(discount.price).toLocaleString("es-CO"); %></td></tr>
-                            <% let savings = parseInt((product.price*(1+(product.tax.value/100)))-discount.price) %>
-                            <tr><td>Ahorro:</td><td class="has-text-success has-text-right">$<%= savings.toLocaleString('es-CO'); %></td></tr>
+                            <tr><td>Precio recomendado:</td><td class="has-text-right"><span itemprop="highPrice" class="is-size-7 has-text-danger old-price highPrice">$ <%= Math.round(product.variations[0].price).toLocaleString("es-CO");%></span></td></tr>
+                            <tr><td>Precio:</td><td class="has-text-right"><span itemprop="lowPrice" class="lowPrice">$ <%= Math.round(discount.price).toLocaleString("es-CO"); %></span></td></tr>
+                            <% let savings = parseInt(product.variations[0].price-discount.price) %>
+                            <tr><td>Ahorro:</td><td class="has-text-success has-text-right"><span class="savings">$ <%= savings.toLocaleString('es-CO'); %></span></td></tr>
                             <span class="is-hidden" itemprop="offerCount">1</span>
-                            <span itemprop="price" class="is-hidden">$<%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
+                            <span itemprop="price" class="is-hidden bestPrice">$ <%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
                         </div>
                     <%}else{%>
-                      <tr><td>Precio:</td><td itemprop="price" class="has-text-right">$<%= Math.round((product.price*(1+(product.tax.value/100)))).toLocaleString("es-CO"); %></td></tr>
+                      <tr><td>Precio:</td><td class="has-text-right"><span itemprop="price" class="bestPrice">$ <%= Math.round(product.variations[0].price).toLocaleString("es-CO"); %></span></td></tr>
                     <%}%>
                 </table>
                 <hr>
@@ -118,6 +118,13 @@
     });
 
     live('select[name="variations"]','change',(e)=>{
+        let variation = e.target.options[e.target.selectedIndex].getAttribute('value')!=='0' ? e.target.options[e.target.selectedIndex].getAttribute('value') : e.target.options[1].getAttribute('value');
+        io.socket.post('/findprice',{variation:variation},(resData) => {
+            if(resData.highPrice){document.querySelector('.highPrice').innerHTML = '$ '+Math.round(resData.highPrice).toLocaleString("es-CO");}
+            if(resData.lowPrice){document.querySelector('.lowPrice').innerHTML = '$ '+Math.round(resData.lowPrice).toLocaleString("es-CO");}
+            if(resData.savings){document.querySelector('.savings').innerHTML = '$ '+Math.round(resData.savings).toLocaleString("es-CO");}
+            if(resData.price){document.querySelector('.bestPrice').innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");}
+        });
         let stock = e.target.options[e.target.selectedIndex].getAttribute('qty');
         let quantity = document.querySelector('select[name="quantity"]');
         let label = document.querySelector('#avail');
