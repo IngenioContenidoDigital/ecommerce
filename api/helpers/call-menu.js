@@ -15,6 +15,7 @@ module.exports = {
     let seller = null;
     let menu = null;
     let navmenu = {};
+    let filter = {active:true};
     let navbar = `<div class="navbar-item has-dropdown is-hoverable">
       <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="#">Categorías</a></div>
         <div class="navbar-dropdown">`
@@ -22,7 +23,7 @@ module.exports = {
     let navbarmobile =`<aside class="menu">`;
     let cids = [];
     if(inputs.hostname !== undefined && inputs.hostname !== '' && inputs.hostname!=='iridio.co' && inputs.hostname!=='localhost' && inputs.hostname!=='1ecommerce.app'){
-      seller = await Seller.findOne({domain:inputs.hostname,active:true});
+      seller = await Seller.findOne({domain:inputs.hostname,active:true}); 
       let categories = await Category.find({
         where: {active:true},
         select: ['name','url']
@@ -32,6 +33,7 @@ module.exports = {
           cids.push(c.id);
         }
       }
+      filter.id=cids;
     }
 
       menu = await Category.findOne({
@@ -39,14 +41,14 @@ module.exports = {
         select:['name','url']
       })
       .populate('children',{
-        where: {id:cids, active:true},
+        where: filter,
         select: ['name','url']
       });
 
       for(let c of menu.children){
         c = await Category.findOne({id:c.id,active:true})
         .populate('children',{
-          where: {id:cids, active:true},
+          where: filter,
           select: ['name','url']
         });
 
@@ -79,7 +81,6 @@ module.exports = {
     
       navmenu.navbar = navbar;
       navmenu.navbarmobile = navbarmobile;
-
     return exits.success(navmenu);
   }
 

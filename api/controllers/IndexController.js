@@ -57,12 +57,12 @@ module.exports = {
       brands = await Manufacturer.find({active:true}).sort('name ASC');
     }
 
-    let menu ='';
-    if(!req.session.menu){
+    let menu ='';    
+    if(req.session.menu.navbarmobile.length>40){
+      menu = req.session.menu;
+    }else{
       menu = await sails.helpers.callMenu(seller!==null ? seller.domain : undefined);
       req.session.menu = menu;
-    }else{
-      menu = req.session.menu;
     }
 
     return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:menu,viewed:viewed,brands:brands, seller:seller});

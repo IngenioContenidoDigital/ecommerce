@@ -1,4 +1,4 @@
-<%if(seller && seller.name){%>
+<%if(typeof seller !== 'undefined' && seller !== null){%>
     <title><%= seller.name %></title>
     <link rel="shortcut icon" type="image/jpg" href="<%=imgurl%>/images/sellers/<%=seller.logo%>"/>
 <%}else{%>
