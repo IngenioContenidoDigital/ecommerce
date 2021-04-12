@@ -58,7 +58,7 @@ module.exports = {
     }
 
     let menu ='';    
-    if(req.session.menu.navbarmobile.length>40){
+    if(req.session.menu && req.session.menu.navbarmobile.length>40){
       menu = req.session.menu;
     }else{
       menu = await sails.helpers.callMenu(seller!==null ? seller.domain : undefined);
@@ -1340,10 +1340,14 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
       return res.badRequest();
     }
     let space = parseInt(req.param('screen'));
-    if(space<1024){
-      return res.send(req.session.menu.navbarmobile);
+    if(req.session.menu){
+      if(space<1024){
+        return res.send(req.session.menu.navbarmobile);
+      }else{
+        return res.send(req.session.menu.navbar);
+      }
     }else{
-      return res.send(req.session.menu.navbar);
+      return res.send('');
     }
   }
 };
