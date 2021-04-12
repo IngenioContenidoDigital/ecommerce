@@ -52,7 +52,13 @@ module.exports = {
           select: ['name','url']
         });
 
-        navbar+=`
+        navbarmobile +=`<ul class="menu-list"><li>`;
+
+        if(c.children.length>0){
+          navbarmobile +=`<a class="is-size-7 menu-item">`+c.name.toUpperCase()+`</a>`
+          navbarmobile +=`<ul class="menu-list is-hidden">`;
+
+          navbar+=`
         <div class="nested navbar-item dropdown has-dropdown">
       <div class="dropdown-trigger">
         <span class="is-uppercase has-text-dark is-size-7">`+c.name+`</span>
@@ -60,18 +66,51 @@ module.exports = {
       <div class="dropdown-menu" id="dropdown-menu" role="menu">
         <div class="dropdown-content">`;
 
-        navbarmobile +=`<ul class="menu-list"><li><a class="is-size-7 menu-item">`+c.name.toUpperCase()+`</a><ul class="is-hidden">`;
+          for(let d of c.children){
+            d = await Category.findOne({id:d.id,active:true})
+            .populate('children',{
+              where: filter,
+              select: ['name','url']
+            });
 
-        for(let d of c.children){
-          navbar +=`<a href="/ver/categoria/`+d.url+`" class="dropdown-item is-uppercase is-size-7">`+d.name+`</a>`;
-          navbarmobile +=`<li><a class="is-size-7" href="/ver/categoria/`+d.url+`">`+d.name.toUpperCase()+`</a></li>`;  
-        }
-        navbar +=`
+            if(d.children.length>0){
+              navbarmobile +=`<li><a class="is-size-7 menu-item">`+d.name.toUpperCase()+`</a>`;
+              navbarmobile+=`<ul class="menu-list is-hidden">`;
+
+              navbar+=`
+        <div class="nested navbar-item dropdown has-dropdown">
+      <div class="dropdown-trigger">
+        <span class="is-uppercase has-text-dark is-size-7">`+d.name+`</span>
+      </div>
+      <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">`;
+
+              for(let e of d.children){
+                navbarmobile +=`<li><a class="is-size-7" href="/ver/categoria/`+e.url+`">`+e.name.toUpperCase()+`</a></li>`;
+                navbar+=`<a href="/ver/categoria/`+e.url+`" class="dropdown-item is-uppercase is-size-7">`+e.name.toUpperCase()+`</a>`
+              }
+
+              navbarmobile+=`</ul></li>`;
+              navbar +=`
             </div>
           </div>
-        </div>` 
-        
-        navbarmobile +=`</ul></li></ul>`;
+        </div>`;
+            }else{
+              navbarmobile +=`<li><a class="is-size-7" href="/ver/categoria/`+d.url+`">`+d.name.toUpperCase()+`</a></li>`;
+              navbar+=`<a href="/ver/categoria/`+d.url+`" class="dropdown-item is-uppercase is-size-7">`+d.name.toUpperCase()+`</a>`;
+            }
+          }
+          navbarmobile +=`</ul>`;
+          
+          navbar +=`
+            </div>
+          </div>
+        </div>`;
+        }else{
+          navbarmobile +=`<a href="/ver/categoria/`+c.url+`" class="is-size-7 menu-item">`+c.name.toUpperCase()+`</a>`;
+          navbar+=`<a href="/ver/categoria/`+c.url+`" class="dropdown-item is-uppercase is-size-7">`+c.name.toUpperCase()+`</a>`;
+        } 
+        navbarmobile +=`</li></ul>`;
       }
       navbar += `
         </div>

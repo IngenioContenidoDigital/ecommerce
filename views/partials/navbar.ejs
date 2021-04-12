@@ -79,25 +79,18 @@
   live('.menu-item','click', e =>{     
     let menuopt = e.target;
     let mmenu = document.querySelector('aside');
+    
     let oplists = mmenu.querySelectorAll('.menu-item');
-    for(let op of oplists){
-      removeClass(op,'is-active');
-      let opl = op.parentNode.querySelectorAll('ul');
-      for(let upl of opl){
-        addClass(upl,'is-hidden');
-      }
-    }
-    let clist = menuopt.parentNode.parentNode.querySelector('ul');
-    if(hasClass(menuopt,'is-active')){
-      removeClass(menuopt,'is-active');
-    }else{
-      addClass(menuopt,'is-active');
-    }
+    for(let op of oplists){removeClass(op,'is-active');}
+
+    let clist = menuopt.parentNode.querySelector('ul');
     if(hasClass(clist,'is-hidden')){
-        removeClass(clist,'is-hidden');
-      }else{
-        addClass(clist,'is-hidden');
-      }
+      removeClass(clist,'is-hidden');
+      addClass(menuopt,'is-active');
+    }else{
+      addClass(clist,'is-hidden');
+      removeClass(menuopt,'is-active');
+    }
   });
   
   document.addEventListener("DOMContentLoaded", (event) => {
