@@ -118,6 +118,8 @@ module.exports = {
               data.Product.Condition='new';
               data.Product.Variation=pv.variation.col.replace(/\.5/,'½').toString();
 
+              data.Product.ProductData = {};
+
               if(product.gender && product.gender.name){
                 data.Product.ProductData.Gender=product.gender.name;
               }
