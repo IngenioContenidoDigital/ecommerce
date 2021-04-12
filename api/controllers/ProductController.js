@@ -387,22 +387,22 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'productvariations')) {
       throw 'forbidden';
     }
-    if (!req.isSocket) {
-      return res.badRequest();
-    }
+    if (!req.isSocket) {return res.badRequest();}
+    let error = false;
     let product = await Product.findOne({ id: req.body[0].product }).populate('seller');
     for (let list of req.body) {
-      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller })
+      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id })
         .exec(async (err, record, wasCreated) => {
-          if (err) { return res.send('error'); }
+          if (err) { error = true; return res.send('error'); }
           if (!wasCreated) {
-            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller });
+            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
           }
         });
     }
-    await sails.helpers.tools.productState(product.id,product.active,true,product.seller.active);
-
-    return res.send('ok');
+    if(!error){
+      await sails.helpers.tools.productState(product.id,product.active,true,product.seller.active);
+      return res.send('ok');
+    }
   },
   findvariations: async (req, res) => {
     if (!req.isSocket) {
