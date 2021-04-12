@@ -50,6 +50,7 @@ module.exports = {
           limit: 1
         });
         let body = null;
+        let pvstock = 0;
         let price = 0;
         let padj = inputs.cpprice ? parseFloat(inputs.cpprice) : 0;
         let seller = await Seller.findOne({id:product.seller}).populate('mainAddress');
@@ -69,6 +70,9 @@ module.exports = {
         //         categories=categories+'/'
         //     }
         // }
+        if(productvariations){
+          pvstock = (productvariations[0].quantity-seller.safestock);
+        }
         if(productvariations.length===1){
           productvariations.forEach(variation =>{   
             if(product.discount.length>0){
@@ -169,7 +173,7 @@ module.exports = {
                 { header: 'cfshippingpackagewidth', key: 'cfshippingpackagewidth', width: 12 },
                 { header: 'cfproducttaxid', key: 'cfproducttaxid', width: 12 },
                 ];
-                    
+                
                 let item={
                   sku : productvariations[0].id,
                   product_id : product.id,
@@ -178,7 +182,7 @@ module.exports = {
                   internal_description : product.descriptionShort,
                   price : price,
                   // price_additional_info : price,
-                  quantity : productvariations[0].quantity,
+                  quantity : pvstock < 0 ? 0 : pvstock,
                   state : 'Nuevo',
                   // available_start_date : 'material',
                   // available_end_date : product.height,
@@ -210,7 +214,7 @@ module.exports = {
                     "price": price,
                     "product_id": product.id,
                     "product_id_type": "EAN",
-                    "quantity": inputs.status==='active' ? productvariations[0].quantity : 0,
+                    "quantity": inputs.status!=='active' ? 0 : pvstock < 0 ? 0 : pvstock,
                     "shop_sku": productvariations[0].id,
                     "state_code": "11",
                     "update_delete": "update"

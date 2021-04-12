@@ -103,11 +103,23 @@
                   <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
                 </div>
               </div>
-              <div class="field">
-                <div class="control">
-                  <label class="label is-size-7">Integracion ERP</label>
-                  <input id="integrationErp" type="checkbox" name="integrationErp" class="switch is-success" <% if(action=='edit' && seller.integrationErp){%>checked<%}%>>
-                  <label for="integrationErp"></label>
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <div class="control">
+                      <label class="label is-size-7">Integracion ERP</label>
+                      <input id="integrationErp" type="checkbox" name="integrationErp" class="switch is-success" <% if(action=='edit' && seller.integrationErp){%>checked<%}%>>
+                      <label for="integrationErp"></label>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <div class="control">
+                      <label for="safestock" class="label is-size-7">Stock de Seguridad</label>
+                      <input id="safestock" type="number" min="0" max="5" name="safestock" class="input is-size-7" value="<% if(action=='edit'){%><%= seller.safestock %><%}else{%>0<%}%>" >
+                    </div>
+                  </div>    
                 </div>
               </div>
             </div>

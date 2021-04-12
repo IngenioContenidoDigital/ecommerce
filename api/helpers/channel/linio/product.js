@@ -32,6 +32,7 @@ module.exports = {
     let moment = require('moment');
     var jsonxml = require('jsontoxml');
     let body={Request:[]};
+    let pvstock = 0;
       for(let p of inputs.products){
         try{
           let product = await Product.findOne({id:p.id})
@@ -39,6 +40,7 @@ module.exports = {
           .populate('mainColor')
           .populate('manufacturer')
           .populate('mainCategory')
+          .populate('seller')
           .populate('tax')
           .populate('categories')
           .populate('discount',{
@@ -75,13 +77,16 @@ module.exports = {
 
           let i = 0;
           for(let pv of productvariation){
+
+            pvstock = (pv.quantity-product.seller.safestock);
+
             let data = {
               Product: {
                 SellerSku: pv.id,
                 ProductId: pv.ean13,
                 Status: status,
                 Price: (Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0),
-                Quantity: pv.quantity < 0 ? '0' : pv.quantity.toString(),
+                Quantity: pvstock < 0 ? '0' : pvstock.toString(),
               }
             };
 

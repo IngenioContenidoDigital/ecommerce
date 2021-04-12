@@ -38,10 +38,12 @@ module.exports = {
       let variations = [];
       let images = [];
       let vimages=[];
+      let pvstock = 0;
       let product = await Product.findOne({id:inputs.product})
       .populate('manufacturer')
       .populate('gender')
       .populate('mainColor')
+      .populate('seller')
       .populate('tax')
       .populate('discount',{
         where:{
@@ -80,6 +82,7 @@ module.exports = {
       let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
 
       productvariations.forEach(variation =>{
+        pvstock = (variation.quantity-product.seller.safestock)
         //Se usa para llevar el precio con descuento debido a que el recurso promo no está disponible para colombia Líneas 163 a 182
       //Si se habilita el recurso /promo en la MCO, se debe comentar Líneas 60 a 71 y habilitar líneas 168 a 188
         if(product.discount.length>0 && integration.seller!=='5f80fa751b23a04987116036' && integration.seller!=='5fc5579c77b155db533c52e3'){
@@ -103,7 +106,7 @@ module.exports = {
               'value_name':variation.variation.col ? variation.variation.col : variation.variation.name,
             }
           ],
-          'available_quantity':variation.quantity,
+          'available_quantity': pvstock < 0 ? 0 : pvstock,
           'price':parseInt(price), //Crear función para validar precio específico de la variación
           'attributes':[{
             'id':'SELLER_SKU',

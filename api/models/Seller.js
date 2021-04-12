@@ -22,6 +22,7 @@ module.exports = {
     skuPrice:{type:'number', defaultsTo:0},
     activeSku:{type:'boolean', defaultsTo:false},
     integrationErp:{type:'boolean', defaultsTo:false},
+    safestock:{type:'number', defaultsTo:0},
     currency:{
       model:'currency'
     },

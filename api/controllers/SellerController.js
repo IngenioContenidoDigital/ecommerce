@@ -81,7 +81,8 @@ module.exports = {
         active:isActive,
         currency : req.body.currency,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
-        integrationErp
+        integrationErp,
+        safestock: req.body.safestock ? req.body.safestock : 0
       }
 
       try{
@@ -151,7 +152,9 @@ module.exports = {
         active:isActive,
         currency : req.body.currency,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
-        integrationErp});
+        integrationErp,
+        safestock: req.body.safestock ? req.body.safestock : 0
+      });
 
     }catch(err){      
       error=err;
@@ -168,7 +171,9 @@ module.exports = {
           active:isActive,
           currency : req.body.currency,
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
-          integrationErp});
+          integrationErp,
+          safestock: req.body.safestock ? req.body.safestock : 0
+        });
       }
     }
     if (error===undefined || error===null || error.code==='badRequest'){
