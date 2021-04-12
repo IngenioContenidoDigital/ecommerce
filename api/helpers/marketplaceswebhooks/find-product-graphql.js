@@ -58,7 +58,7 @@ let signRequest = (data, query) => {
 let fetch = async (data) => {
   return new Promise(async (resolve, reject) => {
     let request = signRequest(data, data.resource);
-    let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { productId: data.productId }}, {
+    let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { id: data.id }}, {
       headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
@@ -80,7 +80,7 @@ module.exports = {
     apiUrl: {type: 'string'},
     version: {type: 'string'},
     resource: {type: 'string'},
-    productId: {type: 'string'}
+    id: {type: 'string'}
   },
   exits: {
     success: {

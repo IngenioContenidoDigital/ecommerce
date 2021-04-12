@@ -76,8 +76,8 @@ module.exports = {
   }`,
 
   PRODUCTID :
-    `query VtexProductIdQuery($productId: String) {
-      VtexProductId(productId: $productId) {
+    `query VtexProductIdQuery($id: String) {
+      VtexProductId(productId: $id) {
         product{
           name
           externalId

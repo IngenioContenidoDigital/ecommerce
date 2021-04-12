@@ -79,8 +79,8 @@ module.exports = {
     }`,
 
   PRODUCTID :
-    `query ShopifyProductIdQuery($productId: String) {
-      ShopifyProductId(productId: $productId) {
+    `query ShopifyProductIdQuery($id: String) {
+      ShopifyProductId(productId: $id) {
         product{
           name
           externalId
@@ -121,6 +121,41 @@ module.exports = {
             position
             src
           }
+        }
+      }
+    }`,
+
+  ORDERID :
+    `query ShopifyOrderIdQuery($id: String) {
+      ShopifyOrderId(orderId: $id) {
+        channelref,
+        channel,
+        totalShipping,
+        paymentMethod,
+        paymentId,
+        status,
+        createdAt,
+        customer{
+          emailAddress
+          emailStatus
+          fullName
+          dniType
+          dni
+          mobile
+          mobileStatus
+        }
+        address{
+          name
+          addressline1
+          addressline2
+          city
+          region
+          notes
+          zipcode
+        }
+        items{
+          skuId
+          quantity
         }
       }
     }`
