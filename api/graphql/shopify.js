@@ -156,6 +156,7 @@ module.exports = {
         items{
           skuId
           quantity
+          price
         }
       }
     }`

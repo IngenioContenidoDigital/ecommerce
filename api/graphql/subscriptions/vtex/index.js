@@ -9,5 +9,13 @@ module.exports = {
         channel,
         discount
       }
+    }`,
+  VTEX_ORDERS : gql`
+    subscription{
+      VtexOrders{
+        orderId,
+        key,
+        channel
+      }
     }`
 };
