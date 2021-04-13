@@ -73,7 +73,7 @@ module.exports = {
       where: {
         seller: seller
       }
-    }).populate('product').populate('variation');
+    }).populate('seller').populate('product').populate('variation');
     let workbook = new Excel.Workbook();
     let worksheet = workbook.addWorksheet('Inventario');
     worksheet.columns = [
@@ -86,12 +86,15 @@ module.exports = {
       { header: 'skuId', key: 'skuId', width: 10 },
       { header: 'variation', key: 'variation', width: 10 },
       { header: 'quantity', key: 'quantity', width: 10 },
+      { header: 'safestock', key: 'safestock', width: 10 },
+      { header: 'price', key: 'price', width: 10 },
     ];
     worksheet.getRow(1).font = { bold: true };
 
     for (const variation of productsVariations) {
       variation.name = variation.product.name;
       variation.variation = variation.variation.name;
+      variation.safestock = variation.seller.safestock;
       products.push(variation);
     }
 
