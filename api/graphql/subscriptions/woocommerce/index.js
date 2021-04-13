@@ -9,5 +9,14 @@ module.exports = {
             channel
             separate_product_by_color
         }
+    }`,
+
+    WOOCOMMERCE_ORDERS : gql`
+    subscription{
+        WoocommerceOrders{
+            orderId,
+            key,
+            channel,
+        }
     }`
 };

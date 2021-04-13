@@ -150,5 +150,40 @@ PRODUCTID :
                 }
             }
         }
+    }`,
+    
+    ORDERID :
+    `query WoocommerceOrderIdQuery($id: String) {
+        WooCommerceOrderId(orderId: $id) {
+            channelref,
+            channel,
+            totalShipping,
+            paymentMethod,
+            paymentId,
+            status,
+            createdAt,
+            customer{
+                emailAddress
+                emailStatus
+                fullName
+                dniType
+                dni
+                mobile
+                mobileStatus
+            }
+            address{
+                name
+                addressline1
+                addressline2
+                city
+                region
+                notes
+                zipcode
+            }
+            items{
+                skuId
+                quantity
+            }
+        }
     }`
 }

@@ -31,7 +31,8 @@ module.exports = {
       region = region.length > 0 ? region[0].id : '';
       let city = await City.find({name: order.address.city, region: region}).populate('region');
       if((order.status === 'pending' || order.status === 'paid') && city.length>0 && oexists.length === 0){
-        order.customer.password = await sails.helpers.passwords.hashPassword(order.customer.dni);
+        order.customer.dni != "" ? order.customer.dni : (order.customer.dni = 0);
+        order.customer.password = await sails.helpers.passwords.hashPassword(order.customer.dni || order.customer.emailAddress);
         order.customer.mobilecountry = city[0].region.country;
         order.customer.profile = profile.id;
         let user = await User.findOrCreate({emailAddress: order.customer.emailAddress},order.customer);

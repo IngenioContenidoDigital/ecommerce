@@ -1,5 +1,5 @@
 const { SHOPIFY_PRODUCTS, SHOPIFY_ORDERS } = require('../../api/graphql/subscriptions/shopify');
-const { WOOCOMMERCE_PRODUCTS } = require('../../api/graphql/subscriptions/woocommerce');
+const { WOOCOMMERCE_PRODUCTS, WOOCOMMERCE_ORDERS} = require('../../api/graphql/subscriptions/woocommerce');
 const { VTEX_PRODUCTS } = require('../../api/graphql/subscriptions/vtex');
 const { PRESTASHOP_PRODUCTS } = require('../../api/graphql/subscriptions/prestashop');
 
@@ -136,6 +136,31 @@ module.exports = {
               ).catch((e) => console.log(e));
               if (order) {
                 await sails.helpers.marketplaceswebhooks.order(order, integration.id).catch((e)=>console.log(e));
+              }
+            }
+          }
+        }
+      }});
+
+      //subscription para las ordenes de los cms
+      await sails.helpers.subscription({ subscription : WOOCOMMERCE_ORDERS, callback : async (response)=>{
+        if (response.data.WoocommerceOrders) {
+          let result = response.data.WoocommerceOrders;
+          let channel = await Channel.findOne({name: result.channel});
+          if (channel) {
+            let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
+            if (integration) {
+              let order = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                integration.channel.name,
+                integration.key,
+                integration.secret,
+                integration.url,
+                integration.version,
+                'ORDERID',
+                result.orderId
+              ).catch((e) => console.log(e));
+              if (order) {
+                  await sails.helpers.marketplaceswebhooks.order(order, integration.id).catch((e)=>console.log(e));
               }
             }
           }
