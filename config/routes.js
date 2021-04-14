@@ -79,6 +79,8 @@ module.exports.routes = {
   'POST /features/edit/:id' : {controller:'FeaturesController',action:'editfeature'},
   'DELETE /features/delete' :{controller:'FeaturesController', action:'deletefeature'},
   'POST /addproductfeature' :{controller:'FeaturesController', action:'addproductfeature'},
+  'GET /integrations/dafiti/features' : {controller:'FeaturesController',action:'dafitifeatures'},
+  'GET /integrations/linio/features' : {controller:'FeaturesController',action:'liniofeatures'},
   'GET /sellers/:action?/:id?' : {controller:'SellerController',action:'showsellers'},
   'POST /hash' : {controller:'SellerController', action:'createhash'},
   'GET /channelmessages/:seller' : {controller:'ConversationController',action:'showmessages'},

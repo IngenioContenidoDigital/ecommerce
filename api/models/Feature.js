@@ -14,11 +14,11 @@ module.exports = {
     categories:{
       collection:'category',
       via:'features'
-    }
-    /*
-    name:{type:'string', required:true, unique:true},
-    code:{type:'string', required:true, unique:true}
-    */
+    },
+    channels:{
+      collection:'featurechannel',
+      via:'feature'
+    },
   },
 
 };

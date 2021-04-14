@@ -15,135 +15,290 @@
       <form id="form_feature" action="/features/create" method="POST" enctype="multipart/form-data">
     <% } %>
     <div class="box">
-      <div class="field is-pulled-right">
-        <p class="has-text-right">
-          <% if(action=='edit'){ %>
-            <input id="activo" type="checkbox" <% if(feature.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
-            <label for="activo">Característica: <span id="state"><% if(feature.active){ %> <b style="color:green;">activa</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
-          <% }else{ %>
-            <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
-            <label for="activo">Característica: <span id="state"><b style="color:green;">activa</b></span></label>  
-          <% } %>
-          </p>
-      </div>
-      <div class="field">
-        <label class="label">Nombre</label>
-        <div class="control">
-          <input class="input is-capitalized" type="text" name="nombre" required="true" placeholder="Nombre de la característica del producto" <%if(action=='edit'){%>value="<%=feature.name%>"<%}%>>
+      <div class="columns">
+        <div class="column is-6">
+          <div class="field is-pulled-right">
+            <p class="has-text-right">
+              <% if(action=='edit'){ %>
+                <input id="activo" type="checkbox" <% if(feature.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                <label for="activo">Característica: <span id="state"><% if(feature.active){ %> <b style="color:green;">activa</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
+              <% }else{ %>
+                <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                <label for="activo">Característica: <span id="state"><b style="color:green;">activa</b></span></label>  
+              <% } %>
+              </p>
+          </div>
+          <div class="field">
+            <label class="label">Nombre</label>
+            <div class="control">
+              <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de la característica del producto" <%if(action=='edit'){%>value="<%=feature.name%>"<%}%>>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Descripción</label>
+            <div class="control">
+              <textarea class="textarea" name="description" placeholder="Descripción de la característica del producto"><%if(action=='edit'){%><%-feature.description%><%}%></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <article class="panel is-primary is-size-7">
+              <p class="panel-heading">
+                Categorías
+              </p>
+                <ul>
+                  <li>
+                      <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
+                        <input type="checkbox" name="<%= category.name %>" value="<%= category.id %>" disabled />&nbsp;
+                        <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                        <%= category.name %>
+                      </a>
+                  </li>
+                </ul>
+            </article>
         </div>
-      </div>
-      <div class="field">
-        <label class="label">Descripción</label>
-        <div class="control">
-          <textarea class="textarea" name="descripcion" placeholder="Descripción de la característica del producto"><%if(action=='edit'){%><%-feature.description%><%}%></textarea>
+          <div class="control buttons is-right">
+            <% if(action=='edit'){ %> 
+              <button id="submit_button" type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Característica</button>
+            <% }else if (action=='create'){ %>
+              <button id="submit_button" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Característica</button>
+            <% } %>
+          </div>
         </div>
-      </div>
-      <div class="field">
-        <article class="panel is-primary is-size-7">
-          <p class="panel-heading">
-            Categorías
-          </p>
-            <ul>
+        <div class="column is-6">
+          <p class="has-text-centered title is-6">Equivalencia Marketplace</p>
+          <hr>
+          <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
+          <div class="tabs is-toggle o-x-h">
+            <ul class="markeplace-categories">
               <li>
-                  <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
-                    <input type="checkbox" name="<%= category.name %>" value="<%= category.id %>" disabled />&nbsp;
-                    <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
-                    <%= category.name %>
-                  </a>
+                <a>
+                  <p class="has-text-centered" id="dafit"><img src="/images/dafiti.png" /></p>
+                </a>
+              </li>
+              <li>
+                <a>
+                  <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
+                </a>
               </li>
             </ul>
-        </article>
-    </div>
-      <div class="control buttons is-right">
-        <% if(action=='edit'){ %> 
-          <button id="submit_button" type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Característica</button>
-        <% }else if (action=='create'){ %>
-          <button id="submit_button" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Característica</button>
-        <% } %>
+          </div>
+          <div class="setup dafit">
+            <h6 class="title is-6 title-markeplace">Característica en Dafiti</h6>
+            <ul class="cattree tree" id="dafiti">
+              <% if(action=='edit'){ %> 
+                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
+              <% }else if (action=='create'){ %>
+                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>
+              <% } %>
+            </ul>
+          </div>
+          <div class="setup is-hidden lini">
+            <h6 class="title is-6 title-markeplace">Característica en Linio</h6>
+            <ul class="cattree tree" id="linio">
+              <% if(action=='edit'){ %> 
+                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
+              <% }else if (action=='create'){ %>
+                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>
+              <% } %>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
     </form>
       <script>
         const feature = <%- JSON.stringify(feature)%>
-          function childTree(elm){
-            return new Promise(resolve =>{
-              elm.forEach((child) =>{
-                if(!hasClass(child,'visited')){
-                  let opened = false;
-                  io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
-                      var d = document.createElement('ul');
-                      resData.forEach(function(son){
-                        let ca = document.createElement('li');
-                        ca.style.paddingLeft = 5*son.level+'px';
-                        if(!son.hasChildren){
-                          if(feature){
-                            if(feature.categories.find(x => x.id == son.id)){
-                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
-                            } else {
-                              ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
-                            }
+        let root = document.querySelector('a[level="1"]').parentNode;
+        let objDafiti = document.querySelector('#dafiti');
+        let objLinio = document.querySelector('#linio');
+        let mkp = document.querySelectorAll('.cattree.tree');
+        let progress = document.querySelector('progress');
+        
+        async function init(){
+          let result = await childTree(document.querySelectorAll('a.panel-block'));
+        }
+
+        function childTree(elm){
+          return new Promise(resolve =>{
+            elm.forEach((child) =>{
+              if(!hasClass(child,'visited')){
+                let opened = false;
+                io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
+                    var d = document.createElement('ul');
+                    resData.forEach(function(son){
+                      let ca = document.createElement('li');
+                      ca.style.paddingLeft = 5*son.level+'px';
+                      if(!son.hasChildren){
+                        if(feature){
+                          if(feature.categories.find(x => x.id == son.id)){
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                           } else {
-                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                           }
                         } else {
-                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="" categories="'+son.id+'" disabled />&nbsp;<span class="panel-icon"><i class="bx bxs-book-add" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                         }
-                        if(son.level>2){addClass(ca,'is-hidden');}
-                        d.appendChild(ca);
-                      });
-                      insertAfter(d,child);
-                      addClass(child,'visited');
-                      if(d.querySelectorAll('input:checked').length>0){hidecategories(d);};
-                      childTree(d.querySelectorAll('a.panel-block'));
-                  });
-                }
-              })
-              setTimeout(() => {resolve("finish");},200);
-            });
-          };
+                      } else {
+                        ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="" categories="'+son.id+'" disabled />&nbsp;<span class="panel-icon"><i class="bx bxs-book-add" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                      }
+                      if(son.level>2){addClass(ca,'is-hidden');}
+                      d.appendChild(ca);
+                    });
+                    insertAfter(d,child);
+                    addClass(child,'visited');
+                    if(d.querySelectorAll('input:checked').length>0){
+                      hidecategories(d);
+                      removeClass(progress,'is-hidden');
+                      showfeatures();
+                    };
+                    childTree(d.querySelectorAll('a.panel-block'));
 
-          async function init(){
-            let result = await childTree(document.querySelectorAll('a.panel-block'));
-          }
-
-          document.addEventListener('DOMContentLoaded', function(){
-            init();
-          });
-
-          function hidecategories(elm){
-            let node = elm;
-            let categories = node.querySelectorAll(':scope > li');
-            if(categories){
-              for (let index = 0; index < categories.length; index++) {
-                const category = categories[index];
-                let icon = category.parentNode.parentNode.querySelector('i');
-                removeClass(category,'is-hidden');
-                if(category.querySelectorAll('input:checked').length>0){
-                  addClass(icon,'bx-book-open');
-                  removeClass(icon,'bxs-book-add');
-                }
+                });
               }
-              hidecategories(elm.parentNode.parentNode);
-            }
-          }
+            })
+            setTimeout(() => {resolve("finish");},200);
+          });
+        };
 
-          live('.cat_name','click',(e)=>{
-            let element = e.target || e.srcElement;
-            let group = element.parentNode.parentNode.querySelectorAll(':scope > ul > li');
-            for (let index = 0; index < group.length; index++) {
-              const element = group[index];
-              let icon = element.parentNode.parentNode.querySelector('i');
-              if(hasClass(element,'is-hidden')){
-                removeClass(element,'is-hidden');
+        function hidecategories(elm){
+          if(elm){
+            let categories = elm.querySelectorAll(':scope > li');
+            for (let index = 0; index < categories.length; index++) {
+              const category = categories[index];
+              let icon = category.parentNode.parentNode.querySelector('i');
+              removeClass(category,'is-hidden');
+              if(category.querySelectorAll('input:checked').length>0){
                 addClass(icon,'bx-book-open');
                 removeClass(icon,'bxs-book-add');
-              }else{
-                addClass(element,'is-hidden');
-                removeClass(icon,'bx-book-open');
-                addClass(icon,'bxs-book-add');
               }
             }
+            hidecategories(elm.parentNode.parentNode);
+          }
+        }
+
+        function showfeatures(){
+          let checked_cats = root.querySelectorAll('input:checked');
+          let cats = [];
+          for (let index = 0; index < checked_cats.length; index++) {
+            const element = checked_cats[index];
+            cats.push(element.value);
+          }
+          marketplacequery(cats);
+        }
+
+        let options = (marketplace, elm, attrs) =>{
+          for (let index = 0; index < attrs.length; index++) {
+            const attr = attrs[index];
+            let op = document.createElement('li');
+            if(feature){
+              if (marketplace === 'dafiti') {
+                if(feature.channels.find(x => x.name == attr.FeedName && x.channelname == 'dafiti')){
+                  op.innerHTML='<span><input type="radio" name="dafiti" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+                }else{
+                  op.innerHTML='<span><input type="radio" name="dafiti" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+                }
+              } else if (marketplace === 'linio') {
+                if(feature.channels.find(x => x.name == attr.FeedName && x.channelname == 'linio')){
+                  op.innerHTML='<span><input type="radio" name="linio" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-flag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+                }else{
+                  op.innerHTML='<span><input type="radio" name="linio" value="'+attr.FeedName+'" />'+'<i class="bx bxs-flag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+                }
+              }
+            } else {
+              if (marketplace === 'dafiti') {
+                op.innerHTML='<span><input type="radio" name="dafiti" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+              } else if (marketplace === 'linio') {
+                op.innerHTML='<span><input type="radio" name="linio" value="'+attr.FeedName+'" />'+'<i class="bx bxs-flag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+              }
+            }
+            elm.appendChild(op);
+          }
+          return;
+        }
+
+        const marketplacequery = (categories) =>{
+          io.socket.get('/integrations/dafiti/features',{categories},(resData, res)=>{
+            if(res.statusCode == 200){
+              console.log(objDafiti.querySelectorAll('li'));
+              objDafiti.innerHTML='';
+              options('dafiti', objDafiti, resData);
+              if(root.querySelectorAll('input:checked').length===0){
+                objDafiti.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>';
+              }
+            } else {
+              objDafiti.innerHTML='';
+            }
           });
+
+          io.socket.get('/integrations/linio/features',{categories},(resData, res)=>{
+            if(res.statusCode == 200){
+              objLinio.innerHTML='';
+              addClass(progress,'is-hidden');
+              options('linio', objLinio, resData);
+              if(root.querySelectorAll('input:checked').length===0){
+                objLinio.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>';
+              }
+            } else {
+              objLinio.innerHTML='';
+            }
+          });
+        }
+
+        live('.cat_name','click',(e)=>{
+          let element = e.target || e.srcElement;
+          let group = element.parentNode.parentNode.querySelectorAll(':scope > ul > li');
+          for (let index = 0; index < group.length; index++) {
+            const element = group[index];
+            let icon = element.parentNode.parentNode.querySelector('i');
+            if(hasClass(element,'is-hidden')){
+              removeClass(element,'is-hidden');
+              addClass(icon,'bx-book-open');
+              removeClass(icon,'bxs-book-add');
+            }else{
+              addClass(element,'is-hidden');
+              removeClass(icon,'bx-book-open');
+              addClass(icon,'bxs-book-add');
+            }
+          }
+        });
+
+        live('.markeplace-categories li','click',e=>{
+          let group = e.target.parentNode.id;
+          let blocks= document.querySelectorAll('.setup');
+
+          for(let b of blocks){
+            if(hasClass(b,group)){
+              removeClass(b,'is-hidden');
+            }else{
+              addClass(b,'is-hidden');
+            }
+          }
+        });
+
+        live('.no-children-category','click',e=>{
+          removeClass(progress,'is-hidden');
+          objLinio.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>';
+          objDafiti.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>';
+          let categories = root.querySelectorAll(':scope > ul > li');
+          for (let index = 0; index < categories.length; index++) {
+            const category = categories[index];
+            let no_ch_categories = category.querySelectorAll('.no-children-category');
+            for (let i = 0; i < no_ch_categories.length; i++) {
+              const no_ch_category = no_ch_categories[i];
+              if (root.querySelectorAll('input:checked').length>0 && !category.querySelectorAll('input:checked').length>0) {
+                no_ch_category.disabled = true;
+              }else{
+                no_ch_category.disabled = false;
+              }
+            }
+          }
+          showfeatures();
+        });
+
+        document.addEventListener('DOMContentLoaded', function(){
+          init();
+        });
+
       </script>
 <% }else{ %>
     <p style="text-align: right;font-size: 20px; margin-right: 5px;">
