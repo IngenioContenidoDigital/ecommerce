@@ -411,43 +411,43 @@ module.exports = {
   list: async function(req, res){
     let entity = req.param('entity');
     let ename = req.param('name');
+    let page = req.param('page') ? parseInt(req.param('page')) : 1;
+    let perPage = 40;
+    let pages = 0;
     let seller = null;
     let object = null;
+    let productsFilter = {active:true};
     if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost'){
       seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/,active:true});
+      if(seller){productsFilter.seller=seller.id;}
     }
-    let exists = async (element,compare) =>{
+    
+    let exists = (element,compare) =>{
       for(let c of element){
         if(c.id === compare.id){return true;}
       }
       return false;
     };
+
     switch(entity){
-      case 'categoria':
+      case 'categoria':       
         try{
-          //let parent = await Category.findOne({url:req.param('parent')});
-          if(seller===null){
-            object = await Category.findOne({url:ename/*, parent:parent.id*/})
-            .populate('products',{where:{active:true},sort: 'updatedAt DESC'});
-          }else{
-            object = await Category.findOne({url:ename/*, parent:parent.id*/})
-            .populate('products',{where:{active:true, seller:seller.id},sort: 'updatedAt DESC'});
-          }
+          object = await Category.findOne({
+            where:{url:ename,active:true},
+            select:['name','url','logo','description','tags']
+          })
+          .populate('products',{
+            where:productsFilter,
+            sort: 'updatedAt DESC'
+          });
           object.route = '/images/categories/';
-          /*for(let c of object.children){
-            c.parent = await Category.findOne({id:c.parent});
-          }*/
         }catch(err){
           return res.notFound(err);
         }
         break;
       case 'marca':
         try{
-          if(seller===null){
-            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true},sort: 'updatedAt DESC'});
-          }else{
-            object = await Manufacturer.findOne({url:ename}).populate('products',{where:{active:true, seller:seller.id},sort: 'updatedAt DESC'});
-          }
+          object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{where:productsFilter,sort: 'updatedAt DESC'});
           object.route = '/images/brands/';
         }catch(err){
           return res.notFound(err);
@@ -461,6 +461,9 @@ module.exports = {
     let brands = [];
     let genders = [];
 
+    pages = Math.ceil(object.products.length/perPage);
+    object.products = object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
+
     for(let p of object.products){
       p.seller=await Seller.findOne({
         where:{id:p.seller},
@@ -472,26 +475,26 @@ module.exports = {
         where:{id:p.manufacturer},
         select:['name']
       });
-      //p.tax=await Tax.findOne({id:p.tax});
       p.discount = await sails.helpers.discount(p.id);
       p.gender = await Gender.findOne({id:p.gender});
       p.price = (await ProductVariation.find({product:p.id}))[0].price;
 
-      if(p.mainColor && !await exists(colors, p.mainColor)){colors.push(p.mainColor);}
-      if(p.manufacturer && !await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
-      if(p.gender && !await exists(genders, p.gender)){genders.push(p.gender);}
+      if(p.mainColor && !exists(colors, p.mainColor)){colors.push(p.mainColor);}
+      if(p.manufacturer && !exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
+      if(p.gender && !exists(genders, p.gender)){genders.push(p.gender);}
 
     };
-    return res.view('pages/front/list',{object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+    return res.view('pages/front/list',{entity:'ver/'+entity,ename:ename,page:page,pages:pages,object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
   search: async(req, res) =>{
     let seller = null;
+    let ename=req.param('q');
     if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let AWS = require('aws-sdk');
     AWS.config.loadFromPath('./config.json');
     let csd = new AWS.CloudSearchDomain({endpoint: 'search-iridio-kqxoxbqunm62wui765a5ms5nca.us-east-1.cloudsearch.amazonaws.com'});
     let params = {
-      query: req.param('q'),
+      query: ename,
       return: 'id',
       queryParser: 'simple',
       size:50,
@@ -525,6 +528,9 @@ module.exports = {
       let brands = [];
       let genders = [];
       let response = {products:[]};
+      let page = 1;
+      let perPage = 40;
+      let pages = 0;
 
       if(err){console.log(err, err.stack);}
       if(data.hits.found>0){
@@ -540,6 +546,8 @@ module.exports = {
         .populate('seller')
         .populate('gender');
 
+        pages = Math.ceil(set.length/perPage);
+
         for(let p of set){
           p.cover= await ProductImage.findOne({product:p.id,cover:1});
           p.discount = await sails.helpers.discount(p.id);
@@ -549,7 +557,7 @@ module.exports = {
         }
         response['products'] = set;
       }
-      return res.view('pages/front/list',{object:response,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+      return res.view('pages/front/list',{entity:'buscar',ename:ename,page:page,pages:pages,object:response,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
     });
   },
   listproduct: async function(req, res){
