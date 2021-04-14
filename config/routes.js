@@ -33,7 +33,7 @@ module.exports.routes = {
   'GET /account' : {controller:'FrontController',action:'account'},
   'GET /account/user/:id' : {controller:'FrontController',action:'user'},
   'GET /account/orders' : {controller:'FrontController',action:'orders'},
-  'GET /ver/:entity/:name' : {controller:'IndexController',action:'list'},
+  'GET /ver/:entity/:name/:page?' : {controller:'IndexController',action:'list'},
   'GET /contenido/:tipo' : {controller:'IndexController',action:'cms'},
   'GET /buscar':{controller:'IndexController',action:'search'},
   'GET /index/:action':{controller:'ProductController',action:'searchindex'},
