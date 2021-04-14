@@ -22,7 +22,8 @@ module.exports = {
     let cartproducts = await CartProduct.find({cart:cart.id})
                   .populate('product')
                   .populate('productvariation');
-    let carrier = await Carrier.findOne({name:inputs.data.carrier.trim().toLowerCase()});
+
+    let carrier = await Carrier.findOne({name:inputs.data.carrier ? inputs.data.carrier.trim().toLowerCase():''});
     let sellers = [];
     let orders = [];
     cartproducts.forEach(cp=>{
