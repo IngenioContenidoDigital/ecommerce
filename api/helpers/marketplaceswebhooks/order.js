@@ -68,7 +68,7 @@ module.exports = {
                 cart:cart.id,
                 product:productvariation[0].product,
                 productvariation:productvariation[0].id,
-                totalDiscount:0,
+                totalDiscount:item.discount,
                 totalPrice:parseFloat(item.price),
                 externalReference:item.skuId
               });

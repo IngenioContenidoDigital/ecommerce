@@ -155,6 +155,7 @@ module.exports = {
           skuId
           quantity
           price
+          discount
         }
       }
     }`

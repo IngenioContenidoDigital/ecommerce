@@ -161,7 +161,7 @@
         <section class="modal-card-body">
           <div class="box">
             <div class="field">
-              <label class="label">Agregar Dirección de Entrega</label>
+              <label class="label">Logística de Envío</label>
             </div>
             <form method="POST" action="/guideprocess/<%= order.id %>">
               <input class="is-hidden" name="status" value=""/>
@@ -177,67 +177,69 @@
                     </div>
                   </div>
                 </div>
-                <div class="field">
-                  <label class="label is-size-7">Dirección</label>
-                  <div class="control">
-                    <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..."/>
+                <div id="container-address">
+                  <div class="field">
+                    <label class="label is-size-7">Dirección</label>
+                    <div class="control">
+                      <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..."/>
+                    </div>
+                    <br>
+                    <div class="control">
+                      <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..."/>
+                    </div>
                   </div>
-                  <br>
-                  <div class="control">
-                    <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..."/>
-                  </div>
-                </div>
-                <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">País</label>
-                      <div class="control">
-                        <div class="select is-fullwidth is-size-7">
-                          <select required class="select is-capitalized" name="country">
-                            <option value="0">Elegir País</option>
-                            <% countries.forEach((country) =>{ %>
-                              <option class="is-capitalized" value="<%=country.id%>"><%=country.name%></option>
-                            <%})%>
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">País</label>
+                        <div class="control">
+                          <div class="select is-fullwidth is-size-7">
+                            <select required class="select is-capitalized" name="country">
+                              <option value="0">Elegir País</option>
+                              <% countries.forEach((country) =>{ %>
+                                <option class="is-capitalized" value="<%=country.id%>"><%=country.name%></option>
+                              <%})%>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <div class="field is-hidden" id="estados">
+                        <label class="label is-size-7">Estado</label>
+                        <div class="select control is-size-7 is-fullwidth">
+                          <select class="is-capitalized" name="region" required >
+                            <option value="">-- Elegir Región --</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <div class="field is-hidden" id="ciudades">
+                        <label class="label is-size-7">Ciudad</label>
+                        <div class="control select is-size-7 is-fullwidth">
+                          <select class="is-capitalized" name="city" required>
+                            <option value="">-- Elegir Ciudad --</option>
                           </select>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="column">
-                    <div class="field is-hidden" id="estados">
-                      <label class="label is-size-7">Estado</label>
-                      <div class="select control is-size-7 is-fullwidth">
-                        <select class="is-capitalized" name="region" required >
-                          <option value="">-- Elegir Región --</option>
-                        </select>
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">Código Postal</label>
+                        <div class="control">
+                          <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección"/>
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div class="column">
-                    <div class="field is-hidden" id="ciudades">
-                      <label class="label is-size-7">Ciudad</label>
-                      <div class="control select is-size-7 is-fullwidth">
-                        <select class="is-capitalized" name="city" required>
-                          <option value="">-- Elegir Ciudad --</option>
-                        </select>
-                      </div>
+                  <div class="field">
+                    <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
+                    <div class="control">
+                      <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."></textarea>
                     </div>
-                  </div>
-                </div>
-                <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Código Postal</label>
-                      <div class="control">
-                        <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección"/>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="field">
-                  <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
-                  <div class="control">
-                    <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."></textarea>
                   </div>
                 </div>
               </div>
@@ -293,6 +295,9 @@
                 const status = document.querySelector('input[name="status"]');
                 removeClass(modalAddress, 'is-hidden');
                 status.value = state;
+                if (resData.stateAddress) {
+                  document.getElementById("container-address").remove();
+                }
               } else {
                 io.socket.put('/order/update',{id:order,orderState:state}, resData =>{
                   let colorcode = resData.newstate.color.code;
