@@ -168,7 +168,6 @@ module.exports = {
         }
       }});
 
-      //subscription para las ordenes de los cms
       await sails.helpers.subscription({ subscription : WOOCOMMERCE_ORDERS, callback : async (response)=>{
         if (response.data.WoocommerceOrders) {
           let result = response.data.WoocommerceOrders;
