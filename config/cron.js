@@ -11,7 +11,7 @@ module.exports.cron = {
           await sails.helpers.channel.mercadolibre.updateOrders(order);
         }catch(err){
           console.log(err);
-        };
+        }
       }
       console.log('Captura de Ordenes Mercadolibre Finalizada');
     },
@@ -60,33 +60,33 @@ module.exports.cron = {
         let end = moment().format('YYYYMMDD');
         let status = 4;
         let oneCommerceStatus = 'Aceptado';
-  
+
         let orders = await sails.helpers.siesaGetOrders({ini, end, status, oneCommerceStatus}).catch(e=>{
-          console.log("Error recuperando las ordenens de siesas details : ",  e.message);
+          console.log('Error recuperando las ordenens de siesas details : ',  e.message);
         });
-  
+
         if(orders && orders.length > 0){
           let state = await OrderState.findOne({name: 'empacado'});
-  
+
           for (let index = 0; index < orders.length; index++) {
-                const incomingOrder = orders[index];
-                let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
-                
-                if(order){
-                  if(order.currentstatus.id != state.id){
-                    let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
-                    await sails.helpers.notification(order, state.id);
-                    if(!updatedOrder.tracking){
-                      await sails.helpers.carrier.shipment(order.id);
-                      await OrderHistory.create({order: order.id, state: state.id});
-                    }
-      
-                  }
+            const incomingOrder = orders[index];
+            let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
+
+            if(order){
+              if(order.currentstatus.id != state.id){
+                let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
+                await sails.helpers.notification(order, state.id);
+                if(!updatedOrder.tracking){
+                  await sails.helpers.carrier.shipment(order.id);
+                  await OrderHistory.create({order: order.id, state: state.id});
                 }
+
+              }
+            }
           }
         }
       } catch (error) {
-        console.log("Error recuperando las ordenens de siesas details : ",  error.message);
+        console.log('Error recuperando las ordenens de siesas details : ',  error.message);
       }
     },
     timezone: 'America/Bogota'
@@ -112,8 +112,15 @@ module.exports.cron = {
             prod.externalId
           ).catch((e) => console.log(e));
           if (product) {
-            await sails.helpers.marketplaceswebhooks.product(product, integration.seller, true).catch((e)=>console.log(e));
+            console.log(prod.id);
+            let variations = product.productVariations;
+            await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
           }
+        }
+        let integrations = await Integrations.find({seller: seller.id}).populate('channel');
+        integrations = integrations.filter(data => data.channel.type === 'marketplace');
+        for (const inte of integrations) {
+          await sails.helpers.syncProductsMarketplaces(inte, inte.channel);
         }
       } catch (err) {
         console.log(`Se produjo un error. ${err.message}`);
