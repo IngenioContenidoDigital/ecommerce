@@ -62,7 +62,7 @@ module.exports = {
 
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
-          let parent = productvariation[0].id;
+          let parent = productvariation.length > 0 ? productvariation[0].id : '';
           let categories = [];
           if(inputs.alldata){
             for (let c of product.categories){
