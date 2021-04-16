@@ -791,6 +791,38 @@ module.exports = {
       return res.send(err.message);
     }
   },
+  iridioadd: async (req, res) => {
+    if (!req.isSocket) { return res.badRequest(); }
+    let sid = sails.sockets.getId(req);
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let integration = await Integrations.findOne({id:integrationId}).populate('channel');
+    let status = req.body.status ? true : false;
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels', {integration:integrationId,channel:channelId});
+    try {
+       if(product.channels.length<1){
+        await ProductChannel.create({
+          product:product.id,
+          integration:integrationId,
+          channel:integration.channel.id,
+          channelid:'',
+          status:status,
+          qc:true,
+          price:0,
+          iscreated:true,
+          socketid:sid
+        });
+      }else{
+        await ProductChannel.updateOne({id:product.channels[0].id}).set({
+          status:status,
+        });
+      }
+      return res.send({error: null});
+    } catch (err) {
+      return res.send({error: err.message});
+    }
+  },
   import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
