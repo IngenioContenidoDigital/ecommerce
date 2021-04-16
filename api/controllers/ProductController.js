@@ -1326,7 +1326,7 @@ module.exports = {
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 && !pro.channels[0].iscreated);
+            products = products.filter(pro => pro.channels.length > 0 /*&& !pro.channels[0].iscreated*/);
             break;
           case 'ProductQcStatus':
             action = 'ProductQcStatus';
@@ -1425,7 +1425,7 @@ module.exports = {
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 && !pro.channels[0].iscreated);
+            products = products.filter(pro => pro.channels.length > 0);
             break;
           case 'ProductQcStatus':
             action = 'ProductQcStatus';
