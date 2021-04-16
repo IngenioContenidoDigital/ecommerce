@@ -20,6 +20,7 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
+    const jsonxml = require('jsontoxml');
     const integration = inputs.integration;
     const channel = inputs.channel;
     try {
@@ -29,8 +30,8 @@ module.exports = {
         if (channel.name === 'dafiti') {
           let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active', false);
           const xml = jsonxml(result, true);
-          let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
-          await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+          let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'ProductUpdate', integration.seller);
+          await sails.helpers.request(channel.endpoint,'/?'+sign,'POST', xml)
           .then(async (resData)=>{
             resData = JSON.parse(resData);
             if(resData.SuccessResponse){
@@ -49,8 +50,8 @@ module.exports = {
         if (channel.name === 'linio') {
           let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active', false);
           const xml = jsonxml(result, true);
-          let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
-          await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+          let sign = await sails.helpers.channel.linio.sign(integration.id, 'ProductUpdate', integration.seller);
+          await sails.helpers.request(channel.endpoint,'/?'+sign,'POST', xml)
           .then(async (resData)=>{
             resData = JSON.parse(resData);
             if(resData.SuccessResponse){

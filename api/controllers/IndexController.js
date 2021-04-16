@@ -412,7 +412,7 @@ module.exports = {
     let entity = req.param('entity');
     let ename = req.param('name');
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
-    let perPage = 40;
+    let perPage = 32;
     let pages = 0;
     let seller = null;
     let object = null;
@@ -497,7 +497,7 @@ module.exports = {
       query: ename,
       return: 'id',
       queryParser: 'simple',
-      size:50,
+      size:32,
       sort:'_score desc'
       /*cursor: 'STRING_VALUE',
       expr: 'STRING_VALUE',
@@ -529,7 +529,7 @@ module.exports = {
       let genders = [];
       let response = {products:[]};
       let page = 1;
-      let perPage = 40;
+      let perPage = 28;
       let pages = 0;
 
       if(err){console.log(err, err.stack);}

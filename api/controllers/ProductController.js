@@ -161,6 +161,7 @@ module.exports = {
       }
 
       let price = await ProductVariation.avg('price', { product: p.id }); //p.price ? p.price : 0;
+      let isAdmin = rights.name !== 'superadmin' && rights.name !== 'admin' ? false : true;
       row = [
         `<td class="align-middle><div class="field">
           <input class="is-checkradio is-small is-info" id="checkboxselect${p.id}" data-product="${p.id}" type="checkbox" name="checkboxselect">
@@ -178,11 +179,11 @@ module.exports = {
         '<td class="align-middle"><span>' + p.seller.name + '</span></td>',
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
-      if (rights.name !== 'superadmin' && rights.name !== 'admin') { 
-        row.splice(10, 1);
+      if (!isAdmin) {
         row.splice(0, 1);
+        row.splice(9, 1);
       }
-      if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
+      if(p.images.length<1){row[isAdmin ? 1 : 0]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
       productdata.push(row);
     }
     return res.send(productdata);

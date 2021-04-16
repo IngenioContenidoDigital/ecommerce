@@ -112,7 +112,6 @@ module.exports.cron = {
             prod.externalId
           ).catch((e) => console.log(e));
           if (product) {
-            console.log(prod.id);
             let variations = product.productVariations;
             await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
           }
