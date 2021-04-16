@@ -74,6 +74,7 @@ module.exports.routes = {
   'POST /categories/edit/:id' : {controller:'CategoryController',action:'editcategory'},
   'DELETE /category/delete' :{controller:'CategoryController', action:'deletecategory'},
   'GET /sellers/:action?/:id?' : {controller:'SellerController',action:'showsellers'},
+  'POST /hash' : {controller:'SellerController', action:'createhash'},
   'GET /channelmessages/:seller' : {controller:'SellerController',action:'showmessages'},
   'POST /filter/questions' : {controller:'SellerController', action:'filtermessages'},
   'POST /getquestions' : {controller:'SellerController', action:'getquestions'},

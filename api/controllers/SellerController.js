@@ -534,5 +534,16 @@ module.exports = {
     }
     res.view('pages/sellers/reports',{layout:'layouts/admin',months,moment,seller});
 
+  },
+  createhash: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    if (!req.isSocket) {
+      return res.badRequest();
+    }
+    let uniqueString = await sails.helpers.strings.uuid();     
+    return res.send(uniqueString);
   }
 };
