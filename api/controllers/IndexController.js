@@ -416,10 +416,22 @@ module.exports = {
     let pages = 0;
     let seller = null;
     let object = null;
+    let iridio = null;
     let productsFilter = {active:true};
     if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost'){
       seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/,active:true});
       if(seller){productsFilter.seller=seller.id;}
+    }else{
+      iridio = await Channel.findOne({name:'iridio'});
+      let iridioproducts = await ProductChannel.find({
+        where:{
+          channel:iridio.id,
+          status:true
+        },
+        select:['product']
+      });
+      iridioproducts = iridioproducts.map(i => i.product);
+      productsFilter.id = iridioproducts;
     }
     
     let exists = (element,compare) =>{
@@ -438,6 +450,7 @@ module.exports = {
           })
           .populate('products',{
             where:productsFilter,
+            select:['name','description','seller','mainColor','manufacturer','gender','reference'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/categories/';
@@ -447,7 +460,11 @@ module.exports = {
         break;
       case 'marca':
         try{
-          object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{where:productsFilter,sort: 'updatedAt DESC'});
+          object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
+            where:productsFilter,
+            select:['name','description','seller','mainColor','manufacturer','gender','reference'],
+            sort: 'updatedAt DESC'
+          });
           object.route = '/images/brands/';
         }catch(err){
           return res.notFound(err);
@@ -457,33 +474,31 @@ module.exports = {
         return res.notFound();
     }
 
-    let colors = [];
-    let brands = [];
-    let genders = [];
+    let colors = await Color.find({});
+    let brands = await Manufacturer.find({where:{active:true},select:['name']});
+    let genders = await Gender.find({});
 
     pages = Math.ceil(object.products.length/perPage);
-    object.products = object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
+    if(object.products.length>0){
+      object.products = object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
 
-    for(let p of object.products){
-      p.seller=await Seller.findOne({
-        where:{id:p.seller},
-        select:['name','active']
-      });
-      p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
-      p.mainColor=await Color.findOne({id:p.mainColor});
-      p.manufacturer=await Manufacturer.findOne({
-        where:{id:p.manufacturer},
-        select:['name']
-      });
-      p.discount = await sails.helpers.discount(p.id);
-      p.gender = await Gender.findOne({id:p.gender});
-      p.price = (await ProductVariation.find({product:p.id}))[0].price;
+      for(let p of object.products){
+        p.seller=await Seller.findOne({
+          where:{id:p.seller},
+          select:['name','active']
+        });
+        p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
+        p.mainColor=await Color.findOne({id:p.mainColor});
+        p.manufacturer=await Manufacturer.findOne({
+          where:{id:p.manufacturer},
+          select:['name']
+        });
+        p.discount = await sails.helpers.discount(p.id);
+        p.gender = await Gender.findOne({id:p.gender});
+        p.price = (await ProductVariation.find({product:p.id}))[0].price;
 
-      if(p.mainColor && !exists(colors, p.mainColor)){colors.push(p.mainColor);}
-      if(p.manufacturer && !exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
-      if(p.gender && !exists(genders, p.gender)){genders.push(p.gender);}
-
-    };
+      };
+    }
     return res.view('pages/front/list',{entity:'ver/'+entity,ename:ename,page:page,pages:pages,object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
   search: async(req, res) =>{

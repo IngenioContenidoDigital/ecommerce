@@ -771,8 +771,8 @@
                             <td><img  src="<%=imgurl%>/images/channels/<%= i.channel.logo %>" width="100px"/></td>
                             <td><%= i.name %></td>
                             <td>
-                              <div class="select is-small">
-                                <select name="<%= i.id %>price">
+                              <div class="select is-small <%if(i.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
+                                <select name="<%= i.id %>price" <%if(i.channel.name==='iridio'){%><%="disabled"%><%}%>>
                                 <option value="0" <%if(typeof product=='object' && productchannel && productchannel.price==0){%>selected<%}%>>+ 0%</option>
                                   <option value="0.05" <%if(typeof product=='object' && productchannel && productchannel.price ==0.05){%>selected<%}%>>+ 5%</option>
                                   <option value="0.1" <%if(typeof product=='object' && productchannel && productchannel.price ==0.1){%>selected<%}%>>+ 10%</option>

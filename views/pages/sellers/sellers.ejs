@@ -440,6 +440,15 @@
             let formIntegration = document.querySelector('#form-integration');
             formIntegration.innerHTML = '';
             <%if(action==='edit'){%>
+              let intname = edit ? integration.name : '';
+              let intuser = edit ? integration.user : '';
+              let intkey = edit ? integration.key : '';
+              if(nameChannel==='iridio' && !intkey){
+                intuser = '<%=seller.email%>';
+                io.socket.post('/hash',{},(resData)=>{
+                  document.querySelector('input[name="key"]').value = resData;
+                });
+              }
               let form = nameChannel === 'mercadolibre' ? 
               `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
                 <div class="container">
@@ -447,7 +456,7 @@
                   <div class="field">
                     <label class="label">Nombre</label>
                     <div class="control has-icons-left">
-                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${intname}"/>
                       <span class="icon is-small is-left">
                         <i class='bx bx-collapse' ></i>
                       </span>
@@ -483,7 +492,7 @@
                   <div class="field">
                     <label class="label">Nombre</label>
                     <div class="control has-icons-left">
-                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${intname}"/>
                       <span class="icon is-small is-left">
                         <i class='bx bx-collapse' ></i>
                       </span>
@@ -492,7 +501,7 @@
                   <div class="field">
                     <label class="label">Usuario</label>
                     <div class="control has-icons-left">
-                    <input class="input" type="text" name="user" placeholder="Usuario de Conexión" required value="${edit ? integration.user : ''}"/>
+                    <input class="input" type="text" name="user" placeholder="Usuario de Conexión" required value="${intuser}"/>
                       <span class="icon is-small is-left">
                         <i class='bx bx-user-circle' ></i>
                       </span>
@@ -501,7 +510,7 @@
                   <div class="field">
                     <label class="label">Clave de API</label>
                     <div class="control has-icons-left">
-                      <input class="input" type="text" name="key" placeholder="Llave del API" required value="${edit ? integration.key : ''}"/>
+                      <input class="input" type="text" name="key" placeholder="Llave del API" required value="${intkey}"/>
                       <span class="icon is-small is-left">
                         <i class='bx bx-key' ></i>
                       </span>

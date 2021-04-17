@@ -12,50 +12,42 @@
     </div>
     <%}else{%>
     <div class="columns is-centered">
-        <div class="column is-2 p-5">
-            <div id="filter">
-                <p id="filter-title" class="box has-text-centered has-text-weight-bold is-size-7 is-uppercase is-marginless has-text-dark">
-                    Filtrar Productos
-                    <span class="icon is-pulled-right">
-                        <i class='bx bx-filter-alt is-size-6'></i>
-                    </span>
+        <div class="column is-2">
+            <p></p>
+            <nav class="panel">
+                <a><p class="panel-heading is-size-7 has-text-centered">Filtrar Productos <span class="icon is-right"><i class='bx bx-filter-alt is-size-7'></i></span></p></a>
+                <div class="panel-container is-hidden-mobile">
+                <p class="panel-tabs">
+                  <a class="group is-size-7 is-active" group="marcas">Marca</a>
+                  <a class="group is-size-7" group="colores">Color</a>
+                  <a class="group is-size-7" group="genero">Género</a>
                 </p>
-                <div class="container box is-paddingless is-hidden-mobile" id="filter-container">
-                    <div class="notification is-marginless has-background-white">
-                        <p class="is-size-7 has-text-weight-bold">Marca</p>
-                        <div class="select is-small is-info">
-                            <select name="brand" class="is-capitalized">
-                                <option value="">Filtrar Marca</option>
-                                <%brands.forEach(brand =>{%>
-                                    <option class="is-capitalized" value="<%=brand.name%>"><%=brand.name%></option>
-                                <%}) %>
-                            </select>
-                        </div>
-                        <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="brand-delete"></a>
-                    </div>
-                    <div class="notification is-marginless has-background-white">
-                        <p class="is-size-7 has-text-weight-bold">Colores</p>
-                        <% colors.forEach(color=>{%>
-                            <a href="#" class="filter"><span class="color-container" color="<%=color.name%>" style="background-color: <%=color.code%>;border:solid 1px <%=color.code%>;"></span></a>
-                        <%});%>
-                        <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="color-delete"></a>
-                    </div>
-                    <div class="notification has-background-white is-marginless">
-                        <p class="is-size-7 has-text-weight-bold">Género</p>
-                            <div class="select is-small is-info">
-                                <select name="gender" class="is-capitalized">
-                                    <option value="">Filtrar Género</option>
-                                    <%genders.forEach(gender =>{%>
-                                        <option class="is-capitalized" value="<%=gender.name%>"><%=gender.name%></option>
-                                    <%}) %>
-                                </select>
-                            </div>
-                        <a style="margin:3px 0 0 2px;" class="delete is-small is-pulled-right" id="gender-delete"></a>
-                    </div>
+                <div id="marcas">
+                <%brands.forEach(brand =>{%>
+                    <a class="panel-block is-active is-size-7"><label style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" class="checkbox"><input type="checkbox" name="manufacturer" class="filter is-capitalized" value="<%=brand.name%>">&nbsp;<%=brand.name.toUpperCase()%></label></a>
+                <%}) %>
                 </div>
-            </div>
+                <div id="colores" class="is-hidden">
+                    <% colors.forEach(color=>{%>
+                        <a class="panel-block is-size-7"><label class="checkbox is-size-7"><input type="checkbox" name="color" class="filter is-capitalized" value="<%=color.name%>">&nbsp;&nbsp;<span class="color-container" style="background-color: <%=color.code%>;border:solid 1px <%=color.code%>;"></span>&nbsp;&nbsp;<%=color.name.toUpperCase()%></label></a>
+                    <%});%>
+                </div>
+                <div id="genero" class="is-hidden">
+                    <%genders.forEach(gender =>{%>
+                        <a class="panel-block is-size-7"><label class="checkbox is-size-7"><input type="checkbox" name="gender" class="filter is-capitalized" value="<%=gender.name%>">&nbsp;<%=gender.name.toUpperCase()%></label></a>
+                    <%}) %>
+                </div>
+                <!--
+                <div class="panel-block">
+                  <button class="button is-info is-fullwidth is-size-7">
+                    Aplicar Filtro
+                  </button>
+                </div>
+                -->
+                </div>
+              </nav>
         </div>
-        <div class="column is-10 p-5">
+        <div class="column is-10">
             <%if(object.logo!== undefined && object.logo!== null && object.logo!==''){%>
                 <p class="has-text-centered"><img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
             <%}%>
@@ -152,15 +144,17 @@
                     </div>
             <%})%>
             </div>
-        </div>        
+        </div>
     </div>
     <%}%>
 </div>
 <br><br>
 <script>
-    live('#filter-title','click',e=>{
-        content = document.querySelector('#filter-container');
-        if(!hasClass(content,'is-hidden')){
+    const cards = document.querySelectorAll('.card');
+
+    live('.panel-heading','click',e=>{
+        content = document.querySelector('.panel-container');
+        if(!hasClass(content,'is-hidden') && !hasClass(content,'is-hidden-mobile')){
             addClass(content,'is-hidden');
             addClass(content,'is-hidden-mobile');
         }else{
@@ -168,69 +162,63 @@
             removeClass(content,'is-hidden-mobile');
         }
     });
+    
 
-    live('.filter','click', e =>{
-        let color = e.target.getAttribute('color');
-        let cards = document.querySelectorAll('.card');
-        clearfilters();
-        addClass(e.target.parentNode.parentNode,'has-background-warning');
-        for(let c of cards){
-            if(c.querySelector('.color-container').getAttribute('color')!==color){
-                addClass(c,'is-hidden');
-            }else{
-                removeClass(c,'is-hidden');
-            }
-        }
-        let selectb = document.querySelector('select[name="brand"]');
-        selectb.value='';
+    live('.group','click',e=>{
+      let option = e.target.getAttribute('group');
+      let groups = document.querySelectorAll('.group');
+      for(let b of groups){
+          if(b.getAttribute('group')===option){
+              removeClass(document.getElementById(b.getAttribute('group')),'is-hidden');
+              addClass(b,'is-active');
+          }else{
+            addClass(document.getElementById(b.getAttribute('group')),'is-hidden');
+            removeClass(b,'is-active');
+          }
+      }
     });
 
-    let clearfilters = ()=>{
-        for(let n of document.querySelectorAll('.notification')){
-            removeClass(n,'has-background-warning');
-            addClass(n,'has-background-white');
-        }
-    };
-
-    live('.delete','click',e=>{
-        let cards = document.querySelectorAll('.card');
+    live('.filter','click',e=>{
+        let brands = document.querySelectorAll('input[name="manufacturer"]:checked');
+        let genders = document.querySelectorAll('input[name="gender"]:checked');
+        let colors = document.querySelectorAll('input[name="color"]:checked');
+        let filterlist = [];
+        if(brands.length>0){for(let b of brands){filterlist.push(b.value);}}
+        if(genders.length>0){for(let g of genders){filterlist.push(g.value);}}
+        if(colors.length>0){for(let c of colors){filterlist.push(c.value);}}
         for(let c of cards){
-            removeClass(c,'is-hidden');
-        }
-        let selectb = document.querySelector('select[name="brand"]');
-        selectb.value='';
-        let selectg = document.querySelector('select[name="gender"]');
-        selectg.value='';
-        clearfilters();
-    });
-
-    live('select[name="brand"]','change',e=>{
-        
-        let brand = e.target.value;
-        let cards = document.querySelectorAll('.card');
-        for(let c of cards){
-            if(c.querySelector('.brand').getAttribute('brand')!==brand){
-                addClass(c,'is-hidden');
-            }else{
+            if(filterlist.length<1){
                 removeClass(c,'is-hidden');
+            }else{
+                addClass(c,'is-hidden');
+                if(brands.length>0 && genders.length>0 && colors.length>0){
+                    if(filterlist.includes(c.querySelector('.brand').getAttribute('brand')) 
+                    && filterlist.includes(c.querySelector('.gender').getAttribute('gender')) 
+                    && filterlist.includes(c.querySelector('.color-container').getAttribute('color'))){removeClass(c,'is-hidden');}    
+                }else if(brands.length<=0 && genders.length>0 && colors.length>0){
+                    if(filterlist.includes(c.querySelector('.gender').getAttribute('gender')) 
+                    && filterlist.includes(c.querySelector('.color-container').getAttribute('color'))){removeClass(c,'is-hidden');}
+                }else if(brands.length>0 && genders.length<=0 && colors.length>0){
+                    if(filterlist.includes(c.querySelector('.brand').getAttribute('brand')) 
+                    && filterlist.includes(c.querySelector('.color-container').getAttribute('color'))){removeClass(c,'is-hidden');}
+                }else if(brands.length>0 && genders.length>0 && colors.length<=0){
+                    if(filterlist.includes(c.querySelector('.brand').getAttribute('brand')) 
+                    && filterlist.includes(c.querySelector('.gender').getAttribute('gender'))){removeClass(c,'is-hidden');}
+                }else if(brands.length>0 && genders.length<=0 && colors.length<=0){
+                    if(filterlist.includes(c.querySelector('.brand').getAttribute('brand'))){removeClass(c,'is-hidden');}
+                }else if(brands.length<=0 && genders.length>0 && colors.length<=0){
+                    if(filterlist.includes(c.querySelector('.gender').getAttribute('gender'))){removeClass(c,'is-hidden');}
+                }else if(brands.length<=0 && genders.length<=0 && colors.length>0){
+                    if(filterlist.includes(c.querySelector('.color-container').getAttribute('color'))){removeClass(c,'is-hidden');}
+                }
+                
             }
         }
-        clearfilters();
-        addClass(e.target.parentNode.parentNode,'has-background-warning');
-    });
-
-    live('select[name="gender"]','change',e=>{
-        let gender = e.target.value;
-        let cards = document.querySelectorAll('.card');
-        for(let c of cards){
-            if(c.querySelector('.gender').getAttribute('gender')!==gender){
-                addClass(c,'is-hidden');
-            }else{
-                removeClass(c,'is-hidden');
-            }
+        if(e.target.checked){
+            addClass(e.target.parentNode.parentNode,'has-background-light');           
+        }else{
+            removeClass(e.target.parentNode.parentNode,'has-background-light');
         }
-        clearfilters();
-        addClass(e.target.parentNode.parentNode,'has-background-warning');
     });
 
 </script>

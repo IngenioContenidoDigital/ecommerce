@@ -62,7 +62,7 @@ module.exports = {
           let status= inputs.status ? inputs.status : 'active';
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
-          let parent = productvariation[0].id;
+          let parent = productvariation.length > 0 ? productvariation[0].id : '';
           let categories = [];
           let brand = null;
           if(inputs.alldata){
