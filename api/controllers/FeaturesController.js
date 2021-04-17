@@ -21,8 +21,10 @@ module.exports = {
       feature = await Feature.findOne({id:id}).populate('categories').populate('channels');
     }
     let category = await Category.findOne({name:'inicio'});
-
-    res.view('pages/catalog/features',{layout:'layouts/admin',features:features, action:action, error:error, feature:feature, category:category});
+    // let channels = await Channel.find({type:'marketplace'});
+    let channels = await Channel.find({name:['linio','dafiti']});
+    console.log(channels);
+    res.view('pages/catalog/features',{layout:'layouts/admin',features:features, action:action, error:error, feature:feature, category:category, channels:channels});
   },
   addfeature: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -203,7 +205,6 @@ module.exports = {
 
       let allfeatures = Object.values(feaures = features.reduce((r,o) => {r[o.FeedName] = o; return r;},{}));
       const result = allfeatures.filter(f => f.IsGlobalAttribute !== '1' && f.FeedName !== 'Variation');
-      console.log(result);
       return res.ok(result);
 
     }catch(err){
@@ -253,7 +254,7 @@ module.exports = {
 
       let allfeatures = Object.values(feaures = features.reduce((r,o) => {r[o.FeedName] = o; return r;},{}));
       const result = allfeatures.filter(f => f.IsGlobalAttribute !== '1' && (f.FeedName !== 'Variation' && f.FeedName !=='FilterColor'&& f.FeedName !=='Gender'));
-      console.log(result);
+      // console.log(result);
       return res.ok(result);
 
     }catch(err){

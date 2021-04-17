@@ -70,50 +70,57 @@
           <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
           <div class="tabs is-toggle o-x-h">
             <ul class="markeplace-categories">
-              <li>
-                <a>
-                  <p class="has-text-centered" id="dafit"><img src="/images/dafiti.png" /></p>
-                </a>
-              </li>
-              <li>
-                <a>
-                  <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
-                </a>
-              </li>
+              <% channels.forEach(function(channel){ %>
+                <% if (channel.name == 'dafiti'||channel.name =='linio'){ %>
+                <li>
+                  <a>
+                    <p class="has-text-centered" id=<%= channel.id %>><img src="/images/<%= channel.name %>.png" /></p>
+                  </a>
+                </li>
+                <%}%>
+              <%})%>
             </ul>
           </div>
-          <div class="setup dafit">
-            <h6 class="title is-6 title-markeplace">Característica en Dafiti</h6>
-            <ul class="cattree tree" id="dafiti">
-              <% if(action=='edit'){ %> 
-                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
-              <% }else if (action=='create'){ %>
-                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>
-              <% } %>
-            </ul>
-          </div>
-          <div class="setup is-hidden lini">
-            <h6 class="title is-6 title-markeplace">Característica en Linio</h6>
-            <ul class="cattree tree" id="linio">
-              <% if(action=='edit'){ %> 
-                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
-              <% }else if (action=='create'){ %>
-                <li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>
-              <% } %>
-            </ul>
-          </div>
+          <% channels.forEach(function(channel){ %>
+            <% if (channel.name == 'dafiti'||channel.name =='linio'){ %>
+              <% if (channel.name == 'dafiti'){%>
+              <div class="setup  <%= channel.name %> ">
+                <%}else{%>
+                  <div class="setup is-hidden <%= channel.name %> ">
+                <%}%>
+                <h6 class="title is-6 title-markeplace is-capitalized">Características en <%= channel.name %></h6>
+                <% if (action=='create'){%>
+                  <ul class="empty">                  
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>
+                  </ul>                
+                  <ul class="loading is-hidden">
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
+                  </ul>
+                <%}else{%>
+                  <ul class="empty is-hidden">                  
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>
+                  </ul>                
+                  <ul class="loading">
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
+                  </ul>
+                <%}%>
+                <ul class="markeplace-features <%= channel.name %>" id=<%= channel.name %>>
+                </ul>  
+              </div>
+            <%}%>
+          <%})%>
         </div>
       </div>
     </div>
     </form>
       <script>
         const feature = <%- JSON.stringify(feature)%>
+        const channels = <%- JSON.stringify(channels)%>
         let root = document.querySelector('a[level="1"]').parentNode;
-        let objDafiti = document.querySelector('#dafiti');
-        let objLinio = document.querySelector('#linio');
-        let mkp = document.querySelectorAll('.cattree.tree');
         let progress = document.querySelector('progress');
-        
+        let oldFeatures = [];
+        let channelFlag = 0;
+
         async function init(){
           let result = await childTree(document.querySelectorAll('a.panel-block'));
         }
@@ -149,7 +156,7 @@
                     if(d.querySelectorAll('input:checked').length>0){
                       hidecategories(d);
                       removeClass(progress,'is-hidden');
-                      showfeatures();
+                      marketplacequery(toArray(d,'input:checked'),false);
                     };
                     childTree(d.querySelectorAll('a.panel-block'));
 
@@ -176,14 +183,14 @@
           }
         }
 
-        function showfeatures(){
-          let checked_cats = root.querySelectorAll('input:checked');
+        function toArray(elm,query){
+          let checked_cats = elm.querySelectorAll(query);
           let cats = [];
           for (let index = 0; index < checked_cats.length; index++) {
             const element = checked_cats[index];
             cats.push(element.value);
           }
-          marketplacequery(cats);
+          return cats;
         }
 
         let options = (marketplace, elm, attrs) =>{
@@ -216,32 +223,129 @@
           return;
         }
 
-        const marketplacequery = (categories) =>{
-          io.socket.get('/integrations/dafiti/features',{categories},(resData, res)=>{
-            if(res.statusCode == 200){
-              console.log(objDafiti.querySelectorAll('li'));
-              objDafiti.innerHTML='';
-              options('dafiti', objDafiti, resData);
-              if(root.querySelectorAll('input:checked').length===0){
-                objDafiti.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>';
-              }
-            } else {
-              objDafiti.innerHTML='';
-            }
+        function compare(responseFeatures,channel, category){
+          responseFeatures.push({
+            AttributeType: "multi_option",
+            Description: "Materialito exterior del calzado",
+            ExampleValue: "",
+            FeedName: "Materialito",
+            GlobalIdentifier: "",
+            GroupName: "Product Specification",
+            InputType: "multiselect",
+            IsGlobalAttribute: "0",
+            Label: "Material exterior",
+            MaxLength: "",
+            Name: "Materialito",
+            Options: {},
+            ProductType: "config",
+            isMandatory: "0"
           });
+          responseFeatures.push({
+            AttributeType: "multi_option",
+            Description: "Materialito exterior del calzado",
+            ExampleValue: "",
+            FeedName: "Materialitossss",
+            GlobalIdentifier: "",
+            GroupName: "Product Specification",
+            InputType: "multiselect",
+            IsGlobalAttribute: "0",
+            Label: "Material exterior",
+            MaxLength: "",
+            Name: "Materialito",
+            Options: {},
+            ProductType: "config",
+            isMandatory: "0"
+          });
+          let array_global = [];
+          for (let j = 0; j < oldFeatures.length; j++) {
+            if(oldFeatures[j].channel == channel.id){
+              let features = oldFeatures[j].features;
+              if (!document.querySelector(`[value="${category}"]`).checked) {
+                for (let i = 0; i < features.length; i++) {
+                  let feature = features[i];
+                  const index = feature.categories.indexOf(category);
+                  if (index > -1) {
+                    feature.categories.splice(index, 1);
+                  }
+                }
+                for (let i = features.length-1; i>-1; i--) {
+                  let feature = features[i];
+                  if(feature.categories.length === 0){
+                    let element=document.querySelector(`[value="${feature.FeedName}"]`).parentNode.parentNode;
+                    if (element) {
+                      element.remove();
+                    }
+                    const indexFeature = features.indexOf(feature);
+                    if (indexFeature > -1) {
+                      features.splice(indexFeature, 1);
+                    }
+                  }
+                }
+              }else{
+                array_global=responseFeatures.filter(f=>!features.some(l=>l.FeedName== f.FeedName));
+                if (array_global.length>0) {
+                  for (let i = 0; i < features.length; i++) {
+                    let feature = features[i];
+                    feature.categories.push(category);
+                  }
+                  for (let i = 0; i < array_global.length; i++) {
+                    array_global[i];
+                    let obj ={
+                      FeedName: array_global[i].FeedName,
+                      categories : [category]
+                    }
+                    features.push(obj);
+                  }
+                  return array_global;
+                }
+              }
+            }
+          }
+        }
 
-          io.socket.get('/integrations/linio/features',{categories},(resData, res)=>{
+        const marketplacequery = (categories, flag) =>{
+          for (let index = 0; index < channels.length; index++) {
+            const channel = channels[index];
+            io.socket.get(`/integrations/${channel.name}/features`,{categories},(resData, res)=>{
             if(res.statusCode == 200){
-              objLinio.innerHTML='';
-              addClass(progress,'is-hidden');
-              options('linio', objLinio, resData);
-              if(root.querySelectorAll('input:checked').length===0){
-                objLinio.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized">Selecciona una categoría para mostrar sus características en el marketplace.</span></li>';
+              channelObj = document.getElementById(`${channel.name}`);
+              removeClass(channelObj,'is-hidden')
+              hide('.loading');
+              if(flag&&oldFeatures.length>0){resData=compare(resData,channel,categories);}
+              if(resData){options(channel.name, channelObj, resData);}
+              channelFlag++;
+              if (channelFlag==channels.length) {
+                addClass(progress,'is-hidden');
+                channelFlag=0;
+                if (!flag||oldFeatures.length==0) {setoldFeatures();}
               }
+              if(root.querySelectorAll('input:checked').length===0){hide('.markeplace-features'); oldFeatures=[];show('.empty');}
             } else {
-              objLinio.innerHTML='';
+              objDafiti.innerHTML='';
             }
           });
+          }
+        }
+        function setoldFeatures(){
+          for (let index = 0; index < channels.length; index++) {
+            const channel = channels[index];
+            channelObj = document.getElementById(`${channel.name}`);
+            let ch = [];
+            let feats = toArray(channelObj,'input');
+            for (let index = 0; index < feats.length; index++) {
+              const feat = feats[index];
+              let obj={
+                FeedName:feat,
+                categories:toArray(root,'input:checked')
+              };
+              ch.push(obj);
+            }
+            let objch= {
+              channel:channel.id,
+              features: ch
+            };
+            oldFeatures.push(objch);
+          }
         }
 
         live('.cat_name','click',(e)=>{
@@ -267,18 +371,35 @@
           let blocks= document.querySelectorAll('.setup');
 
           for(let b of blocks){
-            if(hasClass(b,group)){
+            if(hasClass(b,'is-hidden')){
               removeClass(b,'is-hidden');
             }else{
               addClass(b,'is-hidden');
             }
           }
         });
+        function show(query){
+          let elm =  document.querySelectorAll(query);
+          elm.forEach(element => {
+            if (hasClass(element,'is-hidden')) {
+              removeClass(element,'is-hidden');
+            }
+          });
+        }
+        function hide(query){
+          let elm =  document.querySelectorAll(query);
+          elm.forEach(element => {            
+            if (!hasClass(element,'is-hidden')) {
+              addClass(element,'is-hidden');  
+            }
+          });
+        }
 
         live('.no-children-category','click',e=>{
           removeClass(progress,'is-hidden');
-          objLinio.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>';
-          objDafiti.innerHTML ='<li><i class="bx bxs-info-circle " aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>';
+          show('.loading');
+          hide('.markeplace-features');
+          hide('.empty');
           let categories = root.querySelectorAll(':scope > ul > li');
           for (let index = 0; index < categories.length; index++) {
             const category = categories[index];
@@ -292,9 +413,8 @@
               }
             }
           }
-          showfeatures();
+          marketplacequery(e.target.value,true);
         });
-
         document.addEventListener('DOMContentLoaded', function(){
           init();
         });
