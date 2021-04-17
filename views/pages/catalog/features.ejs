@@ -71,22 +71,19 @@
           <div class="tabs is-toggle o-x-h">
             <ul class="markeplace-categories">
               <% channels.forEach(function(channel){ %>
-                <% if (channel.name == 'dafiti'||channel.name =='linio'){ %>
                 <li>
                   <a>
                     <p class="has-text-centered" id=<%= channel.id %>><img src="/images/<%= channel.name %>.png" /></p>
                   </a>
                 </li>
-                <%}%>
               <%})%>
             </ul>
           </div>
           <% channels.forEach(function(channel){ %>
-            <% if (channel.name == 'dafiti'||channel.name =='linio'){ %>
               <% if (channel.name == 'dafiti'){%>
-              <div class="setup  <%= channel.name %> ">
+              <div class="setup  <%= channel.id %> ">
                 <%}else{%>
-                  <div class="setup is-hidden <%= channel.name %> ">
+                  <div class="setup is-hidden <%= channel.id %> ">
                 <%}%>
                 <h6 class="title is-6 title-markeplace is-capitalized">Características en <%= channel.name %></h6>
                 <% if (action=='create'){%>
@@ -107,7 +104,6 @@
                 <ul class="markeplace-features <%= channel.name %>" id=<%= channel.name %>>
                 </ul>  
               </div>
-            <%}%>
           <%})%>
         </div>
       </div>
@@ -193,30 +189,18 @@
           return cats;
         }
 
-        let options = (marketplace, elm, attrs) =>{
+        let options = (channel, elm, attrs) =>{
           for (let index = 0; index < attrs.length; index++) {
             const attr = attrs[index];
             let op = document.createElement('li');
             if(feature){
-              if (marketplace === 'dafiti') {
-                if(feature.channels.find(x => x.name == attr.FeedName && x.channelname == 'dafiti')){
-                  op.innerHTML='<span><input type="radio" name="dafiti" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
-                }else{
-                  op.innerHTML='<span><input type="radio" name="dafiti" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
-                }
-              } else if (marketplace === 'linio') {
-                if(feature.channels.find(x => x.name == attr.FeedName && x.channelname == 'linio')){
-                  op.innerHTML='<span><input type="radio" name="linio" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-flag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
-                }else{
-                  op.innerHTML='<span><input type="radio" name="linio" value="'+attr.FeedName+'" />'+'<i class="bx bxs-flag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
-                }
+              if(feature.channels.find(f => f.name == attr.FeedName && f.channel == channel.id)){
+                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+              }else{
+                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
               }
             } else {
-              if (marketplace === 'dafiti') {
-                op.innerHTML='<span><input type="radio" name="dafiti" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
-              } else if (marketplace === 'linio') {
-                op.innerHTML='<span><input type="radio" name="linio" value="'+attr.FeedName+'" />'+'<i class="bx bxs-flag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
-              }
+                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
             }
             elm.appendChild(op);
           }
@@ -224,38 +208,38 @@
         }
 
         function compare(responseFeatures,channel, category){
-          responseFeatures.push({
-            AttributeType: "multi_option",
-            Description: "Materialito exterior del calzado",
-            ExampleValue: "",
-            FeedName: "Materialito",
-            GlobalIdentifier: "",
-            GroupName: "Product Specification",
-            InputType: "multiselect",
-            IsGlobalAttribute: "0",
-            Label: "Material exterior",
-            MaxLength: "",
-            Name: "Materialito",
-            Options: {},
-            ProductType: "config",
-            isMandatory: "0"
-          });
-          responseFeatures.push({
-            AttributeType: "multi_option",
-            Description: "Materialito exterior del calzado",
-            ExampleValue: "",
-            FeedName: "Materialitossss",
-            GlobalIdentifier: "",
-            GroupName: "Product Specification",
-            InputType: "multiselect",
-            IsGlobalAttribute: "0",
-            Label: "Material exterior",
-            MaxLength: "",
-            Name: "Materialito",
-            Options: {},
-            ProductType: "config",
-            isMandatory: "0"
-          });
+          // responseFeatures.push({
+          //   AttributeType: "multi_option",
+          //   Description: "Materialito exterior del calzado",
+          //   ExampleValue: "",
+          //   FeedName: "Materialito",
+          //   GlobalIdentifier: "",
+          //   GroupName: "Product Specification",
+          //   InputType: "multiselect",
+          //   IsGlobalAttribute: "0",
+          //   Label: "Material exterior",
+          //   MaxLength: "",
+          //   Name: "Materialito",
+          //   Options: {},
+          //   ProductType: "config",
+          //   isMandatory: "0"
+          // });
+          // responseFeatures.push({
+          //   AttributeType: "multi_option",
+          //   Description: "Materialito exterior del calzado",
+          //   ExampleValue: "",
+          //   FeedName: "Materialitossss",
+          //   GlobalIdentifier: "",
+          //   GroupName: "Product Specification",
+          //   InputType: "multiselect",
+          //   IsGlobalAttribute: "0",
+          //   Label: "Material exterior",
+          //   MaxLength: "",
+          //   Name: "Materialito",
+          //   Options: {},
+          //   ProductType: "config",
+          //   isMandatory: "0"
+          // });
           let array_global = [];
           for (let j = 0; j < oldFeatures.length; j++) {
             if(oldFeatures[j].channel == channel.id){
@@ -312,16 +296,16 @@
               removeClass(channelObj,'is-hidden')
               hide('.loading');
               if(flag&&oldFeatures.length>0){resData=compare(resData,channel,categories);}
-              if(resData){options(channel.name, channelObj, resData);}
+              if(resData){options(channel, channelObj, resData);}
               channelFlag++;
               if (channelFlag==channels.length) {
                 addClass(progress,'is-hidden');
                 channelFlag=0;
                 if (!flag||oldFeatures.length==0) {setoldFeatures();}
               }
-              if(root.querySelectorAll('input:checked').length===0){hide('.markeplace-features'); oldFeatures=[];show('.empty');}
+              if(root.querySelectorAll('input:checked').length===0){channelObj.innerHTML=''; oldFeatures=[];show('.empty');}
             } else {
-              objDafiti.innerHTML='';
+              channelObj.innerHTML='';
             }
           });
           }
@@ -369,15 +353,18 @@
         live('.markeplace-categories li','click',e=>{
           let group = e.target.parentNode.id;
           let blocks= document.querySelectorAll('.setup');
-
+          
+          console.log(group);
+          console.log(blocks);
           for(let b of blocks){
-            if(hasClass(b,'is-hidden')){
+            if(hasClass(b,group)){
               removeClass(b,'is-hidden');
             }else{
               addClass(b,'is-hidden');
             }
           }
         });
+
         function show(query){
           let elm =  document.querySelectorAll(query);
           elm.forEach(element => {
@@ -386,6 +373,7 @@
             }
           });
         }
+
         function hide(query){
           let elm =  document.querySelectorAll(query);
           elm.forEach(element => {            
