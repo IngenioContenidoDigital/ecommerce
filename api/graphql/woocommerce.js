@@ -183,6 +183,8 @@ PRODUCTID :
             items{
                 skuId
                 quantity
+                price
+                discount
             }
         }
     }`
