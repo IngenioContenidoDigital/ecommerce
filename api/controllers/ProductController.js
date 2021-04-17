@@ -1785,6 +1785,31 @@ module.exports = {
           throw new Error('Sin Productos para Procesar');
         }
       }
+      if(channel ==='iridio' && req.body.action==='ProductCreate'){
+        products = await Product.find({seller: seller}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: integration.id
+          }
+        });
+        products = products.filter(pro => pro.channels.length<1);
+        if(products.length>0){
+          for (let pro of products) {
+            await ProductChannel.create({
+              product:pro.id,
+              integration:integration.id,
+              channel:integration.channel.id,
+              channelid:'',
+              status:true,
+              qc:true,
+              price:0,
+              iscreated:true,
+              socketid:sid
+            });
+            response.items.push(pro);
+          }
+        }
+      }
     } catch (err) {
       response.errors.push(err.message);
     }
