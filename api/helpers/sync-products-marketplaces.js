@@ -24,10 +24,17 @@ module.exports = {
     const integration = inputs.integration;
     const channel = inputs.channel;
     try {
-      let products = await Product.find({seller: integration.seller}).populate('channels');
-      products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
-      if (products.length > 0) {
-        if (channel.name === 'dafiti') {
+      let products = [];
+      if (channel.name === 'dafiti') {
+        products = await Product.find({seller: integration.seller}).populate('channels',{
+          where:{
+            channel: channel.id,
+            integration: integration.id
+          },
+          limit: 1
+        });
+        if (products.length > 0) {
+          products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
           let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active', false);
           const xml = jsonxml(result, true);
           let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'ProductUpdate', integration.seller);
@@ -46,8 +53,20 @@ module.exports = {
           .catch(err =>{
             return exits.error(err || 'Error en el proceso, Intenta de nuevo más tarde.');
           });
+        } else {
+          return exits.error('Sin Productos para Procesar');
         }
-        if (channel.name === 'linio') {
+      }
+      if (channel.name === 'linio') {
+        products = await Product.find({seller: integration.seller}).populate('channels',{
+          where:{
+            channel: channel.id,
+            integration: integration.id
+          },
+          limit: 1
+        });
+        if (products.length > 0) {
+          products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
           let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active', false);
           const xml = jsonxml(result, true);
           let sign = await sails.helpers.channel.linio.sign(integration.id, 'ProductUpdate', integration.seller);
@@ -66,10 +85,11 @@ module.exports = {
           .catch(err =>{
             return exits.error(err || 'Error en el proceso, Intenta de nuevo más tarde.');
           });
+        } else {
+          return exits.error('Sin Productos para Procesar');
         }
-      } else {
-        return exits.error('Sin Productos para Procesar');
       }
+
     } catch (err) {
       return exits.error(err.message);
     }
