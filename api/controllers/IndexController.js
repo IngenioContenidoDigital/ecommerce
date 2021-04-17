@@ -450,7 +450,7 @@ module.exports = {
           })
           .populate('products',{
             where:productsFilter,
-            select:['name','description','seller','mainColor','manufacturer','gender'],
+            select:['name','description','seller','mainColor','manufacturer','gender','reference'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/categories/';
@@ -462,7 +462,7 @@ module.exports = {
         try{
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
             where:productsFilter,
-            select:['name','description','seller','mainColor','manufacturer','gender'],
+            select:['name','description','seller','mainColor','manufacturer','gender','reference'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/brands/';
