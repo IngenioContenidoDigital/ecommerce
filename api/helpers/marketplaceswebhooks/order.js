@@ -68,7 +68,7 @@ module.exports = {
                 cart:cart.id,
                 product:productvariation[0].product,
                 productvariation:productvariation[0].id,
-                totalDiscount:item.discount,
+                totalDiscount:item.discount || 0,
                 totalPrice:parseFloat(item.price),
                 externalReference:item.skuId
               });
@@ -83,7 +83,6 @@ module.exports = {
         }
       }
     }catch(err){
-      console.log(err);
       return exits.error(err.message);
     }
     return exits.success();
