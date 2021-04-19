@@ -62,7 +62,15 @@ module.exports = {
         throw new Error('Error en la Petición');
       }
     }catch(err){
-      throw new Error(err.response.data ? err.response.data.message : err.message);
+      let cause = '';
+      if (err.response.data && err.response.data.cause.length > 0) {
+        for (const caus of err.response.data.cause) {
+          if (caus.type === 'error') {
+            cause = cause + ' | ' + caus.message;
+          }
+        }
+      }
+      throw new Error(err.response.data ? cause ? cause : err.response.data.message : err.message);
     }
   }
 };
