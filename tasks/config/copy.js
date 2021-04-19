@@ -16,7 +16,7 @@ module.exports = function(grunt) {
       files: [{
         expand: true,
         cwd: './assets',
-        src: ['**/*.!(coffee|less)'],
+        src: ['**/*.!(coffee|less|scss|sass)'],
         dest: '.tmp/public'
       }]
     },
@@ -58,7 +58,7 @@ module.exports = function(grunt) {
   //
   // ```
   // // Load Grunt plugin from the node_modules/ folder.
-  // grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   // ```
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
