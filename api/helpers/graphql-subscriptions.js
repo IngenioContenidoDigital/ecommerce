@@ -1,6 +1,6 @@
-const { SHOPIFY_PRODUCTS } = require('../../api/graphql/subscriptions/shopify');
-const { WOOCOMMERCE_PRODUCTS } = require('../../api/graphql/subscriptions/woocommerce');
-const { VTEX_PRODUCTS } = require('../../api/graphql/subscriptions/vtex');
+const { SHOPIFY_PRODUCTS, SHOPIFY_ORDERS } = require('../../api/graphql/subscriptions/shopify');
+const { WOOCOMMERCE_PRODUCTS, WOOCOMMERCE_ORDERS} = require('../../api/graphql/subscriptions/woocommerce');
+const { VTEX_PRODUCTS, VTEX_ORDERS } = require('../../api/graphql/subscriptions/vtex');
 const { PRESTASHOP_PRODUCTS } = require('../../api/graphql/subscriptions/prestashop');
 
 module.exports = {
@@ -20,8 +20,9 @@ module.exports = {
 
   fn: async function (inputs, exits) {
     try {
+      // subscription para los productos de los cms
       await sails.helpers.subscription({ subscription : SHOPIFY_PRODUCTS, callback : async (response)=>{
-        if (response.data.ShopifyProducts) {
+        if (response && response.data && response.data.ShopifyProducts) {
           let result = response.data.ShopifyProducts;
           let channel = await Channel.findOne({name: result.channel});
           if (channel) {
@@ -45,7 +46,7 @@ module.exports = {
       }});
 
       await sails.helpers.subscription({ subscription : VTEX_PRODUCTS, callback : async (response)=>{
-        if (response.data.VtexProducts) {
+        if (response && response.data && response.data.VtexProducts) {
           let result = response.data.VtexProducts;
           let channel = await Channel.findOne({name: result.channel});
           if (channel) {
@@ -61,7 +62,7 @@ module.exports = {
                     result.productId
               ).catch((e) => console.log(e));
               if (product) {
-                await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e));
+                  await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e));
               }
             }
           }
@@ -69,7 +70,7 @@ module.exports = {
       }});
 
       await sails.helpers.subscription({ subscription : WOOCOMMERCE_PRODUCTS, callback : async (response)=>{
-        if (response.data.WoocommerceProducts) {
+        if (response && response.data && response.data.WoocommerceProducts) {
           let result = response.data.WoocommerceProducts;
           let channel = await Channel.findOne({name: result.channel});
           if (channel) {
@@ -93,7 +94,7 @@ module.exports = {
       }});
 
       await sails.helpers.subscription({ subscription : PRESTASHOP_PRODUCTS, callback : async (response)=>{
-        if (response.data.PrestashopProducts) {
+        if (response && response.data && response.data.PrestashopProducts) {
           let result = response.data.PrestashopProducts;
           let channel = await Channel.findOne({name: result.channel});
           if (channel) {
@@ -109,7 +110,80 @@ module.exports = {
                     result.productId
               ).catch((e) => console.log(e));
               if (product) {
-                await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.product(product, integration).catch((e)=>console.log(e));
+              }
+            }
+          }
+        }
+      }});
+
+      //subscription para las ordenes de los cms
+      await sails.helpers.subscription({ subscription : SHOPIFY_ORDERS, callback : async (response)=>{
+        if (response && response.data && response.data.ShopifyOrders) {
+          let result = response.data.ShopifyOrders;
+          let channel = await Channel.findOne({name: result.channel});
+          if (channel) {
+            let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
+            if (integration) {
+              let order = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                integration.channel.name,
+                integration.key,
+                integration.secret,
+                integration.url,
+                integration.version,
+                'ORDERID',
+                result.orderId
+              ).catch((e) => console.log(e));
+              if (order) {
+                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e));
+              }
+            }
+          }
+        }
+      }});
+
+      await sails.helpers.subscription({ subscription : VTEX_ORDERS, callback : async (response)=>{
+        if (response && response.data && response.data.VtexOrders) {
+          let result = response.data.VtexOrders;
+          let channel = await Channel.findOne({name: result.channel});
+          if (channel) {
+            let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
+            if (integration) {
+              let order = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                integration.channel.name,
+                integration.key,
+                integration.secret,
+                integration.url,
+                integration.version,
+                'ORDERID',
+                result.orderId
+              ).catch((e) => console.log(e));
+              if (order) {
+                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e));
+              }
+            }
+          }
+        }
+      }});
+
+      await sails.helpers.subscription({ subscription : WOOCOMMERCE_ORDERS, callback : async (response)=>{
+        if (response && response.data && response.data.WoocommerceOrders) {
+          let result = response.data.WoocommerceOrders;
+          let channel = await Channel.findOne({name: result.channel});
+          if (channel) {
+            let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
+            if (integration) {
+              let order = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                integration.channel.name,
+                integration.key,
+                integration.secret,
+                integration.url,
+                integration.version,
+                'ORDERID',
+                result.orderId
+              ).catch((e) => console.log(e));
+              if (order) {
+                  await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e));
               }
             }
           }
@@ -117,7 +191,6 @@ module.exports = {
       }});
 
       exits.success();
-
     } catch (error) {
       exits.serverError(error);
     }

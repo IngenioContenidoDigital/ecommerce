@@ -618,26 +618,31 @@ module.exports = {
     if (!req.isSocket) {return res.badRequest();}
     let id = req.body.id;
     const order = await Order.findOne({id:id});
-    let stateOrder = order.addressDelivery ? false : true;
-    return res.send({stateOrder});
+    let stateOrder = !order.addressDelivery || !order.carrier ? true : false;
+    let stateAddress = order.addressDelivery ? true : false;
+    return res.send({stateOrder, stateAddress});
   },
   guideprocess: async (req, res) =>{
     let id = req.param('id');
     try {
       let order = await Order.findOne({id:id});
-      let address = await Address.findOrCreate({addressline1:req.body.addressline1},{
-        name: req.body.addressline1,
-        addressline1: req.body.addressline1,
-        addressline2: req.body.addressline2,
-        country: req.body.country,
-        region: req.body.region,
-        city: req.body.city,
-        notes: req.body.notes,
-        zipcode: req.body.zipcode,
-        user: order.customer,
-      });
+      let address = null;
+      if (req.body.addressline1) {
+        address = await Address.findOrCreate({addressline1:req.body.addressline1},{
+          name: req.body.addressline1,
+          addressline1: req.body.addressline1,
+          addressline2: req.body.addressline2,
+          country: req.body.country,
+          region: req.body.region,
+          city: req.body.city,
+          notes: req.body.notes,
+          zipcode: req.body.zipcode,
+          user: order.customer,
+        });
+      }
       const carrier = await Carrier.findOne({name:req.body.transport.trim().toLowerCase()});
-      order = await Order.updateOne({id:id}).set({transport:req.body.transport,currentstatus:req.body.status,addressDelivery: address.id, carrier: carrier.id});
+      order = await Order.updateOne({id:id}).set({transport:req.body.transport,currentstatus:req.body.status,addressDelivery: address ? address.id : order.addressDelivery, carrier: carrier.id});
+      
       if(order.tracking === ''){
         await sails.helpers.carrier.shipment(id);
       }

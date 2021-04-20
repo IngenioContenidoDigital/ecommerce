@@ -74,8 +74,8 @@ module.exports = {
   }`,
 
   PRODUCTID :
-  `query PrestashopProductIdQuery($productId: String) {
-    PrestashopProductId(productId: $productId) {
+  `query PrestashopProductIdQuery($id: String) {
+    PrestashopProductId(productId: $id) {
       product{
         name
         externalId

@@ -9,5 +9,14 @@ module.exports = {
             channel,
             discount
         }
+    }`,
+
+  SHOPIFY_ORDERS : gql`
+    subscription{
+        ShopifyOrders{
+            orderId,
+            key,
+            channel,
+        }
     }`
 };

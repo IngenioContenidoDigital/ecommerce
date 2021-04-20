@@ -58,7 +58,7 @@ module.exports = {
         try{
           let order = await Order.create({
             totalOrder:total,
-            totalShipping:0,
+            totalShipping: payment.data.totalShipping ? payment.data.totalShipping : 0,
             totalProducts:carttotal,
             totalDiscount:totaldiscount,
             productsDiscount:productsdiscount,
@@ -105,7 +105,7 @@ module.exports = {
               },
               limit: 1
             });
-            commission = commissionDiscount.length > 0 ? commissionDiscount[0].value : commissionChannel.length > 0 ? commissionChannel[0].value : 0;
+            commission = commissionDiscount.length > 0 ? commissionDiscount[0].value : commissionChannel.length > 0 ? commissionChannel[0].value : 20;
           }else{
             commission = 20;
           }

@@ -76,8 +76,8 @@ module.exports = {
   }`,
 
   PRODUCTID :
-    `query VtexProductIdQuery($productId: String) {
-      VtexProductId(productId: $productId) {
+    `query VtexProductIdQuery($id: String) {
+      VtexProductId(productId: $id) {
         product{
           name
           externalId
@@ -119,6 +119,43 @@ module.exports = {
             file
             src
           }
+        }
+      }
+    }`,
+
+  ORDERID :
+    `query VtexOrderIdQuery($id: String) {
+      VtexOrderId(orderId: $id) {
+        channelref,
+        channel,
+        totalShipping,
+        paymentMethod,
+        paymentId,
+        status,
+        createdAt,
+        customer{
+          emailAddress
+          emailStatus
+          fullName
+          dniType
+          dni
+          mobile
+          mobileStatus
+        }
+        address{
+          name
+          addressline1
+          addressline2
+          city
+          region
+          notes
+          zipcode
+        }
+        items{
+          skuId
+          quantity
+          price
+          discount
         }
       }
     }`

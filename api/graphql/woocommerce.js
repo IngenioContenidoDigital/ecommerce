@@ -88,8 +88,8 @@ VARIATIONS : `
         }
 `,
 PRODUCT_VARIATION_ID :
-`query WooCommerceProductVariationQuery($productId: String) {
-    WooCommerceProductVariation(productId: $productId) {
+`query WooCommerceProductVariationQuery($id: String) {
+    WooCommerceProductVariation(productId: $id) {
             data{
                 quantity
                 price
@@ -106,8 +106,8 @@ PRODUCT_VARIATION_ID :
         }
     }`,
 PRODUCTID :
-`query WooCommerceProductIdQuery($productId: String) {
-    WooCommerceProductId(productId: $productId) {
+`query WooCommerceProductIdQuery($id: String) {
+    WooCommerceProductId(productId: $id) {
             product{
                 name
                 simple
@@ -148,6 +148,43 @@ PRODUCTID :
                         value
                     }
                 }
+            }
+        }
+    }`,
+    
+    ORDERID :
+    `query WoocommerceOrderIdQuery($id: String) {
+        WooCommerceOrderId(orderId: $id) {
+            channelref,
+            channel,
+            totalShipping,
+            paymentMethod,
+            paymentId,
+            status,
+            createdAt,
+            customer{
+                emailAddress
+                emailStatus
+                fullName
+                dniType
+                dni
+                mobile
+                mobileStatus
+            }
+            address{
+                name
+                addressline1
+                addressline2
+                city
+                region
+                notes
+                zipcode
+            }
+            items{
+                skuId
+                quantity
+                price
+                discount
             }
         }
     }`
