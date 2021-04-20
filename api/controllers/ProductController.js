@@ -1569,7 +1569,7 @@ module.exports = {
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
             let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
             .tolerate(async (err) => {
-              response.errors.push('REF: '+pl.reference+' no creado en Mercadolibre: '+ err.message);
+              response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
             });
             if(body){
               if(action==='Update'){
@@ -1585,8 +1585,10 @@ module.exports = {
               }
               if(action==='Post'){
                 result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
-                .tolerate((err)=>{return;});
-                if(result.id.length>0){
+                .tolerate((err)=>{ 
+                  response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
+                });
+                if(result && result.id.length>0){
                   await ProductChannel.findOrCreate({id: productChannelId},{
                     product:pl.id,
                     channel:integration.channel.id,
