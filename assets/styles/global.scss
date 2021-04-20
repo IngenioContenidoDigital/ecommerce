@@ -1,5 +1,9 @@
-@import "https://fonts.googleapis.com/css?family=Lato:300,400";
+.button{font-weight: bold;}
 .menu{padding:7px 0px 7px 10px;}
+.menu-label{
+    font-family: $family-sans-serif;
+    font-weight:700;
+}
 .menu-label:hover{
   cursor:pointer;
 }

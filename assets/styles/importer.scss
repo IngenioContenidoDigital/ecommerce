@@ -1,1 +1,29 @@
+@charset "utf-8";
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+$family-sans-serif: "Montserrat", sans-serif;
+$size-8: 0.625rem;
+
+// 1Ecommerce Colors
+$blue: #006BF8; //Para botones y hover 
+$grey: #707070; //Para textos como titulo
+$grey-light: #898989; //Para textos normales
+$blue-light: #6CA0FF; //Para resaltar (En caso de link o hover de letras)
+$blue-dark: #0046F8; //Para resaltar botones que ya están en #006BF8, si al pasar por encima se necesita resaltar que ya esta presionado o se va a hacer, ejemplo : botón descargar guía que ya es azul "medio" al presionarlo pasa al azul más oscuro.
+
+$primary: $blue;
+
+$button-hover-color:$blue-dark;
+
+/*! bulma.io v0.8.0 | MIT License | github.com/jgthms/bulma */
+@import "../../node_modules/bulma/sass/utilities/_all";
+@import "../../node_modules/bulma/sass/base/_all";
+@import "../../node_modules/bulma/sass/elements/_all";
+@import "../../node_modules/bulma/sass/form/_all";
+@import "../../node_modules/bulma/sass/components/_all";
+@import "../../node_modules/bulma/sass/grid/_all";
+@import "../../node_modules/bulma/sass/layout/_all";
+@import "../../node_modules/bulma/sass/extensions/_all";
+
 @import 'global.scss';
