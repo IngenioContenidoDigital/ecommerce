@@ -30,7 +30,10 @@
       </div>
       <div class="navbar-item is-inline-block">
           <div class="buttons">
-            <a href="/cart" class="button has-badge-rounded" id="cart-button" data-badge="<%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%>"><i class='is-size-4 bx bxs-cart'></i></a>
+            <a href="/cart" id="cart-button" class="button">
+              <span title="Badge top right" class="badge is-info"><%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%></span>
+              <i class='is-size-4 bx bxs-cart'></i>
+            </a>
             <div class="dropdown is-right is-hoverable">
               <div class="dropdown-trigger">
                 <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
