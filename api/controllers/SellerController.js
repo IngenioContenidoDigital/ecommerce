@@ -422,7 +422,7 @@ module.exports = {
             });
           }
           break;
-      
+          //add case for shopify, vtex, prestashop
         default:
           break;
       }
