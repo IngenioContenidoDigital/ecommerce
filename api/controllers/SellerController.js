@@ -413,12 +413,15 @@ module.exports = {
           case 'items':
             await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
             break;
+          case 'claims':
+            await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
+            break;
           default:
             break;
         }
         return res.ok();
       } catch(err) {
-        return res.status(404).send(err);
+        return res.status(404).send(err.message);
       }
     }
     return res.status(404).send('No se encontró integracion para el seller');
@@ -488,13 +491,14 @@ module.exports = {
     for(let q of questions){
       const identifier = q.product ? q.product.id : q.conversation.id;
       if(!messages.some(m => m.id === identifier)){
-        const questi = q.product ? questions.filter(item => item.product.id === identifier) : questions.filter(item => item.conversation.id === identifier);
+        const questi = q.product ? questions.filter(item => item.product && item.product.id === identifier) : questions.filter(item => item.conversation && item.conversation.id === identifier);
         messages.push({
           id: identifier,
           isproduct: q.product ? true : false,
           name: q.product ? q.product.name.toUpperCase() : q.conversation.name.toUpperCase(),
           created: q.dateCreated,
-          questions: questi
+          questions: questi,
+          type: q.product ? '' : q.conversation.recipient
         });
       }
     }
@@ -507,7 +511,7 @@ module.exports = {
     }
     let identifier = req.body.productId;
     const isproduct = req.body.isproduct;
-    let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answer') : await Question.find({conversation: identifier}).sort('createdAt DESC').populate('conversation').populate('answer');
+    let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answer') : await Question.find({conversation: identifier}).populate('conversation').populate('answer');
     if (isproduct) {
       questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
     }

@@ -8,6 +8,7 @@
 module.exports = {
 
   attributes: {
+    idAnswer: {type:'string'},
     text: {type:'string'},
     status: {type:'string'},
     dateCreated: {type:'number'}

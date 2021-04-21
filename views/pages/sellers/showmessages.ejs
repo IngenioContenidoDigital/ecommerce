@@ -47,10 +47,11 @@
         listQuestions.innerHTML = '';
         if (resData.messages.length > 0) {
           resData.messages.forEach(message => {
+            const classTitle = message.type === 'claim' ? 'title-claim-color' : '';
             const article = `<article class="post menu-title" id="`+message.id+`" onclick="showQuestions(\'` + message.id + `\', ${message.isproduct})">
               <div class="media">
                 <div class="media-left">
-                  <h6>`+message.name+`</h6>
+                  <h6 class="${classTitle}">`+message.name+`</h6>
                 </div>
                 <div class="media-content">
                   <div class="content">
