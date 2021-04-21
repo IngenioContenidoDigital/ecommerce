@@ -8,7 +8,7 @@
     <% channels.forEach(function(channel){ %>
       <div class="column images-message">
         <div class="button button-message" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
-          <span class="badge"><%= countQuestion %></span>
+          <span class="badge is-danger"><%= countQuestion %></span>
           <span class="icon size-icon">
             <img src="<%=imgurl%>/images/channels/<%= channel.logo %>" name="logo" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
           </span>
