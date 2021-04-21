@@ -1453,7 +1453,7 @@ module.exports = {
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
+            products = products.filter(pro => pro.channels.length > 0 /*&& pro.channels[0].iscreated*/);
             break;
           case 'Image':
             action = 'Image';
