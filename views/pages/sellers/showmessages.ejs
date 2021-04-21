@@ -8,7 +8,8 @@
     <% channels.forEach(function(channel){ %>
       <% countQuestion = questionsChannel.find(data => data.channel === channel.id);%>
       <div class="column images-message">
-        <div class="button button-message has-badge-rounded" data-badge="<%- countQuestion ? countQuestion.count : 0 %>" id="<%= channel.id %>" color='<%= channel.colorcode %>' integration="<%= countQuestion ? countQuestion.integration : '' %>">
+        <div class="button button-message" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
+          <span class="badge is-danger"><%= countQuestion %></span>
           <span class="icon size-icon">
             <img src="<%=imgurl%>/images/channels/<%= channel.logo %>" name="logo" id="<%= channel.id %>" integration="<%= countQuestion ? countQuestion.integration : '' %>" color='<%= channel.colorcode %>'>
           </span>
