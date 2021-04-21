@@ -361,7 +361,7 @@ display: block;
 }
 
 .image-integration {
-    height: 30px !important;
+    height: 33px !important;
 }
 
 .boxmessage {
@@ -395,6 +395,15 @@ article.post {
     margin: 1rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid #E6EAEE;
+}
+
+.media-chat {
+    border-top:0px !important;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    align-items: flex-start;
+    display: flex;
+    text-align: left;
 }
 
 .media-content p {

@@ -80,6 +80,7 @@ module.exports.routes = {
   'POST /getquestions' : {controller:'SellerController', action:'getquestions'},
   'POST /answerquestion' : {controller:'SellerController', action:'answerquestion'},
   'POST /notificationml' : {controller:'SellerController',action:'notificationml'},
+  'POST /webhookmessenger/:uuid' : {controller:'SellerController',action:'webhookmessenger'},
   'POST /seller/create' : {controller:'SellerController',action:'createseller'},
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},
   'POST /seller/edit/:id' : {controller:'SellerController',action:'editseller'},

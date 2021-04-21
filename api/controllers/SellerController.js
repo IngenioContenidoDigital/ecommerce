@@ -37,7 +37,7 @@ module.exports = {
         .populate('region')
         .populate('city');
       }
-      channels = await Channel.find({where:{type: { '!=': 'messenger' }}});
+      channels = await Channel.find({});
       integrations = await Integrations.find({
         where:{seller:id},
       }).populate('channel');
@@ -68,7 +68,7 @@ module.exports = {
         city:req.body.city,
         zipcode:req.body.zipcode,
         notes:req.body.notes
-      }
+      };
 
       let sellerData = {
         name:req.body.name.trim().toLowerCase(),
@@ -138,8 +138,8 @@ module.exports = {
     }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      
-       await Seller.updateOne({id:id}).set({
+
+      await Seller.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
         contact:req.body.contact,
@@ -156,7 +156,7 @@ module.exports = {
         safestock: req.body.safestock ? req.body.safestock : 0
       });
 
-    }catch(err){      
+    }catch(err){
       error=err;
       if(err.code==='badRequest'){
         await Seller.updateOne({id:id}).set({
@@ -318,49 +318,47 @@ module.exports = {
     let channel = req.param('channel');
     const nameChannel = req.param('namechannel');
     let integration = req.body.integration;
-    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.'
+    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.';
     let edit = false;
-
-    Integrations.findOrCreate({id: integration},{
-      channel:channel,
-      name: req.body.name,
-      url:req.body.url ? req.body.url : '',
-      user:req.body.user,
-      key:req.body.key,
-      secret:req.body.secret ? req.body.secret : '',
-      version:req.body.version ? req.body.version : '',
-      seller:seller
-    }).exec(async (err, record, created)=>{
-      if(err){return res.redirect('/sellers?error='+err);}
-      integration = record.id;
-      if(!created){
-        record = await Integrations.updateOne({id:record.id}).set({
-          name: req.body.name,
-          url:req.body.url ? req.body.url : record.url,
-          user:req.body.user ? req.body.user : record.user,
-          key:req.body.key ? req.body.key : record.key,
-          secret:req.body.secret ? req.body.secret : record.secret,
-          version:req.body.version ? req.body.version : record.version
-        });
-        edit = record.useridml !== '' && record.secret !== '' ? true : false;
-      }
-      if(nameChannel == 'mercadolibre' && !edit){
-        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
-      }else{
+    channel = await Channel.findOne({id: channel});
+    if (channel.type !== 'messenger') {
+      Integrations.findOrCreate({id: integration},{
+        channel:channel.id,
+        name: req.body.name,
+        url:req.body.url ? req.body.url : '',
+        user:req.body.user,
+        key:req.body.key,
+        secret:req.body.secret ? req.body.secret : '',
+        version:req.body.version ? req.body.version : '',
+        seller:seller
+      }).exec(async (err, record, created)=>{
+        if(err){return res.redirect('/sellers?error='+err);}
+        integration = record.id;
+        if(!created){
+          record = await Integrations.updateOne({id:record.id}).set({
+            name: req.body.name,
+            url:req.body.url ? req.body.url : record.url,
+            user:req.body.user ? req.body.user : record.user,
+            key:req.body.key ? req.body.key : record.key,
+            secret:req.body.secret ? req.body.secret : record.secret,
+            version:req.body.version ? req.body.version : record.version
+          });
+          edit = record.useridml !== '' && record.secret !== '' ? true : false;
+        }
+        if(nameChannel == 'mercadolibre' && !edit){
+          return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
+        }else{
+          return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
+        }
+      });
+    } else {
+      const result = await sails.helpers.channel.messenger.createWhatsapp(seller,channel.id,req.body.name,req.body.user,req.body.indicative);
+      if (result.error) {
+        return res.redirect('/sellers?error='+result.error);
+      } else {
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
-    });
-  },
-  showmessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let seller = req.param('seller');
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
     }
-    let channels = await Channel.find({type: 'messenger'});
-    let countQuestion = await Question.count({status: 'UNANSWERED', seller: seller});
-
-    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, countQuestion, seller});
   },
   notificationml: async function(req, res){
     let moment = require('moment');
@@ -425,23 +423,76 @@ module.exports = {
     }
     return res.status(404).send('No se encontró integracion para el seller');
   },
+  webhookmessenger: async function(req, res){
+    // let moment = require('moment');
+    let identifier = req.param('uuid');
+    const body = req.body;
+    let integration = await Integrations.findOne({user: identifier});
+    if (body.challenge) {
+      if (!integration) {
+        return res.status(403).send('Not authorized');
+      }
+      return res.send({challenge: body.challenge});
+    }
+    console.log(body);
+    if (integration && body.uuid) {
+      let conversation = await Conversation.findOne({identifier: body.identifier})
+      if (!conversation) {
+        conversation = await Conversation.create({
+          name: body.payload.user.name,
+          identifier: body.identifier,
+          recipient: body.recipient,
+          integration: integration.id
+        }).fetch();
+      }
+      let questi = {
+        idMl: body.uuid,
+        seller: integration.seller,
+        text: body.type === 'text' ? body.payload.text : '',
+        status: 'UNANSWERED',
+        dateCreated: parseInt(body.created),
+        conversation: conversation.id,
+        answer: null,
+        integration: integration.id
+      };
+    }
+    return res.send();
+  },
+  showmessages: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    let seller = req.param('seller');
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
+      throw 'forbidden';
+    }
+    const questionsChannel = [];
+    let channels = await Channel.find({type: 'messenger'});
+    let integrations = await Integrations.find({seller: seller}).populate('channel');
+    for (const inte of integrations) {
+      const channel = inte.channel.name === 'mercadolibre' ? channels[0].id : inte.channel.id;
+      const count = await Question.count({status: 'UNANSWERED', seller: seller, integration: inte.id});
+      questionsChannel.push({channel, count, integration: inte.id});
+    }
+    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, questionsChannel, seller});
+  },
   filtermessages: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
       throw 'forbidden';
     }
     let seller = req.body.seller || req.session.user.seller;
+    const integration = req.body.integration;
     let messages = [];
-
-    let questions = await Question.find({seller: seller, status: 'UNANSWERED'}).sort('createdAt DESC')
-      .populate('product');
+    let questions = await Question.find({seller: seller, status: 'UNANSWERED', integration: integration}).sort('createdAt DESC')
+      .populate('product').populate('conversation');
 
     for(let q of questions){
-      if(!messages.some(m => m.id === q.product.id)){
-        const questi = questions.filter(item => item.product.id === q.product.id && item.status === 'UNANSWERED');
+      const identifier = q.product ? q.product.id : q.conversation.id;
+      if(!messages.some(m => m.id === identifier)){
+        const questi = q.product ? questions.filter(item => item.product.id === identifier) : questions.filter(item => item.conversation.id === identifier);
         messages.push({
-          id: q.product.id,
-          name: q.product.name.toUpperCase(),
+          id: identifier,
+          isproduct: q.product ? true : false,
+          name: q.product ? q.product.name.toUpperCase() : q.conversation.name.toUpperCase(),
           created: q.dateCreated,
           questions: questi
         });
@@ -454,10 +505,12 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
       throw 'forbidden';
     }
-    let productId = req.body.productId;
-
-    let questions = await Question.find({product: productId}).sort('createdAt DESC').populate('product').populate('answer');
-    questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
+    let identifier = req.body.productId;
+    const isproduct = req.body.isproduct;
+    let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answer') : await Question.find({conversation: identifier}).sort('createdAt DESC').populate('conversation').populate('answer');
+    if (isproduct) {
+      questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
+    }
     return res.send({questions});
   },
   answerquestion: async function(req, res){
