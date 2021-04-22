@@ -11,8 +11,10 @@ $grey: #707070; //Para textos como titulo
 $grey-light: #898989; //Para textos normales
 $blue-light: #6CA0FF; //Para resaltar (En caso de link o hover de letras)
 $blue-dark: #0046F8; //Para resaltar botones que ya están en #006BF8, si al pasar por encima se necesita resaltar que ya esta presionado o se va a hacer, ejemplo : botón descargar guía que ya es azul "medio" al presionarlo pasa al azul más oscuro.
+$cyan: #00a7ff;
 
 $primary: $blue;
+$info: $cyan;
 
 $button-hover-color:$blue-dark;
 

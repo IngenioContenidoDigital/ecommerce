@@ -120,7 +120,7 @@ module.exports = {
               fullName:req.body.fullname,
               verification:verification,
               dniType:req.body.dnitype,
-              dni:req.body.dni,
+              dni:req.body.dni ? req.body.dni.toString() : '',
               mobilecountry:country.id,
               mobile:req.body.mobile,
               mobileStatus:'unconfirmed',

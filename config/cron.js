@@ -18,7 +18,7 @@ module.exports.cron = {
     timezone: 'America/Bogota'
   },
   trackingCoordinadora: {
-    schedule: '02 12 * * * *',
+    schedule: '02 12 */3 * * *',
     onTick: async () => {
       console.log('Iniciando Rastreo de Pedidos');
       let moment = require('moment');

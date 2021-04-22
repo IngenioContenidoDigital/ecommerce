@@ -49,7 +49,7 @@ module.exports = {
                 password: await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
                 fullName: order.CustomerFirstName+' '+order.CustomerLastName,
                 dniType: 'CC',
-                dni: order.NationalRegistrationNumber,
+                dni: order.NationalRegistrationNumber ? order.NationalRegistrationNumber.toString() : '',
                 mobilecountry: city[0].region.country,
                 mobile: order.AddressShipping.Phone2 !== '' ? parseInt(order.AddressShipping.Phone2) : 0,
                 mobileStatus: 'unconfirmed',
