@@ -50,6 +50,16 @@ module.exports = {
             const existsQuest = await Question.findOne({idMl: message.id});
             if (!existsQuest) {
               questi = await Question.create(bodyQuesti).fetch();
+              if (message.attachments.length > 0) {
+                for (const atta of message.attachments) {
+                  await Attachment.create({
+                    filename: atta.filename,
+                    name: atta.original_filename,
+                    type: 'link',
+                    question: questi.id
+                  }).fetch();
+                }
+              }
             } else {
               questi = existsQuest;
             }
@@ -64,7 +74,19 @@ module.exports = {
                 status: message.stage,
                 dateCreated: parseInt(moment(message.date_created).valueOf()),
               }).fetch();
-              await Question.updateOne({id: questi.id}).set({answer: answer ? answer.id : null});
+              if (answer) {
+                await Question.updateOne({id: questi.id}).set({answer: answer.id});
+                if (message.attachments.lenght > 0) {
+                  for (const atta of message.attachments) {
+                    await Attachments.create({
+                      filename: atta.filename,
+                      name: atta.original_filename,
+                      type: 'link',
+                      answer: answer.id
+                    }).fetch();
+                  }
+                }
+              }
             }
           }
         }

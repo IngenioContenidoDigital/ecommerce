@@ -1,4 +1,5 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <section class="container">
   <div class="notification is-danger is-light is-hidden" id="error">
     Error al contestar la pregunta.
@@ -8,9 +9,9 @@
     <% channels.forEach(function(channel){ %>
       <% countQuestion = questionsChannel.find(data => data.channel === channel.id);%>
       <div class="column images-message">
-        <div class="button button-message" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
-          <span class="badge is-danger"><%= countQuestion %></span>
-          <span class="icon size-icon">
+        <div class="button button-message" id="<%= channel.id %>" color='<%= channel.colorcode %>' integration="<%= countQuestion ? countQuestion.integration : '' %>">
+          <span class="icon-badge"><%- countQuestion ? countQuestion.count : 0 %></span>
+          <span class="size-icon">
             <img src="<%=imgurl%>/images/channels/<%= channel.logo %>" name="logo" id="<%= channel.id %>" integration="<%= countQuestion ? countQuestion.integration : '' %>" color='<%= channel.colorcode %>'>
           </span>
         </div>
@@ -21,6 +22,7 @@
   <div class="container container-message is-hidden" id="listAnswers"></div>
 </section>
 <script>
+
   live('.button-message','click', e =>{
     let seller = '<%- seller %>'
     let channelId = e.target.id;
@@ -106,25 +108,76 @@
     } else {
       questions.forEach(question => {
         const answer = question.answer !== null ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answer.text +'&nbsp;</p>' : ''
-        const quest = '<div class="media-chat"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('minute').fromNow() +'</span></div></div>'
+        let attachments = '';
+        question.attachments.forEach(attachment => {
+          if (attachment.type === 'link') {  
+            attachments += `
+            <span class="icon-text has-text-info attachment" onclick="donwloadAttachment(\'${attachment.filename}\',\'${attachment.name}\',\'${question.integration}\',\'${question.conversation.identifier}\')">
+              <span class="icon">
+                <i class='bx bx-link-alt'></i>
+              </span>
+              <span>${attachment.name}</span>
+            </span>`;
+          }
+        });
+        const quest = `
+          <div class="media-chat">
+            <div class="media-left message-left">
+              <i class="bx bxs-conversation bx-sm"></i>
+            </div>
+            <div class="media-content container-content">
+              <div class="content">
+                <p class="bubble message-content">${question.text}<br/>${attachments}</p><br/>${answer}
+              </div>
+            </div>
+            <div class="media-right">
+              <span class="has-text-grey-light message-right">${moment(question.dateCreated).locale('es').startOf('minute').fromNow()}</span>
+            </div>
+          </div>`
         listAnsw += quest
       });
-      const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="#" class="title-questions">`+questions[0].conversation.name.toUpperCase()+`</a><article class="post">`+ listAnsw +`</article>`;
+      const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="#" class="title-questions">`+questions[0].conversation.name.toUpperCase()+`</a><article class="post"><div class="answer-scroll">`+ listAnsw +`</div></article>`;
       const formAnswer = `
-      <div class="field has-addons">
-        <p class="control is-expanded">
-          <input class="input" type="text" placeholder="Escribe un mensaje">
-        </p>
-        <p class="control">
-          <button class="button is-primary">
-            <span class="icon is-small">
-              <i class='bx bxs-send'></i>
-            </span>
-          </button>
-        </p>
+      <div class="container-form">
+        <input class="input-form input is-small" type="text" placeholder="Enviar mensaje...">
+        <div class="div-form-answer">
+          <span class="icon-form">
+            <i class='bx bx-image bx-icon' onclick="clickAnswerConversation()"></i>
+          </span>
+          <span class="icon-form">
+            <i class='bx bxs-send bx-icon' onclick="clickAnswerConversation()"></i>
+          </span>
+        </div>
       </div>`;
-      listAnswers.innerHTML = `<div class="box content container-scroll">`+arti+formAnswer+`</div>`;
+      listAnswers.innerHTML = `<div class="box content">`+arti+formAnswer+`</div>`;
     }
+  }
+
+  function donwloadAttachment(filename, name, integration, identifier) {
+    io.socket.post('/donwloadattachment', { filename, integration, identifier }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        saveAs(new Blob([resData],{type:"application/octet-stream"}), name);
+      }
+    });
+  }
+
+  function clickAnswerConversation() {
+    console.log('entre');
+    // let text = document.getElementById(id).value;
+    // let seller = '<%- seller %>';
+    // io.socket.post('/answerquestion', { text, id, seller }, (resData, jwRes) => {
+    //   if(jwRes.statusCode == 200) {
+    //     if (resData.questions) {
+    //       createHtmlQuestions(resData.questions);
+    //     } else {
+    //       const el = document.getElementById('error');
+    //       removeClass(el,'is-hidden');
+    //       setTimeout(function() {
+    //         addClass(el,'is-hidden');
+    //       }, 4000);
+    //     }
+    //   }
+    // });
   }
 
   function clickAnswer(id) {

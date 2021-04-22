@@ -389,12 +389,41 @@ display: block;
 
 .size-icon {
     width: 2.1em !important;
+    align-items: center;
+    display: inline-flex;
+    justify-content: center;
+    margin-left: calc(-0.5em - 1px);
+    margin-right: calc(-0.5em - 1px);
 }
 
 article.post {
     margin: 1rem;
-    padding-bottom: 1rem;
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid #E6EAEE;
+}
+
+.answer-scroll {
+    max-height: 550px;
+    overflow: auto;
+    padding: 0 1rem;
+}
+
+.answer-scroll::-webkit-scrollbar {
+    -webkit-appearance: none;
+}
+
+.answer-scroll::-webkit-scrollbar:vertical {
+    width:10px;
+}
+
+.answer-scroll::-webkit-scrollbar-button:increment,.answer-scroll::-webkit-scrollbar-button {
+    display: none;
+} 
+
+.answer-scroll::-webkit-scrollbar-thumb {
+    background-color: #a3a3a3;
+    border-radius: 20px;
+    border: 2px solid #f1f2f3;
 }
 
 .media-chat {
@@ -447,7 +476,7 @@ article.post:last-child {
     margin-right: 30px;
 }
 
-.images-message [data-badge]::after {
+.icon-badge {
     display: inline-block;
     position: absolute;
     margin: 0;
@@ -461,9 +490,7 @@ article.post:last-child {
     color: #fff;
     content: attr(data-badge);
     z-index: 4;
-}
-
-.images-message [data-badge]::after {
+    border-radius: 50%;
     min-width: 1rem;
     min-height: 1rem;
     font-size: .75rem;
@@ -471,12 +498,7 @@ article.post:last-child {
     right: 6px;
     bottom: auto;
     left: auto;
-    -webkit-transform: translate(50%,-50%);
     transform: translate(50%,-50%);
-}
-
-.images-message [data-badge].has-badge-rounded::after {
-    border-radius: 290486px;
 }
 
 .text-notification {
@@ -507,4 +529,43 @@ article.post:last-child {
         min-width: 100%;
       }
     }
-  }
+}
+
+.container-form {
+    border-radius: 22px;
+    border: solid 1px lightgray;
+    display: flex;
+    padding-left: 11px;
+    padding-right: 8px;
+    margin-left: 60px;
+    margin-right: 60px;
+}
+
+.input-form {
+    border: 0 !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    width: 90%;
+    margin-left: 20px;
+}
+
+.input-form:focus { 
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+.icon-form {
+    height: 0px;
+    margin: 1px;
+    margin-left: 10px;
+}
+
+.div-form-answer{
+    display: flex;
+    margin-right: 30px;
+}
+
+.bx-icon {
+    font-size: 1.8rem !important;
+    cursor: pointer;
+}

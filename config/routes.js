@@ -85,6 +85,7 @@ module.exports.routes = {
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},
   'POST /seller/edit/:id' : {controller:'SellerController',action:'editseller'},
   'GET /showreports/:id' : {controller:'SellerController',action:'showreports'},
+  'POST /donwloadattachment' : {controller:'SellerController',action:'donwloadattachment'},
   'GET /colors/:action?/:id?' : {controller:'ColorController',action:'showcolors'},
   'POST /color/create' : {controller:'ColorController',action:'createcolor'},
   'POST /color/edit/:id' : {controller:'ColorController',action:'editcolor'},

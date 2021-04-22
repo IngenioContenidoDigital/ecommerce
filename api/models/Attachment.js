@@ -1,5 +1,5 @@
 /**
- * Answer.js
+ * Attachments.js
  *
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
@@ -7,13 +7,10 @@
 
 module.exports = {
   attributes: {
-    idAnswer: {type:'string'},
-    text: {type:'string'},
-    status: {type:'string'},
-    dateCreated: {type:'number'},
-    attachments:{
-      collection:'attachment',
-      via:'answer'
-    }
+    filename:{type:'string',required:true},
+    name:{type:'string'},
+    type:{type:'string',required:true},
+    question:{model:'question'},
+    answer:{model:'answer'}
   },
 };

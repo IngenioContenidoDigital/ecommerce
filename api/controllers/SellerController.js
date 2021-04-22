@@ -487,7 +487,6 @@ module.exports = {
     let messages = [];
     let questions = await Question.find({seller: seller, status: 'UNANSWERED', integration: integration}).sort('createdAt DESC')
       .populate('product').populate('conversation');
-
     for(let q of questions){
       const identifier = q.product ? q.product.id : q.conversation.id;
       if(!messages.some(m => m.id === identifier)){
@@ -511,7 +510,7 @@ module.exports = {
     }
     let identifier = req.body.productId;
     const isproduct = req.body.isproduct;
-    let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answer') : await Question.find({conversation: identifier}).populate('conversation').populate('answer');
+    let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answer') : await Question.find({conversation: identifier}).populate('conversation').populate('answer').populate('attachments');
     if (isproduct) {
       questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
     }
@@ -546,6 +545,16 @@ module.exports = {
       }
     } catch (error) {
       return res.send(error);
+    }
+  },
+  donwloadattachment: async function(req, res){
+    try {
+      let integration = await sails.helpers.channel.mercadolibre.sign(req.body.integration);
+      let response = await sails.helpers.channel.mercadolibre.request(`/v1/claims/${req.body.identifier}/attachments/${req.body.filename}/download`, integration.channel.endpoint, integration.secret, {responseType: 'arraybuffer'});
+      return res.send(response);
+    } catch (err) {
+      console.log(err);
+      return res.status(404).send(err.message);
     }
   },
   showreports: async function(req, res){

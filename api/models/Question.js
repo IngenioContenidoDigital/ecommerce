@@ -16,6 +16,10 @@ module.exports = {
     product: {model:'product'},
     conversation: {model:'conversation'},
     answer: {model:'answer'},
-    integration:{ model:'integrations' }
+    integration:{ model:'integrations' },
+    attachments:{
+      collection:'attachment',
+      via:'question'
+    }
   },
 };
