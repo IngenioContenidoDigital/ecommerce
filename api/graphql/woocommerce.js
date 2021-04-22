@@ -187,5 +187,27 @@ PRODUCTID :
                 discount
             }
         }
-    }`
+    }`,
+    ADD_WEBHOOK :
+        `mutation addWebHook ($webhook :WebHookInputType){
+                createWoocommerceWebHook(input:$webhook){
+                    id
+                    name
+                    delivery_url
+                    status
+                    topic
+                }
+            }
+        `,
+
+    UPDATE_WEBHOOK :
+        `mutation updateWebHook ($webhook :WebHookInputType, $id:ID){
+                updateWoocommerceWebHook(input:$webhook, webhookId:$id){
+                    name
+                    delivery_url
+                    status
+                    topic
+                }
+        }
+    `
 }
