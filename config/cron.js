@@ -18,7 +18,7 @@ module.exports.cron = {
     timezone: 'America/Bogota'
   },
   trackingCoordinadora: {
-    schedule: '00 12 */3 * * *',
+    schedule: '02 12 * * * *',
     onTick: async () => {
       console.log('Iniciando Rastreo de Pedidos');
       let moment = require('moment');
@@ -31,14 +31,14 @@ module.exports.cron = {
       let orders = await Order.find({
         where:{currentstatus:statesIds,channel:'direct',tracking:{'!=':''}},
         select:['id','tracking','seller']
-      });
+      }).populate('currentstatus');
       for(let order of orders){
         let result = await sails.helpers.carrier.coordinadora.tracking(order.tracking);
         if(result){
           let stateupdated = parseInt(moment(result.estado.fecha+' '+result.estado.hora).valueOf());
           let newstatus = await sails.helpers.orderState(result.estado.codigo);
           await sails.helpers.notification(order, newstatus);
-          if(newstatus!==order.currentstatus){
+          if(newstatus!==order.currentstatus.id){
             await Order.updateOne({id:order.id}).set({currentstatus:newstatus,updatedAt:stateupdated});
             await OrderHistory.create({
               order:order.id,
