@@ -525,7 +525,7 @@ module.exports = {
       stats: 'STRING_VALUE'*/
     };
     if(seller!==null){
-      params.filterQuery = 'seller:\''+seller.id+'\'';
+      params.filterQuery = 'seller:\''+seller.name+'\'';
     }
 
     let exists = async (element,compare) =>{
