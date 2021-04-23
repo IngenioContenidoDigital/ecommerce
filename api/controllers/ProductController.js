@@ -1,4 +1,4 @@
-const { empty } = require('apollo-link');
+
 
 /**
  * ProductController
@@ -1263,8 +1263,10 @@ module.exports = {
       .populate('mainColor')
       .populate('seller')
       .populate('gender')
-      .populate('categories');
+      .populate('categories')
+      .populate('channels',{name:'iridio'});
 
+    products = products.filter(p => p.channels.length > 0);
     products.forEach(pr => {
       let doc = {
         type: req.param('action'), // add or delete
