@@ -1,3 +1,4 @@
+let moment = require('moment');
 /**
  * IndexController
  *
@@ -79,7 +80,6 @@ module.exports = {
     return res.view('pages/homeadmin',{layout:'layouts/admin'});
   },
   filterDashboard:async (req, res) =>{
-    let moment = require('moment');
     if (!req.isSocket) {
       return res.badRequest();
     }
@@ -153,7 +153,6 @@ module.exports = {
   },
   generateReport:async (req, res) =>{
     const Excel = require('exceljs');
-    const moment = require('moment');
     moment.locale('es');
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
@@ -227,8 +226,7 @@ module.exports = {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
-    }
-    const moment = require('moment');
+    }   
     const pdf = require('html-pdf');
     let sellerId = req.param('seller');
     let month = req.param('month');
@@ -364,7 +362,6 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
     }
-    const moment = require('moment');
     moment.locale('es');
     const seller = req.param('seller');
     const month = req.param('month');
@@ -578,7 +575,6 @@ module.exports = {
   listproduct: async function(req, res){
     let seller = null;
     if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
-    let moment = require('moment');
     let product = await Product.findOne({name:decodeURIComponent(req.param('name')),reference:decodeURIComponent(req.param('reference'))})
       .populate('manufacturer')
       .populate('mainColor')
@@ -1272,20 +1268,29 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         break;
       case 'onOrderItemsStatusChanged':
         let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
-
         if(!state){
           return res.serverError('Nuevo estado del pedido no identificado');
         }
-
+        let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
+        let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+        let result = await JSON.parse(response);
+        let dord = result.SuccessResponse.Body.Orders.Order;
         const order = await Order.findOne({channelref:data.OrderId});
-        await sails.helpers.notification(order, state);
-        await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
+        await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+        await OrderHistory.create({
+          order:order.id,
+          state:state,
+          createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+          updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+        });
+        
         let seller = await Seller.findOne({id: order.seller});
         if (seller && seller.integrationErp && state) {
           let orderstate = await OrderState.findOne({id:state});
           let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
+        await sails.helpers.notification(order, state);
         break;
       case 'onFeedCompleted':
         const feed = req.body.payload.Feed;
@@ -1331,15 +1336,25 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         if(!state){
           return res.serverError('Nuevo estado del pedido no identificado');
         }
+        let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
+        let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+        let result = await JSON.parse(response);
+        let dord = result.SuccessResponse.Body.Orders.Order;
         const order = await Order.findOne({channelref:data.OrderId});
-        await sails.helpers.notification(order, state);
+        await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+        await OrderHistory.create({
+          order:order.id,
+          state:state,
+          createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+          updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+        });        
         let seller = await Seller.findOne({id: order.seller});
-        await Order.updateOne({ channelref:data.OrderId}).set({ currentstatus : state });
         if (seller && seller.integrationErp && state) {
           let orderstate = await OrderState.findOne({id:state});
           let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
           await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
         }
+        await sails.helpers.notification(order, state);
         break;
       case 'onFeedCompleted':
         const feed = req.body.payload.Feed;
@@ -1357,7 +1372,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         break;
     }
     return res.ok();
-  },
+  },  
   buildmenu : async (req, res) =>{
     if (!req.isSocket) {
       return res.badRequest();

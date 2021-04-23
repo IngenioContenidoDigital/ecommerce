@@ -13,7 +13,7 @@ module.exports = {
     password: {type:'string',required:true, protect: true},
     fullName: {type:'string'},
     verification:{type:'string', minLength:6, maxLength:6},
-    dniType:{type:'string',isIn: ['CC', 'CE', 'NIT', 'PPN', 'SSN', 'LIC', 'DNI']},
+    dniType:{type:'string'},
     dni:{type:'string',defaultsTo:''},
     mobilecountry:{model:'country'},
     mobile:{type:'number'},
