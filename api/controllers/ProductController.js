@@ -1255,8 +1255,9 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'updateindex')) {
       throw 'forbidden';
     }
-    req.setTimeout(600000);
+    req.setTimeout(0);
     let documents = [];
+    let channel = await Channel.findOne({name:'iridio'});
     let products = await Product.find({ active: true })
       .populate('tax')
       .populate('manufacturer')
@@ -1264,7 +1265,7 @@ module.exports = {
       .populate('seller')
       .populate('gender')
       .populate('categories')
-      .populate('channels',{name:'iridio'});
+      .populate('channels',{id:channel.id});
 
     products = products.filter(p => p.channels.length > 0);
     products.forEach(pr => {
@@ -1306,11 +1307,9 @@ module.exports = {
     };
     csd.uploadDocuments(params, (err, data) => {
       if (err) { console.log(err, err.stack); } // an error occurred
-      console.log(data);
       let index = new AWS.CloudSearch();
       index.indexDocuments({ DomainName: 'iridio' }, (err, data) => {
         if (err) { console.log(err); }
-        console.log(data);
         return res.redirect('/inicio');
       });
     });
