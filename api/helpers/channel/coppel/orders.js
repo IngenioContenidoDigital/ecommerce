@@ -76,7 +76,7 @@ module.exports = {
                 password:await sails.helpers.passwords.hashPassword(order.customer.customer_id),
                 fullName:order.customer.firstname+' '+order.customer.lastname,
                 dniType:'CC',
-                dni:order.customer.customer_id,
+                dni:order.customer.customer_id ? order.customer.customer_id.toString() : '',
                 mobilecountry:city[0].region.country,
                 mobile:0,
                 mobileStatus:'unconfirmed',

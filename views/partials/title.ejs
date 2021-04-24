@@ -1,8 +1,11 @@
 <%if(typeof seller !== 'undefined' && seller !== null){%>
     <title><%= seller.name %></title>
     <link rel="shortcut icon" type="image/jpg" href="<%=imgurl%>/images/sellers/<%=seller.logo%>"/>
+<%}else if(req.hostname==='1ecommerce.app'){%>
+    <title>1Ecommerce</title>
+    <link rel="shortcut icon" type="image/png" href="1ecommerce.png"/>
 <%}else{%>
     <title>Iridio</title>
-    <link rel="shortcut icon" type="image/jpg" href="favicon.ico"/>
+    <link rel="shortcut icon" type="image/png" href="iridio.png"/>
 <%}%>
 <meta name="viewport" content="width=viewport-width, initial-scale=1, maximum-scale=1">

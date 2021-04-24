@@ -1,3 +1,4 @@
+
 /**
  * SellerController
  *
@@ -320,45 +321,118 @@ module.exports = {
     let integration = req.body.integration;
     const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.';
     let edit = false;
-    channel = await Channel.findOne({id: channel});
-    if (channel.type !== 'messenger') {
-      Integrations.findOrCreate({id: integration},{
-        channel:channel.id,
-        name: req.body.name,
-        url:req.body.url ? req.body.url : '',
-        user:req.body.user,
-        key:req.body.key,
-        secret:req.body.secret ? req.body.secret : '',
-        version:req.body.version ? req.body.version : '',
-        seller:seller
-      }).exec(async (err, record, created)=>{
-        if(err){return res.redirect('/sellers?error='+err);}
-        integration = record.id;
-        if(!created){
-          record = await Integrations.updateOne({id:record.id}).set({
-            name: req.body.name,
-            url:req.body.url ? req.body.url : record.url,
-            user:req.body.user ? req.body.user : record.user,
-            key:req.body.key ? req.body.key : record.key,
-            secret:req.body.secret ? req.body.secret : record.secret,
-            version:req.body.version ? req.body.version : record.version
-          });
-          edit = record.useridml !== '' && record.secret !== '' ? true : false;
-        }
-        if(nameChannel == 'mercadolibre' && !edit){
-          return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
-        }else{
-          return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
-        }
-      });
-    } else {
-      const result = await sails.helpers.channel.messenger.createWhatsapp(seller,channel.id,req.body.name,req.body.user,req.body.indicative);
-      if (result.error) {
-        return res.redirect('/sellers?error='+result.error);
-      } else {
+
+    let getProductUpdates = req.body.getProductUpdates == 'on' ? true : false;
+    let getOrderUpdates =  req.body.getOrderUpdates == 'on' ? true : false
+
+    Integrations.findOrCreate({id: integration},{
+      channel:channel,
+      name: req.body.name,
+      url:req.body.url ? req.body.url : '',
+      user:req.body.user,
+      key:req.body.key,
+      secret:req.body.secret ? req.body.secret : '',
+      version:req.body.version ? req.body.version : '',
+      seller:seller
+    }).exec(async (err, record, created)=>{
+      if(err){return res.redirect('/sellers?error='+err);}
+      integration = record.id;
+      if(!created){
+
+        record = await Integrations.updateOne({id:record.id}).set({
+          name: req.body.name,
+          url:req.body.url ? req.body.url : record.url,
+          user:req.body.user ? req.body.user : record.user,
+          key:req.body.key ? req.body.key : record.key,
+          secret:req.body.secret ? req.body.secret : record.secret,
+          version:req.body.version ? req.body.version : record.version
+        });
+        edit = record.useridml !== '' && record.secret !== '' ? true : false;
+
+      }
+
+      switch (nameChannel) {
+        case 'woocommerce':
+          let int = await Integrations.findOne({id : integration});
+          if(getProductUpdates && !int.product_creation_webhookId){
+            let product_created = {};
+            product_created.name = "1Ecommerce Product Creation Sync v2";
+            product_created.delivery_url = `https://import.1ecommerce.app/api/created_product/woocommerce/${record.key}/true`
+            product_created.status = "active",
+            product_created.topic = "product.created";
+            product_created.version  = req.body.version
+            
+            let product_creation_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', product_created);
+            let product_updated = {};
+            product_updated.name = "1Ecommerce Update Creation Sync v2";
+            product_updated.delivery_url = `https://import.1ecommerce.app/api/updated_product/woocommerce/${record.key}/true`
+            product_updated.status = "active",
+            product_updated.topic = "product.updated";
+            product_updated.version  = req.body.version
+            
+            let product_updates_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', product_updated);
+            
+            if(product_creation_response && product_updates_response){
+                await Integrations.update({ id : integration}).set({ 
+                  product_creation_webhookId : product_creation_response.id,
+                  product_updates_webhookId :  product_updates_response.id,
+                  product_webhook_status : true
+                })
+            }
+          }else{
+            
+            await sails.helpers.webhooks.updateWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'UPDATE_WEBHOOK', {
+              status : getProductUpdates ? "active" : "paused"
+            }, int.product_creation_webhookId);
+
+            await sails.helpers.webhooks.updateWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'UPDATE_WEBHOOK', {
+              status : getProductUpdates ? "active" : "paused"
+            }, int.product_updates_webhookId);
+
+            await Integrations.update({ id : integration}).set({ 
+              product_webhook_status : getProductUpdates,
+            });
+          }
+  
+          if(getOrderUpdates && !int.order_creation_webhookId){
+            let order_created = {};
+          
+            order_created.name = "1Ecommerce Order Created Sync v2";
+            order_created.delivery_url = "https://import.1ecommerce.app/api/created_order/woocommerce/ck_f2cfca972c047bf1584823e47ca988fc5acc8c5b";
+            order_created.status = "active",
+            order_created.topic = "order.created";
+            order_created.version  = req.body.version 
+            
+            let order_creation_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', order_created);
+            
+            if(order_creation_response){
+                await Integrations.update({ id : integration}).set({ 
+                  order_creation_webhookId : order_creation_response.id,
+                  order_webhook_status : true
+                });
+            }
+
+          }else{
+            await sails.helpers.webhooks.updateWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'UPDATE_WEBHOOK', {
+              status : getOrderUpdates ? "active" : "paused"
+            }, int.order_creation_webhookId);
+
+            await Integrations.update({ id : integration}).set({ 
+              order_webhook_status : getOrderUpdates
+            });
+          }
+          break;
+          //add case for shopify, vtex, prestashop
+        default:
+          break;
+      }
+
+      if(nameChannel == 'mercadolibre' && !edit){
+        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
+      }else{
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
-    }
+    });
   },
   notificationml: async function(req, res){
     let moment = require('moment');
