@@ -105,73 +105,77 @@
   function createHtmlQuestions(questions, answers, isproduct) {
     let listAnswers = document.querySelector("#listAnswers");
     let listAnsw = '';
-    if (isproduct) {
-      questions.forEach(question => {
-        const answer = question.answers.length > 0 ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answers[0].text +'&nbsp;</p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'
-        const quest = '<div class="media"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('minute').fromNow() +'</span></div></div>'
-        listAnsw += quest
-      });
-      const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="/product/edit/`+questions[0].product.id+`" target="_blank" class="title-questions">`+questions[0].product.name.toUpperCase()+`</a><article class="post">`+ listAnsw +`</article>`;
-      listAnswers.innerHTML = `<div class="box content container-scroll">`+arti+`</div>`;
-    } else {
-      questions.forEach(question => {
-        let answersHtml = '';
-        answers.forEach(answ => {
-          let attachmentsAnswer = createHtmlAttachments(answ.attachments, question);
-          if (answ.question === question.id) {
-            answersHtml += `<p class="message-content message-answer bubble flex-row-reverse">${answ.text}&nbsp;<br/>${attachmentsAnswer}</p><br/>`
-          }
+    if (questions.length > 0) {
+      if (isproduct) {
+        questions.forEach(question => {
+          const answer = question.answers.length > 0 ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answers[0].text +'&nbsp;</p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'
+          const quest = '<div class="media"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('minute').fromNow() +'</span></div></div>'
+          listAnsw += quest
         });
-        let attachmentsQuestion = createHtmlAttachments(question.attachments, question);
-        const quest = `
-          <div class="media-chat">
-            <div class="media-left message-left">
-              <i class="bx bxs-conversation bx-sm"></i>
-            </div>
-            <div class="media-content container-content">
-              <div class="content">
-                <p class="bubble message-content">${question.text}<br/>${attachmentsQuestion}</p><br/>${answersHtml}
+        const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="/product/edit/`+questions[0].product.id+`" target="_blank" class="title-questions">`+questions[0].product.name.toUpperCase()+`</a><article class="post">`+ listAnsw +`</article>`;
+        listAnswers.innerHTML = `<div class="box content container-scroll">`+arti+`</div>`;
+      } else {
+        let ultimateQuestion = null;
+        questions.forEach(question => {
+          let answersHtml = '';
+          answers.forEach(answ => {
+            let attachmentsAnswer = createHtmlAttachments(answ.attachments, question);
+            if (answ.question === question.id) {
+              answersHtml += `<p class="message-content message-answer bubble flex-row-reverse">${answ.text}<br/>${attachmentsAnswer}</p><br/>`
+            }
+          });
+          let attachmentsQuestion = createHtmlAttachments(question.attachments, question);
+          const quest = `
+            <div class="media-chat">
+              <div class="media-left message-left">
+                <i class="bx bxs-conversation bx-sm"></i>
               </div>
+              <div class="media-content container-content">
+                <div class="content">
+                  <p class="bubble message-content">${question.text}<br/>${attachmentsQuestion}</p><br/>${answersHtml}
+                </div>
+              </div>
+              <div class="media-right">
+                <span class="has-text-grey-light message-right">${moment(question.dateCreated).locale('es').startOf('minute').fromNow()}</span>
+              </div>
+            </div>`
+          listAnsw += quest;
+          ultimateQuestion = question;
+        });
+        const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="#" class="title-questions">`+questions[0].conversation.name.toUpperCase()+`</a><article class="post"><div class="answer-scroll">`+ listAnsw +`</div></article>`;
+        const formAnswer = `
+        <div class="container-form control">
+          <div class="columns">
+            <div class="column is-four-fifths">
+              <input id="inputConversation" class="input-form input is-small" type="text" placeholder="Enviar mensaje...">
             </div>
-            <div class="media-right">
-              <span class="has-text-grey-light message-right">${moment(question.dateCreated).locale('es').startOf('minute').fromNow()}</span>
-            </div>
-          </div>`
-        listAnsw += quest
-      });
-      const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="#" class="title-questions">`+questions[0].conversation.name.toUpperCase()+`</a><article class="post"><div class="answer-scroll">`+ listAnsw +`</div></article>`;
-      const formAnswer = `
-      <div class="container-form">
-        <div class="columns">
-          <div class="column is-four-fifths">
-            <input id="inputConversation" class="input-form input is-small" type="text" placeholder="Enviar mensaje...">
-          </div>
-          <div class="column">
-            <div class="div-form-answer">
-              <div class="file is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Adjunta un archivo o una foto">
-                <label class="file-label">
-                  <input class="file-input" type="file" name="attachment" multiple>
-                  <span class="btn-upload">
-                    <span class="file-icon">
-                      <i class='bx bx-paperclip bx-icon bx-rotate-270'></i>
+            <div class="column">
+              <div class="div-form-answer">
+                <div class="file is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Adjunta un archivo o una foto">
+                  <label class="file-label">
+                    <input class="file-input" type="file" name="attachment" multiple>
+                    <span class="btn-upload">
+                      <span class="file-icon">
+                        <i class='bx bx-paperclip bx-icon bx-rotate-270'></i>
+                      </span>
                     </span>
+                  </label>
+                </div>
+                <span class="btn-upload">
+                  <span class="file-icon">
+                    <i class="bx bxs-send bx-icon" onclick="clickAnswerConversation(\'${ultimateQuestion.conversation.id}\',\'${ultimateQuestion.id}\')"></i>
                   </span>
-                </label>
-              </div>
-              <span class="btn-upload">
-                <span class="file-icon">
-                  <i class="bx bxs-send bx-icon" onclick="clickAnswerConversation(\'${questions[0].conversation.id}\')"></i>
                 </span>
-              </span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="columns columns-images">
-          <div class="column" id="columnImages">
+          <div class="columns columns-images">
+            <div class="column" id="columnImages">
+            </div>
           </div>
-        </div>
-      </div>`;
-      listAnswers.innerHTML = `<div class="box content">`+arti+formAnswer+`</div>`;
+        </div>`;
+        listAnswers.innerHTML = `<div class="box content">`+arti+formAnswer+`</div>`;
+      }
     }
   }
 
@@ -184,7 +188,8 @@
       const reader  = new FileReader();
       let file = e.target.files[i];
       attachments.push(file);
-      const typeFile = file.type.split('/')[0]
+      const typeFile = file.type.split('/')[0];
+      const formatFile = file.type.split('/')[1];
       reader.onloadend = function () {
         let figure = '';
         if (typeFile === 'image') {
@@ -193,8 +198,22 @@
               <img class="radius-image" src="${reader.result}">
               <a target="" class="icon-delete delete"></a>
             </figure>`;
+        } else if(typeFile === 'application' && formatFile === 'pdf'){
+          figure = `
+            <figure class="content-figure image radius-image is-64x64 image-ed image-id="image">
+              <span class="document-icon">
+                <i class='bx bxs-file-pdf' bx-md></i>
+              </span>
+              <a target="" class="icon-delete delete"></a>
+            </figure>`;
         } else {
-          figure = ``;
+          figure = `
+            <figure class="content-figure image radius-image is-64x64 image-ed image-id="image">
+              <span class="document-icon">
+                <i class='bx bxs-file' bx-md></i>
+              </span>
+              <a target="" class="icon-delete delete"></a>
+            </figure>`;
         }
         preview.innerHTML += figure;
       }
@@ -224,20 +243,27 @@
     });
   }
 
-  function clickAnswerConversation(conversationId) {
+  function clickAnswerConversation(conversationId, questionId) {
     let dataForm = new FormData();
+    const containerForm = document.querySelector('.container-form');
     let text = document.getElementById('inputConversation').value;
     let seller = '<%- seller %>';
     dataForm.append('text', text);
     dataForm.append('seller', seller);
     dataForm.append('id', conversationId);
+    dataForm.append('questionId', questionId);
     if (text) {
+      addClass(containerForm, 'is-loading');
       for (const file of attachments) {
         dataForm.append('file', file);
       }
       let request = new XMLHttpRequest();
       request.addEventListener('load', function(e) {
-        console.log('se ejecuta');
+        const respo = JSON.parse(request.response);
+        let questions = respo.questions;
+        let answers = respo.answers;
+        createHtmlQuestions(questions, answers, false);
+        removeClass(containerForm, 'is-loading');
       });
       request.open('POST', '/answerclaim');
       request.send(dataForm);
@@ -257,7 +283,7 @@
     io.socket.post('/answerquestion', { text, id, seller }, (resData, jwRes) => {
       if(jwRes.statusCode == 200) {
         if (resData.questions) {
-          createHtmlQuestions(resData.questions);
+          createHtmlQuestions(resData.questions, [], true);
         } else {
           const el = document.getElementById('error');
           removeClass(el,'is-hidden');
@@ -286,7 +312,13 @@
   function createHtmlAttachments(attachments, question) {
     let html = '';
     attachments.forEach(attachment => {
-      if (attachment.type === 'link') {  
+      const type = attachment.type.split('/')[0];
+      if (type === 'image') {
+        html += `
+        <span class="content-figure image radius-image is-64x64 image-ed image-id="image">
+          <img class="radius-image" src="https://s3.amazonaws.com/iridio.co/attachments/${question.conversation.id}/${attachment.filename}">
+        </span>`;
+      } else {
         html += `
         <span class="icon-text has-text-info attachment cursor-p" onclick="donwloadAttachment(\'${attachment.filename}\',\'${attachment.name}\',\'${question.integration}\',\'${question.conversation.identifier}\')">
           <span class="icon">

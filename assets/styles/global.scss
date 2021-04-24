@@ -592,7 +592,7 @@ article.post:last-child {
 }
 
 .icon-delete {
-    margin: -8px !important;
+    margin: -12px !important;
 }
 
 .columns-images {
@@ -605,5 +605,12 @@ article.post:last-child {
     margin-right: 4px !important;
     margin-bottom: 0px !important;
     margin-top: 0px !important;
+}
+
+.document-icon {
+    font-size: 69px;
+    align-items: center;
+    display: flex;
+    margin-left: -7px;
 }
 

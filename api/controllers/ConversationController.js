@@ -92,14 +92,15 @@ module.exports = {
     const isproduct = req.body.isproduct;
     let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answers') : await Question.find({conversation: identifier}).populate('conversation').populate('answers').populate('attachments');
     let answers = [];
-    for (const question of questions) {
-      for (const answer of question.answers) {
-        answers.push(answer.id);
-      }
-    }
-    answers = await Answer.find({id: answers}).populate('attachments');
     if (isproduct) {
       questions.sort((a, b) => (a.answers.length > 0 ? 0 : 1) - (b.answers.length > 0 ? 0 : 1));
+    } else {
+      for (const question of questions) {
+        for (const answer of question.answers) {
+          answers.push(answer.id);
+        }
+      }
+      answers = await Answer.find({id: answers}).populate('attachments');
     }
     return res.send({questions, answers});
   },
@@ -140,7 +141,6 @@ module.exports = {
     let fs = require('fs');
     let FormData = require('form-data');
     let text = req.body.text;
-    let seller = req.body.seller;
     let conversation = await Conversation.findOne({id: req.body.id}).populate('questions');
     try {
       if (conversation) {
@@ -148,6 +148,8 @@ module.exports = {
         let route = `attachments/${conversation.id}`;
         const files = await sails.helpers.fileUpload(req, 'file', 12000000, route);
         const attachments = [];
+        let answers = [];
+        let questions = [];
         for (const attachment of files) {
           const form = new FormData();
           form.append('file', fs.createReadStream(attachment.filename));
@@ -166,7 +168,6 @@ module.exports = {
             attachments.push(result.data.filename);
           }
         }
-        console.log(attachments);
         let body = {
           'receiver_role': 'complainant',
           'message': text,
@@ -174,18 +175,30 @@ module.exports = {
         };
         let response = await sails.helpers.channel.mercadolibre.request(`/v1/claims/${conversation.identifier}/messages`,integration.channel.endpoint,integration.secret,body,'POST');
         if (response && response.id) {
-          console.log(response.id);
-          // let answer = await Answer.create({
-          //   idAnswer: response.id,
-          //   text: text,
-          //   status: 'claim',
-          //   dateCreated: parseInt(moment().valueOf()),
-          // }).fetch();
-          // await Question.updateOne({idMl: questionId}).set({answer: answer.id, status: 'ANSWERED'});
-          // let questions = await Question.find({product: question.product}).sort('createdAt DESC').populate('product').populate('answer');
-          // questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
+          const answer = await Answer.create({
+            idAnswer: response.id,
+            text: text,
+            status: 'claim',
+            dateCreated: parseInt(moment().valueOf()),
+            question: req.body.questionId
+          }).fetch();
+          for (const attach of files) {
+            await Attachment.create({
+              filename: attach.filename,
+              name: attach.original,
+              type: attach.type,
+              answer: answer.id
+            }).fetch();
+          }
+          questions = await Question.find({conversation: conversation.id}).populate('conversation').populate('answers').populate('attachments');
+          for (const question of questions) {
+            for (const answer of question.answers) {
+              answers.push(answer.id);
+            }
+          }
+          answers = await Answer.find({id: answers}).populate('attachments');
         }
-        return res.send();
+        return res.send({questions, answers});
       } else {
         throw new Error('No existe la conversation');
       }

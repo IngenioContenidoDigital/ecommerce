@@ -40,7 +40,7 @@ module.exports = {
           params.Key= inputs.route+'/'+filename;
           //params.ContentLength=uploadedFiles[i].size;
           await sails.helpers.amazonUpload(params);
-          files.push({original:uploadedFiles[i].filename,filename:filename});
+          files.push({original:uploadedFiles[i].filename,filename:filename, type:uploadedFiles[i].type});
         };
         return exits.success(files);
       }
