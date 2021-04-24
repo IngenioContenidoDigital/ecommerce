@@ -62,7 +62,7 @@ let fetch = async (data) => {
       headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
-    }).catch((e) => console.log(e));
+    }).catch((e) => reject(e));
 
     if (response && response.data) {
         return resolve(response.data.data[Object.keys(response.data.data)[0]]);
