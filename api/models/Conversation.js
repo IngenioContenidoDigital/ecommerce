@@ -10,6 +10,10 @@ module.exports = {
     name: {type:'string'},
     identifier: {type:'string'},
     recipient: {type:'string'},
-    integration:{ model:'integrations' }
+    integration:{ model:'integrations' },
+    questions:{
+      collection:'question',
+      via:'conversation'
+    }
   }
 };

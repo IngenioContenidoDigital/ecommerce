@@ -47,6 +47,9 @@ module.exports.policies = {
   },
   SellerController:{
     'notificationml': true,
+    '*': 'isLoggedIn'
+  },
+  ConversationController:{
     'webhookmessenger': true,
     '*': 'isLoggedIn'
   },

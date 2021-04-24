@@ -6,7 +6,6 @@
  */
 
 module.exports = {
-
   attributes: {
     idMl: {type:'string'},
     seller: {model:'seller'},
@@ -14,8 +13,11 @@ module.exports = {
     status: {type:'string'},
     dateCreated: {type:'number'},
     product: {model:'product'},
+    answers:{
+      collection:'answer',
+      via:'question'
+    },
     conversation: {model:'conversation'},
-    answer: {model:'answer'},
     integration:{ model:'integrations' },
     attachments:{
       collection:'attachment',

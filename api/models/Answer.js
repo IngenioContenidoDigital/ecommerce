@@ -11,6 +11,7 @@ module.exports = {
     text: {type:'string'},
     status: {type:'string'},
     dateCreated: {type:'number'},
+    question: {model:'question'},
     attachments:{
       collection:'attachment',
       via:'answer'

@@ -375,15 +375,6 @@ module.exports = {
             let itemId = question.item_id;
             let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
             if (productchan) {
-              let answer = null;
-              if (question.answer !== null) {
-                answer = await Answer.create({
-                  text: question.answer.text,
-                  status: question.answer.status,
-                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-                }).fetch();
-              }
-
               let questi = {
                 idMl: question.id,
                 seller: seller,
@@ -391,14 +382,21 @@ module.exports = {
                 status: question.status,
                 dateCreated: parseInt(moment(question.date_created).valueOf()),
                 product: productchan.product,
-                answer: answer ? answer.id : null,
                 integration: integration.id
               };
               const existsQuest = await Question.findOne({idMl: question.id});
               if (existsQuest) {
-                await Question.updateOne({id: existsQuest.id}).set({answer: answer ? answer.id : null, status: question.status});
+                questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
               } else {
-                await Question.create(questi).fetch();
+                questi = await Question.create(questi).fetch();
+              }
+              if (question.answer !== null) {
+                await Answer.create({
+                  text: question.answer.text,
+                  status: question.answer.status,
+                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                  question: questi.id
+                }).fetch();
               }
             }
             let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
@@ -425,137 +423,6 @@ module.exports = {
       }
     }
     return res.status(404).send('No se encontró integracion para el seller');
-  },
-  webhookmessenger: async function(req, res){
-    // let moment = require('moment');
-    let identifier = req.param('uuid');
-    const body = req.body;
-    let integration = await Integrations.findOne({user: identifier});
-    if (body.challenge) {
-      if (!integration) {
-        return res.status(403).send('Not authorized');
-      }
-      return res.send({challenge: body.challenge});
-    }
-    console.log(body);
-    if (integration && body.uuid) {
-      let conversation = await Conversation.findOne({identifier: body.identifier})
-      if (!conversation) {
-        conversation = await Conversation.create({
-          name: body.payload.user.name,
-          identifier: body.identifier,
-          recipient: body.recipient,
-          integration: integration.id
-        }).fetch();
-      }
-      let questi = {
-        idMl: body.uuid,
-        seller: integration.seller,
-        text: body.type === 'text' ? body.payload.text : '',
-        status: 'UNANSWERED',
-        dateCreated: parseInt(body.created),
-        conversation: conversation.id,
-        answer: null,
-        integration: integration.id
-      };
-    }
-    return res.send();
-  },
-  showmessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let seller = req.param('seller');
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    const questionsChannel = [];
-    let channels = await Channel.find({type: 'messenger'});
-    let integrations = await Integrations.find({seller: seller}).populate('channel');
-    for (const inte of integrations) {
-      const channel = inte.channel.name === 'mercadolibre' ? channels[0].id : inte.channel.id;
-      const count = await Question.count({status: 'UNANSWERED', seller: seller, integration: inte.id});
-      questionsChannel.push({channel, count, integration: inte.id});
-    }
-    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, questionsChannel, seller});
-  },
-  filtermessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let seller = req.body.seller || req.session.user.seller;
-    const integration = req.body.integration;
-    let messages = [];
-    let questions = await Question.find({seller: seller, status: 'UNANSWERED', integration: integration}).sort('createdAt DESC')
-      .populate('product').populate('conversation');
-    for(let q of questions){
-      const identifier = q.product ? q.product.id : q.conversation.id;
-      if(!messages.some(m => m.id === identifier)){
-        const questi = q.product ? questions.filter(item => item.product && item.product.id === identifier) : questions.filter(item => item.conversation && item.conversation.id === identifier);
-        messages.push({
-          id: identifier,
-          isproduct: q.product ? true : false,
-          name: q.product ? q.product.name.toUpperCase() : q.conversation.name.toUpperCase(),
-          created: q.dateCreated,
-          questions: questi,
-          type: q.product ? '' : q.conversation.recipient
-        });
-      }
-    }
-    return res.send({messages});
-  },
-  getquestions: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let identifier = req.body.productId;
-    const isproduct = req.body.isproduct;
-    let questions = isproduct ? await Question.find({product: identifier}).sort('createdAt DESC').populate('product').populate('answer') : await Question.find({conversation: identifier}).populate('conversation').populate('answer').populate('attachments');
-    if (isproduct) {
-      questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
-    }
-    return res.send({questions});
-  },
-  answerquestion: async function(req, res){
-    let moment = require('moment');
-    let questionId = req.body.id;
-    let text = req.body.text;
-    let seller = req.body.seller;
-    let question = await Question.findOne({seller: seller, idMl: questionId});
-
-    try {
-      if (question) {
-        let integration = await Integrations.findOne({id: question.integration});
-        await sails.helpers.channel.mercadolibre.answerQuestion(integration.id, questionId, text);
-
-        let answer = await Answer.create({
-          text: text,
-          status: 'ACTIVE',
-          dateCreated: parseInt(moment().valueOf()),
-        }).fetch();
-        await Question.updateOne({idMl: questionId}).set({answer: answer.id, status: 'ANSWERED'});
-        let questions = await Question.find({product: question.product}).sort('createdAt DESC').populate('product').populate('answer');
-        questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
-
-        let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-        sails.sockets.blast('notificationml', {questionsSeller, seller});
-        return res.send({questions});
-      } else {
-        throw new Error('No existe la pregunta');
-      }
-    } catch (error) {
-      return res.send(error);
-    }
-  },
-  donwloadattachment: async function(req, res){
-    try {
-      let integration = await sails.helpers.channel.mercadolibre.sign(req.body.integration);
-      let response = await sails.helpers.channel.mercadolibre.request(`/v1/claims/${req.body.identifier}/attachments/${req.body.filename}/download`, integration.channel.endpoint, integration.secret, {responseType: 'arraybuffer'});
-      return res.send(response);
-    } catch (err) {
-      console.log(err);
-      return res.status(404).send(err.message);
-    }
   },
   showreports: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -609,7 +476,7 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let uniqueString = await sails.helpers.strings.uuid();     
+    let uniqueString = await sails.helpers.strings.uuid();
     return res.send(uniqueString);
   }
 };

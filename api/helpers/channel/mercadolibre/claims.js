@@ -44,7 +44,6 @@ module.exports = {
               status: 'UNANSWERED',
               dateCreated: parseInt(moment(message.date_created).valueOf()),
               conversation: conversation.id,
-              answer: null,
               integration: integration.id
             };
             const existsQuest = await Question.findOne({idMl: message.id});
@@ -72,15 +71,15 @@ module.exports = {
                 idAnswer: message.id,
                 text: message.message.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''),
                 status: message.stage,
+                question: questi.id,
                 dateCreated: parseInt(moment(message.date_created).valueOf()),
               }).fetch();
               if (answer) {
-                await Question.updateOne({id: questi.id}).set({answer: answer.id});
-                if (message.attachments.lenght > 0) {
-                  for (const atta of message.attachments) {
-                    await Attachments.create({
-                      filename: atta.filename,
-                      name: atta.original_filename,
+                if (message.attachments.length > 0) {
+                  for (const att of message.attachments) {
+                    await Attachment.create({
+                      filename: att.filename,
+                      name: att.original_filename,
                       type: 'link',
                       answer: answer.id
                     }).fetch();
@@ -95,6 +94,7 @@ module.exports = {
         return exits.error('No se proceso el reclamo');
       }
     }catch(err){
+      console.log(err);
       return exits.error(err.message);
     }
   }
