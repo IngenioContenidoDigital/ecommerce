@@ -1,15 +1,25 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
 <section class="container">
   <div class="notification is-danger is-light is-hidden" id="error">
-    Error al contestar la pregunta.
+    Se produjo un error al enviar el mensaje.
   </div>
   <h4 class="title is-4">Mensajería</h4>
   <div class="columns box boxmessage">
     <% channels.forEach(function(channel){ %>
+      <% countQuestion = 0%>
+      <% integrations = []%>
+      <% questionsChannel.forEach(function(quest){ %>
+        <% if(quest.channel === channel.id) {%>
+          <% countQuestion += quest.count %>
+          <% integrations.push(quest.integration) %>
+        <%}%>
+      <%})%>
       <div class="column images-message">
         <div class="button button-message" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
-          <span class="badge is-danger"><%= countQuestion %></span>
-          <span class="icon size-icon">
+          <span class="icon-badge"><%- countQuestion %></span>
+          <span class="size-icon">
             <img src="<%=imgurl%>/images/channels/<%= channel.logo %>" name="logo" id="<%= channel.id %>" color='<%= channel.colorcode %>'>
           </span>
         </div>
@@ -20,6 +30,7 @@
   <div class="container container-message is-hidden" id="listAnswers"></div>
 </section>
 <script>
+
   live('.button-message','click', e =>{
     let seller = '<%- seller %>'
     let channelId = e.target.id;
@@ -30,83 +41,252 @@
       bt.style.background = '#686868';
     });
     button.style.background = color;
-    filterQuestions(seller, channelId);
+    cleanAnswers();
+    filterQuestions(seller);
   });
 
   live('#iconback','click', e =>{
-    let listQuestions = document.querySelector("#listQuestions");
-    let listAnswers = document.querySelector("#listAnswers");
-    addClass(listQuestions,'container-message');
-    removeClass(listQuestions,'is-hidden');
-    addClass(listAnswers,'is-hidden');
-    removeClass(listAnswers,'container-message');
+    cleanAnswers();
   });
 
-  function filterQuestions(seller, channel) {
-    io.socket.post('/filter/questions', { seller, channel }, (resData, jwRes) => {
+  function filterQuestions(seller) {
+    let integrations = <%- JSON.stringify(integrations)%>;
+    io.socket.post('/filter/questions', { seller, integrations }, (resData, jwRes) => {
       if(jwRes.statusCode == 200) {
-        listHtml(resData)
+        let listQuestions = document.querySelector("#listQuestions");
+        let listQuest = '';
+        listQuestions.innerHTML = '';
+        if (resData.messages.length > 0) {
+          resData.messages.forEach(message => {
+            const classTitle = message.type === 'claim' ? 'title-claim-color' : '';
+            const article = `<article class="post menu-title" id="`+message.id+`" onclick="showQuestions(\'` + message.id + `\', ${message.isproduct})">
+              <div class="media">
+                <div class="media-left">
+                  <h6 class="${classTitle}">`+message.name+`</h6>
+                </div>
+                <div class="media-content">
+                  <div class="content">
+                  </div>
+                </div>
+                <div class="media-right">
+                  <span class="has-text-grey-light message-right time-questions"><a href="#">`+moment(message.created).locale('es').startOf('minute').fromNow()+`</a></span>
+                  <span class="has-text-grey-light"><i class='bx bx-conversation'></i>`+message.questions.length+`</span>
+                </div>
+              </div>
+            </article>`;
+            listQuest += article;
+          });
+        }else {
+          listQuest = 
+          `<div class="notification is-info is-light">
+            No tiene mensajes disponibles.
+          </div>`
+        }
+        listQuestions.innerHTML = `<div class="box content container-scroll">`+listQuest+`</div>`;
       }
     });
   }
 
-  function listHtml(data, content) {
-    let listQuestions = document.querySelector("#listQuestions");
-    let listQuest = '';
-    listQuestions.innerHTML = '';
-    if (data.messages.length > 0) {
-      data.messages.forEach(message => {
-        const article = `<article class="post menu-title" id="`+message.id+`" onclick="showQuestions(\'` + message.id + `\')">
-          <div class="media">
-            <div class="media-left">
-              <h6>`+message.name+`</h6>
-            </div>
-            <div class="media-content">
-              <div class="content">
-              </div>
-            </div>
-            <div class="media-right">
-              <span class="has-text-grey-light message-right time-questions"><a href="#">`+moment(message.created).locale('es').startOf('minute').fromNow()+`</a></span>
-              <span class="has-text-grey-light"><i class='bx bx-conversation'></i>`+message.questions.length+`</span>
-            </div>
-          </div>
-        </article>`;
-        listQuest += article;
-      });
-    }else {
-      listQuest = 
-      `<div class="notification is-info is-light">
-        No tiene mensajes disponibles.
-      </div>`
-    }
-    listQuestions.innerHTML = `<div class="box content container-scroll">`+listQuest+`</div>`;
-  }
-
-  function showQuestions(productId) {
+  function showQuestions(productId, isproduct) {
     let listQuestions = document.querySelector("#listQuestions");
     let listAnswers = document.querySelector("#listAnswers");
     removeClass(listQuestions,'container-message');
     addClass(listQuestions,'is-hidden');
     addClass(listAnswers,'container-message');
     removeClass(listAnswers,'is-hidden');
-    io.socket.post('/getquestions', {productId}, (resData, jwRes) => {
+    listAnswers.innerHTML = '';
+    io.socket.post('/getquestions', {productId, isproduct}, (resData, jwRes) => {
       if(jwRes.statusCode == 200) {
-        createHtmlQuestions(resData.questions);
+        createHtmlQuestions(resData.questions, resData.answers, isproduct);
       }
     });
   }
 
-  function createHtmlQuestions(questions) {
+  function createHtmlQuestions(questions, answers, isproduct) {
     let listAnswers = document.querySelector("#listAnswers");
     let listAnsw = '';
-    listAnswers.innerHTML = '';
-    questions.forEach(question => {
-      const answer = question.answer !== null ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answer.text +'&nbsp;</p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'
-      const quest = '<div class="media"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('minute').fromNow() +'</span></div></div>'
-      listAnsw += quest
+    if (questions.length > 0) {
+      if (isproduct) {
+        questions.forEach(question => {
+          const answer = question.answers.length > 0 ? '<p class="message-content message-answer bubble flex-row-reverse">'+ question.answers[0].text +'&nbsp;</p>': '<textarea class="textarea" id="'+ question.idMl +'" placeholder="Escribe tu respuesta..." rows="2"></textarea><div class="field is-grouped buttons-answer"><p class="control"><a class="button is-primary is-small" onclick="clickAnswer(\'' + question.idMl + '\')">Responder</a></p><p class="control"><a class="button is-light is-small" onclick="clickCancel(\'' + question.idMl + '\')">Cancelar</a></p></div>'
+          const quest = '<div class="media"><div class="media-left message-left"><i class="bx bxs-conversation bx-sm"></i></div><div class="media-content container-content"><div class="content"><p class="bubble message-content">'+ question.text +'</p><br/>'+ answer +'</div></div> <div class="media-right"><span class="has-text-grey-light message-right">'+ moment(question.dateCreated).locale('es').startOf('minute').fromNow() +'</span></div></div>'
+          listAnsw += quest
+        });
+        const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="/product/edit/`+questions[0].product.id+`" target="_blank" class="title-questions">`+questions[0].product.name.toUpperCase()+`</a><article class="post">`+ listAnsw +`</article>`;
+        listAnswers.innerHTML = `<div class="box content container-scroll">`+arti+`</div>`;
+      } else {
+        let ultimateQuestion = null;
+        questions.forEach(question => {
+          let answersHtml = '';
+          answers.forEach(answ => {
+            let attachmentsAnswer = createHtmlAttachments(answ.attachments, question);
+            if (answ.question === question.id) {
+              answersHtml += `<p class="message-content message-answer bubble flex-row-reverse">${answ.text}<br/>${attachmentsAnswer}</p><br/>`
+            }
+          });
+          let attachmentsQuestion = createHtmlAttachments(question.attachments, question);
+          const quest = `
+            <div class="media-chat">
+              <div class="media-left message-left">
+                <i class="bx bxs-conversation bx-sm"></i>
+              </div>
+              <div class="media-content container-content">
+                <div class="content">
+                  <p class="bubble message-content">${question.text}<br/>${attachmentsQuestion}</p><br/>${answersHtml}
+                </div>
+              </div>
+              <div class="media-right">
+                <span class="has-text-grey-light message-right">${moment(question.dateCreated).locale('es').startOf('minute').fromNow()}</span>
+              </div>
+            </div>`
+          listAnsw += quest;
+          ultimateQuestion = question;
+        });
+        const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="#" class="title-questions">`+questions[0].conversation.name.toUpperCase()+`</a><article class="post"><div class="answer-scroll">`+ listAnsw +`</div></article>`;
+        const formAnswer = `
+        <div class="container-form control">
+          <div class="columns">
+            <div class="column is-four-fifths">
+              <input id="inputConversation" class="input-form input is-small" type="text" placeholder="Enviar mensaje...">
+            </div>
+            <div class="column">
+              <div class="div-form-answer">
+                <div class="file is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Adjunta un archivo o una foto">
+                  <label class="file-label">
+                    <input class="file-input" type="file" name="attachment" multiple>
+                    <span class="btn-upload">
+                      <span class="file-icon">
+                        <i class='bx bx-paperclip bx-icon bx-rotate-270'></i>
+                      </span>
+                    </span>
+                  </label>
+                </div>
+                <span class="btn-upload">
+                  <span class="file-icon">
+                    <i class="bx bxs-send bx-icon" onclick="clickAnswerConversation(\'${ultimateQuestion.conversation.id}\',\'${ultimateQuestion.id}\')"></i>
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="columns columns-images">
+            <div class="column" id="columnImages">
+            </div>
+          </div>
+        </div>`;
+        listAnswers.innerHTML = `<div class="box content">`+arti+formAnswer+`</div>`;
+      }
+    }
+  }
+
+  let attachments = []
+  live('input[name="attachment"]','change', e =>{
+    const preview = document.querySelector('#columnImages');
+    const containerForm = document.querySelector('.container-form');
+    containerForm.setAttribute('style','height:135px;');
+    for(let i=0; i < e.target.files.length;i++){
+      const reader  = new FileReader();
+      let file = e.target.files[i];
+      attachments.push(file);
+      const typeFile = file.type.split('/')[0];
+      const formatFile = file.type.split('/')[1];
+      reader.onloadend = function () {
+        let figure = '';
+        if (typeFile === 'image') {
+          figure = `
+            <figure class="image-answer content-figure image radius-image is-64x64 image-ed image-id="image">
+              <img class="radius-image" src="${reader.result}">
+              <a target="" class="icon-delete delete"></a>
+            </figure>`;
+        } else if(typeFile === 'application' && formatFile === 'pdf'){
+          figure = `
+            <figure class="image-answer content-figure image radius-image is-64x64 image-ed image-id="image">
+              <span class="document-icon">
+                <i class='bx bxs-file-pdf' bx-md></i>
+              </span>
+              <a target="" class="icon-delete delete"></a>
+            </figure>`;
+        } else {
+          figure = `
+            <figure class="image-answer content-figure image radius-image is-64x64 image-ed image-id="image">
+              <span class="document-icon">
+                <i class='bx bxs-file' bx-md></i>
+              </span>
+              <a target="" class="icon-delete delete"></a>
+            </figure>`;
+        }
+        preview.innerHTML += figure;
+      }
+      if (file) {
+        reader.readAsDataURL(file);
+      } else {
+        currentImage.src = "";
+      }
+    }
+  });
+
+  live('.delete','click',function(e){
+    let parent=this.parentNode;
+    const containerForm = document.querySelector('.container-form');
+    parent.parentNode.removeChild(parent);
+    const countFigure = document.querySelectorAll('.image-answer').length;
+    if (countFigure === 0) {
+      containerForm.setAttribute('style','height:39px;');
+    }
+  });
+
+  function donwloadAttachment(filename, name, integration, identifier) {
+    io.socket.post('/donwloadattachment', { filename, integration, identifier }, (resData, jwRes) => {
+      if(jwRes.statusCode == 200) {
+        saveAs(new Blob([resData],{type:"application/octet-stream"}), name);
+      }
     });
-    const arti = `<i class='tag bx bxs-left-arrow-alt menu-title bx-sm size-icon-back' id='iconback'></i><a href="/product/edit/`+questions[0].product.id+`" target="_blank" class="title-questions">`+questions[0].product.name.toUpperCase()+`</a><article class="post">`+ listAnsw +`</article>`;
-    listAnswers.innerHTML = `<div class="box content container-scroll">`+arti+`</div>`;
+  }
+
+  function clickAnswerConversation(conversationId, questionId) {
+    let dataForm = new FormData();
+    const containerForm = document.querySelector('.container-form');
+    let text = document.getElementById('inputConversation').value;
+    let seller = '<%- seller %>';
+    dataForm.append('text', text);
+    dataForm.append('seller', seller);
+    dataForm.append('id', conversationId);
+    dataForm.append('questionId', questionId);
+    if (text) {
+      addClass(containerForm, 'is-loading');
+      for (const file of attachments) {
+        dataForm.append('file', file);
+      }
+      let request = new XMLHttpRequest();
+      request.addEventListener('load', function(e) {
+        const respo = JSON.parse(request.response);
+        if (!respo.error) {
+          let questions = respo.questions;
+          let answers = respo.answers;
+          createHtmlQuestions(questions, answers, false);
+          removeClass(containerForm, 'is-loading');
+          attachments = [];
+        } else {
+          attachments = [];
+          const el = document.getElementById('error');
+          el.textContent = respo.error;
+          removeClass(el,'is-hidden');
+          removeClass(containerForm, 'is-loading');
+          setTimeout(function() {
+            addClass(el,'is-hidden');
+          }, 4000);
+        }
+      });
+      request.open('POST', '/answerclaim');
+      request.send(dataForm);
+    }else {
+      const el = document.getElementById('error');
+      el.textContent = 'Debes agregar un mensaje';
+      removeClass(el,'is-hidden');
+      setTimeout(function() {
+        addClass(el,'is-hidden');
+      }, 4000);
+    }
   }
 
   function clickAnswer(id) {
@@ -115,7 +295,7 @@
     io.socket.post('/answerquestion', { text, id, seller }, (resData, jwRes) => {
       if(jwRes.statusCode == 200) {
         if (resData.questions) {
-          createHtmlQuestions(resData.questions);
+          createHtmlQuestions(resData.questions, [], true);
         } else {
           const el = document.getElementById('error');
           removeClass(el,'is-hidden');
@@ -130,6 +310,37 @@
   function clickCancel(id) {
     let text = document.getElementById(id);
     text.value = '';
+  }
+
+  function cleanAnswers() {
+    let listQuestions = document.querySelector("#listQuestions");
+    let listAnswers = document.querySelector("#listAnswers");
+    addClass(listQuestions,'container-message');
+    removeClass(listQuestions,'is-hidden');
+    addClass(listAnswers,'is-hidden');
+    removeClass(listAnswers,'container-message');
+  }
+
+  function createHtmlAttachments(attachments, question) {
+    let html = '';
+    attachments.forEach(attachment => {
+      const type = attachment.type.split('/')[0];
+      if (type === 'image') {
+        html += `
+        <span class="content-figure image radius-image is-64x64 image-ed image-id="image">
+          <img class="radius-image" src="https://s3.amazonaws.com/iridio.co/attachments/${question.conversation.id}/${attachment.filename}">
+        </span>`;
+      } else {
+        html += `
+        <span class="icon-text has-text-info attachment cursor-p" onclick="donwloadAttachment(\'${attachment.filename}\',\'${attachment.name}\',\'${question.integration}\',\'${question.conversation.identifier}\')">
+          <span class="icon">
+            <i class='bx bx-link-alt'></i>
+          </span>
+          <span>${attachment.name}</span>
+        </span>`;
+      }
+    });
+    return html;
   }
 
 </script>
