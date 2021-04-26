@@ -22,9 +22,9 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     const _ = require("lodash");
+    let moment = require('moment');
     let seller = inputs.seller;
     let sid = inputs.socketId;
-
     try {
       for(let product of inputs.products){
         let errors = [];
@@ -32,7 +32,6 @@ module.exports = {
 
         try {
           let pro = await sails.helpers.checkProducts(product, seller, inputs.asColor || false);
-
           if(typeof(pro) === 'object'){
             let pr;
             let exists = await Product.findOne({ externalId:pro.externalId, seller:seller, reference : pro.reference});
@@ -40,6 +39,8 @@ module.exports = {
                 if(inputs.provider != sails.config.custom.WOOCOMMERCE_CHANNEL){
                     pr = await Product.create(pro).fetch();
                 }else if(product.simple && (product.color && product.color.length == 1)){
+                    pr = await Product.create(pro).fetch();
+                }else if(!product.simple && (product.color && product.color.length == 1)){
                     pr = await Product.create(pro).fetch();
                 }
             } else {
@@ -66,57 +67,58 @@ module.exports = {
                 if(product_variables && product_variables.data){
                   let db_color;
                   products_colors = _.uniqBy(product_variables.data.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
-                  for (let index = 0; index < products_colors.length; index++) {	
-                      const product_variable = products_colors[index];
+                  if(products_colors.length > 0){
+                      for (let index = 0; index < products_colors.length; index++) {	
+                        const product_variable = products_colors[index];
 
-                      if(product_variable.color && product.color.length > 0){	
+                        if(product_variable.color && product.color.length > 0){	
+                          
+                        let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
+
+                          if(color && color.length > 0){
+                            db_color = await Color.findOne({id : color[0]});
+                          }
+
+                          if(db_color){
+                            pro.mainColor = db_color.id;	
+                            pro.reference = `${product_variable.reference}-${db_color.name}`.toUpperCase();	
+                          }else{
+                            throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
+                          }
+                          
+                          pro.externalId = product_variable.externalId;
+                          
+                          if(parent_category){
+                            pro.categories =  parent_category;
+                          }
+
+                          let exists = await Product.findOne({ externalId:product_variable.externalId, seller:seller, reference : pro.reference });	
+
+                          if (!exists) {	
+                              parent_category = pro.categories;
+                              pr = await Product.create(pro).fetch();	
+                          } else {	
+
+                            delete pro.mainCategory;	
+                            delete pro.categories;
+                            delete pro.manufacturer;
+                            delete pro.gender;
+                            delete pro.tax;
+                            delete pro.seller;
+
+                            pr = await Product.updateOne({ id: exists.id }).set(pro);	
+                          }	
+
+                          delete db_color;
                         
-                      let color = await sails.helpers.tools.findColor(`${product_variable.color[0]}`);
-
-                        if(color && color.length > 0){
-                          db_color = await Color.findOne({id : color[0]});
-                        }
-
-                        if(db_color){
-                          pro.mainColor = db_color.id;	
-                          pro.reference = `${product_variable.reference}-${db_color.name}`.toUpperCase();	
-                        }else{
-                          throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);	
-                        }
-                        
-                        pro.externalId = product_variable.externalId;
-                        
-                        if(parent_category){
-                          pro.categories =  parent_category;
-                        }
-
-                        let exists = await Product.findOne({ externalId:product_variable.externalId, seller:seller, reference : pro.reference });	
-
-                        if (!exists) {	
-                            parent_category = pro.categories;
-                            pr = await Product.create(pro).fetch();	
-                        } else {	
-
-                          delete pro.mainCategory;	
-                          delete pro.categories;
-                          delete pro.manufacturer;
-                          delete pro.gender;
-                          delete pro.tax;
-                          delete pro.seller;
-
-                          pr = await Product.updateOne({ id: exists.id }).set(pro);	
                         }	
+                    }	
 
-                        delete db_color;
-                      
-                      }	
-                  }	
-
-                  if(typeof(pr) == 'object'){
-                    result.push(pr);	
-                    sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
+                    if(typeof(pr) == 'object'){
+                      result.push(pr);	
+                      sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
+                    }
                   }
-
                 }
           }	
             } catch (error) {	
