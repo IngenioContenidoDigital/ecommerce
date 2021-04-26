@@ -348,7 +348,7 @@ module.exports = {
           <h2 style="color: #4a4a4a;font-size: 110%;line-height: 1.25;font-weight: bold;margin-top: 22px;margin-left: 306px;">Balance Total  $ `+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
         </body>
       </html>`;
-      const options = { format: 'Letter', timeout: '100000'};
+      const options = { format: 'Letter', timeout: '200000'};
       pdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {return console.log(err);}
         return res.send(buffer);
