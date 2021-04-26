@@ -137,37 +137,16 @@ module.exports = {
   },
   answerclaim: async function(req, res){
     let moment = require('moment');
-    let axios = require('axios');
-    let fs = require('fs');
-    let FormData = require('form-data');
     let text = req.body.text;
     let conversation = await Conversation.findOne({id: req.body.id}).populate('questions');
     try {
       if (conversation) {
         let integration = await sails.helpers.channel.mercadolibre.sign(conversation.integration);
-        let route = `attachments/${conversation.id}`;
-        const files = await sails.helpers.fileUpload(req, 'file', 12000000, route);
-        const attachments = [];
         let answers = [];
         let questions = [];
-        for (const attachment of files) {
-          const form = new FormData();
-          form.append('file', fs.createReadStream(attachment.filename));
-          options = {
-            method: 'post',
-            url: `${integration.channel.endpoint}v1/claims/${conversation.identifier}/attachments`,
-            headers: {
-              'Authorization': `Bearer ${integration.secret}`,
-              'content-type': `multipart/form-data; boundary=${form._boundary}`,
-              'accept': 'application/json'
-            },
-            data: form
-          };
-          let result = await axios(options).catch((e) => {throw new Error('Error en al subir las imagenes')});
-          if (result.data && result.data.filename) {
-            attachments.push(result.data.filename);
-          }
-        }
+        let attachments = await sails.helpers.channel.mercadolibre.uploadAttachment(req, 'file', 12000000,integration.channel.endpoint,conversation.identifier,integration.secret);
+        let route = `attachments/${conversation.id}`;
+        const files = await sails.helpers.fileUpload(req, 'file', 12000000, route);
         let body = {
           'receiver_role': 'complainant',
           'message': text,
@@ -203,8 +182,7 @@ module.exports = {
         throw new Error('No existe la conversation');
       }
     } catch (error) {
-      console.log(error);
-      return res.send(error);
+      return res.send({error: error.message});
     }
   },
   donwloadattachment: async function(req, res){

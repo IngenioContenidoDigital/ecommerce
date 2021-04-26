@@ -194,13 +194,13 @@
         let figure = '';
         if (typeFile === 'image') {
           figure = `
-            <figure class="content-figure image radius-image is-64x64 image-ed image-id="image">
+            <figure class="image-answer content-figure image radius-image is-64x64 image-ed image-id="image">
               <img class="radius-image" src="${reader.result}">
               <a target="" class="icon-delete delete"></a>
             </figure>`;
         } else if(typeFile === 'application' && formatFile === 'pdf'){
           figure = `
-            <figure class="content-figure image radius-image is-64x64 image-ed image-id="image">
+            <figure class="image-answer content-figure image radius-image is-64x64 image-ed image-id="image">
               <span class="document-icon">
                 <i class='bx bxs-file-pdf' bx-md></i>
               </span>
@@ -208,7 +208,7 @@
             </figure>`;
         } else {
           figure = `
-            <figure class="content-figure image radius-image is-64x64 image-ed image-id="image">
+            <figure class="image-answer content-figure image radius-image is-64x64 image-ed image-id="image">
               <span class="document-icon">
                 <i class='bx bxs-file' bx-md></i>
               </span>
@@ -229,7 +229,7 @@
     let parent=this.parentNode;
     const containerForm = document.querySelector('.container-form');
     parent.parentNode.removeChild(parent);
-    const countFigure = document.querySelectorAll('.content-figure').length;
+    const countFigure = document.querySelectorAll('.image-answer').length;
     if (countFigure === 0) {
       containerForm.setAttribute('style','height:39px;');
     }
@@ -260,10 +260,22 @@
       let request = new XMLHttpRequest();
       request.addEventListener('load', function(e) {
         const respo = JSON.parse(request.response);
-        let questions = respo.questions;
-        let answers = respo.answers;
-        createHtmlQuestions(questions, answers, false);
-        removeClass(containerForm, 'is-loading');
+        if (!respo.error) {
+          let questions = respo.questions;
+          let answers = respo.answers;
+          createHtmlQuestions(questions, answers, false);
+          removeClass(containerForm, 'is-loading');
+          attachments = [];
+        } else {
+          attachments = [];
+          const el = document.getElementById('error');
+          el.textContent = respo.error;
+          removeClass(el,'is-hidden');
+          removeClass(containerForm, 'is-loading');
+          setTimeout(function() {
+            addClass(el,'is-hidden');
+          }, 4000);
+        }
       });
       request.open('POST', '/answerclaim');
       request.send(dataForm);
