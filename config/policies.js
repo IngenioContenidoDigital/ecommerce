@@ -49,6 +49,10 @@ module.exports.policies = {
     'notificationml': true,
     '*': 'isLoggedIn'
   },
+  ConversationController:{
+    'webhookmessenger': true,
+    '*': 'isLoggedIn'
+  },
   SupplierController:{'*': 'isLoggedIn'},
   TaxController:{'*': 'isLoggedIn'},
   CurrencyController:{'*': 'isLoggedIn'},

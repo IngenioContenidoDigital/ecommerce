@@ -38,7 +38,7 @@ module.exports = {
         .populate('region')
         .populate('city');
       }
-      channels = await Channel.find({where:{type: { '!=': 'messenger' }}});
+      channels = await Channel.find({});
       integrations = await Integrations.find({
         where:{seller:id},
       }).populate('channel');
@@ -69,7 +69,7 @@ module.exports = {
         city:req.body.city,
         zipcode:req.body.zipcode,
         notes:req.body.notes
-      }
+      };
 
       let sellerData = {
         name:req.body.name.trim().toLowerCase(),
@@ -139,8 +139,8 @@ module.exports = {
     }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      
-       await Seller.updateOne({id:id}).set({
+
+      await Seller.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
         contact:req.body.contact,
@@ -157,7 +157,7 @@ module.exports = {
         safestock: req.body.safestock ? req.body.safestock : 0
       });
 
-    }catch(err){      
+    }catch(err){
       error=err;
       if(err.code==='badRequest'){
         await Seller.updateOne({id:id}).set({
@@ -319,7 +319,7 @@ module.exports = {
     let channel = req.param('channel');
     const nameChannel = req.param('namechannel');
     let integration = req.body.integration;
-    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.'
+    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.';
     let edit = false;
 
     let getProductUpdates = req.body.getProductUpdates == 'on' ? true : false;
@@ -434,17 +434,6 @@ module.exports = {
       }
     });
   },
-  showmessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let seller = req.param('seller');
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let channels = await Channel.find({type: 'messenger'});
-    let countQuestion = await Question.count({status: 'UNANSWERED', seller: seller});
-
-    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, countQuestion, seller});
-  },
   notificationml: async function(req, res){
     let moment = require('moment');
     let resource = req.body.resource;
@@ -460,15 +449,6 @@ module.exports = {
             let itemId = question.item_id;
             let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
             if (productchan) {
-              let answer = null;
-              if (question.answer !== null) {
-                answer = await Answer.create({
-                  text: question.answer.text,
-                  status: question.answer.status,
-                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-                }).fetch();
-              }
-
               let questi = {
                 idMl: question.id,
                 seller: seller,
@@ -476,14 +456,21 @@ module.exports = {
                 status: question.status,
                 dateCreated: parseInt(moment(question.date_created).valueOf()),
                 product: productchan.product,
-                answer: answer ? answer.id : null,
                 integration: integration.id
               };
               const existsQuest = await Question.findOne({idMl: question.id});
               if (existsQuest) {
-                await Question.updateOne({id: existsQuest.id}).set({answer: answer ? answer.id : null, status: question.status});
+                questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
               } else {
-                await Question.create(questi).fetch();
+                questi = await Question.create(questi).fetch();
+              }
+              if (question.answer !== null) {
+                await Answer.create({
+                  text: question.answer.text,
+                  status: question.answer.status,
+                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                  question: questi.id
+                }).fetch();
               }
             }
             let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
@@ -498,81 +485,18 @@ module.exports = {
           case 'items':
             await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
             break;
+          case 'claims':
+            await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
+            break;
           default:
             break;
         }
         return res.ok();
       } catch(err) {
-        return res.status(404).send(err);
+        return res.status(404).send(err.message);
       }
     }
     return res.status(404).send('No se encontró integracion para el seller');
-  },
-  filtermessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let seller = req.body.seller || req.session.user.seller;
-    let messages = [];
-
-    let questions = await Question.find({seller: seller, status: 'UNANSWERED'}).sort('createdAt DESC')
-      .populate('product');
-
-    for(let q of questions){
-      if(!messages.some(m => m.id === q.product.id)){
-        const questi = questions.filter(item => item.product.id === q.product.id && item.status === 'UNANSWERED');
-        messages.push({
-          id: q.product.id,
-          name: q.product.name.toUpperCase(),
-          created: q.dateCreated,
-          questions: questi
-        });
-      }
-    }
-    return res.send({messages});
-  },
-  getquestions: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let productId = req.body.productId;
-
-    let questions = await Question.find({product: productId}).sort('createdAt DESC').populate('product').populate('answer');
-    questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
-    return res.send({questions});
-  },
-  answerquestion: async function(req, res){
-    let moment = require('moment');
-    let questionId = req.body.id;
-    let text = req.body.text;
-    let seller = req.body.seller;
-    let question = await Question.findOne({seller: seller, idMl: questionId});
-
-    try {
-      if (question) {
-        let integration = await Integrations.findOne({id: question.integration});
-        await sails.helpers.channel.mercadolibre.answerQuestion(integration.id, questionId, text);
-
-        let answer = await Answer.create({
-          text: text,
-          status: 'ACTIVE',
-          dateCreated: parseInt(moment().valueOf()),
-        }).fetch();
-        await Question.updateOne({idMl: questionId}).set({answer: answer.id, status: 'ANSWERED'});
-        let questions = await Question.find({product: question.product}).sort('createdAt DESC').populate('product').populate('answer');
-        questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
-
-        let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-        sails.sockets.blast('notificationml', {questionsSeller, seller});
-        return res.send({questions});
-      } else {
-        throw new Error('No existe la pregunta');
-      }
-    } catch (error) {
-      return res.send(error);
-    }
   },
   showreports: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -626,7 +550,7 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let uniqueString = await sails.helpers.strings.uuid();     
+    let uniqueString = await sails.helpers.strings.uuid();
     return res.send(uniqueString);
   }
 };
