@@ -394,20 +394,20 @@ module.exports = {
             });
           }
   
-          if(getOrderUpdates && !int.order_creation_webhookId){
-            let order_created = {};
+          if(getOrderUpdates && !int.order_updated_webhookId){
+            let order_updated = {};
           
-            order_created.name = "1Ecommerce Order Created Sync v2";
-            order_created.delivery_url = "https://import.1ecommerce.app/api/created_order/woocommerce/ck_f2cfca972c047bf1584823e47ca988fc5acc8c5b";
-            order_created.status = "active",
-            order_created.topic = "order.created";
-            order_created.version  = req.body.version 
+            order_updated.name = "1Ecommerce Order updated Sync v2";
+            order_updated.delivery_url = `https://import.1ecommerce.app/api/updated_order/woocommerce/${record.key}`;
+            order_updated.status = "active",
+            order_updated.topic = "order.updated";
+            order_updated.version  = req.body.version 
             
-            let order_creation_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', order_created);
+            let order_updated_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', order_updated);
             
-            if(order_creation_response){
+            if(order_updated_response){
                 await Integrations.update({ id : integration}).set({ 
-                  order_creation_webhookId : order_creation_response.id,
+                  order_updated_webhookId : order_updated_response.id,
                   order_webhook_status : true
                 });
             }

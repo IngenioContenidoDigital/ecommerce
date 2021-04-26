@@ -48,7 +48,7 @@ module.exports = {
     product_webhook_status:{
       type:'boolean', required:false
     },
-    order_creation_webhookId:{
+    order_updated_webhookId:{
       type:'string', required:false
     },
     order_webhook_status:{
