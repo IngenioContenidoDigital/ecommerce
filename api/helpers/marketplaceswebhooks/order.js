@@ -26,7 +26,7 @@ module.exports = {
     const integration = inputs.integration;
     try{
       let oexists = await Order.find({channel:order.channel, channelref:order.channelref, integration: integration.id});
-      if(order.address.region==='bogota, d.c.' || order.address.region ==='bogota d.c.' ||  order.address.region ==='bogota'){order.address.region='bogotá dc';}
+      if(order.address.region==='bogota, d.c.' || order.address.region ==='bogota d.c.'){order.address.region='bogotá dc';}
       if(order.address.city==='bogota d.c.' ||  order.address.city==='bogota, d.c.'){order.address.city='bogota';}
       let region = await Region.find({name: order.address.region});
       region = region.length > 0 ? region[0].id : '';
