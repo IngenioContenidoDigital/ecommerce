@@ -118,6 +118,8 @@ module.exports = {
                 }
               } else if(existShipping.length > 0){
                 let cartProducts = [];
+                let orderItems = await OrderItem.find({order: existShipping[0].id, externalOrder: order.id});
+                const channelref = order.id;
                 for(let item of order['order_items']){
                   try{
                     let productvariation;
@@ -130,7 +132,7 @@ module.exports = {
                         productvariation = pr.variations[0];
                       }
                     }
-                    if(productvariation){
+                    if(productvariation && orderItems.length === 0){
                       for (let i = 1; i <= item.quantity; i++) {
                         let cartproduct = await CartProduct.create({
                           cart: existShipping[0].cart,
@@ -148,7 +150,7 @@ module.exports = {
                     return exits.error(err.message);
                   }
                 }
-                await sails.helpers.channel.mercadolibre.orderShipping({cartProducts, order: existShipping[0]});
+                await sails.helpers.channel.mercadolibre.orderShipping({cartProducts, channelref, order: existShipping[0]});
               }
             } else {
               let user = await User.findOrCreate({emailAddress:order.buyer.email},{

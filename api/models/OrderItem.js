@@ -25,6 +25,9 @@ module.exports = {
     externalReference:{
       type:'string'
     },
+    externalOrder:{
+      type:'string'
+    },
     shippingType: {
       type:'string'
     }

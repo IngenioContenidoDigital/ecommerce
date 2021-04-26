@@ -66,7 +66,8 @@ module.exports = {
               discount:cp.totalDiscount,
               originalPrice:cp.productvariation.price,
               externalReference:cp.externalReference,
-              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : commissionChannel.length > 0 ? commissionChannel[0].value : 0
+              commission: commissionDiscount.length > 0 ? commissionDiscount[0].value : commissionChannel.length > 0 ? commissionChannel[0].value : 0,
+              externalOrder:inputs.data.channelref ? inputs.data.channelref : ''
             });
             let pv = await ProductVariation.findOne({id:cp.productvariation.id});
             if(pv){
