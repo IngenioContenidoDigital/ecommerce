@@ -101,7 +101,7 @@ module.exports = {
                         cart:cart.id,
                         product:productvariation[0].product,
                         productvariation:productvariation[0].id,
-                        totalDiscount:parseFloat(item.VoucherAmount),
+                        totalDiscount:(parseFloat(item.ItemPrice)-parseFloat(item.PaidPrice)),
                         totalPrice:parseFloat(item.ItemPrice),
                         externalReference:item.OrderItemId
                       });
