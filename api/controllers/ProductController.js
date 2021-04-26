@@ -1987,6 +1987,10 @@ module.exports = {
           let errors = [];
           let result = [];
 
+          if(p.reference == "EVWG5H444*"){
+            console.log(p);
+          }
+
           if(p.color && p.color.length > 0 && !p.simple && req.body.channel == constants.WOOCOMMERCE_CHANNEL){
               let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                 req.body.channel,
@@ -2053,6 +2057,50 @@ module.exports = {
                       errors.push({ name:'ERRDATA', message:error.message });
                       sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                     }
+                  }
+                }else{
+                  try {
+                    let product = await Product.findOne({externalId : p.externalId, seller : seller}).catch((e)=>{
+                      throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
+                    });
+                    if(product &&  await ProductImage.count({product:product.id}) == 0){
+                      for (let im of p.images) {
+                  
+                          let url = (im.src.split('?'))[0];
+                          let file = (im.file.split('?'))[0];
+                          let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                            throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                          });
+                          if (uploaded) {
+                            let cover = 1;
+                            let totalimg = await ProductImage.count({ product: product.id});
+                            totalimg += 1;
+                            if (totalimg > 1) { cover = 0; }
+          
+                            let rs = await ProductImage.create({
+                              file: file,
+                              position: totalimg,
+                              cover: cover,
+                              product: product.id
+                            }).fetch();
+          
+                            if(typeof(rs) === 'object'){
+                              result.push(rs);
+                            }
+
+                            sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
+                            
+                          }
+                      }
+                    }else{
+                      if(typeof(product) === 'object'){
+                        result.push(product);
+                        sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
+                      }
+                    }
+                  } catch (error) {
+                    errors.push({ name:'ERRDATA', message:error.message });
+                    sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                   }
                 }
               }
