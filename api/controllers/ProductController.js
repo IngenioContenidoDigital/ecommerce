@@ -548,7 +548,9 @@ module.exports = {
           result = await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
           await ProductChannel.updateOne({id: productChannelId}).set({
             status: req.body.status ? true : false,
-            price: req.body.price ? parseFloat(req.body.price) : 0
+            qc:true,
+            price: req.body.price ? parseFloat(req.body.price) : 0,
+            reason: ''
           });
         }
         if(action==='Post'){
@@ -599,7 +601,6 @@ module.exports = {
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
             qc:false,
-            iscreated:false,
             price:0,
             reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
           });
@@ -1574,12 +1575,14 @@ module.exports = {
             if(body){
               if(action==='Update'){
                 result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
-                .tolerate((err)=>{return;});
+                .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);});
                 if(result){
                   response.items.push(body);
                   await ProductChannel.updateOne({ id: productChannelId }).set({
                     status:true,
-                    price:mlprice
+                    price:mlprice,
+                    qc:true,
+                    reason: ''
                   });
                 }
               }
@@ -1596,6 +1599,7 @@ module.exports = {
                     channelid:result.id,
                     status:true,
                     qc:true,
+                    iscreated: true,
                     price:0
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
