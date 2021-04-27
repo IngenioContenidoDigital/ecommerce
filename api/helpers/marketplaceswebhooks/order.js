@@ -23,6 +23,7 @@ module.exports = {
     let profile = await Profile.findOne({name:'customer'});
     let moment = require('moment');
     const order = inputs.order;
+    let city;
     const integration = inputs.integration;
     try{
       let oexists = await Order.find({channel:order.channel, channelref:order.channelref, integration: integration.id});
@@ -30,7 +31,12 @@ module.exports = {
       if(order.address.city==='bogota d.c.' ||  order.address.city==='bogota, d.c.'){order.address.city='bogota';}
       let region = await Region.find({name: order.address.region});
       region = region.length > 0 ? region[0].id : '';
-      let city = await City.find({name: order.address.city, region: region}).populate('region');
+      
+      if(order.address.city.split(",").length == 2){
+        city = await City.find({name:[order.address.city.split(",")[0].toLowerCase().trim(), order.address.city.split(",")[1].toLowerCase().trim()]}).populate('region');
+      }else{
+        city = await City.find({name: order.address.city, region: region}).populate('region');
+      }
 
       if(order.status === 'paid' && city.length>0 && oexists.length === 0){
         order.customer.password = await sails.helpers.passwords.hashPassword(order.customer.dni);
