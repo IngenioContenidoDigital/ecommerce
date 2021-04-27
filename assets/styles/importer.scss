@@ -11,8 +11,10 @@ $grey: #707070; //Para textos como titulo
 $grey-light: #898989; //Para textos normales
 $blue-light: #6CA0FF; //Para resaltar (En caso de link o hover de letras)
 $blue-dark: #0046F8; //Para resaltar botones que ya están en #006BF8, si al pasar por encima se necesita resaltar que ya esta presionado o se va a hacer, ejemplo : botón descargar guía que ya es azul "medio" al presionarlo pasa al azul más oscuro.
+$cyan: #00a7ff;
 
 $primary: $blue;
+$info: $cyan;
 
 $button-hover-color:$blue-dark;
 
@@ -24,6 +26,8 @@ $button-hover-color:$blue-dark;
 @import "../../node_modules/bulma/sass/components/_all.sass";
 @import "../../node_modules/bulma/sass/grid/_all.sass";
 @import "../../node_modules/bulma/sass/layout/_all.sass";
-//@import "../../node_modules/bulma/sass/extensions/_all.sass";
+@import "../../node_modules/bulma-pageloader/dist/css/bulma-pageloader.sass";
+@import "../../node_modules/bulma-calendar/src/sass/index.sass";
+@import "../../node_modules/@creativebulma/bulma-badge/src/sass/index.sass";
 
 @import 'global.scss';

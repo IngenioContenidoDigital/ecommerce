@@ -47,10 +47,10 @@ module.exports = {
                   let user = await User.findOrCreate({emailAddress:order.buyer.email},{
                     emailAddress:order.buyer.email,
                     emailStatus:'confirmed',
-                    password:await sails.helpers.passwords.hashPassword(order.buyer['billing_info']['doc_number']),
+                    password:await sails.helpers.passwords.hashPassword(order.buyer.id),
                     fullName:order.buyer['first_name']+' '+order.buyer['last_name'],
-                    dniType:'CC',
-                    dni:order.buyer['billing_info']['doc_number'],
+                    dniType:order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? 'CC' : 'MLID',
+                    dni: order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? order.buyer['billing_info']['doc_number'].toString() : order.buyer.id.toString(),
                     mobilecountry:city[0].region.country,
                     mobile:0,
                     mobileStatus:'unconfirmed',
@@ -118,6 +118,8 @@ module.exports = {
                 }
               } else if(existShipping.length > 0){
                 let cartProducts = [];
+                let orderItems = await OrderItem.find({order: existShipping[0].id, externalOrder: order.id});
+                const channelref = order.id;
                 for(let item of order['order_items']){
                   try{
                     let productvariation;
@@ -130,7 +132,7 @@ module.exports = {
                         productvariation = pr.variations[0];
                       }
                     }
-                    if(productvariation){
+                    if(productvariation && orderItems.length === 0){
                       for (let i = 1; i <= item.quantity; i++) {
                         let cartproduct = await CartProduct.create({
                           cart: existShipping[0].cart,
@@ -148,7 +150,7 @@ module.exports = {
                     return exits.error(err.message);
                   }
                 }
-                await sails.helpers.channel.mercadolibre.orderShipping({cartProducts, order: existShipping[0]});
+                await sails.helpers.channel.mercadolibre.orderShipping({cartProducts, channelref, order: existShipping[0]});
               }
             } else {
               let user = await User.findOrCreate({emailAddress:order.buyer.email},{
@@ -156,8 +158,8 @@ module.exports = {
                 emailStatus:'confirmed',
                 password:await sails.helpers.passwords.hashPassword(order.buyer['billing_info']['doc_number']),
                 fullName:order.buyer['first_name']+' '+order.buyer['last_name'],
-                dniType:'CC',
-                dni:order.buyer['billing_info']['doc_number'],
+                dniType:order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? 'CC' : 'MLID',
+                dni:order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? order.buyer['billing_info']['doc_number'].toString() : order.buyer.id.toString(),
                 mobilecountry:null,
                 mobile:0,
                 mobileStatus:'unconfirmed',

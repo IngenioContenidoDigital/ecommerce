@@ -38,7 +38,8 @@
               <%viewed.forEach(vw =>{%>
                 <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
                   <span class="is-hidden productid" itemprop="productID"><%=vw.id%></span>
-                  <div class="card-image has-badge-danger has-badge-rounded has-badge-medium" <%if(vw.discount!==null && vw.discount!==undefined){%>data-badge="<%=vw.discount.value%>%"<%}%>>
+                  <div class="card-image">
+                      <%if(vw.discount!==null && vw.discount!==undefined){%><span style="z-index: 30; right: 15px; top:15px;" class="badge is-danger"><%=vw.discount.value%>%</span><%}%>
                       <figure class="image is-256x256 is-inline-block">
                           <a itemprop="url" href="/list/product/<%=encodeURIComponent((vw.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(vw.reference)%>"><%if(vw.cover!==undefined){%><img itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=vw.id%>/<%= vw.cover.file %>" alt="<%vw.manufacturer.name%> - <%vw.reference%>"><%}%></a>
                       </figure>

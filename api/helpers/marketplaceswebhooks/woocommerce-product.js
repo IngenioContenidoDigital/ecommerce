@@ -41,6 +41,17 @@ module.exports = {
                   }
 
                   await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller);
+              }else if(!product.simple && (product.color && product.color.length == 1)){
+                  pr = await Product.create(pro).fetch();
+                  
+                  let variations  = inputs.product.variations;
+                  let images =  inputs.product.images;
+
+                  if(variations && variations.length > 0){
+                    await sails.helpers.marketplaceswebhooks.variations({variations} , pr.id, seller);
+                  }
+
+                  await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller);
               }
           } else {
             delete pro.mainCategory;	

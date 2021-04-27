@@ -1,3 +1,4 @@
+
 /**
  * SellerController
  *
@@ -37,7 +38,7 @@ module.exports = {
         .populate('region')
         .populate('city');
       }
-      channels = await Channel.find({where:{type: { '!=': 'messenger' }}});
+      channels = await Channel.find({});
       integrations = await Integrations.find({
         where:{seller:id},
       }).populate('channel');
@@ -68,7 +69,7 @@ module.exports = {
         city:req.body.city,
         zipcode:req.body.zipcode,
         notes:req.body.notes
-      }
+      };
 
       let sellerData = {
         name:req.body.name.trim().toLowerCase(),
@@ -138,8 +139,8 @@ module.exports = {
     }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      
-       await Seller.updateOne({id:id}).set({
+
+      await Seller.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
         contact:req.body.contact,
@@ -156,7 +157,7 @@ module.exports = {
         safestock: req.body.safestock ? req.body.safestock : 0
       });
 
-    }catch(err){      
+    }catch(err){
       error=err;
       if(err.code==='badRequest'){
         await Seller.updateOne({id:id}).set({
@@ -318,8 +319,11 @@ module.exports = {
     let channel = req.param('channel');
     const nameChannel = req.param('namechannel');
     let integration = req.body.integration;
-    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.'
+    const textResult = integration ? 'Se Actualizó Correctamente la Integración.': 'Se Agrego Correctamente la Integración.';
     let edit = false;
+
+    let getProductUpdates = req.body.getProductUpdates == 'on' ? true : false;
+    let getOrderUpdates =  req.body.getOrderUpdates == 'on' ? true : false
 
     Integrations.findOrCreate({id: integration},{
       channel:channel,
@@ -334,6 +338,7 @@ module.exports = {
       if(err){return res.redirect('/sellers?error='+err);}
       integration = record.id;
       if(!created){
+
         record = await Integrations.updateOne({id:record.id}).set({
           name: req.body.name,
           url:req.body.url ? req.body.url : record.url,
@@ -343,24 +348,91 @@ module.exports = {
           version:req.body.version ? req.body.version : record.version
         });
         edit = record.useridml !== '' && record.secret !== '' ? true : false;
+
       }
+
+      switch (nameChannel) {
+        case 'woocommerce':
+          let int = await Integrations.findOne({id : integration});
+          if(getProductUpdates && !int.product_creation_webhookId){
+            let product_created = {};
+            product_created.name = "1Ecommerce Product Creation Sync v2";
+            product_created.delivery_url = `https://import.1ecommerce.app/api/created_product/woocommerce/${record.key}/true`
+            product_created.status = "active",
+            product_created.topic = "product.created";
+            product_created.version  = req.body.version
+            
+            let product_creation_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', product_created);
+            let product_updated = {};
+            product_updated.name = "1Ecommerce Update Creation Sync v2";
+            product_updated.delivery_url = `https://import.1ecommerce.app/api/updated_product/woocommerce/${record.key}/true`
+            product_updated.status = "active",
+            product_updated.topic = "product.updated";
+            product_updated.version  = req.body.version
+            
+            let product_updates_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', product_updated);
+            
+            if(product_creation_response && product_updates_response){
+                await Integrations.update({ id : integration}).set({ 
+                  product_creation_webhookId : product_creation_response.id,
+                  product_updates_webhookId :  product_updates_response.id,
+                  product_webhook_status : true
+                })
+            }
+          }else{
+            
+            await sails.helpers.webhooks.updateWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'UPDATE_WEBHOOK', {
+              status : getProductUpdates ? "active" : "paused"
+            }, int.product_creation_webhookId);
+
+            await sails.helpers.webhooks.updateWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'UPDATE_WEBHOOK', {
+              status : getProductUpdates ? "active" : "paused"
+            }, int.product_updates_webhookId);
+
+            await Integrations.update({ id : integration}).set({ 
+              product_webhook_status : getProductUpdates,
+            });
+          }
+  
+          if(getOrderUpdates && !int.order_updated_webhookId){
+            let order_updated = {};
+          
+            order_updated.name = "1Ecommerce Order updated Sync v2";
+            order_updated.delivery_url = `https://import.1ecommerce.app/api/updated_order/woocommerce/${record.key}`;
+            order_updated.status = "active",
+            order_updated.topic = "order.updated";
+            order_updated.version  = req.body.version 
+            
+            let order_updated_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', order_updated);
+            
+            if(order_updated_response){
+                await Integrations.update({ id : integration}).set({ 
+                  order_updated_webhookId : order_updated_response.id,
+                  order_webhook_status : true
+                });
+            }
+
+          }else{
+            await sails.helpers.webhooks.updateWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'UPDATE_WEBHOOK', {
+              status : getOrderUpdates ? "active" : "paused"
+            }, int.order_creation_webhookId);
+
+            await Integrations.update({ id : integration}).set({ 
+              order_webhook_status : getOrderUpdates
+            });
+          }
+          break;
+          //add case for shopify, vtex, prestashop
+        default:
+          break;
+      }
+
       if(nameChannel == 'mercadolibre' && !edit){
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
     });
-  },
-  showmessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let seller = req.param('seller');
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let channels = await Channel.find({type: 'messenger'});
-    let countQuestion = await Question.count({status: 'UNANSWERED', seller: seller});
-
-    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, countQuestion, seller});
   },
   notificationml: async function(req, res){
     let moment = require('moment');
@@ -377,15 +449,6 @@ module.exports = {
             let itemId = question.item_id;
             let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
             if (productchan) {
-              let answer = null;
-              if (question.answer !== null) {
-                answer = await Answer.create({
-                  text: question.answer.text,
-                  status: question.answer.status,
-                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-                }).fetch();
-              }
-
               let questi = {
                 idMl: question.id,
                 seller: seller,
@@ -393,14 +456,21 @@ module.exports = {
                 status: question.status,
                 dateCreated: parseInt(moment(question.date_created).valueOf()),
                 product: productchan.product,
-                answer: answer ? answer.id : null,
                 integration: integration.id
               };
               const existsQuest = await Question.findOne({idMl: question.id});
               if (existsQuest) {
-                await Question.updateOne({id: existsQuest.id}).set({answer: answer ? answer.id : null, status: question.status});
+                questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
               } else {
-                await Question.create(questi).fetch();
+                questi = await Question.create(questi).fetch();
+              }
+              if (question.answer !== null) {
+                await Answer.create({
+                  text: question.answer.text,
+                  status: question.answer.status,
+                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                  question: questi.id
+                }).fetch();
               }
             }
             let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
@@ -415,81 +485,18 @@ module.exports = {
           case 'items':
             await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
             break;
+          case 'claims':
+            await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
+            break;
           default:
             break;
         }
         return res.ok();
       } catch(err) {
-        return res.status(404).send(err);
+        return res.status(404).send(err.message);
       }
     }
     return res.status(404).send('No se encontró integracion para el seller');
-  },
-  filtermessages: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let seller = req.body.seller || req.session.user.seller;
-    let messages = [];
-
-    let questions = await Question.find({seller: seller, status: 'UNANSWERED'}).sort('createdAt DESC')
-      .populate('product');
-
-    for(let q of questions){
-      if(!messages.some(m => m.id === q.product.id)){
-        const questi = questions.filter(item => item.product.id === q.product.id && item.status === 'UNANSWERED');
-        messages.push({
-          id: q.product.id,
-          name: q.product.name.toUpperCase(),
-          created: q.dateCreated,
-          questions: questi
-        });
-      }
-    }
-    return res.send({messages});
-  },
-  getquestions: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'messages')){
-      throw 'forbidden';
-    }
-    let productId = req.body.productId;
-
-    let questions = await Question.find({product: productId}).sort('createdAt DESC').populate('product').populate('answer');
-    questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
-    return res.send({questions});
-  },
-  answerquestion: async function(req, res){
-    let moment = require('moment');
-    let questionId = req.body.id;
-    let text = req.body.text;
-    let seller = req.body.seller;
-    let question = await Question.findOne({seller: seller, idMl: questionId});
-
-    try {
-      if (question) {
-        let integration = await Integrations.findOne({id: question.integration});
-        await sails.helpers.channel.mercadolibre.answerQuestion(integration.id, questionId, text);
-
-        let answer = await Answer.create({
-          text: text,
-          status: 'ACTIVE',
-          dateCreated: parseInt(moment().valueOf()),
-        }).fetch();
-        await Question.updateOne({idMl: questionId}).set({answer: answer.id, status: 'ANSWERED'});
-        let questions = await Question.find({product: question.product}).sort('createdAt DESC').populate('product').populate('answer');
-        questions.sort((a, b) => (a.answer !== null ? 0 : 1) - (b.answer !== null ? 0 : 1));
-
-        let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-        sails.sockets.blast('notificationml', {questionsSeller, seller});
-        return res.send({questions});
-      } else {
-        throw new Error('No existe la pregunta');
-      }
-    } catch (error) {
-      return res.send(error);
-    }
   },
   showreports: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -543,7 +550,7 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let uniqueString = await sails.helpers.strings.uuid();     
+    let uniqueString = await sails.helpers.strings.uuid();
     return res.send(uniqueString);
   }
 };

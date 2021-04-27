@@ -33,13 +33,10 @@
     <script src="/dependencies/sails.io.js"></script>
     <script src="/dependencies/moment-with-locales.js"></script>
     <script src="/dependencies/moment.js"></script>
-    <script src="/dependencies/bulma-calendar/dist/js/bulma-calendar.min.js"></script>
     <script src="/js/global.js"></script>
     <!--SCRIPTS END-->
-
+    <script src="https://cdn.jsdelivr.net/npm/bulma-calendar@6.0.9/dist/js/bulma-calendar.min.js"></script>
     <!--STYLES-->
-    <link rel="stylesheet" href="/dependencies/bulma-badge.min.css">
-    <link rel="stylesheet" href="/dependencies/bulma-calendar/dist/css/bulma-calendar.min.css">
     <link rel="stylesheet" href="/dependencies/bulma-switch.min.css">
     <link rel="stylesheet" href="/styles/importer.css">
     <!--STYLES END-->
@@ -107,7 +104,7 @@
 
     const socket = io.socket.on('addtocart', function (data){
         let cart = document.querySelector('#cart-button')
-        cart.setAttribute('data-badge',data.items);
+        cart.querySelector('.badge').innerHTML = data.items;
     });
 
     live('.dropdown, .button, .button > span','click', e=>{

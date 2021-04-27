@@ -1,9 +1,9 @@
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
-let shopify = require('../graphql/shopify');
-let woocommerce = require('../graphql/woocommerce');
-let vtex = require('../graphql/vtex');
-let prestashop = require('../graphql/prestashop');
+let shopify = require('../../graphql/shopify');
+let woocommerce = require('../../graphql/woocommerce');
+let vtex = require('../../graphql/vtex');
+let prestashop = require('../../graphql/prestashop');
 
 let signRequest = (data, query) => {
   let rootQuery;
@@ -58,11 +58,11 @@ let signRequest = (data, query) => {
 let fetch = async (data) => {
   return new Promise(async (resolve, reject) => {
     let request = signRequest(data, data.resource);
-    let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { pagination : {page : data.pagination.page, pageSize : data.pagination.pageSize, next : data.pagination.next} } }, {
+    let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { webhook : data.webhook, id : data.webhookId} }, {
       headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
-    }).catch((e) => reject(e));
+    }).catch((e) => console.log(e));
 
     if (response && response.data) {
         return resolve(response.data.data[Object.keys(response.data.data)[0]]);
@@ -73,10 +73,10 @@ let fetch = async (data) => {
 module.exports = {
 
 
-  friendlyName: 'Commerce importer',
+  friendlyName: 'Webhook update helper',
 
 
-  description: 'Import data from marketplaces providers',
+  description: 'update webhooks to CMS',
 
 
   inputs: {
@@ -94,9 +94,12 @@ module.exports = {
       type: 'string'
     },
     resource: { type: 'string' },
-    pagination : {
+    webhook : {
       type : 'ref'
-    }
+    },
+    webhookId: {
+        type: 'string'
+    },
   },
 
   exits: {

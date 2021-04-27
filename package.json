@@ -5,6 +5,7 @@
   "description": "a Sails application",
   "keywords": [],
   "dependencies": {
+    "@creativebulma/bulma-badge": "^1.0.1",
     "@sailshq/connect-redis": "^3.2.1",
     "@sailshq/lodash": "^3.10.3",
     "@sailshq/socket.io-redis": "^5.2.0",
@@ -14,8 +15,8 @@
     "aws-sdk": "^2.675.0",
     "axios": "^0.19.2",
     "bulma": "^0.8.2",
-    "bulma-calendar": "^6.0.7",
-    "bulma-extensions": "^6.2.7",
+    "bulma-calendar": "^6.0.9",
+    "bulma-pageloader": "^0.3.0",
     "crypto-js": "^4.0.0",
     "csvtojson": "^2.0.10",
     "epayco-node": "0.0.7",

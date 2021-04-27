@@ -38,8 +38,22 @@ module.exports = {
     },
     version:{
       type:'string'
-    }
+    },
+    product_creation_webhookId:{
+      type:'string', required:false
+    },
+    product_updates_webhookId:{
+      type:'string', required:false
+    },
+    product_webhook_status:{
+      type:'boolean', required:false
+    },
+    order_updated_webhookId:{
+      type:'string', required:false
+    },
+    order_webhook_status:{
+      type:'boolean', required:false
+    },
   },
-
 };
 
