@@ -96,7 +96,7 @@
 
                         <div class="card-image">
                             <%if(product.discount!==null && product.discount!==undefined){%><span style="right: 15px; top:15px;" class="badge is-danger"><%=discval%>%</span><%}%>
-                            <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><%if(product.cover!==undefined){%><img itemprop="image" style="justify-content: center; max-height: 256px;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" alt="<%= product.manufacturer.name %> - <%= product.reference%>"><%}%></a>
+                            <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><%if(product.cover!==undefined){%><img itemprop="image" style="justify-content: center; max-height: 256px;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" loading="lazy" alt="<%= product.manufacturer.name %> - <%= product.reference%>"><%}%></a>
                         </div>
                         <div class="card-content">
                                 <div itemprop="description" class="is-hidden"><%-product.description%></div>
