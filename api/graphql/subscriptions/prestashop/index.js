@@ -8,5 +8,14 @@ module.exports = {
         key,
         channel
       }
-    }`
+    }`,
+
+  PRESTASHOP_ORDERS : gql`
+    subscription{
+      PrestashopOrders{
+        orderId,
+        key,
+        channel,
+      }
+    }`  
 };
