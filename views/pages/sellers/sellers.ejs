@@ -469,7 +469,7 @@
                   document.querySelector('input[name="key"]').value = resData;
                 });
               }
-              let form = nameChannel === 'mercadolibre' ? 
+              let form = nameChannel.includes('mercadolibre') ? 
               `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
                 <div class="container">
                   <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>

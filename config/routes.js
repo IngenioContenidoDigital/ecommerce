@@ -207,6 +207,7 @@ module.exports.routes = {
   'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
+  'POST /mercadolibremx/add' : {controller:'ProductController',action:'mercadolibremxadd'},
   'POST /linio/add' : {controller:'ProductController',action:'linioadd'},
   'POST /coppel/add' : {controller:'ProductController',action:'coppeladd'},
   'POST /iridio/add' : {controller:'ProductController',action:'iridioadd'},

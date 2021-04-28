@@ -429,6 +429,8 @@ module.exports = {
 
       if(nameChannel == 'mercadolibre' && !edit){
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
+      }else if(nameChannel == 'mercadolibremx' && !edit){
+        return res.redirect('https://auth.mercadolibre.com.mx/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else{
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
