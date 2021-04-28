@@ -34,8 +34,10 @@ module.exports = {
           if(oexists.length > 0){
             let currentStatus = await sails.helpers.orderState(shipping.status);
             for (const ord of oexists) {
+              const trackingMethod = shipping.tracking_method ? shipping.tracking_method.split(' ')[0] : '';
+              let carrier = await Carrier.findOne({name: trackingMethod ? trackingMethod.trim().toLowerCase():''});
               await sails.helpers.notification(ord, currentStatus);
-              await Order.updateOne({id:ord.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus});
+              await Order.updateOne({id:ord.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus,carrier: carrier ? carrier.id : ord.carrier});
               await OrderHistory.create({
                 order:ord.id,
                 state:currentStatus
