@@ -1,7 +1,7 @@
 module.exports.cron = {
   // ['seconds', 'minutes', 'hours', 'dayOfMonth', 'month', 'dayOfWeek']
-  meliOrders:{
-    schedule: '00 40 */3 * * *',
+  /*meliOrders:{
+    schedule: '00 40 * * * *',
     onTick: async () =>{
       console.log('Iniciando Captura de Ordenes Mercadolibre');
       let status = await OrderState.findOne({name:'aceptado'});
@@ -16,7 +16,7 @@ module.exports.cron = {
       console.log('Captura de Ordenes Mercadolibre Finalizada');
     },
     timezone: 'America/Bogota'
-  },
+  },*/
   trackingCoordinadora: {
     schedule: '02 12 */3 * * *',
     onTick: async () => {
