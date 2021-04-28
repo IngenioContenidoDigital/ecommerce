@@ -9,7 +9,6 @@
 module.exports = {
     attributes: {
         channel:{ model:'channel' },
-        channelname:{ type:'string' },
         feature:{ model:'feature' },
         name:{ type:'string' }
     }

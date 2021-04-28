@@ -267,11 +267,11 @@
                 }
               }else{
                 array_global=responseFeatures.filter(f=>!features.some(l=>l.FeedName== f.FeedName));
-                if (array_global.length>0) {
                   for (let i = 0; i < features.length; i++) {
                     let feature = features[i];
                     feature.categories.push(category);
                   }
+                if (array_global.length>0) {
                   for (let i = 0; i < array_global.length; i++) {
                     array_global[i];
                     let obj ={

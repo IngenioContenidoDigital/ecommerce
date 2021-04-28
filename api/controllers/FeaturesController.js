@@ -23,7 +23,7 @@ module.exports = {
     let category = await Category.findOne({name:'inicio'});
     // let channels = await Channel.find({type:'marketplace'});
     let channels = await Channel.find({name:['linio','dafiti']});
-    console.log(channels);
+    // console.log(channels);
     res.view('pages/catalog/features',{layout:'layouts/admin',features:features, action:action, error:error, feature:feature, category:category, channels:channels});
   },
   addfeature: async function(req, res){
@@ -52,10 +52,9 @@ module.exports = {
           const element = channels[index];
           await FeatureChannel.create({
             channel:element.channel.id,
-            channelname:element.channel.name,
             feature:feature.id,
             name: element.name
-          }).fetch();
+          });
         }
       }
     }catch(err){
@@ -91,9 +90,18 @@ module.exports = {
 
       for (let index = 0; index < channels.length; index++) {
         const element = channels[index];
-        await FeatureChannel.updateOne({channelname:element.channel.name, feature:feature.id}).set({
-          name: element.name
-        });
+        let exists = await FeatureChannel.findOne({channel:element.channel.id, feature:feature.id});
+        if(exists){
+          await FeatureChannel.updateOne({id:exists.id}).set({
+            name: element.name
+          });
+        }else{
+          await FeatureChannel.create({
+            channel:element.channel.id,
+            feature:feature.id,
+            name: element.name
+          });
+        }
       }
 
     }catch(err){
@@ -102,6 +110,7 @@ module.exports = {
     if (error===undefined || error===null || error.code==='badRequest'){
       return res.redirect('/features');
     }else{
+      console.log(error);
       return res.redirect('/features?error='+error);
     }
   },
