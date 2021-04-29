@@ -538,6 +538,9 @@ module.exports = {
             case 'items':
               await sails.helpers.channel.mercadolibremx.productQc(integration.id, resource);
               break;
+            case 'claims':
+              await sails.helpers.channel.mercadolibremx.claims(integration.id, resource);
+              break;
             default:
               break;
           }
