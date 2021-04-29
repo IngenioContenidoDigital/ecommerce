@@ -110,8 +110,9 @@ module.exports = {
                   }
                   if((await CartProduct.count({cart:cart.id}))>0){
                     let carrier = shipping['tracking_method'] ? shipping['tracking_method'].split(' ') : '';
+                    let tracking = shipping.mode === 'custom' || shipping.mode === 'not_specified' ? '' : shipping.id;
                     let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:carrier[0]});
-                    await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking: shipping.id});
+                    await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking: tracking});
                   } else {
                     return exits.error('No se pudo crear la orden');
                   }
