@@ -618,7 +618,7 @@ module.exports = {
     if (!req.isSocket) {return res.badRequest();}
     let id = req.body.id;
     const order = await Order.findOne({id:id});
-    let stateOrder = !order.addressDelivery || !order.tracking ? true : false;
+    let stateOrder = !order.addressDelivery || (!order.tracking && !order.carrier) ? true : false;
     let stateAddress = order.addressDelivery ? true : false;
     return res.send({stateOrder, stateAddress});
   },
