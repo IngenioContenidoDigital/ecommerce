@@ -441,57 +441,74 @@ module.exports = {
     let resource = req.body.resource;
     let userId = req.body.user_id;
     let topic = req.body.topic;
-    let integration = await Integrations.findOne({useridml: userId});
+    let integration = await Integrations.findOne({useridml: userId}).populate('seller');
     if (integration) {
-      let seller = integration.seller;
+      let seller = integration.seller.id;
+      const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
       try {
-        switch (topic) {
-          case 'questions':
-            let question = await sails.helpers.channel.mercadolibre.findQuestion(integration.id, resource);
-            let itemId = question.item_id;
-            let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
-            if (productchan) {
-              let questi = {
-                idMl: question.id,
-                seller: seller,
-                text: question.text,
-                status: question.status,
-                dateCreated: parseInt(moment(question.date_created).valueOf()),
-                product: productchan.product,
-                integration: integration.id
-              };
-              const existsQuest = await Question.findOne({idMl: question.id});
-              if (existsQuest) {
-                questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
-              } else {
-                questi = await Question.create(questi).fetch();
+        if (address.country.iso === 'CO') {
+          switch (topic) {
+            case 'questions':
+              let question = await sails.helpers.channel.mercadolibre.findQuestion(integration.id, resource);
+              let itemId = question.item_id;
+              let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
+              if (productchan) {
+                let questi = {
+                  idMl: question.id,
+                  seller: seller,
+                  text: question.text,
+                  status: question.status,
+                  dateCreated: parseInt(moment(question.date_created).valueOf()),
+                  product: productchan.product,
+                  integration: integration.id
+                };
+                const existsQuest = await Question.findOne({idMl: question.id});
+                if (existsQuest) {
+                  questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
+                } else {
+                  questi = await Question.create(questi).fetch();
+                }
+                if (question.answer !== null) {
+                  await Answer.create({
+                    text: question.answer.text,
+                    status: question.answer.status,
+                    dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                    question: questi.id
+                  }).fetch();
+                }
               }
-              if (question.answer !== null) {
-                await Answer.create({
-                  text: question.answer.text,
-                  status: question.answer.status,
-                  dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-                  question: questi.id
-                }).fetch();
-              }
-            }
-            let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-            sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
-            break;
-          case 'shipments':
-            await sails.helpers.channel.mercadolibre.statusOrder(integration.id, resource);
-            break;
-          case 'orders_v2':
-            await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
-            break;
-          case 'items':
-            await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
-            break;
-          case 'claims':
-            await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
-            break;
-          default:
-            break;
+              let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+              sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
+              break;
+            case 'shipments':
+              await sails.helpers.channel.mercadolibre.statusOrder(integration.id, resource);
+              break;
+            case 'orders_v2':
+                await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
+              break;
+            case 'items':
+              await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
+              break;
+            case 'claims':
+              await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
+              break;
+            default:
+              break;
+          }
+        } else if (address.country.iso === 'MX') {
+          switch (topic) {
+            case 'shipments':
+              await sails.helpers.channel.mercadolibremx.statusOrder(integration.id, resource);
+              break;
+            case 'orders_v2':
+              await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
+              break;
+            case 'items':
+              await sails.helpers.channel.mercadolibremx.productQc(integration.id, resource);
+              break;
+            default:
+              break;
+          }
         }
         return res.ok();
       } catch(err) {
