@@ -497,6 +497,38 @@ module.exports = {
           }
         } else if (address.country.iso === 'MX') {
           switch (topic) {
+            case 'questions':
+              let question = await sails.helpers.channel.mercadolibremx.findQuestion(integration.id, resource);
+              let itemId = question.item_id;
+              let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
+              if (productchan) {
+                let questi = {
+                  idMl: question.id,
+                  seller: seller,
+                  text: question.text,
+                  status: question.status,
+                  dateCreated: parseInt(moment(question.date_created).valueOf()),
+                  product: productchan.product,
+                  integration: integration.id
+                };
+                const existsQuest = await Question.findOne({idMl: question.id});
+                if (existsQuest) {
+                  questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
+                } else {
+                  questi = await Question.create(questi).fetch();
+                }
+                if (question.answer !== null) {
+                  await Answer.create({
+                    text: question.answer.text,
+                    status: question.answer.status,
+                    dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                    question: questi.id
+                  }).fetch();
+                }
+              }
+              let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+              sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
+              break;
             case 'shipments':
               await sails.helpers.channel.mercadolibremx.statusOrder(integration.id, resource);
               break;

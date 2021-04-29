@@ -63,7 +63,7 @@ module.exports = {
       }
     }catch(err){
       let cause = '';
-      if (err.response.data && err.response.data.cause.length > 0) {
+      if (err.response.data && err.response.data.cause && err.response.data.cause.length > 0) {
         for (const caus of err.response.data.cause) {
           if (caus.type === 'error') {
             cause = cause + ' | ' + caus.message;
