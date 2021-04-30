@@ -125,7 +125,9 @@
             }
           });
           let attachmentsQuestion = createHtmlAttachments(question.attachments, question);
-          const quest = `
+          const quest = question.senderRole === 'respondent' ? `
+            <p class="message-content message-answer bubble flex-row-reverse">${question.text}<br/>${attachmentsQuestion}</p><br/>
+          ` : `
             <div class="media-chat">
               <div class="media-left message-left">
                 <i class="bx bxs-conversation bx-sm"></i>
@@ -163,7 +165,7 @@
                 </div>
                 <span class="btn-upload">
                   <span class="file-icon">
-                    <i class="bx bxs-send bx-icon" onclick="clickAnswerConversation(\'${ultimateQuestion.conversation.id}\',\'${ultimateQuestion.id}\')"></i>
+                    <i class="bx bxs-send bx-icon" onclick="clickAnswerConversation(\'${ultimateQuestion.conversation.id}\',\'${ultimateQuestion.id}\',\'${ultimateQuestion.conversation.recipient}\')"></i>
                   </span>
                 </span>
               </div>
@@ -243,7 +245,7 @@
     });
   }
 
-  function clickAnswerConversation(conversationId, questionId) {
+  function clickAnswerConversation(conversationId, questionId, type) {
     let dataForm = new FormData();
     const containerForm = document.querySelector('.container-form');
     let text = document.getElementById('inputConversation').value;
@@ -257,6 +259,7 @@
       for (const file of attachments) {
         dataForm.append('file', file);
       }
+      const url = type === 'claim' ? '/answerclaim' : '/answermessages';
       let request = new XMLHttpRequest();
       request.addEventListener('load', function(e) {
         const respo = JSON.parse(request.response);
@@ -277,7 +280,7 @@
           }, 4000);
         }
       });
-      request.open('POST', '/answerclaim');
+      request.open('POST', url);
       request.send(dataForm);
     }else {
       const el = document.getElementById('error');

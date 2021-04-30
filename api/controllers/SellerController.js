@@ -484,13 +484,16 @@ module.exports = {
               await sails.helpers.channel.mercadolibre.statusOrder(integration.id, resource);
               break;
             case 'orders_v2':
-                await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
+              await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
               break;
             case 'items':
               await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
               break;
             case 'claims':
               await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
+              break;
+            case 'messages':
+              await sails.helpers.channel.mercadolibre.messages(integration.id, resource);
               break;
             default:
               break;
@@ -540,6 +543,9 @@ module.exports = {
               break;
             case 'claims':
               await sails.helpers.channel.mercadolibremx.claims(integration.id, resource);
+              break;
+            case 'messages':
+              await sails.helpers.channel.mercadolibremx.messages(integration.id, resource);
               break;
             default:
               break;

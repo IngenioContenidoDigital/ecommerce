@@ -162,7 +162,7 @@ module.exports = {
         integration = address.country.iso === 'MX' ? await sails.helpers.channel.mercadolibremx.sign(conversation.integration) : await sails.helpers.channel.mercadolibre.sign(conversation.integration);
         let answers = [];
         let questions = [];
-        let attachments = await sails.helpers.channel.uploadAttachment(req, 'file', 12000000,integration.channel.endpoint,conversation.identifier,integration.secret);
+        let attachments = await sails.helpers.channel.uploadAttachment(req, 'file', 12000000,integration.channel.endpoint,conversation.identifier,integration.secret,'claim');
         let route = `attachments/${conversation.id}`;
 
         let body = {
@@ -209,10 +209,89 @@ module.exports = {
       return res.send({error: error.message});
     }
   },
+  answermessages: async function(req, res){
+    let moment = require('moment');
+    let text = req.body.text;
+    let conversation = await Conversation.findOne({id: req.body.id}).populate('questions');
+    try {
+      if (conversation) {
+        let integration = await Integrations.findOne({id: conversation.integration}).populate('seller');
+        const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
+        integration = address.country.iso === 'MX' ? await sails.helpers.channel.mercadolibremx.sign(conversation.integration) : await sails.helpers.channel.mercadolibre.sign(conversation.integration);
+        let answers = [];
+        let questions = [];
+        let attachments = await sails.helpers.channel.uploadAttachment(req, 'file', 12000000,integration.channel.endpoint,conversation.identifier,integration.secret,'message');
+        let route = `attachments/${conversation.id}`;
+        let message = address.country.iso === 'MX' ? await sails.helpers.channel.mercadolibremx.request(`messages/${conversation.questions[0].idMl}`, integration.channel.endpoint, integration.secret) :
+        await sails.helpers.channel.mercadolibre.request(`messages/${conversation.questions[0].idMl}`, integration.channel.endpoint, integration.secret);
+        const from = message.from;
+        const to = message.to[0];
+        const emailFrom = from.user_id === integration.useridml ? from.email : to.email;
+        const userIdTo = from.user_id === integration.useridml ? to.user_id : from.user_id;
+
+        let body = attachments.length > 0 ?
+        {
+          from: {'user_id': integration.useridml, 'email': emailFrom},
+          to: { 'user_id': userIdTo},
+          text: text,
+          'attachments': attachments
+        } : {
+          from: {'user_id': integration.useridml, 'email': emailFrom},
+          to: {'user_id': userIdTo},
+          text: text
+        };
+        let response = address.country.iso === 'MX' ? await sails.helpers.channel.mercadolibremx.request(`messages/packs/${conversation.identifier}/sellers/${integration.useridml}`,integration.channel.endpoint,integration.secret,body,'POST') :
+        await sails.helpers.channel.mercadolibre.request(`messages/packs/${conversation.identifier}/sellers/${integration.useridml}`,integration.channel.endpoint,integration.secret,body,'POST');
+        if (response && response.id) {
+          let files = [];
+          if (attachments.length > 0) {
+            files = await sails.helpers.fileUpload(req, 'file', 12000000, route);
+          }
+          const answer = await Answer.create({
+            idAnswer: response.id,
+            text: text,
+            status: 'message',
+            dateCreated: parseInt(moment().valueOf()),
+            question: req.body.questionId
+          }).fetch();
+          for (const attach of files) {
+            await Attachment.create({
+              filename: attach.filename,
+              name: attach.original,
+              type: attach.type,
+              answer: answer.id
+            }).fetch();
+          }
+          questions = await Question.find({conversation: conversation.id}).populate('conversation').populate('answers').populate('attachments');
+          for (const question of questions) {
+            for (const answer of question.answers) {
+              answers.push(answer.id);
+            }
+          }
+          answers = await Answer.find({id: answers}).populate('attachments');
+        }
+        return res.send({questions, answers});
+      } else {
+        throw new Error('No existe la conversation');
+      }
+    } catch (error) {
+      return res.send({error: error.message});
+    }
+  },
   donwloadattachment: async function(req, res){
     try {
       let integration = await sails.helpers.channel.mercadolibre.sign(req.body.integration);
-      let response = await sails.helpers.channel.mercadolibre.request(`/v1/claims/${req.body.identifier}/attachments/${req.body.filename}/download`, integration.channel.endpoint, integration.secret, {responseType: 'arraybuffer'});
+      let conversation = await Conversation.findOne({identifier: req.body.identifier});
+      const seller = await Seller.findOne({id: integration.seller});
+      const address = await Address.findOne({id: seller.mainAddress}).populate('country');
+      let response = null;
+      if (address.country.iso === 'MX') {
+        response = conversation.recipient === 'messages' ? await sails.helpers.channel.mercadolibremx.request(`/messages/attachments/${req.body.filename}`, integration.channel.endpoint, integration.secret, {responseType: 'arraybuffer'}) :
+        await sails.helpers.channel.mercadolibremx.request(`/v1/claims/${req.body.identifier}/attachments/${req.body.filename}/download`, integration.channel.endpoint, integration.secret, {responseType: 'arraybuffer'});
+      } else {
+        response = conversation.recipient === 'messages' ? await sails.helpers.channel.mercadolibre.request(`/messages/attachments/${req.body.filename}`, integration.channel.endpoint, integration.secret, {responseType: 'arraybuffer'}) :
+        await sails.helpers.channel.mercadolibre.request(`/v1/claims/${req.body.identifier}/attachments/${req.body.filename}/download`, integration.channel.endpoint, integration.secret, {responseType: 'arraybuffer'});
+      }
       return res.send(response);
     } catch (err) {
       console.log(err);

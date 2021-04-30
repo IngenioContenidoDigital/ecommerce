@@ -8,6 +8,7 @@ module.exports = {
     endpoint: {type:'string'},
     identifier: {type:'string'},
     secret: {type:'string'},
+    type: {type:'string'}
   },
   exits: {
     success: {
@@ -36,9 +37,10 @@ module.exports = {
         for(let i=0; i<uploadedFiles.length; i++){
           const form = new FormData();
           form.append('file', fs.createReadStream(uploadedFiles[i].fd));
+          const url = inputs.type === 'claim' ? `${inputs.endpoint}v1/claims/${inputs.identifier}/attachments` : `${inputs.endpoint}messages/attachments`;
           options = {
             method: 'post',
-            url: `${inputs.endpoint}v1/claims/${inputs.identifier}/attachments`,
+            url: url,
             headers: {
               'Authorization': `Bearer ${inputs.secret}`,
               'content-type': `multipart/form-data; boundary=${form._boundary}`,
@@ -47,8 +49,10 @@ module.exports = {
             data: form
           };
           let result = await axios(options).catch((e) => {exits.badRequest('Error en al subir las imagene');});
-          if (result && result.data.filename) {
+          if (result && inputs.type === 'claim' && result.data.filename) {
             files.push(result.data.filename);
+          } else if(result && result.data.id){
+            files.push(result.data.id);
           }
         }
         return exits.success(files);

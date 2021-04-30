@@ -22,6 +22,7 @@ module.exports = {
     attachments:{
       collection:'attachment',
       via:'question'
-    }
+    },
+    senderRole:{type:'string'}
   },
 };
