@@ -1,6 +1,6 @@
 module.exports = {
   friendlyName: 'Claims',
-  description: 'Process claims Mercadolibre',
+  description: 'Process claims Mercadolibre mexico',
   inputs: {
     integration: {
       type:'string',
@@ -18,11 +18,11 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     const moment = require('moment');
-    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
+    let integration = await sails.helpers.channel.mercadolibremx.sign(inputs.integration);
     try{
-      let claim = await sails.helpers.channel.mercadolibre.request(inputs.resource, integration.channel.endpoint, integration.secret);
+      let claim = await sails.helpers.channel.mercadolibremx.request(inputs.resource, integration.channel.endpoint, integration.secret);
       if(claim && claim.id){
-        let messages = await sails.helpers.channel.mercadolibre.request(`${inputs.resource}/messages`, integration.channel.endpoint, integration.secret);
+        let messages = await sails.helpers.channel.mercadolibremx.request(`${inputs.resource}/messages`, integration.channel.endpoint, integration.secret);
         const typeClaim = claim.reason_id.slice(0,3) === 'PDD' ? 'producto defectuoso' : 'pagado y no recibido';
         let conversation = await Conversation.findOne({identifier: claim.id});
         if (!conversation) {

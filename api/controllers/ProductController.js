@@ -548,7 +548,9 @@ module.exports = {
           result = await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
           await ProductChannel.updateOne({id: productChannelId}).set({
             status: req.body.status ? true : false,
-            price: req.body.price ? parseFloat(req.body.price) : 0
+            qc:true,
+            price: req.body.price ? parseFloat(req.body.price) : 0,
+            reason: ''
           });
         }
         if(action==='Post'){
@@ -599,7 +601,91 @@ module.exports = {
             channelid:productchannel.channelid ? productchannel.channelid : '',
             status:false,
             qc:false,
-            iscreated:false,
+            price:0,
+            reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
+          });
+        }
+      });
+      return res.send({error: err.message});
+    }
+  },
+  mercadolibremxadd: async (req, res) => {
+    if (!req.isSocket) {return res.badRequest();}
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    const productChannelId = productchannel ? productchannel.id : '';
+    const channelPrice = productchannel ? productchannel.price : 0;
+    try {
+      let action = null;
+      let result = null;
+      let status = req.body.status ? 'active' : 'paused';
+      if (productchannel && productchannel.channelid) {
+        action = 'Update';
+      } else {
+        action = 'Post';
+      }
+      let integration = await sails.helpers.channel.mercadolibremx.sign(integrationId);
+      let body = await sails.helpers.channel.mercadolibremx.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status);
+      if(body){
+        if(action==='Update'){
+          result = await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
+          await ProductChannel.updateOne({id: productChannelId}).set({
+            status: req.body.status ? true : false,
+            qc:true,
+            price: req.body.price ? parseFloat(req.body.price) : 0,
+            reason: ''
+          });
+        }
+        if(action==='Post'){
+          result = await sails.helpers.channel.mercadolibremx.request('items',integration.channel.endpoint,integration.secret, body,'POST');
+          if(result.id){
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:product.id,
+              channel:channelId,
+              integration:integrationId,
+              channelid: result.id,
+              status: true,
+              qc:true,
+              iscreated:true,
+              price: req.body.price ? parseFloat(req.body.price) : 0,
+              reason: ''
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){
+                await ProductChannel.updateOne({id: record.id}).set({
+                  channelid:result.id,
+                  status:true,
+                  qc:true,
+                  iscreated:true,
+                  price: req.body.price ? parseFloat(req.body.price) : 0,
+                  reason: ''
+                });
+              }
+            });
+          }
+        }
+        return res.send({error: null});
+      }
+    } catch (err) {
+      await ProductChannel.findOrCreate({id: productChannelId},{
+        product:product.id,
+        channel:channelId,
+        integration:integrationId,
+        channelid:'',
+        status:false,
+        qc:false,
+        iscreated:false,
+        price:0,
+        reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
+      }).exec(async (er, record, created)=>{
+        if(er){return res.send({error: er});}
+        if(!created){
+          await ProductChannel.updateOne({id: record.id}).set({
+            channelid:productchannel.channelid ? productchannel.channelid : '',
+            status:false,
+            qc:false,
             price:0,
             reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
           });
@@ -1569,12 +1655,14 @@ module.exports = {
             if(body){
               if(action==='Update'){
                 result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
-                .tolerate((err)=>{return;});
+                .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);});
                 if(result){
                   response.items.push(body);
                   await ProductChannel.updateOne({ id: productChannelId }).set({
                     status:true,
-                    price:mlprice
+                    price:mlprice,
+                    qc:true,
+                    reason: ''
                   });
                 }
               }
@@ -1591,6 +1679,87 @@ module.exports = {
                     channelid:result.id,
                     status:true,
                     qc:true,
+                    iscreated: true,
+                    price:0
+                  }).exec(async (err, record, created)=>{
+                    if(err){return new Error(err.message);}
+                    if(!created){
+                      await ProductChannel.updateOne({id: record.id}).set({
+                        channelid:result.id,
+                        price:mlprice
+                      });
+                    }
+                  });
+                  response.items.push(body);
+                }
+              }
+            }
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
+      if (channel === 'mercadolibremx' && req.body.action !== 'ProductQcStatus') {
+        const intgrationId = integration.id;
+        let products = await Product.find({seller: seller}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        });
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'Post';
+            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            break;
+          case 'ProductUpdate':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            break;
+          case 'Image':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            break;
+        }
+        if (products.length > 0) {
+          let integration = await sails.helpers.channel.mercadolibremx.sign(intgrationId);
+          for (let pl of products) {
+            const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
+            const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+            let body = await sails.helpers.channel.mercadolibremx.product(pl.id,action,integration.id, mlprice)
+            .tolerate(async (err) => {
+              response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
+            });
+            if(body){
+              if(action==='Update'){
+                result = await sails.helpers.channel.mercadolibremx.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
+                .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);});
+                if(result){
+                  response.items.push(body);
+                  await ProductChannel.updateOne({ id: productChannelId }).set({
+                    status:true,
+                    price:mlprice,
+                    qc:true,
+                    reason: ''
+                  });
+                }
+              }
+              if(action==='Post'){
+                result = await sails.helpers.channel.mercadolibremx.request('items',integration.channel.endpoint,integration.secret, body,'POST')
+                .tolerate((err)=>{ 
+                  response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
+                });
+                if(result && result.id.length>0){
+                  await ProductChannel.findOrCreate({id: productChannelId},{
+                    product:pl.id,
+                    channel:integration.channel.id,
+                    integration:integration.id,
+                    channelid:result.id,
+                    status:true,
+                    qc:true,
+                    iscreated: true,
                     price:0
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}

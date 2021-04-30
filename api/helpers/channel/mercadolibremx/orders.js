@@ -1,6 +1,6 @@
 module.exports = {
   friendlyName: 'Orders',
-  description: 'Orders mercadolibre.',
+  description: 'Orders mercadolibre mexico.',
   inputs: {
     integration:{
       type:'string',
@@ -20,29 +20,31 @@ module.exports = {
     },
   },
   fn: async function (inputs,exits) {
-    let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
+    let integration = await sails.helpers.channel.mercadolibremx.sign(inputs.integration);
 
     let profile = await Profile.findOne({name:'customer'});
     let moment = require('moment');
 
-    let result = await sails.helpers.channel.mercadolibre.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
+    let result = await sails.helpers.channel.mercadolibremx.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
     if(result.id){
-      let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
+      let order = await sails.helpers.channel.mercadolibremx.findOrder(inputs.resource, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
       if(order){
         try{
-          let oexists = await Order.find({channel:'mercadolibre', channelref:order.id, integration: integration.id});
+          let oexists = await Order.find({channel:'mercadolibremx', channelref:order.id, integration: integration.id});
           if(oexists.length === 0 && order.status==='paid'){
             if(order.shipping.id){
-              let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
+              let shipping = await sails.helpers.channel.mercadolibremx.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
                 return exits.error(err.message);
               });
-              let existShipping = await Order.find({channel:'mercadolibre', tracking: order.shipping.id, integration: integration.id});
+              let existShipping = await Order.find({channel:'mercadolibremx', tracking: order.shipping.id, integration: integration.id});
               if (existShipping.length === 0) {
-                let cityname = shipping['receiver_address'].city.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                let state = shipping['receiver_address'].state.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                if(cityname==='Bogota D.C.' ){cityname='Bogota';}
-                if(state==='Bogota D.C.'){state='Bogota';}
-                let city = await City.find({name:[cityname.toLowerCase().trim(), state.toLowerCase().trim()]}).populate('region');
+                let cityname = shipping['receiver_address'].city.name;
+                let state = shipping['receiver_address'].state.name;
+                if(state==='Distrito Federal'){state='ciudad de méxico';}
+
+                let region = await Region.find({name:state.toLowerCase().trim()});
+                let city = await City.find({name:cityname.toLowerCase().trim(), region: region ? region.id : '' }).populate('region');
+
                 if(city && oexists.length === 0){
                   let user = await User.findOrCreate({emailAddress:order.buyer.email},{
                     emailAddress:order.buyer.email,
@@ -70,7 +72,7 @@ module.exports = {
                   let payment = {
                     data:{
                       estado:'Aceptado',
-                      channel:'mercadolibre',
+                      channel:'mercadolibremx',
                       channelref:order.id,
                       integration:integration.id
                     }
@@ -108,9 +110,8 @@ module.exports = {
                   }
                   if((await CartProduct.count({cart:cart.id}))>0){
                     let carrier = shipping['tracking_method'] ? shipping['tracking_method'].split(' ') : '';
-                    let tracking = shipping.mode === 'custom' || shipping.mode === 'not_specified' ? '' : shipping.id;
                     let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:carrier[0]});
-                    await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking: tracking});
+                    await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking: shipping.id});
                   } else {
                     return exits.error('No se pudo crear la orden');
                   }
@@ -170,7 +171,7 @@ module.exports = {
               let payment = {
                 data:{
                   estado:'Aceptado',
-                  channel:'mercadolibre',
+                  channel:'mercadolibremx',
                   channelref:order.id,
                   integration:integration.id
                 }
@@ -215,7 +216,7 @@ module.exports = {
           }else{
             if(oexists.length > 0){
               for (const ord of oexists) {
-                let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
+                let shipping = await sails.helpers.channel.mercadolibremx.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
                   return exits.error(err.message);
                 });
                 let currentStatus = await sails.helpers.orderState(shipping.status);
@@ -239,4 +240,3 @@ module.exports = {
     }
   }
 };
-

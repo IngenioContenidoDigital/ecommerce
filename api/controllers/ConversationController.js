@@ -49,13 +49,24 @@ module.exports = {
     const questionsChannel = [];
     let channels = await Channel.find({type: 'messenger'});
     let integrations = await Integrations.find({seller: seller}).populate('channel');
-    integrations = integrations.filter(int => int.channel.type === 'messenger' || int.channel.name === 'mercadolibre');
+    seller = await Seller.findOne({id: seller});
+    const address = await Address.findOne({id: seller.mainAddress}).populate('country');
+
+    integrations = integrations.filter(int => int.channel.type === 'messenger' || (address.country.iso === 'MX' ?  int.channel.name === 'mercadolibremx': int.channel.name === 'mercadolibre'));
+    channels = channels.filter(chann => address.country.iso === 'MX' ? chann.name !== 'mensajes mercadolibre' : chann.name !== 'mensajes mercadolibremx');
+
     for (const inte of integrations) {
-      const channel = inte.channel.name === 'mercadolibre' ? channels[0].id : inte.channel.id;
-      const count = await Question.count({status: 'UNANSWERED', seller: seller, integration: inte.id});
+      let channel = null;
+      if (inte.channel.name === 'mercadolibre' || inte.channel.name === 'mercadolibremx') {
+        const resultChan = channels.find(cha =>  address.country.iso === 'MX' ? cha.name === 'mensajes mercadolibremx' : cha.name === 'mensajes mercadolibre');
+        channel = resultChan.id;
+      } else {
+        channel = inte.channel.id;
+      }
+      const count = await Question.count({status: 'UNANSWERED', seller: seller.id, integration: inte.id});
       questionsChannel.push({channel, count, integration: inte.id});
     }
-    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, questionsChannel, seller});
+    res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, questionsChannel, seller: seller.id});
   },
   filtermessages: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -113,8 +124,13 @@ module.exports = {
 
     try {
       if (question) {
-        let integration = await Integrations.findOne({id: question.integration});
-        await sails.helpers.channel.mercadolibre.answerQuestion(integration.id, questionId, text);
+        let integration = await Integrations.findOne({id: question.integration}).populate('seller');
+        const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
+        if (address.country.iso === 'MX') {
+          await sails.helpers.channel.mercadolibremx.answerQuestion(integration.id, questionId, text);
+        } else {
+          await sails.helpers.channel.mercadolibre.answerQuestion(integration.id, questionId, text);
+        }
         await Answer.create({
           text: text,
           status: 'ACTIVE',
@@ -141,19 +157,27 @@ module.exports = {
     let conversation = await Conversation.findOne({id: req.body.id}).populate('questions');
     try {
       if (conversation) {
-        let integration = await sails.helpers.channel.mercadolibre.sign(conversation.integration);
+        let integration = await Integrations.findOne({id: conversation.integration}).populate('seller');
+        const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
+        integration = address.country.iso === 'MX' ? await sails.helpers.channel.mercadolibremx.sign(conversation.integration) : await sails.helpers.channel.mercadolibre.sign(conversation.integration);
         let answers = [];
         let questions = [];
-        let attachments = await sails.helpers.channel.mercadolibre.uploadAttachment(req, 'file', 12000000,integration.channel.endpoint,conversation.identifier,integration.secret);
+        let attachments = await sails.helpers.channel.uploadAttachment(req, 'file', 12000000,integration.channel.endpoint,conversation.identifier,integration.secret);
         let route = `attachments/${conversation.id}`;
-        const files = await sails.helpers.fileUpload(req, 'file', 12000000, route);
+
         let body = {
           'receiver_role': 'complainant',
           'message': text,
           'attachments': attachments
         };
-        let response = await sails.helpers.channel.mercadolibre.request(`/v1/claims/${conversation.identifier}/messages`,integration.channel.endpoint,integration.secret,body,'POST');
+
+        let response = address.country.iso === 'MX' ? await sails.helpers.channel.mercadolibremx.request(`/v1/claims/${conversation.identifier}/messages`,integration.channel.endpoint,integration.secret,body,'POST') :
+        await sails.helpers.channel.mercadolibre.request(`/v1/claims/${conversation.identifier}/messages`,integration.channel.endpoint,integration.secret,body,'POST');
         if (response && response.id) {
+          let files = [];
+          if (attachments.length > 0) {
+            files = await sails.helpers.fileUpload(req, 'file', 12000000, route);
+          }
           const answer = await Answer.create({
             idAnswer: response.id,
             text: text,

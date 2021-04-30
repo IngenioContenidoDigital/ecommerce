@@ -34,6 +34,16 @@ module.exports = {
             .tolerate(()=>{return;});
           }
         }
+        if (integration.channel.name === 'mercadolibremx' && item.status && item.channelid !== '') {
+          let mlstatus = item.status ? 'active' : 'paused';
+          let body =  await sails.helpers.channel.mercadolibremx.product(inputs.product.id, 'Update', integration.id, item.price, mlstatus)
+          .tolerate(()=>{ return;});
+          if(body){
+            let integrat = await sails.helpers.channel.mercadolibremx.sign(integration.id);
+            await sails.helpers.channel.mercadolibremx.request('items/'+item.channelid,integrat.secret,body,'PUT')
+            .tolerate(()=>{return;});
+          }
+        }
         if (integration.channel.name === 'linio' && item.status) {
           let result = await sails.helpers.channel.linio.product([inputs.product], integration, item.price,undefined,false);
           const xml = jsonxml(result,true);

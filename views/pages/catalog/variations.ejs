@@ -64,47 +64,55 @@
                 <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de esta Variación" <% if(action=='edit'){ %>value="<%= variation.name %>"<% }%>/>
                 </div>
               </div>
-              <div class="columns">
-              <div class="column">
-                <div class="field">
-                  <label class="label">CM</label>
-                  <div class="control">
-                  <input class="input is-capitalized" type="text" name="cm" placeholder="Largo CM" <% if(action=='edit'){ %>value="<%= variation.cm %>"<% }else{%>value="0"<%}%>/>
+              <div class="columns is-multiline">
+                <div class="column is-one-fifth">
+                  <div class="field">
+                    <label class="label">CM</label>
+                    <div class="control">
+                    <input class="input is-capitalized" type="text" name="cm" placeholder="Largo CM" <% if(action=='edit'){ %>value="<%= variation.cm %>"<% }else{%>value="0"<%}%>/>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="column">
-                <div class="field">
-                  <label class="label">COL</label>
-                  <div class="control">
-                    <input class="input is-capitalized" type="text" name="col" placeholder="Colombia" <% if(action=='edit'){ %>value="<%= variation.col %>"<% }%>/>
+                <div class="column is-one-fifth">
+                  <div class="field">
+                    <label class="label">COL</label>
+                    <div class="control">
+                      <input class="input is-capitalized" type="text" name="col" placeholder="Colombia" <% if(action=='edit'){ %>value="<%= variation.col %>"<% }%>/>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="column">
-                <div class="field">
-                  <label class="label">US</label>
-                  <div class="control">
-                    <input class="input is-capitalized" type="text" name="us" placeholder="Americana" <% if(action=='edit'){ %>value="<%= variation.us %>"<% }%>/>
+                <div class="column is-one-fifth">
+                  <div class="field">
+                    <label class="label">MX</label>
+                    <div class="control">
+                      <input class="input is-capitalized" type="text" name="mx" placeholder="Mexico" <% if(action=='edit'){ %>value="<%= variation.mx %>"<% }%>/>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="column">
-                <div class="field">
-                  <label class="label">EU</label>
-                  <div class="control">
-                    <input class="input is-capitalized" type="text" name="eu" placeholder="Europea" <% if(action=='edit'){ %>value="<%= variation.eu %>"<% }%>/>
+                <div class="column is-one-fifth">
+                  <div class="field">
+                    <label class="label">US</label>
+                    <div class="control">
+                      <input class="input is-capitalized" type="text" name="us" placeholder="Americana" <% if(action=='edit'){ %>value="<%= variation.us %>"<% }%>/>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="column">
-                <div class="field">
-                  <label class="label">Ancho CM</label>
-                  <div class="control">
-                    <input class="input is-capitalized" type="text" name="wide" placeholder="Ancho cms" <% if(action=='edit'){ %>value="<%= variation.wide %>"<% }else{%>value="0"<%}%>/>
+                <div class="column is-one-fifth">
+                  <div class="field">
+                    <label class="label">EU</label>
+                    <div class="control">
+                      <input class="input is-capitalized" type="text" name="eu" placeholder="Europea" <% if(action=='edit'){ %>value="<%= variation.eu %>"<% }%>/>
+                    </div>
                   </div>
                 </div>
-              </div>
+                <div class="column is-one-fifth">
+                  <div class="field">
+                    <label class="label">Ancho CM</label>
+                    <div class="control">
+                      <input class="input is-capitalized" type="text" name="wide" placeholder="Ancho cms" <% if(action=='edit'){ %>value="<%= variation.wide %>"<% }else{%>value="0"<%}%>/>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="columns">
                 <div class="column">

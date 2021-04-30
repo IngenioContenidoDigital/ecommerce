@@ -130,6 +130,8 @@ module.exports = {
         guia = result.SuccessResponse.Body.Documents.Document.File;
       }else if(order.channel==='mercadolibre'){
         guia = await sails.helpers.channel.mercadolibre.shipping(order);
+      }else if(order.channel==='mercadolibremx'){
+        guia = await sails.helpers.channel.mercadolibremx.shipping(order);
       }
     }
     return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});

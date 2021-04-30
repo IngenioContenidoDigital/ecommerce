@@ -64,7 +64,7 @@
                   <div class="field">
                     <label class="label">Código</label>
                     <div class="control">
-                    <input class="input" type="text" name="code" id="code" <%if(channel.type=='messenger'){%>required="true"<%}%> maxlength="7" placeholder="Codigo del Color" <% if(action=='edit'){ %>value="<%= channel.colorcode %>"<% }else{%>value="#FFFFFF"<%}%>/>
+                    <input class="input" type="text" name="code" id="code" <%if(action=='edit' && channel.type=='messenger'){%>required="true"<%}%> maxlength="7" placeholder="Codigo del Color" <% if(action=='edit'){ %>value="<%= channel.colorcode %>"<% }else{%>value="#FFFFFF"<%}%>/>
                     </div>                        
                   </div>
                   <div class="notification is-info">

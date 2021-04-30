@@ -11,6 +11,7 @@ module.exports = {
     name:{type:'string',required:true, maxLength:15},
     cm:{type:'number', defaultsTo:0},
     col:{type:'string'},
+    mx:{type:'string'},
     us:{type:'string'},
     eu:{type:'string'},
     wide:{type:'number', defaultsTo:0},
