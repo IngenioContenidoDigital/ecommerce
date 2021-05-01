@@ -116,6 +116,8 @@
         let progress = document.querySelector('progress');
         let oldFeatures = [];
         let channelFlag = 0;
+        let lastcategory;
+        let flagx=1;
 
         async function init(){
           let result = await childTree(document.querySelectorAll('a.panel-block'));
@@ -127,16 +129,16 @@
               if(!hasClass(child,'visited')){
                 let opened = false;
                 io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
-                    var d = document.createElement('ul');
-                    resData.forEach(function(son){
-                      let ca = document.createElement('li');
-                      ca.style.paddingLeft = 5*son.level+'px';
-                      if(!son.hasChildren){
-                        if(feature){
+                  var d = document.createElement('ul');
+                  resData.forEach(function(son){
+                    let ca = document.createElement('li');
+                    ca.style.paddingLeft = 5*son.level+'px';
+                    if(!son.hasChildren){
+                      if(feature){
                           if(feature.categories.find(x => x.id == son.id)){
-                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" disabled checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                           } else {
-                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" disabled/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                           }
                         } else {
                           ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
@@ -153,7 +155,23 @@
                       hidecategories(d);
                       removeClass(progress,'is-hidden');
                       marketplacequery(toArray(d,'input:checked'),false);
-                    };
+                    }
+                    
+                    if(flagx===1){
+                      let nodes = document.querySelectorAll('a[level="2"]');
+                      let first = nodes[0];
+                      lastcategory = nodes[nodes.length- 1];
+                      flagx=2;
+                    }
+                    if (lastcategory) {
+                      if (child.getAttribute('category')==lastcategory.getAttribute('category')) {
+                        if (resData[resData.length-1]) {
+                          lastcategory=document.querySelector(`a[category="${resData[resData.length-1].id}"]`);
+                        }else{
+                          CategoryToggler();
+                        }
+                      }
+                    }
                     childTree(d.querySelectorAll('a.panel-block'));
 
                 });
@@ -255,13 +273,15 @@
                 for (let i = features.length-1; i>-1; i--) {
                   let feature = features[i];
                   if(feature.categories.length === 0){
-                    let element=document.querySelector(`[value="${feature.FeedName}"]`).parentNode.parentNode;
-                    if (element) {
-                      element.remove();
-                    }
-                    const indexFeature = features.indexOf(feature);
-                    if (indexFeature > -1) {
-                      features.splice(indexFeature, 1);
+                    if (document.querySelector(`[value="${feature.FeedName}"]`)) {
+                      let element=document.querySelector(`[value="${feature.FeedName}"]`).parentNode.parentNode;
+                      if (element) {
+                        element.remove();
+                      }
+                      const indexFeature = features.indexOf(feature);
+                      if (indexFeature > -1) {
+                        features.splice(indexFeature, 1);
+                      }
                     }
                   }
                 }
@@ -310,6 +330,7 @@
           });
           }
         }
+        
         function setoldFeatures(){
           for (let index = 0; index < channels.length; index++) {
             const channel = channels[index];
@@ -354,8 +375,6 @@
           let group = e.target.parentNode.id;
           let blocks= document.querySelectorAll('.setup');
           
-          console.log(group);
-          console.log(blocks);
           for(let b of blocks){
             if(hasClass(b,group)){
               removeClass(b,'is-hidden');
@@ -383,11 +402,7 @@
           });
         }
 
-        live('.no-children-category','click',e=>{
-          removeClass(progress,'is-hidden');
-          show('.loading');
-          hide('.markeplace-features');
-          hide('.empty');
+        function CategoryToggler(){
           let categories = root.querySelectorAll(':scope > ul > li');
           for (let index = 0; index < categories.length; index++) {
             const category = categories[index];
@@ -401,8 +416,17 @@
               }
             }
           }
+        }
+
+        live('.no-children-category','click',e=>{
+          removeClass(progress,'is-hidden');
+          show('.loading');
+          hide('.markeplace-features');
+          hide('.empty');
+          CategoryToggler();
           marketplacequery(e.target.value,true);
         });
+        
         document.addEventListener('DOMContentLoaded', function(){
           init();
         });
