@@ -34,6 +34,12 @@ module.exports = {
     pro.color  = inputs.product.color || '';
     let textPredictor = inputs.product.textLink ? inputs.product.textLink : inputs.product.name+' '+inputs.product.reference;
 
+    pro.description = pro.description.replace(/\¿\w+\s\w+\?\s.*\s\w+\s\(\+(\d|\s)*\)\sext\.\s\d+/g,'');
+    pro.description = pro.description.replace(/(\w+\s\w+){1}\s*\?(\s\w+\s\w+\s\w+\s){1}\(\+(\d|\s)*\)/g,'');
+    
+    pro.descriptionShort = pro.descriptionShort.replace(/\¿\w+\s\w+\?\s.*\s\w+\s\(\+(\d|\s)*\)\sext\.\s\d+/g,'');
+    pro.descriptionShort = pro.descriptionShort.replace(/(\w+\s\w+){1}\s*\?(\s\w+\s\w+\s\w+\s){1}\(\+(\d|\s)*\)/g,'');
+
     if(inputs.product.manufacturer){
       let brand = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() }));
       if(!brand){
