@@ -190,6 +190,7 @@ module.exports = {
             let oitems = await OrderItem.find({order:order.id}).populate('product');
             let integration = await Integrations.findOne({id: order.integration}).populate('channel');
             for(let it of oitems){
+              await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
               if(!litems.includes(it.externalReference)){
                 litems.push(it.externalReference);
               }

@@ -30,6 +30,9 @@ module.exports = {
     },
     shippingType: {
       type:'string'
+    },
+    currentstatus:{
+      model:'orderstate'
     }
   },
 };

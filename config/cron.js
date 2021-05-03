@@ -40,6 +40,10 @@ module.exports.cron = {
           await sails.helpers.notification(order, newstatus);
           if(newstatus!==order.currentstatus.id){
             await Order.updateOne({id:order.id}).set({currentstatus:newstatus,updatedAt:stateupdated});
+            let oitems = await OrderItem.find({order:order.id});
+            for(let it of oitems){
+              await OrderItem.updateOne({id: it.id}).set({currentstatus: newstatus});
+            }
             await OrderHistory.create({
               order:order.id,
               state:newstatus
@@ -75,6 +79,10 @@ module.exports.cron = {
             if(order){
               if(order.currentstatus.id != state.id){
                 let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
+                let oitems = await OrderItem.find({order:order.id});
+                for(let it of oitems){
+                  await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
+                }
                 await sails.helpers.notification(order, state.id);
                 if(!updatedOrder.tracking){
                   await sails.helpers.carrier.shipment(order.id);

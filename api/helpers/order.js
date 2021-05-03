@@ -122,7 +122,8 @@ module.exports = {
               externalReference:cp.externalReference,
               commission: commission,
               shippingType: cp.shippingType ? cp.shippingType : '',
-              externalOrder:payment.data.channelref ? payment.data.channelref : ''
+              externalOrder:payment.data.channelref ? payment.data.channelref : '',
+              currentstatus: await sails.helpers.orderState(payment.data.estado)
             });
             let pv = await ProductVariation.findOne({id:cp.productvariation.id});
             if(pv){

@@ -389,6 +389,10 @@ module.exports = {
     let order = await Order.updateOne({id:id}).set({currentstatus:req.body.orderState});
     let newstate = await OrderState.findOne({id:req.body.orderState}).populate('color');
     let seller = await Seller.findOne({id: order.seller});
+    let oitems = await OrderItem.find({order:order.id});
+    for(let it of oitems){
+      await OrderItem.updateOne({id: it.id}).set({currentstatus: req.body.orderState});
+    }
     if (seller && seller.integrationErp && newstate) {
       let resultState = newstate.name === 'en procesamiento' ? 'En procesa' : newstate.name === 'reintegrado' ? 'Reintegrad' : newstate.name.charAt(0).toUpperCase() + newstate.name.slice(1);
       await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
@@ -642,7 +646,10 @@ module.exports = {
       }
       const carrier = await Carrier.findOne({name:req.body.transport.trim().toLowerCase()});
       order = await Order.updateOne({id:id}).set({transport:req.body.transport,currentstatus:req.body.status,addressDelivery: address ? address.id : order.addressDelivery, carrier: carrier.id});
-      
+      let oitems = await OrderItem.find({order:order.id});
+      for(let it of oitems){
+        await OrderItem.updateOne({id: it.id}).set({currentstatus: req.body.status});
+      }
       if(order.tracking === ''){
         await sails.helpers.carrier.shipment(id);
       }
