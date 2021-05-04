@@ -30,6 +30,10 @@ module.exports = {
     products:{
       collection:'product',
       via:'categories'
+    },
+    features:{
+      collection:'feature',
+      via:'categories'
     }
 
   },

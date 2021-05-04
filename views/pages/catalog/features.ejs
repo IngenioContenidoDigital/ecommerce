@@ -1,0 +1,513 @@
+<div class="container">
+<% if (error != undefined || error != null) { %>
+  <div class="notification is-danger is-light" id="error">
+    <button class="delete"></button>
+      <%= error %>
+  </div>
+<% } %>
+<% if(action=='create' || action=='edit'){ %> 
+    <br /> 
+    <h4 class="title is-4">Característica de Producto</h4>
+    <hr>
+    <% if(action=='edit'){ %>
+      <form id="form_feature" action="/features/edit/<%= feature.id %>" method="POST" enctype="multipart/form-data">
+    <% } else { %>
+      <form id="form_feature" action="/features/create" method="POST" enctype="multipart/form-data">
+    <% } %>
+    <div class="box">
+      <div class="columns">
+        <div class="column is-6">
+          <div class="field is-pulled-right">
+            <p class="has-text-right">
+              <% if(action=='edit'){ %>
+                <input id="activo" type="checkbox" <% if(feature.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
+                <label for="activo">Característica: <span id="state"><% if(feature.active){ %> <b style="color:green;">activa</b> <% } else { %> <b style="color:red;">inactiva</b> <% } %></span></label>
+              <% }else{ %>
+                <input id="activo" type="checkbox" checked="checked" name="activo" class="switch is-rounded is-outlined">
+                <label for="activo">Característica: <span id="state"><b style="color:green;">activa</b></span></label>  
+              <% } %>
+              </p>
+          </div>
+          <div class="field">
+            <label class="label">Nombre</label>
+            <div class="control">
+              <input class="input is-capitalized" type="text" name="name" required="true" placeholder="Nombre de la característica del producto" <%if(action=='edit'){%>value="<%=feature.name%>"<%}%>>
+            </div>
+          </div>
+          <div class="field">
+            <label class="label">Descripción</label>
+            <div class="control">
+              <textarea class="textarea" name="description" placeholder="Descripción de la característica del producto"><%if(action=='edit'){%><%-feature.description%><%}%></textarea>
+            </div>
+          </div>
+          <div class="field">
+            <article class="panel is-primary is-size-7">
+              <p class="panel-heading">
+                Categorías
+              </p>
+                <ul>
+                  <li>
+                      <a class="panel-block is-active" category="<%= category.id %>" level="<%= category.level %>">
+                        <input type="checkbox" name="<%= category.name %>" value="<%= category.id %>" disabled />&nbsp;
+                        <span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                        <%= category.name %>
+                      </a>
+                  </li>
+                </ul>
+            </article>
+        </div>
+          <div class="control buttons is-right">
+            <% if(action=='edit'){ %> 
+              <button id="submit_button" type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Característica</button>
+            <% }else if (action=='create'){ %>
+              <button id="submit_button" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Característica</button>
+            <% } %>
+          </div>
+        </div>
+        <div class="column is-6">
+          <p class="has-text-centered title is-6">Equivalencia Marketplace</p>
+          <hr>
+          <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
+          <div class="tabs is-toggle o-x-h">
+            <ul class="markeplace-categories">
+              <% channels.forEach(function(channel){ %>
+                <li>
+                  <a>
+                    <p class="has-text-centered" id=<%= channel.id %>><img src="/images/<%= channel.name %>.png" /></p>
+                  </a>
+                </li>
+              <%})%>
+            </ul>
+          </div>
+          <% channels.forEach(function(channel){ %>
+              <% if (channel.name == 'dafiti'){%>
+              <div class="setup  <%= channel.id %> ">
+                <%}else{%>
+                  <div class="setup is-hidden <%= channel.id %> ">
+                <%}%>
+                <h6 class="title is-6 title-markeplace is-capitalized">Características en <%= channel.name %></h6>
+                <% if (action=='create'){%>
+                  <ul class="empty">                  
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Selecciona una categoría para mostrar sus características en <%= channel.name %>.</span></li>
+                  </ul>                
+                  <ul class="loading is-hidden">
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
+                  </ul>
+                <%}else{%>
+                  <ul class="empty is-hidden">                  
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Selecciona una categoría para mostrar sus características en <%= channel.name %>.</span></li>
+                  </ul>                
+                  <ul class="loading">
+                    <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
+                  </ul>
+                  <%}%>
+                <ul class="no-element is-hidden">
+                  <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Ninguna característica fue recuperada. </span></li>
+                </ul>
+                <ul class="markeplace-features <%= channel.name %>" id=<%= channel.name %>>
+                </ul>  
+              </div>
+          <%})%>
+        </div>
+      </div>
+    </div>
+    </form>
+      <script>
+        const feature = <%- JSON.stringify(feature)%>
+        const channels = <%- JSON.stringify(channels)%>
+        let root = document.querySelector('a[level="1"]').parentNode;
+        let progress = document.querySelector('progress');
+        let oldFeatures = [];
+        let channelFlag = 0;
+
+        async function init(){
+          let result = await childTree(document.querySelectorAll('a.panel-block'));
+        }
+
+        function childTree(elm){
+          return new Promise(resolve =>{
+            elm.forEach((child) =>{
+              if(!hasClass(child,'visited')){
+                let opened = false;
+                io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
+                  var d = document.createElement('ul');
+                  resData.forEach(function(son){
+                    let ca = document.createElement('li');
+                    ca.style.paddingLeft = 5*son.level+'px';
+                    if(!son.hasChildren){
+                      if(feature){
+                          if(feature.categories.find(x => x.id == son.id)){
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" disabled checked/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                          } else {
+                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" disabled/>&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                          }
+                        } else {
+                          ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input class="no-children-category" type="checkbox" name="categories" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                        }
+                      } else {
+                        ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="" categories="'+son.id+'" disabled />&nbsp;<span class="panel-icon"><i class="bx bxs-book-add" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                      }
+                      if(son.level>2){addClass(ca,'is-hidden');}
+                      d.appendChild(ca);
+                    });
+                    insertAfter(d,child);
+                    addClass(child,'visited');
+                    if(d.querySelectorAll('input:checked').length>0){
+                      hidecategories(d);
+                      removeClass(progress,'is-hidden');
+                      marketplacequery(toArray(d,'input:checked'),false);
+                    }
+                    childTree(d.querySelectorAll('a.panel-block'));
+
+                });
+              }
+            })
+            setTimeout(() => {resolve("finish");},200);
+          });
+        };
+
+        function hidecategories(elm){
+          if(elm){
+            let categories = elm.querySelectorAll(':scope > li');
+            for (let index = 0; index < categories.length; index++) {
+              const category = categories[index];
+              let icon = category.parentNode.parentNode.querySelector('i');
+              removeClass(category,'is-hidden');
+              if(category.querySelectorAll('input:checked').length>0){
+                addClass(icon,'bx-book-open');
+                removeClass(icon,'bxs-book-add');
+              }
+            }
+            hidecategories(elm.parentNode.parentNode);
+          }
+        }
+
+        function toArray(elm,query){
+          let checked_cats = elm.querySelectorAll(query);
+          let cats = [];
+          for (let index = 0; index < checked_cats.length; index++) {
+            const element = checked_cats[index];
+            cats.push(element.value);
+          }
+          return cats;
+        }
+
+        let options = (channel, elm, attrs) =>{
+          for (let index = 0; index < attrs.length; index++) {
+            const attr = attrs[index];
+            let op = document.createElement('li');
+            if(feature){
+              if(feature.channels.find(f => f.name == attr.FeedName && f.channel == channel.id)){
+                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+              }else{
+                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+              }
+            } else {
+                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+            }
+            elm.appendChild(op);
+          }
+          return;
+        }
+
+        function compare(responseFeatures,channel, category){
+          let array_global = [];
+          for (let j = 0; j < oldFeatures.length; j++) {
+            if(oldFeatures[j].channel == channel.id){
+              let features = oldFeatures[j].features;
+              if (!document.querySelector(`[value="${category}"]`).checked) {
+                for (let i = 0; i < features.length; i++) {
+                  let feature = features[i];
+                  const index = feature.categories.indexOf(category);
+                  if (index > -1) {
+                    feature.categories.splice(index, 1);
+                  }
+                }
+                for (let i = features.length-1; i>-1; i--) {
+                  let feature = features[i];
+                  if(feature.categories.length === 0){
+                    if (document.querySelector(`[value="${feature.FeedName}"]`)) {
+                      let element=document.querySelector(`[value="${feature.FeedName}"]`).parentNode.parentNode;
+                      if (element) {
+                        element.remove();
+                      }
+                      const indexFeature = features.indexOf(feature);
+                      if (indexFeature > -1) {
+                        features.splice(indexFeature, 1);
+                      }
+                    }
+                  }
+                }
+              }else{
+                array_global=responseFeatures.filter(f=>!features.some(l=>l.FeedName== f.FeedName));
+                if (array_global.length>0) {
+                  for (let i = 0; i < features.length; i++) {
+                    let feature = features[i];
+                    feature.categories.push(category);
+                  }
+                  for (let i = 0; i < array_global.length; i++) {
+                    array_global[i];
+                    let obj ={
+                      FeedName: array_global[i].FeedName,
+                      categories : [category]
+                    }
+                    features.push(obj);
+                  }
+                  return array_global;
+                }
+              }
+            }
+          }
+        }
+
+        const marketplacequery = (categories, flag) =>{
+          for (let index = 0; index < channels.length; index++) {
+            const channel = channels[index];
+            io.socket.get(`/integrations/${channel.name}/features`,{categories},(resData, res)=>{
+            if(res.statusCode == 200){
+              channelObj = document.getElementById(`${channel.name}`);
+              removeClass(channelObj,'is-hidden')
+              hide('.loading');
+              if(flag&&oldFeatures.length>0){resData=compare(resData,channel,categories);}
+              if(resData){options(channel, channelObj, resData);}
+              channelFlag++;
+              if (channelFlag==channels.length) {
+                addClass(progress,'is-hidden');
+                channelFlag=0;
+                if (!flag||oldFeatures.length==0) {setoldFeatures();}
+                categoryToggler(1);
+              }
+              if(root.querySelectorAll('input:checked').length===0){channelObj.innerHTML=''; oldFeatures=[];show('.empty');}
+            } else {
+              channelObj.innerHTML='Refresca hubo un error en la petición';
+            }
+          });
+          }
+        }
+        
+        function setoldFeatures(){
+          for (let index = 0; index < channels.length; index++) {
+            const channel = channels[index];
+            channelObj = document.getElementById(`${channel.name}`);
+            let ch = [];
+            let feats = toArray(channelObj,'input');
+            for (let index = 0; index < feats.length; index++) {
+              const feat = feats[index];
+              let obj={
+                FeedName:feat,
+                categories:toArray(root,'input:checked')
+              };
+              ch.push(obj);
+            }
+            let objch= {
+              channel:channel.id,
+              features: ch
+            };
+            oldFeatures.push(objch);
+          }
+        }
+
+        live('.cat_name','click',(e)=>{
+          let element = e.target || e.srcElement;
+          let group = element.parentNode.parentNode.querySelectorAll(':scope > ul > li');
+          for (let index = 0; index < group.length; index++) {
+            const element = group[index];
+            let icon = element.parentNode.parentNode.querySelector('i');
+            if(hasClass(element,'is-hidden')){
+              removeClass(element,'is-hidden');
+              addClass(icon,'bx-book-open');
+              removeClass(icon,'bxs-book-add');
+            }else{
+              addClass(element,'is-hidden');
+              removeClass(icon,'bx-book-open');
+              addClass(icon,'bxs-book-add');
+            }
+          }
+        });
+
+        live('.markeplace-categories li','click',e=>{
+          let group = e.target.parentNode.id;
+          let blocks= document.querySelectorAll('.setup');
+          
+          for(let b of blocks){
+            if(hasClass(b,group)){
+              removeClass(b,'is-hidden');
+            }else{
+              addClass(b,'is-hidden');
+            }
+          }
+        });
+
+        function show(query){
+          let elm =  document.querySelectorAll(query);
+          elm.forEach(element => {
+            if (hasClass(element,'is-hidden')) {
+              removeClass(element,'is-hidden');
+            }
+          });
+        }
+
+        function hide(query){
+          let elm =  document.querySelectorAll(query);
+          elm.forEach(element => {            
+            if (!hasClass(element,'is-hidden')) {
+              addClass(element,'is-hidden');  
+            }
+          });
+        }
+       
+        function categoryToggler(flagMode, flagEnabler){
+          let categories = root.querySelectorAll(':scope > ul > li');
+          for (let index = 0; index < categories.length; index++) {
+            const category = categories[index];
+            let no_ch_categories = category.querySelectorAll('.no-children-category');
+            for (let i = 0; i < no_ch_categories.length; i++) {
+              const no_ch_category = no_ch_categories[i];
+              if (flagMode==1) {       
+                if (root.querySelectorAll('input:checked').length>0 && !category.querySelectorAll('input:checked').length>0) {
+                  no_ch_category.disabled = true;
+                }else{
+                  no_ch_category.disabled = false;
+                }
+              }else if(flagMode==2){
+                if (flagEnabler) {
+                  no_ch_category.disabled = false;
+                }else{
+                  no_ch_category.disabled = true;
+                }
+              }
+            }
+          }
+        }
+
+        live('.no-children-category','click',e=>{
+          removeClass(progress,'is-hidden');
+          show('.loading');
+          hide('.markeplace-features');
+          hide('.empty');
+          categoryToggler(2,false);
+          marketplacequery(e.target.value,true);
+        });
+        
+        document.addEventListener('DOMContentLoaded', function(){
+          init();
+        });
+
+      </script>
+<% }else{ %>
+    <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+      <a href="/features/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+    </p>
+    <div class="table-container">
+        <table class="table is-hoverable" id="features-table">
+            <thead>
+            <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Activa</th>
+                <th scope="col">Opciones</th>
+            </tr>
+            </thead>
+            <tbody>
+              <% features.forEach(function(feature){ %>
+                <tr>
+                  <td class="align-middle is-capitalized"><%= feature.name %></td>
+                  <td class="align-middle"><%= feature.description %></td>
+                  <td class="align-middle">
+                    <span class="action">
+                    <% if(feature.active===true) { %>
+                      <i feature="<%= feature.id %>" class="state bx bx-check-circle"></i>
+                    <% }else{ %>
+                      <i feature="<%= feature.id %>" class="state bx bx-x-circle"></i>
+                    <%}%>
+                  </span>
+                  </td>
+                  <td class="align-middle">
+                    <a href="/features/edit/<%= feature.id %>" class="button is-small">
+                      <span class="icon">
+                        <i class="bx bxs-edit"></i>
+                      </span>
+                    </a>
+                    <a id="delete" href="/features/delete/" feature="<%= feature.id %>" class="delete-feature button is-small">
+                      <span class="icon">
+                        <i class="bx bx-trash"></i>
+                      </span>
+                    </a>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+        </table>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        let table = new simpleDatatables.DataTable('#features-table',{
+          searchable:true,
+          sortable:true,
+          paging:true,
+          labels: {
+            placeholder: "Buscar...",
+            perPage: "{select} registros por página",
+            noRows: "No se encontraron datos",
+            info: "Mostrando {start} a {end} de {rows} registros",
+          }
+        });  
+      });
+      live('.delete-feature','click',e=>{
+        e.preventDefault();
+        if(confirm('Seguro Desea Continuar?')){
+          let dest = document.querySelector('#delete');
+          io.socket.delete(dest.href,{feature:dest.getAttribute('feature')},(response)=>{
+            if(response=='deleted'){
+              window.location.href='/features';
+            }
+          });
+        }
+      });
+    </script>
+<% } %>
+</div>
+<script>
+  live('#activo','click',function(){
+      let elm = this;
+      let state = elm.checked;
+      var sp = document.querySelector('#state');
+      if(state){
+        sp.innerHTML='<b style="color:green;">activada</b>';
+      }else{
+        sp.innerHTML='<b style="color:red;">inactiva</b>';
+      }
+    });
+
+  live('#submit_button','click',e=>{
+      e.preventDefault();
+      let form = document.getElementById('form_feature');
+      let validation = validateForm(form);
+      let inputs = document.querySelectorAll("input[name='categories']:checked");
+      let features = document.querySelectorAll("input[type='radio']:checked");
+      
+      if(inputs.length>0 && validation && features.length>0){
+        form.submit();
+      }else{
+        alert('Seleccione al menos una categoría, una característica y complete los campos obligatorios');
+      }
+    });
+  live('.state', 'click', function(){ 
+    if(confirm('Seguro Desea Continuar')){
+      var elm = this;
+      var id = this.getAttribute('feature');
+      var status = null;
+      if (hasClass(elm,'bx-check-circle')){status = false;}else{status = true;}
+
+      io.socket.put('/features/'+id,{active:status},function(resData, jwr){
+        if(resData.active===false){
+          removeClass(elm, 'bx-check-circle');
+          addClass(elm,'bx-x-circle');
+        }else{
+          removeClass(elm, 'bx-x-circle');
+          addClass(elm,'bx-check-circle');
+        }
+      });
+    }
+});
+</script>

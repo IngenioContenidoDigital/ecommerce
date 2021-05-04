@@ -214,6 +214,7 @@ module.exports = {
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     let channelErrors = [];
+    let features = [];
     if (id !== null) {
       product = await Product.findOne({ id: id })
         .populate('images')
@@ -223,9 +224,18 @@ module.exports = {
         .populate('categories')
         .populate('variations')
         .populate('discount')
+        .populate('features')
         .populate('channels');
       for (let pv in product.variations) {
         product.variations[pv].variation = await Variation.findOne({ id: product.variations[pv].variation });
+      }
+      for (let c of product.categories) {
+        let cat = await Category.findOne({id: c.id}).populate('features');
+        for (let f of cat.features){
+            if(!features.includes(f) && f!=='' && f!== null){
+              features.push(f);
+            }
+        }
       }
       for (const channel of product.channels) {
         if (channel.reason && channel.reason !== '') {
@@ -248,6 +258,7 @@ module.exports = {
       product: product,
       error: error,
       channelErrors,
+      features: features,
       moment: moment
     });
   },

@@ -30,6 +30,7 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showvariations')){%><li><a class="navbar-item" href="/variations">Variaciones</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcategories')){%><li><a class="navbar-item" href="/categories/list">Categorias</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('listbrands')){%><li><a class="navbar-item" href="/manufacturers">Marcas</a></li><%}%>
+      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('listfeatures')){%><li><a class="navbar-item" href="/features">Caracteristicas</a></li><%}%>
       <!--<li><a class="navbar-item" href="/suppliers">Proveedores</a></li>-->
     </ul>
     <%}%>
