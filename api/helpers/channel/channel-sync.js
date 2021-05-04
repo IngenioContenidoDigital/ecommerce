@@ -50,6 +50,12 @@ module.exports = {
           let sign = await sails.helpers.channel.linio.sign(integration.id,'ProductUpdate',inputs.product.seller);
           await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml);
         }
+        if (integration.channel.name === 'liniomx' && item.status) {
+          let result = await sails.helpers.channel.liniomx.product([inputs.product], integration, item.price,undefined,false);
+          const xml = jsonxml(result,true);
+          let sign = await sails.helpers.channel.liniomx.sign(integration.id,'ProductUpdate',inputs.product.seller);
+          await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST',xml);
+        }
         if (integration.channel.name === 'coppel' && item.status) {
           let axios = require('axios');
           let body = await sails.helpers.channel.coppel.product(inputs.product.id, 'Update', parseFloat(item.price), item.status)

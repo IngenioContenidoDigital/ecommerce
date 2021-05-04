@@ -1312,7 +1312,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
   linioSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
-    let integration = await Integrations.findOne({key: identifier}).populate('channel');;
+    let integration = await Integrations.findOne({key: identifier}).populate('channel');
 
     switch (req.body.event) {
       case 'onOrderCreated':
@@ -1372,7 +1372,71 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         break;
     }
     return res.ok();
-  },  
+  },
+  liniomxSync : async (req, res)=>{
+    let data = req.body.payload;
+    let identifier = req.param('identifier');
+    let integration = await Integrations.findOne({key: identifier}).populate('channel');
+
+    switch (req.body.event) {
+      case 'onOrderCreated':
+        if(identifier){
+          let order = req.body.payload.OrderId;
+
+          if(!order){
+            return res.serverError('No se Localizó la Orden Solicitada'+req.body.payload.OrderId);
+          }
+          let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller,  ['OrderId='+order] ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
+          let seller = await Seller.findOne({id: integration.seller});
+          if (data && seller.integrationErp) {
+            await sails.helpers.integrationsiesa.exportOrder(data);
+          }
+        }
+        break;
+      case 'onOrderItemsStatusChanged':
+
+        let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
+
+        if(!state){
+          return res.serverError('Nuevo estado del pedido no identificado');
+        }
+        let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
+        let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+        let result = await JSON.parse(response);
+        let dord = result.SuccessResponse.Body.Orders.Order;
+        const order = await Order.findOne({channelref:data.OrderId});
+        await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+        await OrderHistory.create({
+          order:order.id,
+          state:state,
+          createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+          updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+        });        
+        let seller = await Seller.findOne({id: order.seller});
+        if (seller && seller.integrationErp && state) {
+          let orderstate = await OrderState.findOne({id:state});
+          let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
+          await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+        }
+        await sails.helpers.notification(order, state);
+        break;
+      case 'onFeedCompleted':
+        const feed = req.body.payload.Feed;
+        await sails.helpers.channel.liniomx.feedSync(integration, feed);
+        break;
+      case 'onProductCreated':
+        const skus = req.body.payload.SellerSkus;
+        await sails.helpers.channel.liniomx.productSync(integration, skus);
+        break;
+      case 'onProductQcStatusChanged':
+        const sellerSkus = req.body.payload.SellerSkus;
+        await sails.helpers.channel.liniomx.productQc(integration, sellerSkus);
+        break;
+      default:
+        break;
+    }
+    return res.ok();
+  },
   buildmenu : async (req, res) =>{
     if (!req.isSocket) {
       return res.badRequest();
