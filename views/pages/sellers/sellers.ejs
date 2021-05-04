@@ -595,7 +595,7 @@
           
           function createColumnImages(edit, channel) {
             let channels = <%- JSON.stringify(channels) %>;
-            channels = channels.filter(channel => channel.name !== 'mensajes mercadolibre');
+            channels = channels.filter(channel => channel.name !== 'mensajes mercadolibre' && channel.name !== 'mensajes mercadolibremx');
             let div = document.createElement('div');
             let columnsIntegration = document.querySelector('#img-integrations');
             columnsIntegration.innerHTML = '';

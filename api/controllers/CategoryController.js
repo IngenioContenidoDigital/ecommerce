@@ -60,6 +60,13 @@ module.exports = {
         liniocat = req.body['linio[]'];
       }
     }
+    if(req.body['liniomx[]']!==undefined){
+      if(typeof req.body['liniomx[]']!=='string'){
+        liniomxcat = req.body['liniomx[]'].join(',');
+      }else{
+        liniomxcat = req.body['liniomx[]'];
+      }
+    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
@@ -69,6 +76,7 @@ module.exports = {
         tags: req.body.tags ? req.body.tags : '',
         dafiti:dafiticat,
         linio: liniocat,
+        liniomx: liniomxcat,
         parent:current.id,
         active:isActive,
         url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
@@ -84,6 +92,7 @@ module.exports = {
           parent:current.id,
           dafiti:dafiticat,
           linio: liniocat,
+          liniomx: liniomxcat,
           active:isActive,
           url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
           level:current.level+1
@@ -125,6 +134,13 @@ module.exports = {
         liniocat = req.body['linio[]'];
       }
     }
+    if(req.body['liniomx[]']!==undefined){
+      if(typeof req.body['liniomx[]']!=='string'){
+        liniomxcat = req.body['liniomx[]'].join(',');
+      }else{
+        liniomxcat = req.body['liniomx[]'];
+      }
+    }
     if(req.body.activo==='on'){isActive=true;}
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
@@ -135,6 +151,7 @@ module.exports = {
         parent:parent.id,
         dafiti:dafiticat,
         linio: liniocat,
+        liniomx: liniomxcat,
         logo:uploaded[0].filename,
         url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
         active:isActive,
@@ -150,6 +167,7 @@ module.exports = {
           url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
           dafiti:dafiticat,
           linio: liniocat,
+          liniomx: liniomxcat,
           active:isActive,
           level:parent.level+1});
       }
@@ -259,6 +277,24 @@ module.exports = {
       let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
       if(integration.length>0){
         let route = await sails.helpers.channel.linio.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
+        let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
+        return res.ok(JSON.parse(response));
+      }else{
+        return res.serverError();
+      }
+    }catch(err){
+      return res.serverError(err);
+    }
+  },
+  liniomxcategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let channel = await Channel.find({name: 'liniomx'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
+      if(integration.length>0){
+        let route = await sails.helpers.channel.liniomx.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
         let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
       }else{
