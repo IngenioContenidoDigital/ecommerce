@@ -430,13 +430,6 @@ module.exports = {
       iridioproducts = iridioproducts.map(i => i.product);
       productsFilter.id = iridioproducts;
     }
-    
-    let exists = (element,compare) =>{
-      for(let c of element){
-        if(c.id === compare.id){return true;}
-      }
-      return false;
-    };
 
     switch(entity){
       case 'categoria':       
@@ -471,9 +464,24 @@ module.exports = {
         return res.notFound();
     }
 
-    let colors = await Color.find({});
-    let brands = await Manufacturer.find({where:{active:true},select:['name']});
-    let genders = await Gender.find({});
+    let colorFilter, gendersFilter = {};
+    let brandsFilter = {active:true};
+    let colorList, brandsList, gendersList = [];
+    
+    object.products.forEach(op => {
+      if(op.mainColor && !colorList.includes(op.mainColor)){colorList.push(op.mainColor)}
+      if(op.manufacturer && !brandsList.includes(op.manufacturer)){brandsList.push(op.manufacturer)}
+      if(op.gender && !gendersList.includes(op.gender)){gendersList.push(op.gender)}
+    });
+
+    if(colorList.length>0){colorFilter['id']=colorList;}
+    if(brandsList.length>0){brandsFilter['id']=brandsList;}
+    if(gendersList.length>0){gendersFilter['id']=gendersList;}
+
+
+    let colors = await Color.find(colorFilter);
+    let brands = await Manufacturer.find({where:brandsFilter,select:['name']});
+    let genders = await Gender.find(gendersFilter);
 
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
