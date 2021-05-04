@@ -1277,6 +1277,9 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         let dord = result.SuccessResponse.Body.Orders.Order;
         const order = await Order.findOne({channelref:data.OrderId});
         await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+        for(let it of data.OrderItemIds){
+          await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state});
+        }
         await OrderHistory.create({
           order:order.id,
           state:state,
@@ -1342,6 +1345,9 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
         let dord = result.SuccessResponse.Body.Orders.Order;
         const order = await Order.findOne({channelref:data.OrderId});
         await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+        for(let it of data.OrderItemIds){
+          await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state});
+        }
         await OrderHistory.create({
           order:order.id,
           state:state,
