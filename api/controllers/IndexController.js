@@ -466,22 +466,9 @@ module.exports = {
 
     let colorFilter, gendersFilter = {};
     let brandsFilter = {active:true};
-    let colorList, brandsList, gendersList = [];
-    
-    object.products.forEach(op => {
-      if(op.mainColor && !colorList.includes(op.mainColor)){colorList.push(op.mainColor)}
-      if(op.manufacturer && !brandsList.includes(op.manufacturer)){brandsList.push(op.manufacturer)}
-      if(op.gender && !gendersList.includes(op.gender)){gendersList.push(op.gender)}
-    });
-
-    if(colorList.length>0){colorFilter['id']=colorList;}
-    if(brandsList.length>0){brandsFilter['id']=brandsList;}
-    if(gendersList.length>0){gendersFilter['id']=gendersList;}
-
-
-    let colors = await Color.find(colorFilter);
-    let brands = await Manufacturer.find({where:brandsFilter,select:['name']});
-    let genders = await Gender.find(gendersFilter);
+    let colorList = []; 
+    let brandsList = []
+    let gendersList = [];
 
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
@@ -502,8 +489,21 @@ module.exports = {
         p.gender = await Gender.findOne({id:p.gender});
         p.price = (await ProductVariation.find({product:p.id}))[0].price;
 
+        if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id)}
+        if(p.manufacturer && !brandsList.includes(p.manufacturer.id)){brandsList.push(p.manufacturer.id)}
+        if(p.gender && !gendersList.includes(p.gender.id)){gendersList.push(p.gender.id)}
+
       };
     }
+
+    if(colorList.length>0){colorFilter['id']=colorList;}
+    if(brandsList.length>0){brandsFilter['id']=brandsList;}
+    if(gendersList.length>0){gendersFilter['id']=gendersList;}
+
+    let colors = await Color.find(colorFilter);
+    let brands = await Manufacturer.find({where:brandsFilter,select:['name']});
+    let genders = await Gender.find(gendersFilter);
+
     return res.view('pages/front/list',{entity:'ver/'+entity,ename:ename,page:page,pages:pages,object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },
   search: async(req, res) =>{
