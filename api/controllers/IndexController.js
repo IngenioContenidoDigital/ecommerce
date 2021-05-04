@@ -464,7 +464,8 @@ module.exports = {
         return res.notFound();
     }
 
-    let colorFilter, gendersFilter = {};
+    let colorFilter = {};
+    let gendersFilter = {};
     let brandsFilter = {active:true};
     let colorList = []; 
     let brandsList = []
@@ -499,6 +500,8 @@ module.exports = {
     if(colorList.length>0){colorFilter['id']=colorList;}
     if(brandsList.length>0){brandsFilter['id']=brandsList;}
     if(gendersList.length>0){gendersFilter['id']=gendersList;}
+
+    console.log(colorFilter);
 
     let colors = await Color.find(colorFilter);
     let brands = await Manufacturer.find({where:brandsFilter,select:['name']});
