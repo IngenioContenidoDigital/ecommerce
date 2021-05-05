@@ -23,7 +23,7 @@ module.exports = {
   fn: async function (inputs,exits) {
     let moment = require('moment');
     let integration = await Integrations.findOne({id : inputs.integration}).populate('channel');
-    let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrder',inputs.seller, inputs.params);
+    let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',inputs.seller, inputs.params);
     let profile = await Profile.findOne({name:'customer'});
     let data;
     await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET')

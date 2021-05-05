@@ -764,6 +764,65 @@ module.exports = {
       return res.send({error: err.message});
     }
   },
+  liniomxadd: async (req, res) => {
+    if (!req.isSocket) { return res.badRequest(); }
+    let sid = sails.sockets.getId(req);
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
+    const productChannelId = productchannel ? productchannel.id : '';
+    try {
+      var jsonxml = require('jsontoxml');
+      let action = null;
+      if (productchannel && productchannel.iscreated) {
+        action = 'ProductUpdate';
+      } else {
+        action = 'ProductCreate';
+      }
+      let status = req.body.status ? 'active' : 'inactive';
+      let result = await sails.helpers.channel.liniomx.product([product], integration, parseFloat(req.body.price), status);
+      var xml = jsonxml(result,true);
+      let sign = await sails.helpers.channel.liniomx.sign(integrationId, action, product.seller);
+      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+      .then(async (resData)=>{
+        resData = JSON.parse(resData);
+        if(resData.SuccessResponse){
+          await ProductChannel.findOrCreate({id: productChannelId},{
+            product:product.id,
+            integration:integrationId,
+            channel:integration.channel.id,
+            channelid:'',
+            status:false,
+            qc:false,
+            price:req.body.price ? parseFloat(req.body.price) : 0,
+            iscreated:false,
+            socketid:sid
+          }).exec(async (err, record, created)=>{
+            if(err){return new Error(err.message);}
+            if(!created){
+              await ProductChannel.updateOne({id: record.id}).set({
+                status: record.iscreated ? req.body.status : false,
+                price:req.body.price ? parseFloat(req.body.price) : 0,
+                socketid:sid
+              });
+            }
+          });
+          return res.send({error: null});
+        }else{
+          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
+        }
+      })
+      .catch(err =>{
+        console.log(err);
+        return res.send({error: err.message});
+      });
+    } catch (err) {
+      console.log(err);
+      return res.send({error: err.message});
+    }
+  },
   coppeladd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
     let axios = require('axios');
@@ -1584,6 +1643,106 @@ module.exports = {
             if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active',false);}
             const xml = jsonxml(result,true);
             let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
+            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+              .then(async (resData)=>{
+                resData = JSON.parse(resData);
+                if(resData.SuccessResponse){
+                  for (const pro of products) {
+                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
+                    if(action === 'ProductCreate'){
+                      await ProductChannel.findOrCreate({id: productChannelId},{
+                        product:pro.id,
+                        integration:integration.id,
+                        channel:integration.channel.id,
+                        channelid:'',
+                        status:false,
+                        qc:false,
+                        price:0,
+                        iscreated:false,
+                        socketid:sid
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductChannel.updateOne({id: record.id}).set({
+                            price:priceAjust,
+                            socketid:sid
+                          });
+                        }
+                      });
+                    }
+                    if(action === 'ProductUpdate'){
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                    }
+                    response.items.push(pro);
+                  }
+                }else{
+                  throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                }
+              })
+              .catch(err =>{
+                throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
+              });
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
+      if (channel === 'liniomx') {
+        const intgrationId = integration.id;
+        products = await Product.find({seller: seller}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        });
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'ProductCreate';
+            products = products.filter(pro => pro.channels.length === 0 || (pro.channels.length > 0 && pro.channels[0].iscreated === false));
+            break;
+          case 'ProductUpdate':
+            action = 'ProductUpdate';
+            products = products.filter(pro => pro.channels.length > 0 /*&& pro.channels[0].iscreated*/);
+            break;
+          case 'Image':
+            action = 'Image';
+            products = products.filter(pro => pro.channels.length > 0);
+            break;
+          case 'ProductQcStatus':
+            action = 'ProductQcStatus';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && !pro.channels[0].qc);
+            break;
+        }
+
+        if (products.length > 0) {
+          if(action === 'Image'){
+            let imgresult = await sails.helpers.channel.liniomx.images(products, integration.id);
+            const imgxml = jsonxml(imgresult,true);
+            let imgsign = await sails.helpers.channel.liniomx.sign(integration.id, 'Image', seller);
+            setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            for (const pro of products) {
+              response.items.push(pro);
+            }
+          }else if(action === 'ProductQcStatus'){
+            const skus = [];
+            for (const product of products) {
+              const productVariations = await ProductVariation.find({product: product.id});
+              for (const variation of productVariations) {
+                if(!skus.includes(variation.id)){
+                  skus.push(variation.id);
+                }
+              }
+              response.items.push(product);
+            }
+            await sails.helpers.channel.liniomx.productQc(integration, skus);
+          }else{
+            let result = null;
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.liniomx.product(products, integration, 0, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.liniomx.product(products, integration, 0, 'active',false);}
+            const xml = jsonxml(result,true);
+            let sign = await sails.helpers.channel.liniomx.sign(intgrationId, action, seller);
             await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
                 resData = JSON.parse(resData);

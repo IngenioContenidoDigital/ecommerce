@@ -20,6 +20,7 @@ module.exports = {
     dafiti:{type:'string'},
     mercadolibre:{type:'string'},
     linio:{type:'string'},
+    liniomx:{type:'string'},
     parent:{
       model:'category'
     },

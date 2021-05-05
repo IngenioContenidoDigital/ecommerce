@@ -128,6 +128,18 @@ module.exports = {
         let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'GET');
         let result = JSON.parse(response);
         guia = result.SuccessResponse.Body.Documents.Document.File;
+      }else if(order.channel==='liniomx'){
+        let oitems = await OrderItem.find({order:order.id});
+        let litems = [];
+        for(let it of oitems){
+          if(!litems.includes(it.externalReference)){
+            litems.push(it.externalReference);
+          }
+        }
+        let route = await sails.helpers.channel.liniomx.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
+        let response = await sails.helpers.request('https://sellercenter-api.linio.com.mx','/?'+route,'GET');
+        let result = JSON.parse(response);
+        guia = result.SuccessResponse.Body.Documents.Document.File;
       }else if(order.channel==='mercadolibre'){
         guia = await sails.helpers.channel.mercadolibre.shipping(order);
       }else if(order.channel==='mercadolibremx'){
@@ -154,7 +166,7 @@ module.exports = {
         orders = await Order.find({
           where: {
             seller: seller,
-            channel: ['linio', 'dafiti'],
+            channel: ['linio', 'dafiti','liniomx'],
             currentstatus: [orderState.id, stateProcess.id],
             createdAt: { '>': new Date(dateStart).valueOf(), '<': new Date(dateEnd).valueOf() }
           },
@@ -169,7 +181,7 @@ module.exports = {
         orders = await Order.find({
           where: {
             seller: seller,
-            channel: ['linio', 'dafiti'],
+            channel: ['linio', 'dafiti','liniomx'],
             currentstatus: [orderState.id, stateProcess.id, state.id],
             reference: result
           },
@@ -196,7 +208,8 @@ module.exports = {
               }
             }
             let route = order.channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(order.integration, 'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
-              await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
+            order.channel === 'liniomx' ? await sails.helpers.channel.liniomx.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
+            await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
             let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
             let result = JSON.parse(respo);
             if(result.SuccessResponse){

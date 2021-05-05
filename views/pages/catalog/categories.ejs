@@ -161,6 +161,11 @@
                     <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
                   </a>
                 </li>
+                <li>
+                  <a>
+                    <p class="has-text-centered" id="linimx"><img src="/images/linio.png" /></p>
+                  </a>
+                </li>
               </ul>
             </div>
             <div class="setup dafit">
@@ -173,6 +178,11 @@
               <ul class="cattree tree" id="linio">
               </ul>
             </div>
+            <div class="setup is-hidden linimx">
+              <h6 class="title is-6 title-markeplace">Categoría en Linio México</h6>
+              <ul class="cattree tree" id="liniomx">
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -181,6 +191,7 @@
     const fileInput = document.querySelector('#file-loader input[type=file]');
     let dafiti = '<%= current.dafiti %>' !== '' ? '<%= current.dafiti %>'.split(',') : [];
     let linio = '<%= current.linio %>' !== '' ? '<%= current.linio %>'.split(',') : [];
+    let liniomx = '<%= current.liniomx %>' !== '' ? '<%= current.liniomx %>'.split(',') : [];
 
     fileInput.onchange = () => {
       if (fileInput.files.length > 0) {
@@ -209,6 +220,13 @@
             }else{
               op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
             }
+          } else if (marketplace === 'liniomx') {
+            if(liniomx.includes(c['CategoryId'])){
+              removeClass(elm,'is-hidden');
+              op.innerHTML='<span><input type="checkbox" name="liniomx[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }else{
+              op.innerHTML='<span><input type="checkbox" name="liniomx[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+            }
           }
         //}
         elm.appendChild(op);
@@ -229,6 +247,7 @@
     const dft = () =>{
       let objDafiti = document.querySelector('#dafiti');
       let objLinio = document.querySelector('#linio');
+      let objLiniomx = document.querySelector('#liniomx');
       io.socket.get('/integrations/dafiti/categories',(resData, res)=>{
         if(res.statusCode == 200){
           options('dafiti', objDafiti, resData.SuccessResponse.Body.Categories.Category, 1);
@@ -239,11 +258,19 @@
 
       io.socket.get('/integrations/linio/categories',(resData, res)=>{
         if(res.statusCode == 200){
-          let progress = document.querySelector('progress');
-          progress.parentNode.removeChild(progress);
           options('linio', objLinio, resData.SuccessResponse.Body.Categories.Category, 1);
         } else {
           document.querySelector('.lini').innerHTML='';
+        }
+      });
+
+      io.socket.get('/integrations/liniomx/categories',(resData, res)=>{
+        if(res.statusCode == 200){
+          let progress = document.querySelector('progress');
+          progress.parentNode.removeChild(progress);
+          options('liniomx', objLiniomx, resData.SuccessResponse.Body.Categories.Category, 1);
+        } else {
+          document.querySelector('.linimx').innerHTML='';
         }
       });
     }
