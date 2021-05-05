@@ -59,18 +59,18 @@
         if (resData.messages.length > 0) {
           resData.messages.forEach(message => {
             const classTitle = message.type === 'claim' ? 'title-claim-color' : '';
-            const article = `<article class="post menu-title" id="`+message.id+`" onclick="showQuestions(\'` + message.id + `\', ${message.isproduct})">
+            const article = `<article class="post menu-title" id="${message.id}" onclick="showQuestions(\'` + message.id + `\', ${message.isproduct})">
               <div class="media">
                 <div class="media-left">
-                  <h6 class="${classTitle}">`+message.name+`</h6>
+                  <h6 class="${classTitle}">${message.name}</h6>
                 </div>
                 <div class="media-content">
                   <div class="content">
                   </div>
                 </div>
                 <div class="media-right">
-                  <span class="has-text-grey-light message-right time-questions"><a href="#">`+moment(message.created).locale('es').startOf('minute').fromNow()+`</a></span>
-                  <span class="has-text-grey-light"><i class='bx bx-conversation'></i>`+message.questions.length+`</span>
+                  <span class="has-text-grey-light message-right time-questions"><a href="#">${moment(message.created).locale('es').startOf('minute').fromNow()}</a></span>
+                  <span class="has-text-grey-light"><i class='bx bx-conversation'></i>${message.questions.length}</span>
                 </div>
               </div>
             </article>`;

@@ -227,8 +227,36 @@ module.exports = {
           items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
         }
         let tracking = items.OrderItem[0].TrackingCode;
-        await Order.updateOne({id:order.id}).set({tracking:tracking});
+        let carrier = await Carrier.findOne({name: items.OrderItem[0] ? items.OrderItem[0].ShipmentProvider.trim().toLowerCase() : ''});
+        await Order.updateOne({id:order.id}).set({tracking:tracking,carrier: carrier ? carrier.id : null});
         let rts = await sails.helpers.channel.linio.sign(order.integration, 'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','TrackingNumber='+tracking]);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
+      }
+    }
+    if(order.channel==='liniomx'){
+      let litems = [];
+      for(let it of oitems){
+        if(!litems.includes(it.externalReference)){
+          litems.push(it.externalReference);
+        }
+      }
+      let route = await sails.helpers.channel.liniomx.sign(order.integration, 'SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship']);
+      let response = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'POST');
+      let result = JSON.parse(response);
+      if(result.SuccessResponse){
+        let itemsign = await sails.helpers.channel.liniomx.sign(order.integration, 'GetOrderItems',order.seller,['OrderId='+order.channelref]);
+        let citems = await sails.helpers.request(integration.channel.endpoint,'/?'+itemsign,'GET');
+        let rs = JSON.parse(citems);
+        let items = {OrderItem:[]};
+        if(rs.SuccessResponse.Body.OrderItems.OrderItem.length>1){
+          items = rs.SuccessResponse.Body.OrderItems;
+        }else{
+          items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
+        }
+        let tracking = items.OrderItem[0].TrackingCode;
+        let carrier = await Carrier.findOne({name: items.OrderItem[0] ? items.OrderItem[0].ShipmentProvider.trim().toLowerCase() : ''});
+        await Order.updateOne({id:order.id}).set({tracking:tracking,carrier: carrier ? carrier.id : null});
+        let rts = await sails.helpers.channel.liniomx.sign(order.integration, 'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=dropship','TrackingNumber='+tracking]);
         await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
       }
     }

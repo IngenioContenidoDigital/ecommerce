@@ -1382,25 +1382,19 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
       case 'onOrderCreated':
         if(identifier){
           let order = req.body.payload.OrderId;
-
           if(!order){
             return res.serverError('No se Localizó la Orden Solicitada'+req.body.payload.OrderId);
           }
-          let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller,  ['OrderId='+order] ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
-          let seller = await Seller.findOne({id: integration.seller});
-          if (data && seller.integrationErp) {
-            await sails.helpers.integrationsiesa.exportOrder(data);
-          }
+          await sails.helpers.channel.liniomx.orderbyid(integration.id, integration.seller,  ['OrderId='+order] ).catch((e)=> {return res.serverError('Error durante la generación de la orden'); });
         }
         break;
       case 'onOrderItemsStatusChanged':
 
         let state = await sails.helpers.orderState(data.NewStatus).catch((e)=>{return res.serverError('Error Actualizando el estado del pedido'); });
-
         if(!state){
           return res.serverError('Nuevo estado del pedido no identificado');
         }
-        let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
+        let sign = await sails.helpers.channel.liniomx.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
         let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
         let result = await JSON.parse(response);
         let dord = result.SuccessResponse.Body.Orders.Order;
@@ -1411,13 +1405,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
           state:state,
           createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
           updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
-        });        
-        let seller = await Seller.findOne({id: order.seller});
-        if (seller && seller.integrationErp && state) {
-          let orderstate = await OrderState.findOne({id:state});
-          let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
-          await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
-        }
+        });
         await sails.helpers.notification(order, state);
         break;
       case 'onFeedCompleted':
