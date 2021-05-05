@@ -11,7 +11,7 @@
         <li class="is-active"><a option="basics" >Información Básica</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="images">Imágenes</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="variations">Variaciones</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="features">Características</a></li>
+        <%if(features.length>0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="features">Características</a></li><%}%>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
       </ul>
