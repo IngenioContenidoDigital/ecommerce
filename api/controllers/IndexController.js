@@ -14,11 +14,11 @@ module.exports = {
       return res.redirect('/login');
     }
     if(req.hostname==='iridio.co' || req.hostname==='localhost'){
-      //slider = await Slider.find({active:true}).populate('textColor');
+      slider = await Slider.find({active:true}).populate('textColor');
     }
     if(req.hostname==='sanpolos.com'){
       seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
-      //slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
+      slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
     }
     let viewed=[];
     let pshow =[];
