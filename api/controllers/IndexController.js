@@ -24,7 +24,7 @@ module.exports = {
     let pshow =[];
     let brands = null;    
     if(req.session.viewed && req.session.viewed.length>0){
-        for(let i of req.session.viewed.reverse().slice(-4)){
+        for(let i of req.session.viewed){
           if(!pshow.includes(i.product)){
             pshow.push(i.product);
           }
