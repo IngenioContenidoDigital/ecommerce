@@ -167,10 +167,7 @@ module.exports = {
         'variations':variations,
       };
       let category = await Category.findOne({id:product.mainCategory});
-      body['category_id']= await sails.helpers.channel.mercadolibremx.findCategory(category.name)
-      .intercept((err)=>{
-        return new Error(err.message);
-      });
+      body['category_id']= category.mercadolibremx;
       let storeid = await sails.helpers.channel.mercadolibremx.officialStore(integration, brand);
       if(storeid>0){body['official_store_id']=storeid;}
       if(inputs.action==='ProductUpdate' || inputs.action==='Update'){

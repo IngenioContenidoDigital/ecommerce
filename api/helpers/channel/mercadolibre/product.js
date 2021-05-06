@@ -190,10 +190,7 @@ module.exports = {
           }
         });*/
       let category = await Category.findOne({id:product.mainCategory});
-      body['category_id']= await sails.helpers.channel.mercadolibre.findCategory(category.name)
-      .intercept((err)=>{
-        return new Error(err.message);
-      });
+      body['category_id']= category.mercadolibre;
       let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration, brand);
       if(storeid>0){body['official_store_id']=storeid;}
       if(inputs.action==='ProductUpdate' || inputs.action==='Update'){

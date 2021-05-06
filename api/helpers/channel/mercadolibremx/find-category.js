@@ -18,9 +18,9 @@ module.exports = {
   fn: async function (inputs,exits) {
     const meli = require('mercadolibre-nodejs-sdk');
     let mercadolibre = new meli.CategoriesApi();
-    mercadolibre.sitesSiteIdDomainDiscoverySearchGet('MLM', encodeURIComponent(inputs.categories), 1, (error, data, response) => {
+    mercadolibre.sitesSiteIdDomainDiscoverySearchGet('MLM', encodeURIComponent(inputs.categories), 10, (error, data, response) => {
       if(error || response.body.length<1){ return exits.noCategory(); }
-      return exits.success(response.body[0].category_id);
+      return exits.success(response.body);
     });
   }
 };

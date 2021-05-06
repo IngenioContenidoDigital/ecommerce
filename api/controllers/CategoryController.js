@@ -46,6 +46,9 @@ module.exports = {
     let current = await Category.findOne({id:req.body.current});
     let dafiticat = '';
     let liniocat = '';
+    let liniomxcat = '';
+    let mercadolibrecat = '';
+    let mercadolibremxcat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -67,6 +70,20 @@ module.exports = {
         liniomxcat = req.body['liniomx[]'];
       }
     }
+    if(req.body['mercadolibre[]']!==undefined){
+      if(typeof req.body['mercadolibre[]']!=='string'){
+        mercadolibrecat = req.body['mercadolibre[]'].join(',');
+      }else{
+        mercadolibrecat = req.body['mercadolibre[]'];
+      }
+    }
+    if(req.body['mercadolibremx[]']!==undefined){
+      if(typeof req.body['mercadolibremx[]']!=='string'){
+        mercadolibremxcat = req.body['mercadolibremx[]'].join(',');
+      }else{
+        mercadolibremxcat = req.body['mercadolibremx[]'];
+      }
+    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
@@ -77,6 +94,8 @@ module.exports = {
         dafiti:dafiticat,
         linio: liniocat,
         liniomx: liniomxcat,
+        mercadolibre: mercadolibrecat,
+        mercadolibremx: mercadolibremxcat,
         parent:current.id,
         active:isActive,
         url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
@@ -93,6 +112,8 @@ module.exports = {
           dafiti:dafiticat,
           linio: liniocat,
           liniomx: liniomxcat,
+          mercadolibre: mercadolibrecat,
+          mercadolibremx: mercadolibremxcat,
           active:isActive,
           url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
           level:current.level+1
@@ -120,6 +141,9 @@ module.exports = {
     let parent = await Category.findOne({id:req.body.current});
     let dafiticat = '';
     let liniocat = '';
+    let liniomxcat = '';
+    let mercadolibrecat = '';
+    let mercadolibremxcat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -141,6 +165,20 @@ module.exports = {
         liniomxcat = req.body['liniomx[]'];
       }
     }
+    if(req.body['mercadolibre[]']!==undefined){
+      if(typeof req.body['mercadolibre[]']!=='string'){
+        mercadolibrecat = req.body['mercadolibre[]'].join(',');
+      }else{
+        mercadolibrecat = req.body['mercadolibre[]'];
+      }
+    }
+    if(req.body['mercadolibremx[]']!==undefined){
+      if(typeof req.body['mercadolibremx[]']!=='string'){
+        mercadolibremxcat = req.body['mercadolibremx[]'].join(',');
+      }else{
+        mercadolibremxcat = req.body['mercadolibremx[]'];
+      }
+    }
     if(req.body.activo==='on'){isActive=true;}
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
@@ -152,6 +190,8 @@ module.exports = {
         dafiti:dafiticat,
         linio: liniocat,
         liniomx: liniomxcat,
+        mercadolibre: mercadolibrecat,
+        mercadolibremx: mercadolibremxcat,
         logo:uploaded[0].filename,
         url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
         active:isActive,
@@ -168,6 +208,8 @@ module.exports = {
           dafiti:dafiticat,
           linio: liniocat,
           liniomx: liniomxcat,
+          mercadolibre: mercadolibrecat,
+          mercadolibremx: mercadolibremxcat,
           active:isActive,
           level:parent.level+1});
       }
@@ -300,6 +342,34 @@ module.exports = {
       }else{
         return res.serverError();
       }
+    }catch(err){
+      return res.serverError(err);
+    }
+  },
+  mercadolibrecategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let body = await sails.helpers.channel.mercadolibre.findCategory(req.body.category_name)
+      .intercept((err)=>{
+        return new Error(err.message);
+      });
+      return res.ok(body);
+    }catch(err){
+      return res.serverError(err);
+    }
+  },
+  mercadolibremxcategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let body = await sails.helpers.channel.mercadolibremx.findCategory(req.body.category_name)
+      .intercept((err)=>{
+        return new Error(err.message);
+      });
+      return res.ok(body);
     }catch(err){
       return res.serverError(err);
     }
