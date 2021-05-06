@@ -2,6 +2,7 @@
 <html>
   <head>
     <%- partial('../partials/title.ejs') %>
+    <%- partial('../partials/tag.ejs') %>
 
     <!-- Viewport mobile tag for sensible mobile support -->
 
@@ -41,12 +42,11 @@
     <link rel="stylesheet" href="/styles/importer.css">
     <!--STYLES END-->
     <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
-    <%- partial('../partials/tag.ejs') %>
   </head>
   <body>
 
   <script>
-    window.fbAsyncInit = function() {
+   /* window.fbAsyncInit = function() {
       FB.init({
         appId      : '2898563873704023',
         cookie     : true,
@@ -64,7 +64,7 @@
       js = d.createElement(s); js.id = id;
       js.src = "https://connect.facebook.net/es_CO/sdk.js";
       fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
+    }(document, 'script', 'facebook-jssdk'));*/
   </script>
     <div class="columns is-centered is-gapless">
       <div class="column">

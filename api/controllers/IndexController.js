@@ -14,29 +14,21 @@ module.exports = {
       return res.redirect('/login');
     }
     if(req.hostname==='iridio.co' || req.hostname==='localhost'){
-      slider = await Slider.find({active:true}).populate('textColor');
+      //slider = await Slider.find({active:true}).populate('textColor');
     }
     if(req.hostname==='sanpolos.com'){
       seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
-      slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
+      //slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
     }
     let viewed=[];
-    let brands = null;
-    if(req.session.viewed!==undefined){
-      for(let s in req.session.viewed){
-        if(req.session.viewed[s]===null || req.session.viewed[s].viewedAt===undefined){
-          req.session.viewed.splice(s,1);
-        }
-      }
-      if(req.session.viewed.length>0){
-        let psorted = req.session.viewed.sort((a,b) => b.viewedAt - a.viewedAt );
-        let pshow =[];
-        for(let i in psorted){
-          if(!pshow.includes(psorted[i].product)){
-            pshow.push(psorted[i].product);
+    let pshow =[];
+    let brands = null;    
+    if(req.session.viewed && req.session.viewed.length>0){
+        for(let i of req.session.viewed.splice(-4)){
+          if(!pshow.includes(i.product)){
+            pshow.push(i.product);
           }
         }
-        pshow = pshow.reverse().slice(-4);
         if(pshow.length>0){
           let products = await Product.find({id:pshow,active:true})
           .populate('mainColor')
@@ -52,12 +44,10 @@ module.exports = {
             viewed.push(p);
           }
         }
-      }
     }
     if(req.hostname==='iridio.co' || req.hostname==='localhost'){
       brands = await Manufacturer.find({active:true}).sort('name ASC');
     }
-
     let menu ='';    
     if(req.session.menu && req.session.menu.navbarmobile.length>40){
       menu = req.session.menu;

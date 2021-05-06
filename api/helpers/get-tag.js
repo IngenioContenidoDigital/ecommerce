@@ -35,7 +35,6 @@ module.exports = {
         })(window,document,'script','dataLayer','`+tagid+`');</script>
         <!-- End Google Tag Manager -->`;
     }
-    
     return exits.success(tag);
 
   }
