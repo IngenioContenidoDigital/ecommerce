@@ -123,37 +123,39 @@ module.exports = {
                 let cartProducts = [];
                 let orderItems = await OrderItem.find({order: existShipping[0].id, externalOrder: order.id});
                 const channelref = order.id;
-                for(let item of order['order_items']){
-                  try{
-                    let productvariation;
-                    if(item.item['seller_sku']){
-                      productvariation = await ProductVariation.findOne({id:item.item['seller_sku']});
-                    }else{
-                      let pr = await ProductChannel.findOne({channelid:item.item.id});
-                      if (pr) {
-                        pr = await Product.findOne({id:pr.product}).populate('variations');
-                        productvariation = pr.variations[0];
+                if (orderItems.length === 0) {
+                  for(let item of order['order_items']){
+                    try{
+                      let productvariation;
+                      if(item.item['seller_sku']){
+                        productvariation = await ProductVariation.findOne({id:item.item['seller_sku']});
+                      }else{
+                        let pr = await ProductChannel.findOne({channelid:item.item.id});
+                        if (pr) {
+                          pr = await Product.findOne({id:pr.product}).populate('variations');
+                          productvariation = pr.variations[0];
+                        }
                       }
-                    }
-                    if(productvariation && orderItems.length === 0){
-                      for (let i = 1; i <= item.quantity; i++) {
-                        let cartproduct = await CartProduct.create({
-                          cart: existShipping[0].cart,
-                          product:productvariation.product,
-                          productvariation:productvariation.id,
-                          totalDiscount:parseFloat(0),
-                          totalPrice:parseFloat(item['full_unit_price']),
-                          externalReference:item.item['variation_id'] ? item.item['variation_id'] : ''
-                        }).fetch();
-                        cartproduct = await CartProduct.findOne({id: cartproduct.id}).populate('product').populate('productvariation');
-                        cartProducts.push(cartproduct);
+                      if(productvariation){
+                        for (let i = 1; i <= item.quantity; i++) {
+                          let cartproduct = await CartProduct.create({
+                            cart: existShipping[0].cart,
+                            product:productvariation.product,
+                            productvariation:productvariation.id,
+                            totalDiscount:parseFloat(0),
+                            totalPrice:parseFloat(item['full_unit_price']),
+                            externalReference:item.item['variation_id'] ? item.item['variation_id'] : ''
+                          }).fetch();
+                          cartproduct = await CartProduct.findOne({id: cartproduct.id}).populate('product').populate('productvariation');
+                          cartProducts.push(cartproduct);
+                        }
                       }
+                    }catch(err){
+                      return exits.error(err.message);
                     }
-                  }catch(err){
-                    return exits.error(err.message);
                   }
+                  await sails.helpers.channel.orderShipping({cartProducts, channelref, order: existShipping[0]});
                 }
-                await sails.helpers.channel.orderShipping({cartProducts, channelref, order: existShipping[0]});
               }
             } else {
               let user = await User.findOrCreate({emailAddress:order.buyer.email},{
