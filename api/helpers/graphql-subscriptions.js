@@ -28,7 +28,7 @@ module.exports = {
           if (channel) {
             let integration = await Integrations.findOne({channel: channel.id, key: result.key}).populate('channel');
             if (integration) {
-              let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+              let response = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                     integration.channel.name,
                     integration.key,
                     integration.secret,
@@ -37,8 +37,10 @@ module.exports = {
                     'PRODUCTID',
                     result.productId
               ).catch((e) => console.log(e));
-              if (product) {
-                await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e));
+              if (response && response.data.length > 0) {
+                for (const product of response.data) {
+                  await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e));
+                }
               }
             }
           }
