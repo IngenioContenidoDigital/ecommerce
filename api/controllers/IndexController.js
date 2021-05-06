@@ -501,8 +501,6 @@ module.exports = {
     if(brandsList.length>0){brandsFilter['id']=brandsList;}
     if(gendersList.length>0){gendersFilter['id']=gendersList;}
 
-    console.log(colorFilter);
-
     let colors = await Color.find(colorFilter);
     let brands = await Manufacturer.find({where:brandsFilter,select:['name']});
     let genders = await Gender.find(gendersFilter);
@@ -1458,4 +1456,3 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
     }
   }
 };
-
