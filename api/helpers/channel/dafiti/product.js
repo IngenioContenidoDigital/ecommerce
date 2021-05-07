@@ -89,7 +89,7 @@ module.exports = {
               case 'color siete care':
                 brand = 'color siete';
                 break;
-              case 'Ondademar Colombia':
+              case 'ondademar colombia':
                 brand = 'ondademar';
                 break;
               default:
