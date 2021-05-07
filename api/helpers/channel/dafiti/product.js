@@ -124,7 +124,29 @@ module.exports = {
               data.Product.ProductData = {};
 
               if(product.gender && product.gender.name){
-                data.Product.ProductData.Gender=product.gender.name;
+                switch(product.gender.name){
+                  case 'niños':
+                    data.Product.ProductData.Gender='Niños (8 - 16 Años)';
+                    break;
+                  case 'niñas':
+                    data.Product.ProductData.Gender='Niñas (8 - 16 Años)'
+                    break;
+                  case 'bebés niña':
+                    data.Product.ProductData.Gender='Bebés Niña (2 - 7 Años)';
+                    break;
+                  case 'bebés niño':
+                    data.Product.ProductData.Gender='Bebés Niño (2 - 7 Años)';
+                    break;
+                  case 'recién nacido':
+                    data.Product.ProductData.Gender='Recién Nacido (0 - 24 meses)';
+                    break;
+                  case 'recién nacida':
+                    data.Product.ProductData.Gender='Recién Nacida (0 - 24 meses)';
+                    break;
+                  default:
+                    data.Product.ProductData.Gender=product.gender.name;
+                    break;
+                }
               }
 
               if(product.mainColor && product.mainColor.name){
