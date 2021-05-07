@@ -19,6 +19,7 @@ module.exports = {
     hasChildren:{type:'boolean'},
     dafiti:{type:'string'},
     mercadolibre:{type:'string'},
+    mercadolibremx:{type:'string'},
     linio:{type:'string'},
     liniomx:{type:'string'},
     parent:{

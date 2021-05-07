@@ -216,6 +216,8 @@ module.exports.routes = {
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
   'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'GET /integrations/liniomx/categories' : {controller:'CategoryController',action:'liniomxcategories'},
+  'GET /integrations/mercadolibre/categories' : {controller:'CategoryController',action:'mercadolibrecategories'},
+  'GET /integrations/mercadolibremx/categories' : {controller:'CategoryController',action:'mercadolibremxcategories'},
   'POST /dafiti/add' : {controller:'ProductController',action:'dafitiadd'},
   'POST /mercadolibre/add' : {controller:'ProductController',action:'mercadolibreadd'},
   'POST /mercadolibremx/add' : {controller:'ProductController',action:'mercadolibremxadd'},
