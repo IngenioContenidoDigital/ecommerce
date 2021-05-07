@@ -110,19 +110,18 @@ module.exports = {
             };
             //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
             if(categories.length<2){delete data.Product.Categories;}
-            if(categories.includes('13984')/** Belleza y Cuidado*/ || categories.includes('10253')/** Salud y Bienestar*/){
+            if(categories.includes('17937')/** Belleza y Cuidado*/ || categories.includes('14206')/** Salud y Bienestar*/){
               delete data.Product.ProductData.Gender;
               data.Product.ProductData.SanitaryRegistration= product.register ? product.register : '';
               data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
               data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
-              if(categories.includes('14444')/** Perfumes */){
+              if(categories.includes('18397')/** Perfumes */){
                 data.Product.ProductData.ProductContent= pv.variation.name;
                 //let intencity = ['Perfume Extract','Eau de Parfum','Eau de Toilette','Eau de Cologne'];
                 data.Product.ProductData.Intencity = 'Eau de Toilette';
               }
             }
-            if(categories.includes('15215')/** Hogar*/ || categories.includes('11496') /** Libros y Peliculas */ || categories.includes('12792')/** Deportes*/ || categories.includes('10232')/** Papeleria y Oficina*/ || categories.includes('11799')/** Electrodomeśticos*/){ delete data.Product.ProductData.Gender; }
-            if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/ || categories.includes('10170') /** Automotriz */){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('14123') /** Automotriz */ || categories.includes('19171')/** Hogar*/ || categories.includes('15449') /** Libros y Peliculas */ || categories.includes('16745')/** Deportes*/ || categories.includes('14185')/** Papeleria y Oficina*/ || categories.includes('15752')/** Electrodomeśticos*/ || categories.includes('19247')/** Ferreteria*/){ delete data.Product.ProductData.Gender; }
 
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
