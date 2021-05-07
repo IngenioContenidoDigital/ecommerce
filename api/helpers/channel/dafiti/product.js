@@ -89,6 +89,9 @@ module.exports = {
               case 'color siete care':
                 brand = 'color siete';
                 break;
+              case 'Ondademar Colombia':
+                brand = 'ondademar';
+                break;
               default:
                 brand = product.manufacturer.name;
                 break;
