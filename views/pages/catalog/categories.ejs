@@ -148,53 +148,53 @@
           <div class="column is-6">
             <p class="has-text-centered title is-6">Equivalencia Marketplace</p>
             <hr>
-            <progress class="progress is-small is-primary" max="100">15%</progress>
+            <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
             <div class="tabs is-toggle o-x-h">
               <ul class="markeplace-categories">
-                <li>
+                <li id="dafit">
                   <a>
                     <p class="has-text-centered" id="dafit"><img src="/images/dafiti.png" /></p>
                   </a>
                 </li>
-                <li>
+                <li id="lini">
                   <a>
                     <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
                   </a>
                 </li>
-                <li>
+                <li id="linimx">
                   <a>
                     <p class="has-text-centered" id="linimx"><img src="/images/linio.png" /></p>
                   </a>
                 </li>
-                <li>
+                <li id="meli">
                   <a>
                     <p class="has-text-centered" id="meli"><img src="/images/mercadolibre.png" /></p>
                   </a>
                 </li>
-                <li>
+                <li id="melimx">
                   <a>
                     <p class="has-text-centered" id="melimx"><img src="/images/mercadolibre.png" /></p>
                   </a>
                 </li>
               </ul>
             </div>
-            <div class="setup dafit">
-              <h6 class="title is-6 title-markeplace">Categoría en Dafiti</h6>
+            <div class="setup is-hidden dafit">
+              <h6 class="title is-6 title-markeplace">Categorías en Dafiti</h6>
               <ul class="cattree tree" id="dafiti">
               </ul>
             </div>
             <div class="setup is-hidden lini">
-              <h6 class="title is-6 title-markeplace">Categoría en Linio</h6>
+              <h6 class="title is-6 title-markeplace">Categorías en Linio</h6>
               <ul class="cattree tree" id="linio">
               </ul>
             </div>
             <div class="setup is-hidden linimx">
-              <h6 class="title is-6 title-markeplace">Categoría en Linio México</h6>
+              <h6 class="title is-6 title-markeplace">Categorías en Linio México</h6>
               <ul class="cattree tree" id="liniomx">
               </ul>
             </div>
             <div class="setup is-hidden meli">
-              <h6 class="title is-6 title-markeplace">Categoría en Mercado Libre</h6>
+              <h6 class="title is-6 title-markeplace">Categorías en Mercado Libre</h6>
               <ul class="cattree tree" id="mercadolibre">
               </ul>
               <% if(action=='edit'){ %> 
@@ -206,7 +206,7 @@
               <%}%> 
             </div>
             <div class="setup is-hidden melimx">
-              <h6 class="title is-6 title-markeplace">Categoría en Mercado Libre México</h6>
+              <h6 class="title is-6 title-markeplace">Categorías en Mercado Libre México</h6>
               <ul class="cattree tree" id="mercadolibremx">
               </ul>
               <% if(action=='edit'){ %> 
@@ -314,7 +314,7 @@
       return;
     }
     
-    const dft = () =>{
+    const dft = (id) =>{
       let objDafiti = document.querySelector('#dafiti');
       let objLinio = document.querySelector('#linio');
       let objLiniomx = document.querySelector('#liniomx');
@@ -323,51 +323,59 @@
       let category_name =document.querySelector('input[name=nombre]');
       let predictor = document.querySelector('#predictor');
       let predictormx = document.querySelector('#predictormx');
-      console.log(predictormx);
       category_name = category_name.value;
-      io.socket.get('/integrations/dafiti/categories',(resData, res)=>{
-        if(res.statusCode == 200){
-          options('dafiti', objDafiti, resData.SuccessResponse.Body.Categories.Category, 1);
-        } else {
-          document.querySelector('.dafit').innerHTML='';
-        }
-      });
-
-      io.socket.get('/integrations/mercadolibre/categories',{category_name},(resData, res)=>{
-        if(res.statusCode == 200){
-          options('mercadolibre', ObjMeli, resData, 1);
-        } else {
-          ObjMeli.innerHTML='';
-        }
-      });
-
-      io.socket.get('/integrations/mercadolibremx/categories',{category_name},(resData, res)=>{
-        if(res.statusCode == 200){
-          options('mercadolibremx', ObjMelimx, resData, 1);
-        } else {
-          ObjMelimx.innerHTML='';
-        }
-      });
-
-      io.socket.get('/integrations/linio/categories',(resData, res)=>{
-        if(res.statusCode == 200){
-          options('linio', objLinio, resData.SuccessResponse.Body.Categories.Category, 1);
-        } else {
-          document.querySelector('.lini').innerHTML='';
-        }
-      });
-
-      io.socket.get('/integrations/liniomx/categories',(resData, res)=>{
-        if(res.statusCode == 200){
+      if (id === 'dafit' && objDafiti.children.length === 0) {
+        removeClass(progress,'is-hidden');
+        io.socket.get('/integrations/dafiti/categories',(resData, res)=>{
+          if(res.statusCode == 200){
+            options('dafiti', objDafiti, resData.SuccessResponse.Body.Categories.Category, 1);
+          } else {
+            document.querySelector('.dafit').innerHTML='';
+          }
           addClass(progress,'is-hidden');
-          options('liniomx', objLiniomx, resData.SuccessResponse.Body.Categories.Category, 1);
-        } else {
-          document.querySelector('.linimx').innerHTML='';
-        }
-      });
+      } );
+      } else if(id === 'lini' && objLinio.children.length === 0){
+        removeClass(progress,'is-hidden');
+        io.socket.get('/integrations/linio/categories',(resData, res)=>{
+          if(res.statusCode == 200){
+            options('linio', objLinio, resData.SuccessResponse.Body.Categories.Category, 1);
+          } else {
+            document.querySelector('.lini').innerHTML='';
+          }
+          addClass(progress,'is-hidden');
+        });
+      } else if(id === 'linimx' && objLiniomx.children.length === 0){
+        removeClass(progress,'is-hidden');
+        io.socket.get('/integrations/liniomx/categories',(resData, res)=>{
+          if(res.statusCode == 200){
+            options('liniomx', objLiniomx, resData.SuccessResponse.Body.Categories.Category, 1);
+          } else {
+            document.querySelector('.linimx').innerHTML='';
+          }
+          addClass(progress,'is-hidden');
+        });
+      } else if(id === 'meli' && ObjMeli.children.length === 0){
+        removeClass(progress,'is-hidden');
+        io.socket.get('/integrations/mercadolibre/categories',{category_name},(resData, res)=>{
+          if(res.statusCode == 200){
+            options('mercadolibre', ObjMeli, resData, 1);
+          } else {
+            ObjMeli.innerHTML='';
+          }
+          addClass(progress,'is-hidden');
+        });
+      } else if(id === 'melimx' && ObjMelimx.children.length === 0){
+        removeClass(progress,'is-hidden');
+        io.socket.get('/integrations/mercadolibremx/categories',{category_name},(resData, res)=>{
+          if(res.statusCode == 200){
+            options('mercadolibremx', ObjMelimx, resData, 1);
+          } else {
+            ObjMelimx.innerHTML='';
+          }
+          addClass(progress,'is-hidden');
+        });
+      }
     }
-
-    dft();
 
     const meli_socket = (category_name) =>{
       let meli = document.querySelector('#mercadolibre');
@@ -414,10 +422,10 @@
       meli_socket(category_name);
     });
 
-    live('.markeplace-categories li','click',e=>{
+    live('.markeplace-categories li','click',e =>{
       let group = e.target.parentNode.id;
       let blocks= document.querySelectorAll('.setup');
-
+      dft(group);
       for(let b of blocks){
         if(hasClass(b,group)){
           removeClass(b,'is-hidden');
