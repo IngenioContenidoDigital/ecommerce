@@ -97,7 +97,7 @@ module.exports = {
             data.Product.Categories= categories.join(',');
             data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
             data.Product.Brand= product.manufacturer.linioname ? product.manufacturer.linioname : product.manufacturer.name;
-            data.Product.TaxClass= product.tax.value === 16 ? 'IVA 16%' : 'IVA 0%';
+            data.Product.TaxClass= product.tax && product.tax.value === 16 ? 'IVA 16%' : 'IVA 0%';
             data.Product.ProductData= {
               ShortDescription: jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort)/*.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))*/,
               PackageHeight: product.height,
