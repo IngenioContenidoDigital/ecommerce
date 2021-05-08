@@ -232,7 +232,7 @@ module.exports = {
       for (let c of product.categories) {
         let cat = await Category.findOne({id: c.id}).populate('features');
         for (let f of cat.features){
-            if(!features.includes(f) && f!=='' && f!== null){
+            if(!features.some(feat=>feat.id==f.id) && f!=='' && f!== null){
               features.push(f);
             }
         }
