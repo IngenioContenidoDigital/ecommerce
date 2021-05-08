@@ -1178,11 +1178,6 @@
             let productdata = document.querySelector('#product-data');
             let referencep = document.querySelector('input[name="reference"]');
             productdata.value=resData.id;
-
-            let prices = document.querySelectorAll('.prices');
-            for(let v in prices){
-              prices[v].value=parseFloat(resData.priceWt).toFixed(2);
-            }
             let productabs = document.querySelectorAll('.product-tab ul li');
             productabs.forEach((li)=>{
               let option = li.querySelector('a').getAttribute('option');

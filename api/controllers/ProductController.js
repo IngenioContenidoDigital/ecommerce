@@ -317,10 +317,6 @@ module.exports = {
         await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
         await sails.helpers.tools.productState(product.id,product.active,true,seller.active);
       }
-      product.priceWt = product.price * (1 + ((await Tax.findOne({ id: product.tax })).value / 100));
-      if((await ProductVariation.count({product:product.id}))>0){
-        await ProductVariation.update({product:product.id}).set({price:product.priceWt});
-      }
     } catch (err) {
       error = err.message;
     }
