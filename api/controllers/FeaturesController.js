@@ -21,10 +21,24 @@ module.exports = {
       feature = await Feature.findOne({id:id}).populate('categories').populate('channels');
     }
     let category = await Category.findOne({name:'inicio'});
-    // let channels = await Channel.find({type:'marketplace'});
-    let channels = await Channel.find({name:['linio','dafiti']});
-    // console.log(channels);
-    res.view('pages/catalog/features',{layout:'layouts/admin',features:features, action:action, error:error, feature:feature, category:category, channels:channels});
+    let channels = await Channel.find({name:['linio','dafiti','mercadolibre','mercadolibremx']});
+    let mercadolibre = await Channel.findOne({name:'mercadolibre'});
+    let mercadolibremx = await Channel.findOne({name:'mercadolibremx'});
+    let linio = await Channel.findOne({name:'linio'});
+    let dafiti = await Channel.findOne({name:'dafiti'});
+    res.view('pages/catalog/features',{
+      layout:'layouts/admin',
+      features:features, 
+      action:action, 
+      error:error, 
+      feature:feature, 
+      category:category, 
+      channels:channels,
+      mercadolibre:mercadolibre,
+      mercadolibremx:mercadolibremx,
+      linio:linio,
+      dafiti:dafiti
+    });
   },
   addfeature: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -37,6 +51,8 @@ module.exports = {
     let channels = [];
     if (req.body.dafiti) {channels.push({channel:await Channel.findOne({name: 'dafiti'}), name:req.body.dafiti})}
     if (req.body.linio) {channels.push({channel:await Channel.findOne({name: 'linio'}), name:req.body.linio})}
+    if (req.body.mercadolibre) {channels.push({channel:await Channel.findOne({name: 'mercadolibre'}), name:req.body.mercadolibre})}
+    if (req.body.mercadolibremx) {channels.push({channel:await Channel.findOne({name: 'mercadolibremx'}), name:req.body.mercadolibremx})}
 
     try{
       if(categories.length>0){
@@ -79,6 +95,8 @@ module.exports = {
     let channels = [];
     if (req.body.dafiti) {channels.push({channel:await Channel.findOne({name: 'dafiti'}), name:req.body.dafiti})}
     if (req.body.linio) {channels.push({channel:await Channel.findOne({name: 'linio'}), name:req.body.linio})}
+    if (req.body.mercadolibre) {channels.push({channel:await Channel.findOne({name: 'mercadolibre'}), name:req.body.mercadolibre})}
+    if (req.body.mercadolibremx) {channels.push({channel:await Channel.findOne({name: 'mercadolibremx'}), name:req.body.mercadolibremx})}
 
     try{
       let feature = await Feature.updateOne({id:id}).set({
@@ -205,6 +223,8 @@ module.exports = {
               if (resData.SuccessResponse) {
                 features = features.concat(resData.SuccessResponse.Body.Attribute);
               }
+            }).catch(err =>{
+              features = features.concat({});
             });
           }else{return res.serverError();}
           
@@ -254,8 +274,10 @@ module.exports = {
               if (resData.SuccessResponse) {
                 features = features.concat(resData.SuccessResponse.Body.Attribute);
               }
+            }).catch(err =>{
+              features = features.concat({});
             });
-          }else{return res.serverError();}
+          }
           
         }
   
@@ -268,7 +290,104 @@ module.exports = {
 
     }catch(err){
       console.log(err);
-      return res.serverError(err);
+    }
+  },
+  mercadolibrefeatures: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let channel = await Channel.find({name: 'mercadolibre'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1}).populate('channel');
+      let features = []; 
+      let categories = await Category.find({id:req.body.categories});
+      let mkp_categories = [];
+
+      for (let index = 0; index < categories.length; index++) {
+        let category = categories[index];
+
+        let cd = category.mercadolibre.split(',');
+        for(let dd of cd){
+          mkp_categories.push(dd);
+        }
+        
+        for (let index = 0; index < mkp_categories.length; index++) {
+  
+          const element = mkp_categories[index];
+          if(integration.length>0 && element != ''){
+            await sails.helpers.channel.mercadolibre.request(`categories/${element}/attributes`,integration[0].channel.endpoint,integration.secret)
+            .then(async (resData)=>{
+              if (resData.length>0) {
+                features = features.concat(resData);
+              }
+            })
+            .catch(err =>{
+              features = features.concat({});
+            });
+          }
+          
+        }
+  
+      }
+
+      let allfeatures = Object.values(feaures = features.reduce((r,o) => {r[o.name] = o; return r;},{}));
+      const result = allfeatures.filter(f => f.value_type == 'string'  && (f.name !== 'Talla del calzado' && f.name !== 'Tags descriptivos' && f.name !== 'SKU' && f.name !=='MPN'&& f.name !=='Marca' && f.name !=='Modelo' && f.name !=='Color' && f.name !=='Talla' && f.name !=='Código universal de producto'));
+      return res.ok(result);
+
+    }catch(err){
+      console.log(err);
+    }
+  },
+  mercadolibremxfeatures: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let channel = await Channel.find({name: 'mercadolibremx'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1}).populate('channel');
+      let features = []; 
+      let categories = await Category.find({id:req.body.categories});
+      let mkp_categories = [];
+
+      for (let index = 0; index < categories.length; index++) {
+        let category = categories[index];
+
+        let cd = category.mercadolibremx.split(',');
+        for(let dd of cd){
+          mkp_categories.push(dd);
+        }
+        
+        for (let index = 0; index < mkp_categories.length; index++) {
+  
+          const element = mkp_categories[index];
+          if(integration.length>0 && element != ''){
+            await sails.helpers.channel.mercadolibremx.request(`categories/${element}/attributes`,integration[0].channel.endpoint,integration.secret)
+            .then(async (resData)=>{
+              if (resData.length>0) {
+                features = features.concat(resData);
+              }
+            })
+            .catch(err =>{
+              features = features.concat({});
+            });
+          }
+          
+        }
+  
+      }
+
+      let allfeatures = Object.values(feaures = features.reduce((r,o) => {r[o.name] = o; return r;},{}));
+      const result = allfeatures.filter(f => f.value_type == 'string'  && (f.name !== 'Talla del calzado' && f.name !== 'Tags descriptivos' && f.name !== 'SKU' && f.name !=='MPN'&& f.name !=='Marca' && f.name !=='Modelo' && f.name !=='Color' && f.name !=='Talla' && f.name !=='Código universal de producto'));
+      return res.ok(result);
+
+    }catch(err){
+      console.log(err);
     }
   },
 };
