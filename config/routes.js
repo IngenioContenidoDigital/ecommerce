@@ -91,7 +91,7 @@ module.exports.routes = {
   'POST /answermessages' : {controller:'ConversationController', action:'answermessages'},
   'POST /webhookmessenger/:uuid' : {controller:'ConversationController',action:'webhookmessenger'},
   'POST /donwloadattachment' : {controller:'ConversationController',action:'donwloadattachment'},
-  'POST /notificationml' : {controller:'SellerController',action:'notificationml'},
+  'POST /notificationml' : {controller:'IndexController',action:'notificationml'},
   'POST /seller/create' : {controller:'SellerController',action:'createseller'},
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},
   'POST /seller/edit/:id' : {controller:'SellerController',action:'editseller'},
