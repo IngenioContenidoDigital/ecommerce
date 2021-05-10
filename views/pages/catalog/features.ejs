@@ -73,7 +73,11 @@
               <% channels.forEach(function(channel){ %>
                 <li>
                   <a>
-                    <p class="has-text-centered" id=<%= channel.id %>><img src="/images/<%= channel.name %>.png" /></p>
+                    <% if (channel.name == 'mercadolibremx'){%>
+                      <p class="has-text-centered" id=<%= channel.id %>><img src="/images/mercadolibre.png" /></p>
+                    <%}else{%>
+                      <p class="has-text-centered" id=<%= channel.id %>><img src="/images/<%= channel.name %>.png" /></p>
+                    <%}%>
                   </a>
                 </li>
               <%})%>
@@ -85,23 +89,27 @@
                 <%}else{%>
                   <div class="setup is-hidden <%= channel.id %> ">
                 <%}%>
-                <h6 class="title is-6 title-markeplace is-capitalized">Características en <%= channel.name %></h6>
+                <% if (channel.name == 'mercadolibremx'){%>
+                  <h6 class="title is-6 title-markeplace is-capitalized">Características en Mercadolibre México</h6>
+                <%}else{%>
+                  <h6 class="title is-6 title-markeplace is-capitalized">Características en <%= channel.name %></h6>
+                <%}%>
                 <% if (action=='create'){%>
-                  <ul class="empty">                  
+                  <ul class="empty <%= channel.name %>">                  
                     <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Selecciona una categoría para mostrar sus características en <%= channel.name %>.</span></li>
                   </ul>                
-                  <ul class="loading is-hidden">
+                  <ul class="loading is-hidden <%= channel.name %>">
                     <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
                   </ul>
                 <%}else{%>
-                  <ul class="empty is-hidden">                  
+                  <ul class="empty is-hidden <%= channel.name %>">                  
                     <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Selecciona una categoría para mostrar sus características en <%= channel.name %>.</span></li>
                   </ul>                
-                  <ul class="loading">
+                  <ul class="loading <%= channel.name %>">
                     <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Cargando ... </span></li>
                   </ul>
                   <%}%>
-                <ul class="no-element is-hidden">
+                <ul class="no-element is-hidden <%= channel.name %>">
                   <li ><i class="bx bxs-info-circle" aria-hidden="true"></i></span><span class="cat_name is-capitalized"> Ninguna característica fue recuperada. </span></li>
                 </ul>
                 <ul class="markeplace-features <%= channel.name %>" id=<%= channel.name %>>
@@ -115,9 +123,12 @@
       <script>
         const feature = <%- JSON.stringify(feature)%>
         const channels = <%- JSON.stringify(channels)%>
+        let mercadolibre = <%- JSON.stringify(mercadolibre)%>
+        let mercadolibremx = <%- JSON.stringify(mercadolibremx)%>
+        let linio = <%- JSON.stringify(linio)%>
+        let dafiti = <%- JSON.stringify(dafiti)%>
         let root = document.querySelector('a[level="1"]').parentNode;
         let progress = document.querySelector('progress');
-        let oldFeatures = [];
         let channelFlag = 0;
 
         async function init(){
@@ -155,7 +166,7 @@
                     if(d.querySelectorAll('input:checked').length>0){
                       hidecategories(d);
                       removeClass(progress,'is-hidden');
-                      marketplacequery(toArray(d,'input:checked'),false);
+                      marketplacequery(toArray(root,'input:checked'),false);
                     }
                     childTree(d.querySelectorAll('a.panel-block'));
 
@@ -196,117 +207,96 @@
           for (let index = 0; index < attrs.length; index++) {
             const attr = attrs[index];
             let op = document.createElement('li');
-            if(feature){
-              if(feature.channels.find(f => f.name == attr.FeedName && f.channel == channel.id)){
-                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
-              }else{
-                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+            if(channel.name == 'mercadolibre' || channel.name == 'mercadolibremx'){
+              if(feature){
+                if(feature.channels.find(f => f.name == attr.name && f.channel == channel.id)){
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.name+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
+                }else{
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.name+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
+                }
+              } else {
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.name+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
               }
-            } else {
-                op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+            }
+            if(channel.name == 'linio' || channel.name == 'dafiti'){
+              if(feature){
+                if(feature.channels.find(f => f.name == attr.FeedName && f.channel == channel.id)){
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+                }else{
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+                }
+              } else {
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.FeedName+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.FeedName+'</label></span>'
+              }
             }
             elm.appendChild(op);
           }
           return;
         }
 
-        function compare(responseFeatures,channel, category){
-          let array_global = [];
-          for (let j = 0; j < oldFeatures.length; j++) {
-            if(oldFeatures[j].channel == channel.id){
-              let features = oldFeatures[j].features;
-              if (!document.querySelector(`[value="${category}"]`).checked) {
-                for (let i = 0; i < features.length; i++) {
-                  let feature = features[i];
-                  const index = feature.categories.indexOf(category);
-                  if (index > -1) {
-                    feature.categories.splice(index, 1);
-                  }
-                }
-                for (let i = features.length-1; i>-1; i--) {
-                  let feature = features[i];
-                  if(feature.categories.length === 0){
-                    if (document.querySelector(`[value="${feature.FeedName}"]`)) {
-                      let element=document.querySelector(`[value="${feature.FeedName}"]`).parentNode.parentNode;
-                      if (element) {
-                        element.remove();
-                      }
-                      const indexFeature = features.indexOf(feature);
-                      if (indexFeature > -1) {
-                        features.splice(indexFeature, 1);
-                      }
-                    }
-                  }
-                }
-              }else{
-                array_global=responseFeatures.filter(f=>!features.some(l=>l.FeedName== f.FeedName));
-                if (array_global.length>0) {
-                  for (let i = 0; i < features.length; i++) {
-                    let feature = features[i];
-                    feature.categories.push(category);
-                  }
-                  for (let i = 0; i < array_global.length; i++) {
-                    array_global[i];
-                    let obj ={
-                      FeedName: array_global[i].FeedName,
-                      categories : [category]
-                    }
-                    features.push(obj);
-                  }
-                  return array_global;
-                }
-              }
-            }
-          }
-        }
-
         const marketplacequery = (categories, flag) =>{
-          for (let index = 0; index < channels.length; index++) {
-            const channel = channels[index];
-            io.socket.get(`/integrations/${channel.name}/features`,{categories},(resData, res)=>{
+          let dafitiObj = document.getElementById('dafiti');
+          let linioObj = document.getElementById('linio');
+          let meliObj = document.getElementById('mercadolibre');
+          let melimxObj = document.getElementById('mercadolibremx');
+
+          io.socket.get(`/integrations/mercadolibre/features`,{categories},(resData, res)=>{
             if(res.statusCode == 200){
-              channelObj = document.getElementById(`${channel.name}`);
-              removeClass(channelObj,'is-hidden')
-              hide('.loading');
-              if(flag&&oldFeatures.length>0){resData=compare(resData,channel,categories);}
-              if(resData){options(channel, channelObj, resData);}
-              channelFlag++;
-              if (channelFlag==channels.length) {
-                addClass(progress,'is-hidden');
-                channelFlag=0;
-                if (!flag||oldFeatures.length==0) {setoldFeatures();}
-                categoryToggler(1);
-              }
-              if(root.querySelectorAll('input:checked').length===0){channelObj.innerHTML=''; oldFeatures=[];show('.empty');}
+              meliObj.innerHTML='';
+              hide('.loading.mercadolibre');
+              removeClass(meliObj,'is-hidden');
+              options(mercadolibre, meliObj, resData);
+              channelFlag++;              
+              if (channelFlag==channels.length) {addClass(progress,'is-hidden'); channelFlag=0; categoryToggler(1);}
+              if(root.querySelectorAll('input:checked').length===0){meliObj.innerHTML='';show('.empty');}
             } else {
-              channelObj.innerHTML='Refresca hubo un error en la petición';
+              meliObj.innerHTML='Refresca hubo un error en la petición';
             }
           });
-          }
+
+          io.socket.get(`/integrations/mercadolibremx/features`,{categories},(resData, res)=>{
+            if(res.statusCode == 200){
+              melimxObj.innerHTML='';
+              hide('.loading.mercadolibremx');
+              removeClass(melimxObj,'is-hidden');
+              options(mercadolibremx, melimxObj, resData);
+              channelFlag++;              
+              if (channelFlag==channels.length) {addClass(progress,'is-hidden'); channelFlag=0; categoryToggler(1);}
+              if(root.querySelectorAll('input:checked').length===0){melimxObj.innerHTML='';show('.empty');}
+            } else {
+              melimxObj.innerHTML='Refresca hubo un error en la petición';
+            }
+          });
+
+          io.socket.get(`/integrations/linio/features`,{categories},(resData, res)=>{
+            if(res.statusCode == 200){
+              linioObj.innerHTML='';
+              removeClass(linioObj,'is-hidden')
+              hide('.loading.linio');
+              options(linio, linioObj, resData);
+              channelFlag++;
+              if (channelFlag==channels.length) {addClass(progress,'is-hidden'); channelFlag=0; categoryToggler(1);}
+              if(root.querySelectorAll('input:checked').length===0){linioObj.innerHTML='';show('.empty');}
+            } else {
+              linioObj.innerHTML='Refresca hubo un error en la petición';
+            }
+          });
+          
+          io.socket.get(`/integrations/dafiti/features`,{categories},(resData, res)=>{
+            if(res.statusCode == 200){
+              dafitiObj.innerHTML='';
+              removeClass(dafitiObj,'is-hidden')
+              hide('.loading.dafiti');
+              channelFlag++;
+              options(dafiti, dafitiObj, resData);              
+              if (channelFlag==channels.length) {addClass(progress,'is-hidden'); channelFlag=0; categoryToggler(1);}
+              if(root.querySelectorAll('input:checked').length===0){dafitiObj.innerHTML='';show('.empty');}
+            } else {
+              dafitiObj.innerHTML='Refresca hubo un error en la petición';
+            }
+          });
         }
         
-        function setoldFeatures(){
-          for (let index = 0; index < channels.length; index++) {
-            const channel = channels[index];
-            channelObj = document.getElementById(`${channel.name}`);
-            let ch = [];
-            let feats = toArray(channelObj,'input');
-            for (let index = 0; index < feats.length; index++) {
-              const feat = feats[index];
-              let obj={
-                FeedName:feat,
-                categories:toArray(root,'input:checked')
-              };
-              ch.push(obj);
-            }
-            let objch= {
-              channel:channel.id,
-              features: ch
-            };
-            oldFeatures.push(objch);
-          }
-        }
-
         live('.cat_name','click',(e)=>{
           let element = e.target || e.srcElement;
           let group = element.parentNode.parentNode.querySelectorAll(':scope > ul > li');
@@ -386,7 +376,8 @@
           hide('.markeplace-features');
           hide('.empty');
           categoryToggler(2,false);
-          marketplacequery(e.target.value,true);
+          let categories = toArray(root,'input:checked');
+          marketplacequery(categories,true); 
         });
         
         document.addEventListener('DOMContentLoaded', function(){
