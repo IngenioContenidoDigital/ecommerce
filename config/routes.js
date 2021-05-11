@@ -247,7 +247,11 @@ module.exports.routes = {
   'POST /campaign/create' : {controller:'CampaignController',action:'createcampaign'},
   'POST /campaign/edit/:id' : {controller:'CampaignController',action:'editcampaign'},
   'PUT /campaign/:id' : {controller:'CampaignController',action:'campaignstate'},
-  'GET /campaign/show/:id' : {controller:'CampaignController',action:'campaignshow'}
+  'GET /campaign/show/:id' : {controller:'CampaignController',action:'campaignshow'},
+
+  'GET /messages/:action?/:id?' : {controller:'MessageController',action:'showmessages'},
+  'POST /message/create' : {controller:'MessageController',action:'createmessage'},
+  'POST /message/edit/:id' : {controller:'MessageController',action:'editmessage'},
 
   /* ----- FIN ADMIN ROUTES  -----*/
 
