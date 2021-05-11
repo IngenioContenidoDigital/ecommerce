@@ -152,7 +152,7 @@
               <input id="inputConversation" class="input-form input is-small" type="text" placeholder="Enviar mensaje...">
             </div>
             <div class="column">
-              <div class="div-form-answer">
+              <div class="div-form-answer" id="btnSend">
                 <div class="file is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Adjunta un archivo o una foto">
                   <label class="file-label">
                     <input class="file-input" type="file" name="attachment" multiple>
@@ -248,6 +248,7 @@
   function clickAnswerConversation(conversationId, questionId, type) {
     let dataForm = new FormData();
     const containerForm = document.querySelector('.container-form');
+    const btnSend = document.querySelector('#btnSend');
     let text = document.getElementById('inputConversation').value;
     let seller = '<%- seller %>';
     dataForm.append('text', text);
@@ -256,6 +257,7 @@
     dataForm.append('questionId', questionId);
     if (text) {
       addClass(containerForm, 'is-loading');
+      addClass(btnSend, 'is-hidden');
       for (const file of attachments) {
         dataForm.append('file', file);
       }
@@ -268,6 +270,7 @@
           let answers = respo.answers;
           createHtmlQuestions(questions, answers, false);
           removeClass(containerForm, 'is-loading');
+          removeClass(btnSend, 'is-hidden');
           attachments = [];
         } else {
           attachments = [];
@@ -275,6 +278,7 @@
           el.textContent = respo.error;
           removeClass(el,'is-hidden');
           removeClass(containerForm, 'is-loading');
+          removeClass(btnSend, 'is-hidden');
           setTimeout(function() {
             addClass(el,'is-hidden');
           }, 4000);

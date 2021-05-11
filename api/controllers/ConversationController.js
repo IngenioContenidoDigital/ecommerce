@@ -185,6 +185,7 @@ module.exports = {
             dateCreated: parseInt(moment().valueOf()),
             question: req.body.questionId
           }).fetch();
+          await Question.updateOne({id: req.body.questionId}).set({status: 'ANSWERED'});
           for (const attach of files) {
             await Attachment.create({
               filename: attach.filename,
@@ -254,6 +255,7 @@ module.exports = {
             dateCreated: parseInt(moment().valueOf()),
             question: req.body.questionId
           }).fetch();
+          await Question.updateOne({id: req.body.questionId}).set({status: 'ANSWERED'});
           for (const attach of files) {
             await Attachment.create({
               filename: attach.filename,
