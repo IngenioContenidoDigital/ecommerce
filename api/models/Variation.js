@@ -20,7 +20,7 @@ module.exports = {
     gender:{model:'gender'},
     category:{model:'category'},
     seller:{model:'seller'},
-    brand:{model:'manufacturer'}
+    manufacturer:{model:'manufacturer'}
   },
 
 };

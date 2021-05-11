@@ -30,10 +30,10 @@ module.exports = {
     let variations = await Variation.find({
       where: filter,
       sort: 'createdAt DESC'
-    }).populate('gender').populate('category').populate('seller').populate('brand');
+    }).populate('gender').populate('category').populate('seller').populate('manufacturer');
 
     if(id){
-      variation = await Variation.findOne({id:id}).populate('gender').populate('brand');
+      variation = await Variation.findOne({id:id}).populate('gender').populate('manufacturer');
       const productsSeller = await Product.find({seller: variation.seller}).populate('manufacturer');
       for (const product of productsSeller) {
         if(brands.length === 0 || !brands.some(brand => brand.id === product.manufacturer.id)){
