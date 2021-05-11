@@ -19,7 +19,8 @@ module.exports = {
     measure:{type:'string', isIn:['centímetro', 'gramo','mililitro','unidad']},
     gender:{model:'gender'},
     category:{model:'category'},
-    seller:{model:'seller'}
+    seller:{model:'seller'},
+    brand:{model:'manufacturer'}
   },
 
 };

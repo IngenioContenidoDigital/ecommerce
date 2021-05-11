@@ -15,6 +15,7 @@ module.exports = {
     let error = null;
     let variation=null;
     let sellers = null;
+    let brands = [];
     let genders = await Gender.find();
     let categories = await Category.find({level:2});
     let action = req.param('action') ? req.param('action') : null;
@@ -29,11 +30,18 @@ module.exports = {
     let variations = await Variation.find({
       where: filter,
       sort: 'createdAt DESC'
-    }).populate('gender').populate('category').populate('seller');
+    }).populate('gender').populate('category').populate('seller').populate('brand');
+
     if(id){
-      variation = await Variation.findOne({id:id}).populate('gender');
+      variation = await Variation.findOne({id:id}).populate('gender').populate('brand');
+      const productsSeller = await Product.find({seller: variation.seller}).populate('manufacturer');
+      for (const product of productsSeller) {
+        if(brands.length === 0 || !brands.some(brand => brand.id === product.manufacturer.id)){
+          brands.push(product.manufacturer);
+        }
+      }
     }
-    return res.view('pages/catalog/variations',{layout:'layouts/admin',sellers,variations:variations,categories:categories,action:action,error:error,variation:variation,genders:genders,measures:measures});
+    return res.view('pages/catalog/variations',{layout:'layouts/admin',sellers,variations:variations,categories:categories,action:action,error:error,variation:variation,brands,genders:genders,measures:measures});
   },
   createvariation: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -54,7 +62,8 @@ module.exports = {
         eu:req.body.eu,
         wide:req.body.wide,
         unit:req.body.unit ? req.body.unit : 1,
-        measure:req.body.measure ? req.body.measure : 'unidad'
+        measure:req.body.measure ? req.body.measure : 'unidad',
+        brand: req.body.brand ? req.body.brand : null,
       });
     }catch(err){
       error = err;
@@ -84,7 +93,8 @@ module.exports = {
         eu:req.body.eu,
         wide:req.body.wide,
         unit:req.body.unit ? req.body.unit : 1,
-        measure:req.body.measure ? req.body.measure : 'unidad'
+        measure:req.body.measure ? req.body.measure : 'unidad',
+        brand: req.body.brand ? req.body.brand : null,
       });
     }catch(err){
       error = err;

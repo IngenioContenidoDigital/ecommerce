@@ -49,7 +49,7 @@ module.exports = {
           description:req.body.descripcion,
           active:isActive,
           url:((req.body.nombre.trim().toLowerCase()).replace(/\s/gi,'-')).replace(/[^a-zA-Z0-9_-]/g,'')
-        })
+        });
       }
     }
 
@@ -107,6 +107,17 @@ module.exports = {
     }else{
       return res.redirect('/manufacturers?error='+error);
     }
+  },
+  findbrands: async (req, res)=>{
+    let id = req.param('id');
+    const productsSeller = await Product.find({seller: id}).populate('manufacturer');
+    let brands = [];
+    for (const product of productsSeller) {
+      if(brands.length === 0 || !brands.some(brand => brand.id === product.manufacturer.id)){
+        brands.push(product.manufacturer);
+      }
+    }
+    return res.send(brands);
   }
 };
 

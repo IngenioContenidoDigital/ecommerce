@@ -161,6 +161,7 @@ module.exports.routes = {
 
   'GET /find/regions/:id' : {controller:'CountriesController',action:'countryregions'},
   'GET /find/cities/:id' : {controller:'CountriesController',action:'regioncities'},
+  'GET /find/brand/:id' : {controller:'ManufacturersController',action:'findbrands'},
 
   'GET /carriers/:action?/:id?' : {controller:'CarrierController',action:'showcarriers'},
   'POST /carrier/create' : {controller:'CarrierController',action:'createcarrier'},
