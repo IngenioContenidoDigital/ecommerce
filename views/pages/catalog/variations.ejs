@@ -198,9 +198,10 @@
           <table class="table is-hoverable is-size-7" id="variations-table">
               <thead>
               <tr>
-                  <th scope="col">Género</th>
-                  <th scope="col">Categoria</th>
                   <th scope="col">Nombre</th>
+                  <th scope="col">Categoria</th>
+                  <th scope="col">Género</th>
+                  <th scope="col">Marca</th>
                   <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
                   <th scope="col">Seller</th>
                   <%}%>
@@ -210,9 +211,10 @@
               <tbody>
                   <% variations.forEach(function(variation){ %>
                       <tr>
-                        <td class="align-middle"><span class="is-uppercase"><%if(variation.gender!==null){%><%= variation.gender.name %><%}%></span></td>
-                        <td class="align-middle"><span class="is-uppercase"><%if(variation.category!==null){%><%= variation.category.name %><%}%></span></td>
                         <td class="align-middle"><span class="is-uppercase"><%= variation.name %></span></td>
+                        <td class="align-middle"><span class="is-uppercase"><%if(variation.category!==null){%><%= variation.category.name %><%}%></span></td>
+                        <td class="align-middle"><span class="is-uppercase"><%if(variation.gender!==null){%><%= variation.gender.name %><%}%></span></td>
+                        <td class="align-middle"><span class="is-uppercase"><%if(variation.manufacturer!==null){%><%= variation.manufacturer.name %><%}%></span></td>
                         <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
                         <td class="align-middle"><span class="is-uppercase"><%= variation.seller.name %></span></td>
                         <%}%>

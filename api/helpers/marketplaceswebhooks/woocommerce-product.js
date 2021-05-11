@@ -224,11 +224,11 @@ module.exports = {
                               vt_name = pdv.talla.toLowerCase().replace(',','.');
                             }
 
-                            let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,brand:prc.manufacturer,category:prc.categories[0].id});	
+                            let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id});	
                             let productVariation;	
 
                             if(!variation || variation.length == 0){	
-                              variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,brand:prc.manufacturer,category:prc.categories[0].id}).fetch();	
+                              variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id}).fetch();	
                             }	
         
                             variation = variation.length ? variation[0] : variation;
@@ -274,11 +274,11 @@ module.exports = {
                         throw new Error(`Ref o externalId: ${pdv.reference ? pdv.reference : pdv.externalId} no pudimos encontrar este producto.`);
                       }
   
-                      let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,brand:prc.manufacturer,category:prc.categories[0].id});	
+                      let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id});	
                       let productVariation;	
   
                       if(!variation || variation.length == 0){	
-                        variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,brand:prc.manufacturer,category:prc.categories[0].id}).fetch();	
+                        variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id}).fetch();	
                       }	
   
                       variation = variation.length ? variation[0] : variation;

@@ -63,7 +63,7 @@ module.exports = {
         wide:req.body.wide,
         unit:req.body.unit ? req.body.unit : 1,
         measure:req.body.measure ? req.body.measure : 'unidad',
-        brand: req.body.brand ? req.body.brand : null,
+        manufacturer: req.body.brand ? req.body.brand : null,
       });
     }catch(err){
       error = err;
