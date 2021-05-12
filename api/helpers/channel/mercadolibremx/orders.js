@@ -161,10 +161,10 @@ module.exports = {
               let user = await User.findOrCreate({emailAddress:order.buyer.email},{
                 emailAddress:order.buyer.email,
                 emailStatus:'confirmed',
-                password:await sails.helpers.passwords.hashPassword(order.buyer['billing_info']['doc_number']),
+                password:await sails.helpers.passwords.hashPassword(order.buyer.id.toString()),
                 fullName:order.buyer['first_name']+' '+order.buyer['last_name'],
-                dniType:order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? 'CC' : 'MLID',
-                dni:order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? order.buyer['billing_info']['doc_number'].toString() : order.buyer.id.toString(),
+                dniType: order.buyer && order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? 'CC' : 'MLID',
+                dni: order.buyer && order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? order.buyer['billing_info']['doc_number'].toString() : order.buyer.id.toString(),
                 mobilecountry:null,
                 mobile:0,
                 mobileStatus:'unconfirmed',
