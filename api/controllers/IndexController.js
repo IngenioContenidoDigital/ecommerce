@@ -430,7 +430,7 @@ module.exports = {
           })
           .populate('products',{
             where:productsFilter,
-            select:['name','description','seller','mainColor','manufacturer','gender','reference'],
+            select:['name','description','seller','mainColor','manufacturer','gender','reference','mainCategory'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/categories/';
@@ -442,7 +442,7 @@ module.exports = {
         try{
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
             where:productsFilter,
-            select:['name','description','seller','mainColor','manufacturer','gender','reference'],
+            select:['name','description','seller','mainColor','manufacturer','gender','reference','mainCategory'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/brands/';
@@ -472,6 +472,7 @@ module.exports = {
         });
         p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
         p.mainColor=await Color.findOne({id:p.mainColor});
+        p.mainCategory=await Category.findOne({id:p.mainCategory});
         p.manufacturer=await Manufacturer.findOne({
           where:{id:p.manufacturer},
           select:['name']
@@ -554,6 +555,7 @@ module.exports = {
         .populate('tax')
         .populate('manufacturer')
         .populate('mainColor')
+        .populate('mainCategory')
         .populate('seller')
         .populate('gender');
 
@@ -577,6 +579,7 @@ module.exports = {
     let product = await Product.findOne({name:decodeURIComponent(req.param('name')),reference:decodeURIComponent(req.param('reference'))})
       .populate('manufacturer')
       .populate('mainColor')
+      .populate('mainCategory')
       .populate('tax')
       .populate('variations',{sort: 'createdAt ASC'})
       .populate('images');

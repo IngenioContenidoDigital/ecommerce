@@ -159,7 +159,11 @@
             if(resData.highPrice){elm.parentNode.querySelector('.highPrice').innerHTML = '$ '+Math.round(resData.highPrice).toLocaleString("es-CO");}
             if(resData.lowPrice){elm.parentNode.querySelector('.lowPrice').innerHTML = '$ '+Math.round(resData.lowPrice).toLocaleString("es-CO");}
             if(resData.savings){elm.parentNode.querySelector('.savings').innerHTML = '$ '+Math.round(resData.savings).toLocaleString("es-CO");}
-            if(resData.price){elm.parentNode.querySelector('.bestPrice').innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");}
+            if(resData.price){
+              let price = elm.parentNode.querySelector('.bestPrice');
+              price.innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");
+              price.setAttribute('data-price',Math.round(resData.price));
+            }
         });
 
         selected.setAttribute('qty',option.getAttribute('qty') ? option.getAttribute('qty') : 0)
@@ -182,6 +186,26 @@
     live('#push-to-cart','click',(e)=>{
       let vrt = e.target.parentNode.parentNode.querySelector('#drop-selected').getAttribute('value');
         io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'},(resData)=>{
+          dataLayer.push({ ecommerce: null });
+          dataLayer.push({
+              'event': 'addToCart',
+              'ecommerce': {
+                  'currencyCode': 'COP',
+                  'add': {                                // 'add' actionFieldObject measures.
+                  'products': [{                        //  adding a product to a shopping cart.
+                    'name': card.querySelector('.name').innerHTML,                      // Name or ID is required.
+                    'id': card.querySelector('.productid').innerHTML,
+                    'price': card.querySelector('.bestPrice').getAttribute('data-price'),
+                    'brand': card.querySelector('.brand').getAttribute('brand'),
+                    'category': card.querySelector('.category').innerHTML,
+                    'reference': card.querySelector('.sku').innerHTML,
+                    'color': card.querySelector('.color').innerHTML,
+                    'position': card.querySelector('.position').innerHTML,
+                    'quantity': 1
+                  }]
+                  }
+              }
+          });
             window.location.href='/cart';
         });
     });

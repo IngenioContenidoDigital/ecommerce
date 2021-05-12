@@ -44,10 +44,10 @@
                             <% let savings = parseInt(product.variations[0].price-discount.price) %>
                             <tr><td>Ahorro:</td><td class="has-text-success has-text-right"><span class="savings">$ <%= savings.toLocaleString('es-CO'); %></span></td></tr>
                             <span class="is-hidden" itemprop="offerCount">1</span>
-                            <span itemprop="price" class="is-hidden bestPrice">$ <%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
+                            <span itemprop="price" data-price="<%= Math.round(discount.price) %>" class="is-hidden bestPrice">$ <%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
                         </div>
                     <%}else{%>
-                      <tr><td>Precio:</td><td class="has-text-right"><span itemprop="price" class="bestPrice">$ <%= Math.round(product.variations[0].price).toLocaleString("es-CO"); %></span></td></tr>
+                      <tr><td>Precio:</td><td class="has-text-right"><span itemprop="price" data-price="<%= Math.round(product.variations[0].price)%>" class="bestPrice">$ <%= Math.round(product.variations[0].price).toLocaleString("es-CO"); %></span></td></tr>
                     <%}%>
                 </table>
                 <hr>
@@ -123,7 +123,11 @@
             if(resData.highPrice){document.querySelector('.highPrice').innerHTML = '$ '+Math.round(resData.highPrice).toLocaleString("es-CO");}
             if(resData.lowPrice){document.querySelector('.lowPrice').innerHTML = '$ '+Math.round(resData.lowPrice).toLocaleString("es-CO");}
             if(resData.savings){document.querySelector('.savings').innerHTML = '$ '+Math.round(resData.savings).toLocaleString("es-CO");}
-            if(resData.price){document.querySelector('.bestPrice').innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");}
+            if(resData.price){
+                let price = document.querySelector('.bestPrice');
+                price.innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");
+                price.setAttribute('data-price',Math.round(resData.price));
+            }
         });
         let stock = e.target.options[e.target.selectedIndex].getAttribute('qty');
         let quantity = document.querySelector('select[name="quantity"]');
@@ -197,10 +201,46 @@
             let qty = document.querySelector('select[name="quantity"]').value
             let vrt = document.querySelector('select[name="variations"]').value
             io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create'},(resData)=>{
+                dataLayer.push({ ecommerce: null });
+                dataLayer.push({
+                    'event': 'addToCart',
+                    'ecommerce': {
+                        'currencyCode': 'COP',
+                        'add': {                                // 'add' actionFieldObject measures.
+                        'products': [{                        //  adding a product to a shopping cart.
+                            'name': '<%= product.name %>',
+                            'id': '<%= product.id %>',
+                            'brand': '<%= product.manufacturer.name %>',
+                            'reference': '<%= product.reference %>',
+                            'category': '<%= product.mainCategory.name %>',
+                            'color': '<%= product.mainColor.name %>',
+                            'price': document.querySelector('.bestPrice').innerHTML.replace('$ ',''),
+                            'quantity': qty
+                        }]
+                        }
+                    }
+                });
                 window.location.href='/cart';
             });
         }
     })
 
+    dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+    dataLayer.push({
+    'ecommerce': {
+        'detail': {
+        //'actionField': {'list': 'Apparel Gallery'},    // 'detail' actions have an optional list property.
+        'products': [{
+            'name': '<%= product.name %>',
+            'id': '<%= product.id %>',
+            'brand': '<%= product.manufacturer.name %>',
+            'reference': '<%= product.reference %>',
+            'category': '<%= product.mainCategory.name %>',
+            'color': '<%= product.mainColor.name %>',
+            'price': '<%= discount && discount.price ? discount.price : product.variations[0].price %>'
+        }]
+        }
+    }
+    });
 </script>
 <br><br>

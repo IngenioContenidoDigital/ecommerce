@@ -7,14 +7,14 @@
               <div style="min-width:100%;" class="container">
                 <p class="carousel has-text-centered">
                   <%for(let m of main){%>
-                      <a href="<%=m.url%>"><img src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a>
+                      <a href="<%=m.url%>"><img loading="lazy" src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a>
                   <%}%>
                   </p>
               </div>
             </section>
           <%}else if(main.length==1){%>
             <section class="hero is-hidden-mobile">
-              <a href="<%=main[0].url%>"><img src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a>
+              <a href="<%=main[0].url%>"><img loading="lazy" src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a>
             </section>
           <%}%>
           <div class="columns is-centered is-gapless">
@@ -60,9 +60,9 @@
                                 <span class="is-hidden" itemprop="offerCount">1</span>
                                 <span class="is-hidden savings"></span>
                             </div>
-                            <span itemprop="price" class="is-hidden bestPrice">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
+                            <span itemprop="price" date-price="<%=Math.round(vw.discount.price)%>" class="is-hidden bestPrice">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
                         <%}else{%>
-                            <span itemprop="price" class="is-size-6 has-text-dark has-text-weight-bold bestPrice">$&nbsp;<%= Math.round(vw.price).toLocaleString("es-CO");%></span>
+                            <span itemprop="price" date-price="<%= Math.round(vw.price)%>" class="is-size-6 has-text-dark has-text-weight-bold bestPrice">$&nbsp;<%= Math.round(vw.price).toLocaleString("es-CO");%></span>
                         <%}%>
                     </div>
                     </p>
