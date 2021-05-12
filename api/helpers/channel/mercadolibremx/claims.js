@@ -58,6 +58,7 @@ module.exports = {
                   }).fetch();
                 }
               }
+              await sails.helpers.channel.chatBot(integration, message.message.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''), 'claim', claim.id, questi.id, message.sender_role);
             } else {
               questi = existsQuest;
             }

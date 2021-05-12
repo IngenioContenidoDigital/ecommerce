@@ -53,6 +53,7 @@ module.exports = {
             }).fetch();
           }
         }
+        await sails.helpers.channel.chatBot(integration, message.text.plain, 'order', message.resource_id, questi.id, questi.idMl);
         const questionsSeller = await Question.count({status: 'UNANSWERED', seller: integration.seller});
         sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller: integration.seller});
       }
