@@ -138,7 +138,6 @@
         e.target.parentNode.parentNode.removeChild(e.target.parentNode);
     });
 
-
     live('select[name="quantity"]','change',(e) => {
         let qty = e.target.value;
         let vrt = e.target.parentNode.parentNode.parentNode.querySelector('a').getAttribute('variation');
@@ -157,4 +156,25 @@
             subtotal.innerHTML='$&nbsp;'+Math.round(res.value).toLocaleString("es-CO");
         });
     })
+
+    <% if(cart!==null){ %>
+        dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+        dataLayer.push({
+            'event': 'checkout',
+            'ecommerce': {
+            'checkout': {
+                'actionField': {'step': 1, 'option': 'cart'},
+                'products': [
+                    <%for(let cproduct of cart){%>
+                        {
+                            
+                        }
+                    <%}%>
+                ]
+            }
+        },
+        'eventCallback': function() {
+            document.location = <%= req.hostname+req.url %>;
+        }
+    <%}%>
 </script>
