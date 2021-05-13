@@ -8,7 +8,6 @@
 module.exports = {
   attributes: {
     text:{type:'string', required:true},
-    tags:{type:'string'},
     type:{type:'string'},
     seller: {model:'seller'}
   },

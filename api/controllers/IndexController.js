@@ -1286,7 +1286,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
                     question: questi.id
                   }).fetch();
                 } else {
-                  await sails.helpers.channel.chatBot(integration, question.text, 'question', question.id, questi.id);
+                  await sails.helpers.channel.chatBot(true, integration, question.text, 'question', question.id, questi.id);
                 }
               }
               let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
@@ -1340,7 +1340,7 @@ POLÍTICA PARA EL TRATAMIENTO DE DATOS PERSONALES INGENIO CONTENIDO DIGITAL S.A.
                     question: questi.id
                   }).fetch();
                 } else {
-                  await sails.helpers.channel.chatBot(integration, question.text, 'question', question.id, questi.id);
+                  await sails.helpers.channel.chatBot(true, integration, question.text, 'question', question.id, questi.id);
                 }
               }
               let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});

@@ -24,7 +24,6 @@ module.exports = {
     try{
       let messageData = {
         text: req.body.text,
-        tags: req.body.tags,
         type: req.body.type,
         seller: seller
       };
@@ -43,7 +42,6 @@ module.exports = {
     try{
       await Message.updateOne({id: req.param('id')}).set({
         text: req.body.text,
-        tags: req.body.tags,
         type: req.body.type
       });
     }catch(err){

@@ -25,6 +25,7 @@ module.exports = {
         let messages = await sails.helpers.channel.mercadolibre.request(`${inputs.resource}/messages`, integration.channel.endpoint, integration.secret);
         const typeClaim = claim.reason_id.slice(0,3) === 'PDD' ? 'producto defectuoso' : 'pagado y no recibido';
         let conversation = await Conversation.findOne({identifier: claim.id});
+        const isFirstMessage = !conversation ? true : false;
         if (!conversation) {
           conversation = await Conversation.create({
             name: `reclamo #${claim.id}. ${typeClaim}`,
@@ -58,7 +59,7 @@ module.exports = {
                   }).fetch();
                 }
               }
-              await sails.helpers.channel.chatBot(integration, message.message.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''), 'claim', claim.id, questi.id, message.sender_role);
+              await sails.helpers.channel.chatBot(isFirstMessage, integration, message.message.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''), 'claim', claim.id, questi.id, message.sender_role);
             } else {
               questi = existsQuest;
             }
