@@ -22,33 +22,33 @@ module.exports = {
     }
     let viewed=[];
     let pshow =[];
-    let brands = null;    
+    let brands = null;
     if(req.session.viewed && req.session.viewed.length>0){
-        for(let i of req.session.viewed){
-          if(!pshow.includes(i.product)){
-            pshow.push(i.product);
-          }
+      for(let i of req.session.viewed){
+        if(!pshow.includes(i.product)){
+          pshow.push(i.product);
         }
-        if(pshow.length>0){
-          let products = await Product.find({id:pshow,active:true})
+      }
+      if(pshow.length>0){
+        let products = await Product.find({id:pshow,active:true})
           .populate('mainColor')
           .populate('tax')
           .populate('gender')
           .populate('manufacturer')
           .populate('seller');
 
-          for(let p of products){
-            p.cover= await ProductImage.findOne({product:p.id,cover:1});
-            p.discount = await sails.helpers.discount(p.id);
-            p.price = (await ProductVariation.find({product:p.id}))[0].price;
-            viewed.push(p);
-          }
+        for(let p of products){
+          p.cover= await ProductImage.findOne({product:p.id,cover:1});
+          p.discount = await sails.helpers.discount(p.id);
+          p.price = (await ProductVariation.find({product:p.id}))[0].price;
+          viewed.push(p);
         }
+      }
     }
     if(req.hostname==='iridio.co' || req.hostname==='localhost'){
       brands = await Manufacturer.find({active:true}).sort('name ASC');
     }
-    let menu ='';    
+    let menu ='';
     if(req.session.menu && req.session.menu.navbarmobile.length>40){
       menu = req.session.menu;
     }else{
@@ -216,8 +216,9 @@ module.exports = {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
-    }   
-    const pdf = require('html-pdf');
+    }
+    let axios = require('axios');
+    const {jsPDF} = require('jspdf');
     let sellerId = req.param('seller');
     let month = req.param('month');
     let data = await sails.helpers.reportSeller(sellerId, month);
@@ -227,126 +228,88 @@ module.exports = {
     const totalOrders = data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total;
     const totalPriceOrders = data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price;
     try {
-      const html =
-      `<html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <title>Template Report</title>
-        </head>
-        <body>
-          <div style="padding: 0mm 6.5mm;">
-            <div style="float: left; width: 50%;">
-              <h5 style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;">`+ data.seller.name.toUpperCase() + `<br>NIT. ` + data.seller.dni + `</h5>
-              <h5 style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;">`+ data.address.addressline1 +`<br>Tel. `+ data.seller.phone +`<br>`+ data.address.city.name.toUpperCase()+' - '+ data.address.country.name.toUpperCase()+`</h5>
-            </div>
-            <div style="float: left; width: 50%;margin-top: 7mm;">
-              <img style="margin-left: 30%;width: 45mm;" src="https://s3.amazonaws.com/iridio.co/images/sellers/`+ data.seller.logo +`">
-            </div>
-          </div>
-          <div style="padding: 0mm 6.5mm;">
-            <div style="float: left; width: 50%;display: table;clear: both;">
-              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;">BALANCE CON CORTE A:<br>ELABORACIÓN:</h5>
-            </div>
-            <div style="float: left; width: 50%;">
-              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-left: 30%;margin-top: 0%;">`+ date.toLocaleUpperCase() +`<br>`+ moment().format('L') +`</h5>
-            </div>
-          </div>
-          <div style="padding: 0mm 6.5mm;display: table;clear: both;">
-            <div style="float: left;width: 33.5%;">
-              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ordenes (CR)</h5>
-              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 194px;margin-bottom: 0px;">Reembolsos (CAN)</h5>
-              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 70px;margin-bottom: 0px;">Otros Conceptos</h5>
-              
-              <div style="margin-top: 195px">
-                <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion por servicios</h5>
-                <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Retencion de Ica 9,66/1000</h5>
-                <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Ajuste al peso</h5>
-              </div>
-            </div>
-            <div style="float: left;width: 28%;">
-              <h5 style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Total 1Ecommerce</h5>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Valor Pedidos Entregados</p>
-              <p style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Otros Ingresos</p>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Siniestros</p>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC)</p>
-              <div style="margin-top: 30px">
-                <p style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Cargos</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Comisión 1Ecommerce</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Penalidades (PEN)</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketplace en siniestros</p>
-              </div>
-              <div style="margin-top: 30px">
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes Devueltas</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes Canceladas</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ordenes Fallidas</p>
-              </div>
-              <div style="margin-top: 30px">
-                <p style="color: #4a4a4a;font-size: 60%;line-height: 1.25;font-weight: bold;margin-top: 8px;margin-bottom: 0px;">Total Referencias (SKU)</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Referencias Activas (SKU)</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Referencias Inactivas (SKU)</p>           
-              </div>
-              <div style="margin-top: 30px">
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+text+`</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Fotografia (FTG)</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Marketing (MKT)</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Serv Envio (ENV)</p>
-                <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">Ajustes (CC - CAN)</p>
-              </div>
-            </div>
-            <div style="float: left;width: 28%;">
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
-                </div>
-              </div>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalPrice).toLocaleString('es-CO') +`</p>
-              
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 91px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
-                </div>
-              </div>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalCommission).toLocaleString('es-CO') +`</p>
-              
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 91px;float: left;width: 100%;">
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 50px;margin-bottom: 0px;">`+ totalOrders +`&emsp;`+ Math.round(totalPriceOrders).toLocaleString('es-CO') +`</p>
-                </div>
-              </div>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 7px;margin-bottom: 0px;">`+ data.ordersReturn.total +`&emsp;`+ Math.round(data.ordersReturn.price).toLocaleString('es-CO') +`</p>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ data.ordersCancel.total +`&emsp;`+ Math.round(data.ordersCancel.price).toLocaleString('es-CO') +`</p>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ data.ordersFailed.total +`&emsp;`+ Math.round(data.ordersFailed.price).toLocaleString('es-CO') +`</p>
-              
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-left: 110px;float: left;width: 28%;">
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 13px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
-                </div>
-              </div>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 5px;margin-bottom: 0px;">`+ totalReferences +`</p>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+data.totalSkuActive+`</p>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 9px;margin-bottom: 0px;">`+data.totalSkuInactive+`</p>
-              <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 29px;margin-bottom: 0px;">`+ Math.round(data.totalSku).toLocaleString('es-CO') +`</p>
-
-              <div style="padding: 0rem 1.5rem;display: table;clear: both;">
-                <div style="margin-top: 82px;float: left;width: 28%;margin-left: 110px;">
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetFte).toLocaleString('es-CO') +`</p>
-                  <p style="color: #4a4a4a;font-size: 60%;font-weight: 400;line-height: 1.25;margin-top: 8px;margin-bottom: 0px;">`+ Math.round(data.totalRetIca).toLocaleString('es-CO') +`</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <h2 style="color: #4a4a4a;font-size: 110%;line-height: 1.25;font-weight: bold;margin-top: 22px;margin-left: 306px;">Balance Total  $ `+Math.round(data.totalBalance).toLocaleString('es-CO')+`</h2>
-        </body>
-      </html>`;
-      const options = { format: 'Letter', timeout: '200000'};
-      pdf.create(html, options).toBuffer((err, buffer) => {
-        if (err) {return console.log(err);}
-        return res.send(buffer);
-      });
+      const doc = new jsPDF({orientation: 'p', unit: 'mm', format: 'a4'});
+      if (data.seller.logo) {
+        let response = await axios.get(`https://s3.amazonaws.com/iridio.co/images/sellers/${data.seller.logo}`, { responseType: 'arraybuffer' });
+        buffer = Buffer.from(response.data).toString('base64');
+        doc.addImage(buffer, 135, 5, 60, 0);
+      }
+      doc.setFontSize(12);
+      doc.setFont('times', 'normal');
+      doc.text(data.seller.name.toUpperCase(), 15, 10);
+      doc.text(`NIT. ${data.seller.dni}`, 15, 15);
+      doc.text(data.address.addressline1, 15, 25);
+      doc.text(`Tel. ${data.seller.phone}`, 15, 30);
+      doc.text(`${data.address.city.name.toUpperCase()} - ${data.address.country.name.toUpperCase()}`, 15, 35);
+      doc.setFont('times', 'bold');
+      doc.text('BALANCE CON CORTE A:', 15, 60);
+      doc.text(date.toLocaleUpperCase(), 160, 60);
+      doc.text('ELABORACIÓN:', 15, 65);
+      doc.text(moment().format('L'), 160, 65);
+      doc.text('Ordenes (CR)', 15, 80);
+      doc.text('Total 1Ecommerce', 70, 80);
+      doc.text(`$ ${Math.round(data.totalPrice).toLocaleString('es-CO')}`, 160, 80);
+      doc.setFont('times', 'normal');
+      doc.text('Valor Pedidos Entregados', 70, 88);
+      doc.text(`$ ${Math.round(data.totalPrice).toLocaleString('es-CO')}`, 130, 88);
+      doc.text('Otros Ingresos', 70, 96);
+      doc.text('Siniestros', 70, 104);
+      doc.text('Ajustes (CC)',70, 112);
+      doc.setFont('times', 'bold');
+      doc.text('Cargos',70, 125);
+      doc.text(`$ ${Math.round(data.totalCommission).toLocaleString('es-CO')}`,160, 125);
+      doc.setFont('times', 'normal');
+      doc.text('Comisión 1Ecommerce',70, 133);
+      doc.text(`$ ${Math.round(data.totalCommission).toLocaleString('es-CO')}`,130, 133);
+      doc.text('Penalidades (PEN)',70, 141);
+      doc.text('Marketplace en siniestros',70, 149);
+      doc.setFont('times', 'bold');
+      doc.text('Ordenes (CR)', 15, 160);
+      doc.text(`$ ${Math.round(totalPriceOrders).toLocaleString('es-CO')}`, 160, 160);
+      doc.text(totalOrders.toString(), 130, 160);
+      doc.setFont('times', 'normal');
+      doc.text('Ordenes Devueltas',70, 170);
+      doc.text(data.ordersReturn.total.toString(), 130, 170);
+      doc.text(`$ ${Math.round(data.ordersReturn.price).toLocaleString('es-CO')}`, 160, 170);
+      doc.text('Ordenes Canceladas',70, 178);
+      doc.text(data.ordersCancel.total.toString(), 130, 178);
+      doc.text(`$ ${Math.round(data.ordersCancel.price).toLocaleString('es-CO')}`, 160, 178);
+      doc.text('Ordenes Fallidas',70, 186);
+      doc.text(data.ordersFailed.total.toString(), 130, 186);
+      doc.text(`$ ${Math.round(data.ordersFailed.price).toLocaleString('es-CO')}`, 160, 186);
+      doc.setFont('times', 'bold');
+      doc.text('Otros Conceptos', 15, 197);
+      doc.text(`$ ${Math.round(data.totalSku + data.fleteTotal).toLocaleString('es-CO')}`, 160, 197);
+      doc.text('Total Referencias (SKU)', 70, 207);
+      doc.text(totalReferences.toString(), 130, 207);
+      doc.setFont('times', 'normal');
+      doc.text('Referencias Activas (SKU)', 70, 215);
+      doc.text(data.totalSkuActive.toString(), 130, 215);
+      doc.text('Referencias Inactivas (SKU)', 70, 223);
+      doc.text(data.totalSkuInactive.toString(), 130, 223);
+      doc.text(text, 70, 236);
+      doc.text(`$ ${Math.round(data.totalSku).toLocaleString('es-CO')}`, 130, 236);
+      doc.text('Serv Envio (ENV)', 70, 244);
+      doc.text(`$ ${Math.round(data.fleteTotal).toLocaleString('es-CO')}`, 130, 244);
+      doc.text('Marketing (MKT)', 70, 252);
+      doc.setFont('times', 'bold');
+      doc.text('Retención por servicios', 15, 263);
+      doc.text(`$ ${Math.round(data.totalRetFte).toLocaleString('es-CO')}`, 160, 263);
+      doc.text('Retención de Ica 9,66/1000', 15, 271);
+      doc.text(`$ ${Math.round(data.totalRetIca).toLocaleString('es-CO')}`, 160, 271);
+      doc.text('Ajuste al peso', 15, 279);
+      doc.text('0', 160, 279);
+      doc.setFontSize(18);
+      doc.text('Balance Total', 70, 290);
+      doc.text(`$ ${Math.round(data.totalBalance).toLocaleString('es-CO')}`, 160, 290);
+      const buff = Buffer.from(new Uint8Array(doc.output('arraybuffer')));
+      return res.send(buff);
     } catch (err) {
+      console.log(err.message);
       return res.notFound(err);
     }
   },
+
   showreport: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
@@ -422,7 +385,7 @@ module.exports = {
     }
 
     switch(entity){
-      case 'categoria':       
+      case 'categoria':
         try{
           object = await Category.findOne({
             where:{url:ename,active:true},
@@ -457,8 +420,8 @@ module.exports = {
     let colorFilter = {};
     let gendersFilter = {};
     let brandsFilter = {active:true};
-    let colorList = []; 
-    let brandsList = []
+    let colorList = [];
+    let brandsList = [];
     let gendersList = [];
 
     pages = Math.ceil(object.products.length/perPage);
@@ -480,11 +443,11 @@ module.exports = {
         p.gender = await Gender.findOne({id:p.gender});
         p.price = (await ProductVariation.find({product:p.id}))[0].price;
 
-        if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id)}
-        if(p.manufacturer && !brandsList.includes(p.manufacturer.id)){brandsList.push(p.manufacturer.id)}
-        if(p.gender && !gendersList.includes(p.gender.id)){gendersList.push(p.gender.id)}
+        if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id);}
+        if(p.manufacturer && !brandsList.includes(p.manufacturer.id)){brandsList.push(p.manufacturer.id);}
+        if(p.gender && !gendersList.includes(p.gender.id)){gendersList.push(p.gender.id);}
 
-      };
+      }
     }
 
     if(colorList.length>0){colorFilter['id']=colorList;}

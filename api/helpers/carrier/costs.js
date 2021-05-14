@@ -40,9 +40,9 @@ module.exports = {
 
     let requestArgs={
       'p':{
-        'nit':null,
-        'div':null,
-        'cuenta':'2',
+        'nit':'',
+        'div':'',
+        'cuenta':'3',
         'product':'0',
         'origen':seller.mainAddress.city.code+'000',
         'destino':city.code+'000',
