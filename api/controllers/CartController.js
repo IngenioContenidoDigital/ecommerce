@@ -19,6 +19,7 @@ module.exports = {
         cartproduct.product = await Product.findOne({id:cartproduct.product.id})
         .populate('images')
         .populate('mainColor')
+        .populate('mainCategory')
         .populate('manufacturer')
         .populate('tax');
         cartproduct.product.discount = await sails.helpers.discount(cartproduct.product.id);
@@ -58,6 +59,7 @@ module.exports = {
     let cartvalue = await CartProduct.sum('totalPrice',{cart:cart.id});
     let items = await CartProduct.count({cart:cart.id});
     req.session.cart.totalProducts = cartvalue ? cartvalue : 0;
+    await sails.helpers.tools.cart(req,cart.id);
     if(cart.discount!==undefined && cart.discount!==null){
       if(cart.discount.type==='P'){
         discount = cartvalue*(cart.discount.value/100);
@@ -76,7 +78,7 @@ module.exports = {
     }else{
       req.session.cart.items = items;
     }
-    sails.sockets.blast('addtocart', {items: items, value:cartvalue});
+    sails.sockets.blast('addtocart', {items: items, value:cartvalue,products:req.session.cart.totalProducts});
     return res.send({items: items, value:cartvalue});
   },
   applycoupon: async (req,res)=>{
@@ -110,6 +112,13 @@ module.exports = {
     }else{
       return res.send('error');
     }
+  },
+  getcart: async (req, res) =>{
+    if(!req.isSocket){
+      return res.badRequest();
+    }
+    let cartproducts = await sails.helpers.tools.cart(req,req.session.cart.id);
+    return res.send(cartproducts);
   }
 };
 

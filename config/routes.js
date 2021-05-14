@@ -39,6 +39,7 @@ module.exports.routes = {
   'GET /index/:action':{controller:'ProductController',action:'searchindex'},
   'GET /list/product/:name/:reference' : {controller:'IndexController',action:'listproduct'},
   'GET /cart' : {controller:'CartController',action:'viewcart'},
+  'POST /cart' : {controller:'CartController',action:'getcart'},
   'PUT /cart' : {controller:'CartController',action:'addtocart'},
   'PUT /apply' : {controller:'CartController',action:'applycoupon'},
   'GET /register' : {controller:'UserController',action:'registerform'},

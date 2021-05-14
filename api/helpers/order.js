@@ -110,9 +110,9 @@ module.exports = {
             commission = 20;
           }
           orders.push(order);
-          
+          let oitems = [];
           for(let cp of sellerproducts){
-            await OrderItem.create({
+            let oi = await OrderItem.create({
               order:order.id,
               product:cp.product.id,
               productvariation:cp.productvariation.id,
@@ -124,15 +124,30 @@ module.exports = {
               shippingType: cp.shippingType ? cp.shippingType : '',
               externalOrder:payment.data.channelref ? payment.data.channelref : '',
               currentstatus: await sails.helpers.orderState(payment.data.estado)
-            });
-            let pv = await ProductVariation.findOne({id:cp.productvariation.id});
+            }).fetch();
+
+            let pv = await ProductVariation.findOne({id:cp.productvariation.id}).populate('product');            
             if(pv){
+
+              oitems.push({
+                'item_name' : pv.product.name,
+                'item_id': pv.id,
+                'item_brand': (await Manufacturer.findOne({id:pv.product.manufacturer})).name,
+                'item_reference': pv.product.reference,
+                'item_category': (await Category.findOne({id:pv.product.mainCategory})).name,
+                'item_color': (await Color.findOne({id:pv.product.mainColor})).name,
+                'item_seller': (await Seller.findOne({id:pv.product.seller})).name,
+                'price': oi.price,
+                'quantity': 1,
+              });
+
               let quantity = pv.quantity-=1;
               let updated = await ProductVariation.updateOne({id:pv.id}).set({quantity: quantity < 0 ? 0 : quantity});
               let uproduct = await Product.findOne({id:updated.product});
               await sails.helpers.channel.channelSync(uproduct);
             }
           }
+          order.products = oitems;
           await sails.helpers.notification(order, order.currentstatus.id);
         }catch(err){
           console.log(err);
@@ -146,4 +161,3 @@ module.exports = {
     return exits.success(orders);
   }
 };
-

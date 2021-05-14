@@ -192,17 +192,7 @@
               'ecommerce': {
                   'currencyCode': 'COP',
                   'add': {                                // 'add' actionFieldObject measures.
-                  'products': [{                        //  adding a product to a shopping cart.
-                    'name': card.querySelector('.name').innerHTML,                      // Name or ID is required.
-                    'id': card.querySelector('.productid').innerHTML,
-                    'price': card.querySelector('.bestPrice').getAttribute('data-price'),
-                    'brand': card.querySelector('.brand').getAttribute('brand'),
-                    'category': card.querySelector('.category').innerHTML,
-                    'reference': card.querySelector('.sku').innerHTML,
-                    'color': card.querySelector('.color').innerHTML,
-                    'position': card.querySelector('.position').innerHTML,
-                    'quantity': 1
-                  }]
+                  'products': JSON.stringify(resData.products)
                   }
               }
           });

@@ -157,3 +157,21 @@
   </div>
   <div class="column is-2"></div>
 </div>
+<script>
+
+  dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
+  <%for(let o of order){%>
+    dataLayer.push({
+      'event':'purchase',
+      'ecommerce': {
+          'transaction_id': <%= o.reference %>,                         // Transaction ID. Required for purchases and refunds.
+          'currency': 'COP',
+          //'tax': '',
+          'payment': <%= o.paymentMethod %>,
+          'value': <%= o.totalOrder %>,                     // Total transaction value (incl. tax and shipping)
+          'shipping': <%= o.totalShipping %>,
+          'items': <%- JSON.stringify(o.products)%>
+      }
+    });
+  <%}%>
+</script>

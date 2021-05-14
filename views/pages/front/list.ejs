@@ -148,15 +148,16 @@
                         </div>
                     </div>
                     <% let current = {};%>
-                    <% current['name'] = product.name %>
-                    <% current['id'] = product.id %>
-                    <% current['brand'] = product.manufacturer.name %>
-                    <% current['reference'] = product.reference %>
-                    <% current['category'] = product.mainCategory.name %>
-                    <% current['color'] = product.mainColor.name %>
+                    <% current['item_name'] = product.name %>
+                    <% current['item_id'] = product.id %>
+                    <% current['item_brand'] = product.manufacturer.name %>
+                    <% current['item_reference'] = product.reference %>
+                    <% current['item_category'] = product.mainCategory.name %>
+                    <% current['item_color'] = product.mainColor.name %>
                     <% current['price'] = product.discount && product.discount.price ? product.discount.price.toString() : product.price.toString() %>
-                    <% current['list'] = 'Lista Categorias' %>
-                    <% current['position'] = position %>
+                    <% current['item_list_name'] = 'Lista Categorias' %>
+                    <% current['index'] = position %>
+                    <% current['quantity'] = '1' %>
                     <% impressions.push(current); %>
                     <% position++;%>
             <%})%>
@@ -241,31 +242,30 @@
 
     dataLayer.push({ ecommerce: null });
     dataLayer.push({
-    'ecommerce': {
-        'currencyCode': 'COP',
-        'impressions': <%- JSON.stringify(impressions) %>
-    }});
+      'event':'view_item_list',
+      'ecommerce': {
+        'items': <%- JSON.stringify(impressions) %>
+      }
+    });
 
     live('.card-image > a', 'click', e => {
         e.preventDefault();
         let card = e.target.parentNode.parentNode.parentNode;
         dataLayer.push({ ecommerce: null });  // Clear the previous ecommerce object.
         dataLayer.push({
-            'event': 'productClick',
+            'event': 'select_item',
             'ecommerce': {
-            'click': {
-                //'actionField': {'list': 'Search Results'},      // Optional list property.
-                'products': [{
-                    'name': card.querySelector('.name').innerHTML,                      // Name or ID is required.
-                    'id': card.querySelector('.productid').innerHTML,
+                'items': [{
+                    'item_name': card.querySelector('.name').innerHTML,                      // Name or ID is required.
+                    'item_id': card.querySelector('.productid').innerHTML,
                     'price': card.querySelector('.bestPrice').getAttribute('data-price'),
-                    'brand': card.querySelector('.brand').getAttribute('brand'),
-                    'category': card.querySelector('.category').innerHTML,
-                    'reference': card.querySelector('.sku').innerHTML,
-                    'color': card.querySelector('.color').innerHTML,
-                    'position': card.querySelector('.position').innerHTML
+                    'item_brand': card.querySelector('.brand').getAttribute('brand'),
+                    'item_category': card.querySelector('.category').innerHTML,
+                    'item_reference': card.querySelector('.sku').innerHTML,
+                    'item_color': card.querySelector('.color').innerHTML,
+                    'item_index': card.querySelector('.position').innerHTML,
+                    'quantity': 1
                 }]
-            }
             },
             'eventCallback': () => {
               document.location = card.querySelector('.card-image > a').href;
