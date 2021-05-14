@@ -1484,6 +1484,8 @@ module.exports = {
     let response = { items: [], errors: [] };
     let products = [];
     let action = '';
+    let body={Request:[]};
+    const pageSize = 4000;
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
@@ -1537,9 +1539,13 @@ module.exports = {
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');}
             if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active',false);}
-            const xml = jsonxml(result,true);
-            let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
-            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+            
+            let pageNumber = Math.ceil(result.Request.length / pageSize);
+            for (let i = 1; i <= pageNumber; i++) {
+              body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
+              const xml = jsonxml(body,true);
+              let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
@@ -1579,6 +1585,7 @@ module.exports = {
               .catch(err =>{
                 throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
               });
+            }    
           }
         } else {
           throw new Error('Sin Productos para Procesar');
@@ -1637,9 +1644,13 @@ module.exports = {
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');}
             if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active',false);}
-            const xml = jsonxml(result,true);
-            let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
-            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+            
+            let pageNumber = Math.ceil(result.Request.length / pageSize);
+            for (let i = 1; i <= pageNumber; i++) {
+              body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
+              const xml = jsonxml(body,true);
+              let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
@@ -1679,6 +1690,7 @@ module.exports = {
               .catch(err =>{
                 throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
               });
+            }
           }
         } else {
           throw new Error('Sin Productos para Procesar');
@@ -1737,9 +1749,13 @@ module.exports = {
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.liniomx.product(products, integration, 0, 'active');}
             if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.liniomx.product(products, integration, 0, 'active',false);}
-            const xml = jsonxml(result,true);
-            let sign = await sails.helpers.channel.liniomx.sign(intgrationId, action, seller);
-            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+            
+            let pageNumber = Math.ceil(result.Request.length / pageSize);
+            for (let i = 1; i <= pageNumber; i++) {
+              body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
+              const xml = jsonxml(body,true);
+              let sign = await sails.helpers.channel.liniomx.sign(intgrationId, action, seller);
+              await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
@@ -1779,6 +1795,7 @@ module.exports = {
               .catch(err =>{
                 throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
               });
+            }
           }
         } else {
           throw new Error('Sin Productos para Procesar');
