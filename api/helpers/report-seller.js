@@ -78,9 +78,11 @@ module.exports = {
     const ordersCancel = {total: 0, price:0};
     const ordersReturn = {total: 0, price:0};
     const ordersFailed = {total: 0, price:0};
+    let fleteTotal = 0;
     for (const order of orders) {
       if (order.currentstatus.name === 'entregado'){
         let items = await OrderItem.find({order: order.id});
+        fleteTotal += order.fleteTotal;
         for (const item of items) {
           const salesCommission = item.commission || 0;
           let commissionFee = item.price * (salesCommission/100);
@@ -119,7 +121,8 @@ module.exports = {
       totalSkuActive,
       ordersCancel,
       ordersReturn,
-      ordersFailed
+      ordersFailed,
+      fleteTotal
     });
   }
 };

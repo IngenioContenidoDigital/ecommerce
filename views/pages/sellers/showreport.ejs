@@ -72,9 +72,9 @@
           <tr><td><span class="is-size-7"><%= data.seller.activeSku ? 'Referencias Activas (SKU)' : 'Referencias (SKU)' %></span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.totalSku).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
           <tr><td><span class="is-size-7">Fotografia (FTG)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
           <tr><td><span class="is-size-7">Marketing (MKT)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Serv Envio (ENV)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Serv Envío (ENV)</span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.fleteTotal).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
           <tr><td><span class="is-size-7">Ajustes (CC - CAN)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Total:</span></td><td><p class="has-text-success has-text-right is-size-6">$ <%= Math.round(data.totalSku).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Total:</span></td><td><p class="has-text-success has-text-right is-size-6">$ <%= Math.round(data.totalSku + data.fleteTotal).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
         </table>
       </p>
     </div>

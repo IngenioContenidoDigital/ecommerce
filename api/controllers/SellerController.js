@@ -465,7 +465,7 @@ module.exports = {
         sort: 'createdAt ASC',
         limit: 1
       });
-      const dateStart = report > 0 ? moment(product[0].createdAt).format('YYYY/MM') : seller.skuPrice ? moment(product[0].createdAt).format('YYYY/MM') : order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
+      const dateStart = report > 0 && product[0] ? moment(product[0].createdAt).format('YYYY/MM') : seller.skuPrice && product[0] ? moment(product[0].createdAt).format('YYYY/MM') : order.length > 0 ? moment(order[0].createdAt).format('YYYY/MM') : moment().format('YYYY/MM');
       let numberMonth = moment(dateEnd, 'YYYY/MM').diff(moment(dateStart, 'YYYY/MM'), 'months');
       const number = numberMonth >= 14 ? 14 : seller.skuPrice && numberMonth === 0 ? 0 : numberMonth - 1;
       for (let i = number; i >= 0; i--) {
