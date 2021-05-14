@@ -358,7 +358,7 @@ module.exports = {
         .populate('images',{cover:1})
         .populate('manufacturer')
         .populate('mainColor');
-
+        item.currentstatus = await OrderState.findOne({id:item.currentstatus}).populate('color');
         item.productvariation = await ProductVariation.findOne({id:item.productvariation}).populate('variation');
       }
       countries = await Country.find();

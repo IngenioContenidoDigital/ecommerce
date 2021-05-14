@@ -90,53 +90,45 @@
         <h7 class="title is-7">Detalle del Pedido</h7>
         <div class="box">
           <% items.forEach(item => { %>
-            <% printed.forEach(elm =>{%>
-              <%if(elm.variation===item.productvariation.id){%>
-                  <% flag = true; %>
-              <%}%>
-              <%})%>
-              <%if(!flag){%>
-                  <% printed.push({variation:item.productvariation.id,quantity:1}); %>
-              <%}%>
-              <%if(!flag){%>
-                <div class="columns">
-                  <div class="column">
-                    <article class="media">
-                      <%if(item.product.images.length>0){%>
-                      <img width="128px;" async src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=item.product.images[0].file%>" />
-                      <%}%>
-                      <div class="container">
-                        <p class="is-capitalized"><%=item.product.manufacturer.name%></p>
-                        <p><strong class="is-uppercase"><%=item.product.name%></strong></p>
-                        <p><span>Referencia:&nbsp;<strong><%= item.product.reference %></strong></span></p>
-                        <%if(item.productvariation.reference!== undefined && item.productvariation.reference!==''){%><p><span>SKU:&nbsp;<strong><%= item.productvariation.reference %></strong></span></p><%}%>
-                        <%if(item.product.mainColor!=undefined){%><span>Color:</span>&nbsp;&nbsp;<span class="is-capitalized"><%=item.product.mainColor.name %>&nbsp;&nbsp;</span><div class="color-container" style="background-color:<%= item.product.mainColor.code %>;border:solid 1px <%= item.product.mainColor.code %>;"></div><%}%>
-                        <p>Talla:&nbsp;<span class="is-uppercase"><%= item.productvariation.variation.name %></span>&nbsp;<span class="is-uppercase">COL:&nbsp<%= item.productvariation.variation.col %></span>&nbsp;<span class="is-uppercase">US:&nbsp<%= item.productvariation.variation.us %></span>&nbsp;<span class="is-uppercase">CM:&nbsp<%= item.productvariation.variation.cm %></span></p>
-                      </div>
-                    </article>
+            <div class="columns">
+              <div class="column is-two-fifths">
+                <article class="media">
+                  <%if(item.product.images.length>0){%>
+                  <img width="128px;" async src="<%=imgurl%>/images/products/<%=item.product.id%>/<%=item.product.images[0].file%>" />
+                  <%}%>
+                  <div class="container is-size-7">
+                    <p class="is-capitalized"><%=item.product.manufacturer.name%></p>
+                    <p><strong class="is-uppercase"><%=item.product.name%></strong></p>
+                    <p><span>Referencia:&nbsp;<strong><%= item.product.reference %></strong></span></p>
+                    <%if(item.productvariation.reference!== undefined && item.productvariation.reference!==''){%><p><span>SKU:&nbsp;<strong><%= item.productvariation.reference %></strong></span></p><%}%>
+                    <%if(item.product.mainColor!=undefined){%><span>Color:</span>&nbsp;&nbsp;<span class="is-capitalized"><%=item.product.mainColor.name %>&nbsp;&nbsp;</span><div class="color-container" style="background-color:<%= item.product.mainColor.code %>;border:solid 1px <%= item.product.mainColor.code %>;"></div><%}%>
+                    <p>Talla:&nbsp;<span class="is-uppercase"><%= item.productvariation.variation.name %></span>&nbsp;<span class="is-uppercase">COL:&nbsp<%= item.productvariation.variation.col %></span>&nbsp;<span class="is-uppercase">US:&nbsp<%= item.productvariation.variation.us %></span>&nbsp;<span class="is-uppercase">CM:&nbsp<%= item.productvariation.variation.cm %></span></p>
                   </div>
-                  <div class="column">
-                    <div class="container">
-                      <p class="has-text-centered is-paddingless is-marginless"><span class="has-text-weight-bold">Unidades</span></p>
-                      <p class="has-text-centered"><span id="quantity" class="has-text-info is-size-1 has-text-weight-bold"><%=item.productvariation.quantity%></span></p>
-                    </div>
-                  </div>
-                  <div class="column">
-                    <table class="table is-fullwidth" variation="<%=item.productvariation.id%>">
-                      <tr><td><span class="has-text-weight-bold is-size-7">Precio x Unidad:</span></td><td><p id="unit-price" price="<%=item.originalPrice%>" class="has-text-dark has-text-right">$&nbsp;<%= item.originalPrice.toLocaleString('es-CO')%></p></td></tr>
-                      <tr><td><span class="has-text-weight-bold is-size-7">Valor del descuento:</span></td><td><p id="discount" price="<%=item.discount%>" class="has-text-success has-text-right">$&nbsp;<%= item.discount.toLocaleString('es-CO')%></p></td></tr>
-                      <tr><td><span class="has-text-weight-bold is-size-7">Subtotal:</span></td><td><p id="item-price" price="<%=item.price%>" class="has-text-danger has-text-right">$&nbsp;<%= item.price.toLocaleString('es-CO')%></p></td></tr>
-                    </table>
-                  </div>
+                </article>
+              </div>
+              <div class="column">
+                <div class="container">
+                  <p class="has-text-centered is-paddingless is-marginless is-size-7"><span class="has-text-weight-bold">Unidades</span></p>
+                  <p class="has-text-centered"><span id="quantity" class="has-text-info is-size-1 has-text-weight-bold">1</span></p>
                 </div>
-              <%}else{%>
-                <% printed.forEach(elm =>{%>
-                <%if(elm.variation===item.productvariation.id){%>
-                    <% elm.quantity+=1;%>
-                    <% flag = false; %>
-                <%}%>
-              <%})%>
-            <%}%>
+              </div>
+              <div class="column">
+                <div class="container is-size-7">
+                  <p class="has-text-centered is-paddingless is-marginless"><span class="has-text-weight-bold">Estado</span></p>
+                  <span class="tag tag-status has-text-weight-bold">
+                    <%= item.currentstatus.name %>
+                    <div id="state-color" class="color-container" style="margin-left: 10px;background-color:<%= order.currentstatus.color.code %>;border:solid 1px <%=order.currentstatus.color.code%>;"></div>
+                  </span>
+                </div>
+              </div>
+              <div class="column is-one-third">
+                <table class="table is-fullwidth" variation="<%=item.productvariation.id%>">
+                  <tr><td><span class="has-text-weight-bold is-size-7">Precio x Unidad:</span></td><td><p id="unit-price" price="<%=item.originalPrice%>" class="has-text-dark has-text-right">$&nbsp;<%= item.originalPrice.toLocaleString('es-CO')%></p></td></tr>
+                  <tr><td><span class="has-text-weight-bold is-size-7">Valor del descuento:</span></td><td><p id="discount" price="<%=item.discount%>" class="has-text-success has-text-right">$&nbsp;<%= item.discount.toLocaleString('es-CO')%></p></td></tr>
+                  <tr><td><span class="has-text-weight-bold is-size-7">Subtotal:</span></td><td><p id="item-price" price="<%=item.price%>" class="has-text-danger has-text-right">$&nbsp;<%= item.price.toLocaleString('es-CO')%></p></td></tr>
+                </table>
+              </div>
+            </div>
           <%})%>
         </div>
       </div>
