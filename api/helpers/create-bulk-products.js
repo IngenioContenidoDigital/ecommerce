@@ -44,8 +44,15 @@ module.exports = {
                     pr = await Product.create(pro).fetch();
                 }
             } else {
+
               delete pro.mainCategory;	
               delete pro.categories;
+              delete pro.gender;
+              delete pro.mainColor;
+              delete pro.manufacturer;
+              delete pro.tax;
+              delete pro.seller;
+
               pr = await Product.updateOne({ id: exists.id }).set(pro);
             }
 
@@ -101,11 +108,12 @@ module.exports = {
 
                             delete pro.mainCategory;	
                             delete pro.categories;
-                            delete pro.manufacturer;
                             delete pro.gender;
+                            delete pro.mainColor;
+                            delete pro.manufacturer;
                             delete pro.tax;
                             delete pro.seller;
-
+                            
                             pr = await Product.updateOne({ id: exists.id }).set(pro);	
                           }	
 

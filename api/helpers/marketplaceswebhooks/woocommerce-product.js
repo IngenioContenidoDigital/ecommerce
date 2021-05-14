@@ -56,6 +56,14 @@ module.exports = {
           } else {
             delete pro.mainCategory;	
             delete pro.categories;
+            delete pro.gender;
+            delete pro.mainColor;
+            delete pro.manufacturer;
+            delete pro.tax;
+            delete pro.seller;
+
+            console.log(pro);
+            
             pr = await Product.updateOne({ id: exists.id }).set(pro);
 
             let variations  = inputs.product.variations;
@@ -142,6 +150,15 @@ module.exports = {
                             console.log(error)
                           }
                       } else {	
+                        
+                        delete pro.mainCategory;	
+                        delete pro.categories;
+                        delete pro.gender;
+                        delete pro.mainColor;
+                        delete pro.manufacturer;
+                        delete pro.tax;
+                        delete pro.seller;
+
                         pr = await Product.updateOne({ id: exists.id }).set(pro);	
                       }	
 
