@@ -201,6 +201,8 @@
             let qty = document.querySelector('select[name="quantity"]').value
             let vrt = document.querySelector('select[name="variations"]').value
             io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create'},(resData)=>{
+                alert('Intentemos esto');
+                console.log(resData.products);
                 dataLayer.push({ ecommerce: null });
                 dataLayer.push({
                     'event': 'add_to_cart',

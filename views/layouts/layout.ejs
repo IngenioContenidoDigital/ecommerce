@@ -188,15 +188,12 @@
         io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'},(resData)=>{
           dataLayer.push({ ecommerce: null });
           dataLayer.push({
-              'event': 'addToCart',
+              'event': 'add_to_cart',
               'ecommerce': {
-                  'currencyCode': 'COP',
-                  'add': {                                // 'add' actionFieldObject measures.
-                  'products': JSON.stringify(resData.products)
-                  }
+                  'items': resData.products
               }
           });
-            window.location.href='/cart';
+          window.location.href='/cart';
         });
     });
 

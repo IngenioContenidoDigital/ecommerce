@@ -33,6 +33,7 @@ module.exports = {
       return res.badRequest();
     }
     let cart = null;
+    let products = null;
     let action = req.body.action;
     if(req.session.cart === undefined){
       cart = await Cart.create().fetch();
@@ -59,7 +60,7 @@ module.exports = {
     let cartvalue = await CartProduct.sum('totalPrice',{cart:cart.id});
     let items = await CartProduct.count({cart:cart.id});
     req.session.cart.totalProducts = cartvalue ? cartvalue : 0;
-    await sails.helpers.tools.cart(req,cart.id);
+    products = await sails.helpers.tools.cart(req,cart.id);
     if(cart.discount!==undefined && cart.discount!==null){
       if(cart.discount.type==='P'){
         discount = cartvalue*(cart.discount.value/100);
@@ -75,11 +76,12 @@ module.exports = {
     if(items<1){
       await Cart.destroyOne({id:cart.id});
       delete req.session.cart;
+      products=null;
     }else{
       req.session.cart.items = items;
     }
-    sails.sockets.blast('addtocart', {items: items, value:cartvalue,products:req.session.cart.totalProducts});
-    return res.send({items: items, value:cartvalue});
+    sails.sockets.blast('addtocart', {items: items, value:cartvalue});
+    return res.send({items: items, value:cartvalue,products:products});
   },
   applycoupon: async (req,res)=>{
     if (!req.isSocket) {

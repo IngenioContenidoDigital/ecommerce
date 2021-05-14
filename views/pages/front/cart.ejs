@@ -133,7 +133,8 @@
             }
             }
             let subtotal = document.querySelector('#cart-total');
-            subtotal.innerHTML='$&nbsp;'+Math.round(res.value).toLocaleString("es-CO");
+            let cartvalue = res.value ? res.value : 0;
+            subtotal.innerHTML='$&nbsp;'+Math.round(cartvalue).toLocaleString("es-CO");
         });
         e.target.parentNode.parentNode.removeChild(e.target.parentNode);
     });
@@ -165,7 +166,7 @@
                 dataLayer.push({
                     'event': 'checkout_begin',
                     'ecommerce': {
-                        'items': JSON.stringify(resData)
+                        'items': resData
                     }
                 });
                window.location.href = '/checkout';
