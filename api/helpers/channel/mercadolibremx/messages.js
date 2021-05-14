@@ -22,6 +22,7 @@ module.exports = {
     try{
       let message = await sails.helpers.channel.mercadolibremx.request(`messages/${inputs.resource}`, integration.channel.endpoint, integration.secret);
       let conversation = await Conversation.findOne({identifier: message.resource_id});
+      const isFirstMessage = !conversation ? true : false;
       if (!conversation) {
         conversation = await Conversation.create({
           name: `Mensajes de la venta #${message.resource_id}`,
@@ -53,6 +54,7 @@ module.exports = {
             }).fetch();
           }
         }
+        await sails.helpers.channel.chatBot(isFirstMessage, integration, message.text.plain, 'order', message.resource_id, questi.id, questi.idMl);
         const questionsSeller = await Question.count({status: 'UNANSWERED', seller: integration.seller});
         sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller: integration.seller});
       }
