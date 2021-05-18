@@ -422,6 +422,10 @@ module.exports = {
             order:orders[o].id,
             state:state
           });
+
+          await OrderItem.update({order:orders[o].id}).set({
+            currentstatus: state
+          });
         }
       }
     }
