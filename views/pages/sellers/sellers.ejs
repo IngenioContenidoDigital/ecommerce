@@ -430,19 +430,19 @@
                       </span>
                     </div>
                   </div>
-                  <div id="productUpdates" class="field">
-											<div class="control">
-												<label class="label">Obtener actualizaciones de productos.</label>
-												<input id="getProductUpdates" type="checkbox" ${(integration && integration.product_webhook_status) ? 'checked' : ''} name="getProductUpdates" class="switch is-success">
-												<label for="getProductUpdates"></label>
-											</div>
-                  </div> 
+                  ${ nameChannel !== 'vtex' ? `<div id="productUpdates" class="field">
+                    <div class="control">
+                      <label class="label">Obtener actualizaciones de productos.</label>
+                      <input id="getProductUpdates" type="checkbox" ${(integration && integration.product_webhook_status) ? 'checked' : ''} name="getProductUpdates" class="switch is-success">
+                      <label for="getProductUpdates"></label>
+                    </div>
+                  </div> ` : ``}
                   <div id="orderUpdates" class="field">
-											<div class="control">
-												<label class="label">Obtener actualizaciones de pedidos.</label>
-												<input id="getOrderUpdates" type="checkbox" ${(integration && integration.order_webhook_status) ? 'checked' : ''} name="getOrderUpdates" class="switch is-success">
-												<label for="getOrderUpdates"></label>
-											</div>
+                    <div class="control">
+                      <label class="label">Obtener actualizaciones de pedidos.</label>
+                      <input id="getOrderUpdates" type="checkbox" ${(integration && integration.order_webhook_status) ? 'checked' : ''} name="getOrderUpdates" class="switch is-success">
+                      <label for="getOrderUpdates"></label>
+                    </div>
                   </div> 
                   <br>
                   <div class="control is-left">

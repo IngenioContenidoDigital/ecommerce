@@ -338,7 +338,6 @@ module.exports = {
       if(err){return res.redirect('/sellers?error='+err);}
       integration = record.id;
       if(!created){
-
         record = await Integrations.updateOne({id:record.id}).set({
           name: req.body.name,
           url:req.body.url ? req.body.url : record.url,
@@ -348,9 +347,7 @@ module.exports = {
           version:req.body.version ? req.body.version : record.version
         });
         edit = record.useridml !== '' && record.secret !== '' ? true : false;
-
       }
-
       switch (nameChannel) {
         case 'woocommerce':
           let int = await Integrations.findOne({id : integration});
@@ -423,6 +420,53 @@ module.exports = {
           }
           break;
           //add case for shopify, vtex, prestashop
+        case 'shopify':
+          if (getProductUpdates && !record.product_creation_webhookId) {
+            let webhookProductCreate = {
+              topic: 'products/create',
+              address: `https://import.1ecommerce.app/api/shopify/createproduct/${record.key}/false`,
+              format: 'json'
+            };
+            let webhookProductUpdate = {
+              topic: 'products/update',
+              address: `https://import.1ecommerce.app/api/shopify/updateproduct/${record.key}/false`,
+              format: 'json'
+            };
+
+            let productCreationResponse = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', webhookProductCreate);
+            let productUpdateResponse = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', webhookProductUpdate);
+
+            if(productCreationResponse && productUpdateResponse){
+              await Integrations.update({id: record.id}).set({
+                product_creation_webhookId: productCreationResponse.id,
+                product_updates_webhookId:  productUpdateResponse.id,
+                product_webhook_status: true
+              });
+            }
+          } else if (!getProductUpdates && record.product_creation_webhookId && record.product_updates_webhookId) {
+            await sails.helpers.webhooks.deleteWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'DELETE_WEBHOOK', record.product_creation_webhookId);
+            await sails.helpers.webhooks.deleteWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'DELETE_WEBHOOK', record.product_updates_webhookId);
+            await Integrations.update({ id: record.id}).set({
+              product_creation_webhookId: '',
+              product_updates_webhookId: '',
+              product_webhook_status: getProductUpdates
+            });
+          }
+          if(getOrderUpdates && !record.order_updated_webhookId){
+            let orderUpdated = {
+              topic: 'orders/create',
+              address: `https://import.1ecommerce.app/api/shopify/createorder/${record.key}`,
+              format: 'json'
+            };
+            let orderUpdatedResponse = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', orderUpdated);
+            if(orderUpdatedResponse){
+              await Integrations.update({id: record.id}).set({
+                order_updated_webhookId: orderUpdatedResponse.id,
+                order_webhook_status: true
+              });
+            }
+          }
+          break;
         default:
           break;
       }

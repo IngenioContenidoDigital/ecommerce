@@ -162,5 +162,23 @@ module.exports = {
           discount
         }
       }
+    }`,
+
+  ADD_WEBHOOK :
+    `mutation addWebhookShopify($webhook: WebHookShopifyInputType){
+      createShopifyWebHook(input: $webhook){
+        id
+        address
+        topic
+        version
+      }
+    }`,
+
+  DELETE_WEBHOOK :
+    `mutation deleteWebhookShopify($id: String){
+      deleteShopifyWebHook(webhookId: $id){
+        id
+      }
     }`
+    
 };
