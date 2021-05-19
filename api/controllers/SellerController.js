@@ -465,8 +465,33 @@ module.exports = {
                 order_webhook_status: true
               });
             }
+          } else if (!getProductUpdates && record.order_updated_webhookId) {
+            await sails.helpers.webhooks.deleteWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'DELETE_WEBHOOK', record.order_updated_webhookId);
+            await Integrations.update({id: record.id}).set({
+              order_updated_webhookId: '',
+              order_webhook_status: getProductUpdates
+            });
           }
           break;
+        case 'vtex' :
+          if(getOrderUpdates && !record.order_updated_webhookId){
+            let orderUpdatedVtex = {
+              url: `https://import.1ecommerce.app/api/vtex/orders/${record.key}`
+            };
+            let orderUpdatedResponseVtex = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', orderUpdatedVtex);
+            if(orderUpdatedResponseVtex){
+              await Integrations.update({id: record.id}).set({
+                order_updated_webhookId: orderUpdatedResponseVtex.id,
+                order_webhook_status: true
+              });
+            }
+          } else if (!getProductUpdates && record.order_updated_webhookId) {
+            await sails.helpers.webhooks.deleteWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'DELETE_WEBHOOK', record.order_updated_webhookId);
+            await Integrations.update({id: record.id}).set({
+              order_updated_webhookId: '',
+              order_webhook_status: getProductUpdates
+            });
+          }
         default:
           break;
       }
