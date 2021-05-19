@@ -34,9 +34,9 @@
       <!--<li><a class="navbar-item" href="/suppliers">Proveedores</a></li>-->
     </ul>
     <%}%>
-    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('discounts') || req.session.user.rights.permissions.includes('sliders')){%>
+    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('discounts')){%>
     <p class="menu-label is-size-7">
-      <i class='bx bx-paint' ></i>&nbsp;Componentes
+      <i class='bx bx-paint' ></i>&nbsp;Ofertas
       <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
         <i class="bx bx-caret-down"></i>
       </span>
@@ -44,34 +44,47 @@
     <ul class="menu-list">
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('discounts')){%><li><a class="navbar-item" href="/discounts">Descuentos</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('discounts')){%><li><a class="navbar-item" href="/coupons">Cupones</a></li><%}%>
-      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%><li><a class="navbar-item" href="/sliders">Sliders</a></li><%}%>
+      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('discounts')){%><li><a href="/campaigns">Campañas</a></li><%}%>
     </ul>
     <%}%>
-    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers') || req.session.user.rights.permissions.includes('mensajesmeli') ){%>
+    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcarriers')){%>
     <p class="menu-label is-size-7">
-      <i class='bx bx-buildings'></i>&nbsp;Sellers
-      <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
-        <i class="bx bx-caret-down"></i>
-      </span>
-    </p>
-    <ul class="menu-list">
-      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%><li><a href="/sellers">Sellers</a></li><%}%>
-      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
-      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/campaigns">Campañas</a></li><%}%>
-      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/showreports/<%=session.user.seller%>">Reportes</a></li><%}%>
-      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/messages">Mensajes predeterminados</a></li><%}%>
-    <%}%>
-    <p class="menu-label is-size-7">
-      <i class='bx bxs-truck' ></i>&nbsp;Transporte & Envíos
+      <i class='bx bxs-truck' ></i>&nbsp;Operaciones
       <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
         <i class="bx bx-caret-down"></i>
       </span>
     </p>
     <ul class="menu-list">
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcarriers')){%><li><a href="/carriers">Transporte</a></li><%}%>
-      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/generateguides">Guias</a></li><%}%>
+      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/generateguides">Envíos</a></li><%}%>
+      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
+      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/messages">Mensajes predeterminados</a></li><%}%>
     </ul>
-    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcountries') || req.session.user.rights.permissions.includes('showregions') || req.session.user.rights.permissions.includes('showtaxes')){%>
+    <%}%>
+    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%>
+      <p class="menu-label is-size-7">
+        <i class='bx bx-paint' ></i>&nbsp;Componentes
+        <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+          <i class="bx bx-caret-down"></i>
+        </span>
+      </p>
+      <ul class="menu-list">
+        <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%><li><a class="navbar-item" href="/sliders">Sliders</a></li><%}%>
+      </ul>
+    <%}%>
+    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%>
+    <p class="menu-label is-size-7">
+      <i class='bx bx-buildings'></i>&nbsp;Administración
+      <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
+        <i class="bx bx-caret-down"></i>
+      </span>
+    </p>
+    <ul class="menu-list">
+      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%><li><a href="/sellers">Sellers</a></li><%}%>
+      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/showreports/<%=session.user.seller%>">Reportes</a></li><%}%>
+    </ul>
+    <%}%>
+    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcountries') || req.session.user.rights.permissions.includes('showregions') || req.session.user.rights.permissions.includes('showtaxes') || req.session.user.rights.permissions.includes('showchannels') || req.session.user.rights.permissions.includes('showCurrency')){%>
     <p class="menu-label is-size-7">
       <i class='bx bx-world' ></i>&nbsp;Localización
       <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
@@ -88,7 +101,7 @@
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('users') || req.session.user.rights.permissions.includes('profiles') || req.session.user.rights.permissions.includes('permissions') || req.session.user.rights.permissions.includes('updateindex')){%>
     <p class="menu-label is-size-7">
-      <i class='bx bxs-user-badge'></i>&nbsp;Administración
+      <i class='bx bxs-user-badge'></i>&nbsp;Configuración
       <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
         <i class="bx bx-caret-down"></i>
       </span>
