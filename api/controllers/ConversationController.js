@@ -11,9 +11,9 @@ module.exports = {
     const body = req.body;
     let integration = await Integrations.findOne({user: identifier});
     if (body.challenge) {
-      if (!integration) {
+      /*if (!integration) {
         return res.status(403).send('Not authorized');
-      }
+      }*/
       return res.send({challenge: body.challenge});
     }
     console.log(body);
