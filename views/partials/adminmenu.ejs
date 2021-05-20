@@ -47,7 +47,6 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('discounts')){%><li><a href="/campaigns">Campañas</a></li><%}%>
     </ul>
     <%}%>
-    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcarriers')){%>
     <p class="menu-label is-size-7">
       <i class='bx bxs-truck' ></i>&nbsp;Operaciones
       <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
@@ -60,7 +59,6 @@
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/messages">Mensajes predeterminados</a></li><%}%>
     </ul>
-    <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%>
       <p class="menu-label is-size-7">
         <i class='bx bx-paint' ></i>&nbsp;Componentes
