@@ -387,7 +387,7 @@
                                 </div>
                             </div>
                             <div class="column">
-                                <p id="shipment" class="has-text-weight-bold has-text-right">$&nbsp;<% if(cart.shipping && cart.shipping>0){%><%= Math.round(cart.shipping).toLocaleString('es-CO') %><%}else{%>0<%}%></p>
+                                <p id="shipment" class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.shipping).toLocaleString('es-CO') %></p>
                             </div>
                         </div>
                         <div class="columns is-mobile has-background-light is-marginless is-paddingless">
@@ -397,7 +397,7 @@
                                 </div>
                             </div>
                             <div class="column">
-                                <p id="total" class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.total).toLocaleString('es-CO')%></p>
+                                <p id="total" class="has-text-weight-bold has-text-right">$&nbsp;<%= Math.round(session.cart.total+session.cart.shipping).toLocaleString('es-CO')%></p>
                             </div>
                         </div>
                         <p style="padding:8px;" class="content has-text-centered">
@@ -474,8 +474,8 @@
     live('input[name="deliveryAddress"]','click',e =>{
         io.socket.post('/shippingquote',{address:e.target.value},resData =>{
             if(resData){
-                console.log(resData);
-                document.querySelector('#shipment').innerHTML = '$&nbsp;'+Math.round(resData).toLocaleString('es-CO')
+                document.querySelector('#shipment').innerHTML = '$&nbsp;'+Math.round(resData.shipping).toLocaleString('es-CO');
+                document.querySelector('#total').innerHTML = '$&nbsp;'+Math.round(resData.cartvalue).toLocaleString('es-CO');
             }
         });
     });

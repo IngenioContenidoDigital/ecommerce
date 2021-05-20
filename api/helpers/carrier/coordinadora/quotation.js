@@ -1,5 +1,3 @@
-const Cart = require("../../../models/Cart");
-
 module.exports = {
   friendlyName: 'Quotation',
   description: 'Quotation coordinadora.',
@@ -22,9 +20,10 @@ module.exports = {
     let sellers = [];
     let address = await Address.findOne({id:inputs.address}).populate('city');
     let cart = await Cart.findOne({id:inputs.cart});
+
     let cartvalue = 0;let sellervalue = 0;
     let shipping = 0;
-    let citems = await CartProduct.find({id:cart.id}).populate('product');
+    let citems = await CartProduct.find({cart:cart.id}).populate('product');
 
     let requestArgs={
       'p':{
@@ -36,6 +35,9 @@ module.exports = {
         'nivel_servicio':{
           'item':1
         },
+        'detalle':{
+          'item':[]
+        },
         'apikey':'154a892e-9909-11ea-bb37-0242ac130002',
         'clave':'1V2JqxYZwtLVuY',
       }
@@ -46,9 +48,9 @@ module.exports = {
       if(!sellers.includes(item.product.seller)){sellers.push(item.product.seller)}
     }
 
-    if(cartvalue>130000){
+    if(cartvalue>=130000){
       await Cart.updateOne({id:cart.id}).set({shipping:0});
-      return exits.success(0);
+      return exits.success({cartvalue:cartvalue,shipping:0});
     }else{
       let allsellers = await Seller.find({
         where:{id:sellers},
@@ -56,12 +58,11 @@ module.exports = {
       }).populate('mainAddress');
 
       for(let seller of allsellers){
-        let sellerAddress = await Address.findOne({id:seller.mainAddress}).populate('city');
-        requestArgs.p.origen = sellerAddress.city.code+'000';
+        let city = await City.findOne({id:seller.mainAddress.city});
+        requestArgs.p.origen = city.code+'000';
         let sellerproducts = citems.filter(elm => elm.product.seller===seller.id);
         for(let sp of sellerproducts){
-          //requestArgs.p.detalle.item
-          requestArgs.p.detalle.push({
+          requestArgs.p.detalle.item.push({
             'ubl':'0',
             'alto':(sp.product.height).toString(),
             'ancho':(sp.product.width).toString(),
@@ -69,13 +70,14 @@ module.exports = {
             'peso': (sp.product.weight).toString(),
             'unidades':'1',
           });
+          sellervalue+=sp.totalPrice;
         }
-        requestArgs.p.valoracion = (sellervalue/1.19)*0.7;
-        let result = await sails.helpers.carrier.soap(requestArgs,'Cotizador_cotizar');
+        requestArgs.p.valoracion = ((sellervalue/1.19)*0.7).toString();
+        let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Cotizador_cotizar');
         shipping+=result.Cotizador_cotizarResult.flete_total;
       }
       await Cart.updateOne({id:cart.id}).set({shipping:shipping});
-      return exits.success(shipping);
+      return exits.success({cartvalue:cartvalue+shipping,shipping:shipping});
     }
   }
 };

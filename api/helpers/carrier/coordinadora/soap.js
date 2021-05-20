@@ -26,7 +26,6 @@ module.exports = {
       if(err){throw err.message;}
       method(inputs.requestArgs, async (err, result)=>{
         if(err){throw err.message;}
-        //{fleteFijo:result.Cotizador_cotizarResult.flete_fijo,fleteVariable:result.Cotizador_cotizarResult.flete_variable,fleteTotal:result.Cotizador_cotizarResult.flete_total}
         return exits.success(result);
       });
     });
