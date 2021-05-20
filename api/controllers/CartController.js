@@ -121,6 +121,13 @@ module.exports = {
     }
     let cartproducts = await sails.helpers.tools.cart(req,req.session.cart.id);
     return res.send(cartproducts);
+  },
+  shippingquote: async (req, res) =>{
+    if(!req.isSocket){
+      return res.badRequest();
+    }
+    let shipping = await sails.helpers.carrier.coordinadora.quotation(req.body.cart,req.session.cart.id);
+    return res.send(shipping);
   }
 };
 

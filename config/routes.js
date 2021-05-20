@@ -42,6 +42,7 @@ module.exports.routes = {
   'POST /cart' : {controller:'CartController',action:'getcart'},
   'PUT /cart' : {controller:'CartController',action:'addtocart'},
   'PUT /apply' : {controller:'CartController',action:'applycoupon'},
+  'POST /shippingquote' : {controller:'CartController',action:'shippingquote'},
   'GET /register' : {controller:'UserController',action:'registerform'},
   'POST /register' : {controller:'UserController',action:'createuser'},
   'POST /verify' : {controller:'UserController',action:'validatemail'},

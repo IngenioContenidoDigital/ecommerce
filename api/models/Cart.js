@@ -8,6 +8,10 @@
 module.exports = {
 
   attributes: {
+    shipping:{
+      type:'number',
+      defaultsTo:0,
+    },
     discount:{
       model:'cartdiscount'
     }

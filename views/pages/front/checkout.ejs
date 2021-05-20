@@ -387,7 +387,7 @@
                                 </div>
                             </div>
                             <div class="column">
-                                <p id="shipment" class="has-text-weight-bold has-text-right">$&nbsp;0</p>
+                                <p id="shipment" class="has-text-weight-bold has-text-right">$&nbsp;<% if(cart.shipping && cart.shipping>0){%><%= Math.round(cart.shipping).toLocaleString('es-CO') %><%}else{%>0<%}%></p>
                             </div>
                         </div>
                         <div class="columns is-mobile has-background-light is-marginless is-paddingless">
@@ -471,7 +471,14 @@
             window.scrollTo({top: 0, behavior: 'smooth' });
         }
     })
-
+    live('input[name="deliveryAddress"]','click',e =>{
+        io.socket.post('/shippingquote',{address:e.target.value},resData =>{
+            if(resData){
+                console.log(resData);
+                document.querySelector('#shipment').innerHTML = '$&nbsp;'+Math.round(resData).toLocaleString('es-CO')
+            }
+        });
+    });
     live('input[name="paymentMethod"]','click',e =>{
         if(e.target.value=='PSE'){
             let bank = document.querySelector('select[name="bank"]');
