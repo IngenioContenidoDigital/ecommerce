@@ -134,8 +134,11 @@ module.exports = {
               sails.sockets.broadcast(sid, 'product_processed', { errors, result });	
             }	
 
-            result.push(pr);
-            sails.sockets.broadcast(sid, 'product_processed', { errors, result });
+            if(typeof(pr) == 'object'){
+              result.push(pr);
+              sails.sockets.broadcast(sid, 'product_processed', { errors, result });
+            }
+
           }
 
         } catch (error) {

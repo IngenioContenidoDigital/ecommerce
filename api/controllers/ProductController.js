@@ -2339,10 +2339,6 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          if(p.reference == "EVWG5H444*"){
-            console.log(p);
-          }
-
           if(p.color && p.color.length > 0 && !p.simple && req.body.channel == constants.WOOCOMMERCE_CHANNEL){
               let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                 req.body.channel,

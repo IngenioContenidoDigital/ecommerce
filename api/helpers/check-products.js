@@ -27,7 +27,7 @@ module.exports = {
     if(!inputs.product.reference){
       throw new Error(`${pro.name} sin referencia`);
     }
-    
+
     pro.reference = inputs.product.reference.toUpperCase().trim();
     pro.description = inputs.product.description.trim();
     pro.descriptionShort = inputs.product.descriptionShort.trim();
@@ -65,7 +65,7 @@ module.exports = {
       pro.gender = (await Gender.findOne({ name: 'unisex' })).id;
     }
     gen = gen ? gen.name : '';
-    let cats = await sails.helpers.tools.findCategory(textPredictor + ' ' + gen + ' ' + inputs.product.manufacturer);
+    let cats = await sails.helpers.tools.findCategory(Array.from(new Set(`${textPredictor} ${gen} ${inputs.product.manufacturer}`.toLowerCase().split(' '))).join(' '));
     if(cats.length>0){
       pro.categories = cats;
       let main = await Category.find({id:cats}).sort('level DESC');
