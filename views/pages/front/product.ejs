@@ -45,10 +45,10 @@
                             <% let savings = parseInt(product.variations[0].price-discount.price) %>
                             <tr><td>Ahorro:</td><td class="has-text-success has-text-right"><span class="savings">$ <%= savings.toLocaleString('es-CO'); %></span></td></tr>
                             <span class="is-hidden" itemprop="offerCount">1</span>
-                            <span itemprop="price" content="<%= Math.round(discount.price) %>" data-price="<%= Math.round(discount.price) %>" class="is-hidden bestPrice">$ <%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
+                            $<span itemprop="price" content="<%= Math.round(discount.price) %>" data-price="<%= Math.round(discount.price) %>" class="is-hidden bestPrice"><%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
                         </div>
                     <%}else{%>
-                      <tr><td>Precio:</td><td class="has-text-right"><span itemprop="price" content="<%= Math.round(product.variations[0].price)%>" data-price="<%= Math.round(product.variations[0].price)%>" class="bestPrice">$ <%= Math.round(product.variations[0].price).toLocaleString("es-CO"); %></span></td></tr>
+                      <tr><td>Precio:</td><td class="has-text-right">$<span itemprop="price" content="<%= Math.round(product.variations[0].price)%>" data-price="<%= Math.round(product.variations[0].price)%>" class="bestPrice"><%= Math.round(product.variations[0].price).toLocaleString("es-CO"); %></span></td></tr>
                     <%}%>
                 </table>
                 <hr>
@@ -126,7 +126,7 @@
             if(resData.savings){document.querySelector('.savings').innerHTML = '$ '+Math.round(resData.savings).toLocaleString("es-CO");}
             if(resData.price){
                 let price = document.querySelector('.bestPrice');
-                price.innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");
+                price.innerHTML = Math.round(resData.price).toLocaleString("es-CO");
                 price.setAttribute('data-price',Math.round(resData.price));
                 price.setAttribute('content',Math.round(resData.price));
             }
