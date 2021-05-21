@@ -58,7 +58,7 @@ let signRequest = (data, query) => {
 let fetch = async (data) => {
   return new Promise(async (resolve, reject) => {
     let request = signRequest(data, data.resource);
-    let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { webhook : data.webhook} }, {
+    let response = await axios.post(sails.config.custom.IMPORT_MICROSERVICE, { query: request.query, variables: { id : data.webhookId} }, {
       headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
@@ -72,7 +72,7 @@ let fetch = async (data) => {
 
 module.exports = {
   friendlyName: 'Webhook helper',
-  description: 'Add webhooks to CMS',
+  description: 'Delete webhooks to CMS',
   inputs: {
     channel: { type: 'string' },
     pk: {
@@ -88,9 +88,7 @@ module.exports = {
       type: 'string'
     },
     resource: { type: 'string' },
-    webhook : {
-      type : 'ref'
-    }
+    webhookId: { type : 'string'}
   },
   exits: {
     success: {

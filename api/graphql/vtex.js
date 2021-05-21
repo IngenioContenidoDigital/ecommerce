@@ -158,5 +158,19 @@ module.exports = {
           discount
         }
       }
+    }`,
+
+  ADD_WEBHOOK :
+    `mutation addWebhookVtex($webhook: WebHookVtexInputType){
+      createVtexWebHook(input: $webhook){
+        id
+      }
+    }`,
+
+  DELETE_WEBHOOK :
+    `mutation deleteWebhookVtex($id: String){
+      deleteVtexWebHook(webhookId: $id){
+        id
+      }
     }`
 };
