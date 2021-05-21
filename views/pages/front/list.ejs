@@ -113,6 +113,7 @@
                                 <p><span class="sku is-hidden" itemprop="sku"><%=product.reference%></span>
                                 <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                                     <meta itemprop="priceCurrency" content="COP">
+                                    <link itemprop="availability" href="https://schema.org/InStock" />
                                     <%if(product.discount!==null && product.discount!==undefined){%>
                                         <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
                                             <span itemprop="highPrice" class="is-size-7 has-text-danger old-price highPrice">$ <%= Math.round(product.price).toLocaleString("es-CO");%></span>
@@ -120,9 +121,10 @@
                                             <span class="is-hidden" itemprop="offerCount">1</span>
                                             <span class="is-hidden savings"></span>
                                         </div>
-                                        <span itemprop="price" data-price="<%=Math.round(product.discount.price)%>" class="is-hidden bestPrice">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+
+                                        <span itemprop="price" content="<%=Math.round(product.discount.price)%>" data-price="<%=Math.round(product.discount.price)%>" class="is-hidden bestPrice">$<%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                                     <%}else{%>
-                                        <span itemprop="price" data-price="<%= Math.round(product.price)%>" class="is-size-6 has-text-dark has-text-weight-bold price bestPrice">$<%= Math.round(product.price).toLocaleString("es-CO");%></span>
+                                        <span itemprop="price" content="<%= Math.round(product.price)%>" data-price="<%= Math.round(product.price)%>" class="is-size-6 has-text-dark has-text-weight-bold price bestPrice">$<%= Math.round(product.price).toLocaleString("es-CO");%></span>
                                     <%}%>
                                 </div>
                                 </p>

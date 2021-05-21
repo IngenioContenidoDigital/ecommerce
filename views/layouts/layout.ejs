@@ -163,6 +163,7 @@
               let price = elm.parentNode.querySelector('.bestPrice');
               price.innerHTML = '$ '+Math.round(resData.price).toLocaleString("es-CO");
               price.setAttribute('data-price',Math.round(resData.price));
+              price.setAttribute('content',Math.round(resData.price));
             }
         });
 

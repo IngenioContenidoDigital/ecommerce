@@ -53,6 +53,7 @@
                     <p><span class="is-hidden" itemprop="sku"><%=vw.reference%></span>
                     <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
                         <meta itemprop="priceCurrency" content="COP">
+                        <link itemprop="availability" href="https://schema.org/InStock" />
                         <%if(vw.discount!==null && vw.discount!==undefined){%>
                             <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
                                 <span itemprop="highPrice" class="is-size-7 has-text-danger old-price highPrice">$&nbsp;<%= Math.round(vw.price).toLocaleString("es-CO");%></span>
@@ -60,9 +61,9 @@
                                 <span class="is-hidden" itemprop="offerCount">1</span>
                                 <span class="is-hidden savings"></span>
                             </div>
-                            <span itemprop="price" date-price="<%=Math.round(vw.discount.price)%>" class="is-hidden bestPrice">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
+                            <span itemprop="price" content="<%=Math.round(vw.discount.price)%>" date-price="<%=Math.round(vw.discount.price)%>" class="is-hidden bestPrice">$&nbsp;<%= Math.round(vw.discount.price).toLocaleString("es-CO");%></span>
                         <%}else{%>
-                            <span itemprop="price" date-price="<%= Math.round(vw.price)%>" class="is-size-6 has-text-dark has-text-weight-bold bestPrice">$&nbsp;<%= Math.round(vw.price).toLocaleString("es-CO");%></span>
+                            <span itemprop="price" content="<%=Math.round(vw.price)%>" date-price="<%= Math.round(vw.price)%>" class="is-size-6 has-text-dark has-text-weight-bold bestPrice">$&nbsp;<%= Math.round(vw.price).toLocaleString("es-CO");%></span>
                         <%}%>
                     </div>
                     </p>
