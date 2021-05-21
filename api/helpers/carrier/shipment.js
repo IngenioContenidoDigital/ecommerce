@@ -42,7 +42,7 @@ module.exports = {
             formapago = 5;
             break;
         }
-        /*recaudo = {
+        recaudo = {
           'Agw_typeGuiaDetalleRecaudo':{
             'referencia':order.id,
             'valor':order.totalOrder,
@@ -50,7 +50,7 @@ module.exports = {
             'valor_iva':(order.totalOrder/1.19)*0.19,
             'formapago':formapago,
           }
-        };*/
+        };
       }
 
       let requestArgs={
@@ -157,7 +157,7 @@ module.exports = {
       //  *   Guias_liquidacionGuia - Consultar el Valor de la Guía
       //  */
 
-      let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Guias_generarGuia','test','guides')
+      let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Guias_generarGuia','prod','guides')
       .tolerate(() =>{ return; });
       if(result){
         await Order.updateOne({id:inputs.order}).set({tracking:result.return.codigo_remision.$value});
