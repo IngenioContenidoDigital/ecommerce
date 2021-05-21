@@ -45,10 +45,10 @@
                             <% let savings = parseInt(product.variations[0].price-discount.price) %>
                             <tr><td>Ahorro:</td><td class="has-text-success has-text-right"><span class="savings">$ <%= savings.toLocaleString('es-CO'); %></span></td></tr>
                             <span class="is-hidden" itemprop="offerCount">1</span>
-                            $<span itemprop="price" content="<%= Math.round(discount.price) %>" data-price="<%= Math.round(discount.price) %>" class="is-hidden bestPrice"><%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
+                            <span itemprop="price" content="<%= Math.round(discount.price) %>" data-price="<%= Math.round(discount.price) %>" class="is-hidden bestPrice"><%= Math.round(discount.price).toLocaleString("es-CO"); %></span>
                         </div>
                     <%}else{%>
-                      <tr><td>Precio:</td><td class="has-text-right">$<span itemprop="price" content="<%= Math.round(product.variations[0].price)%>" data-price="<%= Math.round(product.variations[0].price)%>" class="bestPrice"><%= Math.round(product.variations[0].price).toLocaleString("es-CO"); %></span></td></tr>
+                      <tr><td>Precio:</td><td class="has-text-right"><span class="is-size-6 has-text-dark has-text-weight-bold">$ </span><span itemprop="price" content="<%= Math.round(product.variations[0].price)%>" data-price="<%= Math.round(product.variations[0].price)%>" class="bestPrice"><%= Math.round(product.variations[0].price).toLocaleString("es-CO"); %></span></td></tr>
                     <%}%>
                 </table>
                 <hr>

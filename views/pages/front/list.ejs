@@ -121,9 +121,9 @@
                                             <span class="is-hidden" itemprop="offerCount">1</span>
                                             <span class="is-hidden savings"></span>
                                         </div>
-                                        $<span itemprop="price" content="<%=Math.round(product.discount.price)%>" data-price="<%=Math.round(product.discount.price)%>" class="is-hidden bestPrice"><%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
+                                        <span itemprop="price" content="<%=Math.round(product.discount.price)%>" data-price="<%=Math.round(product.discount.price)%>" class="is-hidden bestPrice"><%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
                                     <%}else{%>
-                                        $<span itemprop="price" content="<%= Math.round(product.price)%>" data-price="<%= Math.round(product.price)%>" class="is-size-6 has-text-dark has-text-weight-bold price bestPrice"><%= Math.round(product.price).toLocaleString("es-CO");%></span>
+                                        <span class="is-size-6 has-text-dark has-text-weight-bold">$ </span><span itemprop="price" content="<%= Math.round(product.price)%>" data-price="<%= Math.round(product.price)%>" class="is-size-6 has-text-dark has-text-weight-bold price bestPrice"><%= Math.round(product.price).toLocaleString("es-CO");%></span>
                                     <%}%>
                                 </div>
                                 </p>
