@@ -30,6 +30,9 @@ module.exports = {
       case 'Fallida':
         name='fallido';
         break;
+      case 'Expirada':
+        name='caducado';
+        break;
       case '8':
         name='fallido';
         break;
