@@ -154,7 +154,7 @@ module.exports = {
       o.currentstatus = await OrderState.findOne({id:o.currentstatus.id}).populate('color');
       o.items = await OrderItem.find({order:o.id}).populate('product').populate('productvariation');
       for(let i of o.items){
-        i.product.images = await ProductImage.findOne({product:i.product.id,cover:1});
+        i.product.images = (await ProductImage.find({product:i.product.id,cover:1}))[0];
         i.productvariation.variation = await Variation.findOne({id:i.productvariation.variation});
       }
       o.carrier = await Carrier.findOne({id:o.carrier});

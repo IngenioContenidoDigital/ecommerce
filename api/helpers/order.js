@@ -58,7 +58,7 @@ module.exports = {
         try{
           let order = await Order.create({
             totalOrder:total,
-            totalShipping: payment.data.totalShipping ? payment.data.totalShipping : 0,
+            totalShipping: cart.shipping ? cart.shipping : 0,
             totalProducts:carttotal,
             totalDiscount:totaldiscount,
             productsDiscount:productsdiscount,

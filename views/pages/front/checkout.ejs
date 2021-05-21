@@ -457,6 +457,36 @@
     live('input[type="radio"]','click', e =>{
         let card = e.target.parentNode.parentNode.parentNode.querySelector('.card-content');
         accordion(card);
+        let name = e.target.getAttribute('name');
+        switch(name){
+            case 'deliveryAddress':
+                io.socket.post('/shippingquote',{address:e.target.value},resData =>{
+                    if(resData){
+                        document.querySelector('#shipment').innerHTML = '$&nbsp;'+Math.round(resData.shipping).toLocaleString('es-CO');
+                        document.querySelector('#total').innerHTML = '$&nbsp;'+Math.round(resData.cartvalue).toLocaleString('es-CO');
+                    }
+                });
+                break;
+            case 'paymentMethod':
+                if(e.target.value=='PSE'){
+                    let bank = document.querySelector('select[name="bank"]');
+                    if(bank.options.length<=1){
+                        getCORS('https://secure.payco.co/restpagos/pse/bancos.json?public_key=654321aa2d4ced997b799450ce3f4802',request =>{
+                            let response = request.currentTarget.response || request.target.responseText;
+                            let data = JSON.parse(response);
+                            for(let b of data.data){
+                                if (b.bankCode!=='0'){
+                                    let op = document.createElement('option');
+                                    op.value=b.bankCode;
+                                    op.innerHTML = b.bankName.toString();
+                                    bank.appendChild(op);
+                                }
+                            }
+                        });
+                    }
+                }
+                break;
+        }
     });
 
     live('#order','click',e =>{
@@ -471,33 +501,7 @@
             window.scrollTo({top: 0, behavior: 'smooth' });
         }
     })
-    live('input[name="deliveryAddress"]','click',e =>{
-        io.socket.post('/shippingquote',{address:e.target.value},resData =>{
-            if(resData){
-                document.querySelector('#shipment').innerHTML = '$&nbsp;'+Math.round(resData.shipping).toLocaleString('es-CO');
-                document.querySelector('#total').innerHTML = '$&nbsp;'+Math.round(resData.cartvalue).toLocaleString('es-CO');
-            }
-        });
-    });
-    live('input[name="paymentMethod"]','click',e =>{
-        if(e.target.value=='PSE'){
-            let bank = document.querySelector('select[name="bank"]');
-            if(bank.options.length<=1){
-                getCORS('https://secure.payco.co/restpagos/pse/bancos.json?public_key=654321aa2d4ced997b799450ce3f4802',request =>{
-                    let response = request.currentTarget.response || request.target.responseText;
-                    let data = JSON.parse(response);
-                    for(let b of data.data){
-                        if (b.bankCode!=='0'){
-                            let op = document.createElement('option');
-                            op.value=b.bankCode;
-                            op.innerHTML = b.bankName.toString();
-                            bank.appendChild(op);
-                        }
-                    }
-                });
-            }
-        }
-    });
+    
     live('.cash-logo', 'click', e =>{
         let cash = document.querySelector('input[name="cash"]');
         let images = document.querySelectorAll('.cash-logo');

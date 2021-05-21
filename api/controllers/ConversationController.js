@@ -16,7 +16,6 @@ module.exports = {
       }*/
       return res.send({challenge: body.challenge});
     }
-    console.log(body);
     if (integration && body.uuid) {
       let conversation = await Conversation.findOne({identifier: body.identifier});
       if (!conversation) {

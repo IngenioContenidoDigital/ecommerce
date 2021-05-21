@@ -61,19 +61,41 @@ module.exports = {
         let city = await City.findOne({id:seller.mainAddress.city});
         requestArgs.p.origen = city.code+'000';
         let sellerproducts = citems.filter(elm => elm.product.seller===seller.id);
+        let items = [];
         for(let sp of sellerproducts){
-          requestArgs.p.detalle.item.push({
-            'ubl':'0',
-            'alto':(sp.product.height).toString(),
-            'ancho':(sp.product.width).toString(),
-            'largo':(sp.product.length).toString(),
-            'peso': (sp.product.weight).toString(),
-            'unidades':'1',
-          });
+          if(items.length<1){
+            items.push({
+              'ubl':'0',
+              'alto':(sp.product.height).toString(),
+              'ancho':(sp.product.width).toString(),
+              'largo':(sp.product.length).toString(),
+              'peso': (sp.product.weight).toString(),
+              'unidades':'1',
+            });
+          }else{
+            let added = false;
+            for(let it of items){
+              if(it.alto===(sp.product.height).toString() && it.ancho===(sp.product.width).toString() && it.largo===(sp.product.length).toString() && it.peso===(sp.product.weight).toString()){
+                it.unidades= (parseInt(it.unidades)+1).toString();
+                added=true;
+              }
+            }
+            if(!added){
+              items.push({
+                'ubl':'0',
+                'alto':(sp.product.height).toString(),
+                'ancho':(sp.product.width).toString(),
+                'largo':(sp.product.length).toString(),
+                'peso': (sp.product.weight).toString(),
+                'unidades':'1',
+              });
+            }
+          }
           sellervalue+=sp.totalPrice;
         }
+        requestArgs.p.detalle.item = items;
         requestArgs.p.valoracion = ((sellervalue/1.19)*0.7).toString();
-        let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Cotizador_cotizar');
+        let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Cotizador_cotizar','test','tracking');
         shipping+=result.Cotizador_cotizarResult.flete_total;
       }
       await Cart.updateOne({id:cart.id}).set({shipping:shipping});
