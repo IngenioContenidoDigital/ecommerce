@@ -68,9 +68,9 @@ module.exports = {
         discount = cart.discount.value;
       }
       req.session.cart.discount = discount;
-      req.session.cart.total = cartvalue-discount;
+      req.session.cart.total = cartvalue-discount+cart.shipping;
     }else{
-      req.session.cart.total = cartvalue;
+      req.session.cart.total = cartvalue+cart.shipping;
     }
 
     if(items<1){
@@ -121,6 +121,15 @@ module.exports = {
     }
     let cartproducts = await sails.helpers.tools.cart(req,req.session.cart.id);
     return res.send(cartproducts);
+  },
+  shippingquote: async (req, res) =>{
+    if(!req.isSocket){
+      return res.badRequest();
+    }
+    req.session.cart.shipping = 0;
+    let quotation = await sails.helpers.carrier.coordinadora.quotation(req.body.address,req.session.cart.id);
+    req.session.cart.shipping = quotation.shipping;
+    return res.send(quotation);
   }
 };
 

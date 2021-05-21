@@ -27,28 +27,10 @@ module.exports = {
 
     let city = await City.findOne({id:order.addressDelivery.city});
     let oitems = await OrderItem.find({order:order.id}).populate('product');
-    let items = oitems.length;
     let integration = await Integrations.findOne({id: order.integration}).populate('channel');
 
-    if(order.channel==='direct' || (order.transport && order.transport === 'coordinadora')){
-      let soap = require('strong-soap').soap;
-      //let url = 'http://sandbox.coordinadora.com/agw/ws/guias/1.6/server.php?wsdl';
-      let url = 'http://guias.coordinadora.com/ws/guias/1.6/server.php?wsdl';
-      let alto = 0;
-      let largo = 0;
-      let ancho = 0;
-      let peso = 0;
-
-      for(let p in oitems){
-        if(p < 1 || p ==='0'){
-          largo=oitems[0].product.length;
-          ancho=oitems[0].product.width;
-        }
-        alto+=oitems[p].product.height;
-        peso+=oitems[p].product.weight;
-      }
-
-
+    if(order.channel==='direct' || order.channel==='iridio' || (order.transport && order.transport === 'coordinadora')){
+      
       let recaudo = null;
       if(order.paymentMethod==='COD'){
         let formapago = 1;
@@ -93,21 +75,12 @@ module.exports = {
           'codigo_producto' : 0,
           'nivel_servicio' : 1,
           'linea' : '',
-          'contenido' : 'Paquete con '+items+' Articulo(s)',
+          'contenido' : 'Paquete con '+oitems.length+' Articulo(s)',
           'referencia' : order.reference,
           'observaciones' : order.addressDelivery.notes,
           'estado' : 'IMPRESO',
           'detalle' : {
-            'Agw_typeGuiaDetalle':{
-              'ubl':0,
-              'alto':alto,
-              'ancho':ancho,
-              'largo':largo,
-              'peso':peso < 1 ? 1 : peso,
-              'unidades':items,
-              'referencia':null,
-              'nombre_empaque':null
-            }
+            'Agw_typeGuiaDetalle':[]
           },
           'cuenta_contable' : null,
           'centro_costos' : null,
@@ -139,7 +112,42 @@ module.exports = {
           'clave':'e8c5ad7349c80f352b916a5213f95d692813e370300240f947bc28b781e0dd7e',
         }
       };
-
+      let items=[];
+      for(let p of oitems){
+        if(items.length<1){
+          items.push({
+            'ubl':'0',
+            'alto':(p.product.height).toString(),
+            'ancho':(p.product.width).toString(),
+            'largo':(p.product.length).toString(),
+            'peso':(p.product.weight).toString(),
+            'unidades':'1',
+            'referencia':null,
+            'nombre_empaque':null
+            });
+        }else{
+          let added = false;
+          for(let it of items){
+            if(it.alto===(p.product.height).toString() && it.ancho===(p.product.width).toString() && it.largo===(p.product.length).toString() && it.peso===(p.product.weight).toString()){
+              it.unidades= (parseInt(it.unidades)+1).toString();
+              added=true;
+            }
+          }
+          if(!added){
+            items.push({
+              'ubl':'0',
+              'alto':(p.product.height).toString(),
+              'ancho':(p.product.width).toString(),
+              'largo':(p.product.length).toString(),
+              'peso':(p.product.weight).toString(),
+              'unidades':'1',
+              'referencia':null,
+              'nombre_empaque':null
+            });
+          }
+        }
+      }
+      requestArgs.Guias_generarGuia.detalle.Agw_typeGuiaDetalle=items;
       //   /**
       //  *   Guias_generarGuiaInter - Generar Guía de Despacho Internacional
       //  *   Guias_generarGuia - Generar Guía de Despacho Nacional
@@ -148,16 +156,13 @@ module.exports = {
       //  *   Seguimiento_simple - Verificación de Estado de Entrega
       //  *   Guias_liquidacionGuia - Consultar el Valor de la Guía
       //  */
-      let options = {};
-      soap.createClient(url, options, (err, client) =>{
-        let method = client['Guias_generarGuia'];
-        if(err){return exits.error(err);}
-        method(requestArgs, async (err, result)=>{
-          if(err){return exits.error(err);}
-          await Order.updateOne({id:inputs.order}).set({tracking:result.return.codigo_remision.$value});
-          await sails.helpers.carrier.costs(result.return.codigo_remision.$value);
-        });
-      });
+
+      let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Guias_generarGuia','prod','guides')
+      .tolerate(() =>{ return; });
+      if(result){
+        await Order.updateOne({id:inputs.order}).set({tracking:result.return.codigo_remision.$value});
+        await sails.helpers.carrier.costs(result.return.codigo_remision.$value);
+      }
     }
     if(order.channel==='dafiti'){
       let litems = [];

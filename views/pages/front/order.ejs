@@ -1,3 +1,8 @@
+<%let total = 0; let shipping = 0;%>
+<%order.forEach(o =>{%>
+  <% total += o.totalOrder %>
+  <% shipping += o.totalShipping %>
+<%})%>
 <div class="columns is-centered is-marginless is-paddingless is-gapless">
     <div class="column is-2"></div>
     <div class="column is-8">
@@ -19,7 +24,7 @@
                   <div class="level-item has-text-centered">
                     <div>
                       <p class="heading">Total</p>
-                      <p class="title">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></p>
+                      <p class="title">$&nbsp;<%=Math.round(total+shipping).toLocaleString('es-CO')%></p>
                     </div>
                   </div>
             <%}%>
@@ -39,7 +44,7 @@
               <div class="level-item has-text-centered">
                 <div>
                   <p class="heading">Total</p>
-                  <p class="title">$&nbsp;<%=Math.round(payment.data['valor']).toLocaleString('es-CO')%></p>
+                      <p class="title">$&nbsp;<%=Math.round(total+shipping).toLocaleString('es-CO')%></p>
                 </div>
               </div>
             <%}%>
@@ -65,7 +70,7 @@
                   <div class="level-item has-text-centered">
                     <div>
                       <p class="heading">Total</p>
-                      <p class="title">$&nbsp;<%=Math.round(payment.data['valor_pesos']).toLocaleString('es-CO')%></p>
+                      <p class="title">$&nbsp;<%=Math.round(total+shipping).toLocaleString('es-CO')%></p>
                     </div>
                   </div>
             <%}%>
@@ -88,12 +93,8 @@
                   </div>
                   <div class="level-item has-text-centered">
                     <div>
-                        <%let total = 0;%>
                       <p class="heading">Total</p>
-                      <%order.forEach(o =>{%>
-                        <% total += o.totalOrder %>
-                      <%})%>
-                      <p class="title">$&nbsp;<%=Math.round(total).toLocaleString('es-CO')%></p>
+                      <p class="title">$&nbsp;<%=Math.round(total+shipping).toLocaleString('es-CO')%></p>
                     </div>
                   </div>
             <%}%>
@@ -127,7 +128,7 @@
                         </div>
                     </div>
                     <div class="media-rigth">
-                        <p>$ &nbsp;<%=o.totalOrder.toFixed().toLocaleString('es-CO')%></p>
+                      <p>$ &nbsp;<%= Math.round(o.totalOrder+o.totalShipping).toLocaleString('es-CO')%></p>
                     </div>
                 </article>
             <% }); %>

@@ -21,7 +21,8 @@
                 <tr><td><strong>Fecha:&nbsp;</strong></td><td><%=moment(order.createdAt).locale('es').format('LL')%></td></tr>
                 <tr><td><strong>Estado:&nbsp;</strong></td><td><p class="container has-text-centered" style="background-color:<%=order.currentstatus.color.code%>;"><span class="is-size-7 has-text-black has-background-white"><%=order.currentstatus.name%></span></p></td></tr>
                 <tr><td><strong>Entregado por:&nbsp;</strong></td><td><%=order.seller.name%></td></tr>
-                <tr><td><strong>Total:&nbsp;</strong></td><td>$&nbsp;<%=order.totalOrder.toFixed().toLocaleString('es-CO')%></td></tr>
+                <tr><td><strong>Productos:&nbsp;</strong></td><td>$&nbsp;<%=order.totalOrder.toFixed().toLocaleString('es-CO')%></td></tr>
+                <tr><td><strong>Envío:&nbsp;</strong></td><td>$&nbsp;<%=order.totalShipping.toFixed().toLocaleString('es-CO')%></td></tr>
                 <%if(order.tracking!==''){%>
                   <tr><td><strong>Número de Seguimiento:&nbsp;</strong></td><td><a href="<%=order.carrier.url%>" target="_blank"><%=order.tracking%></a></td></tr>
                 <%}%> 

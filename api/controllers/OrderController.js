@@ -79,7 +79,7 @@ module.exports = {
     let user = await User.findOne({id:req.session.user.id});
     let cart = await Cart.findOne({id:req.session.cart.id}).populate('discount');
 
-    let carttotal = req.session.cart.total;
+    let carttotal = req.session.cart.total+req.session.cart.shipping;
     let paymentmethod = req.body.paymentMethod;
 
     switch(paymentmethod){
@@ -439,8 +439,10 @@ module.exports = {
     .populate('seller');
 
     let valor = 0;
-    for(let o in order){
-      valor+=order[o].totalOrder;
+    let shipping = 0;
+    for(let o of order){
+      valor+=o.totalOrder;
+      shipping+=o.totalShipping;
     }
 
     let payment={
@@ -449,6 +451,7 @@ module.exports = {
         ref_payco:order[0].paymentId,
         valor:valor,
         valor_pesos:valor,
+        shipping:shipping,
         banco:'',
         codigoproyecto:'',
         pin:'',

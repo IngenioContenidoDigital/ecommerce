@@ -14,29 +14,11 @@ module.exports = {
 
 
   fn: async function (inputs, exits) {
-    let soap = require('strong-soap').soap;
-    //let url = 'http://sandbox.coordinadora.com/ags/1.5/server.php?wsdl';
-    let url = 'https://ws.coordinadora.com/ags/1.5/server.php?wsdl';
-
     let order = await Order.findOne({tracking:inputs.tracking}).populate('addressDelivery');
     let seller = await Seller.findOne({id:order.seller}).populate('mainAddress');
     seller.mainAddress = await Address.findOne({id:seller.mainAddress.id}).populate('city');
     let city = await City.findOne({id:order.addressDelivery.city});
     let oitems = await OrderItem.find({order:order.id}).populate('product');
-    let items = oitems.length;
-    let alto = 0;
-    let largo = 0;
-    let ancho = 0;
-    let peso = 0;
-
-    for(let p in oitems){
-      if(p < 1 || p ==='0'){
-        largo=oitems[0].product.length;
-        ancho=oitems[0].product.width;
-      }
-      alto+=oitems[p].product.height;
-      peso+=oitems[p].product.weight;
-    }
 
     let requestArgs={
       'p':{
@@ -46,33 +28,51 @@ module.exports = {
         'product':'0',
         'origen':seller.mainAddress.city.code+'000',
         'destino':city.code+'000',
-        'valoracion':(order.totalProducts/1.19)*0.8,
+        'valoracion':(order.totalProducts/1.19)*0.7,
         'nivel_servicio':{
           'item':1
         },
         'detalle':{
-          'item':{
-            'ubl':'0',
-            'alto':(alto).toString(),
-            'ancho':(ancho).toString(),
-            'largo':(largo).toString(),
-            'peso': (peso < 1 ? 1 : peso).toString(),
-            'unidades':(items).toString(),
-          }
+          'item':[]
         },
         'apikey':'154a892e-9909-11ea-bb37-0242ac130002',
         'clave':'1V2JqxYZwtLVuY',
       }
     };
-    let options = {};
-    soap.createClient(url, options, (err, client) =>{
-      let method = client['Cotizador_cotizar'];
-      if(err){return exits.error(err);}
-      method(requestArgs, async (err, result)=>{
-        if(err){return exits.error(err);}
-        await Order.updateOne({id:order.id}).set({fleteFijo:result.Cotizador_cotizarResult.flete_fijo,fleteVariable:result.Cotizador_cotizarResult.flete_variable,fleteTotal:result.Cotizador_cotizarResult.flete_total});
-      });
-    });
+    let items = [];
+    for(let p of oitems){
+      if(items.length<1){
+        items.push({
+          'ubl':'0',
+          'alto':(p.product.height).toString(),
+          'ancho':(p.product.width).toString(),
+          'largo':(p.product.length).toString(),
+          'peso': (p.product.weight).toString(),
+          'unidades':'1',
+        });
+      }else{
+        let added = false;
+        for(let it of items){
+          if(it.alto===(p.product.height).toString() && it.ancho===(p.product.width).toString() && it.largo===(p.product.length).toString() && it.peso===(p.product.weight).toString()){
+            it.unidades= (parseInt(it.unidades)+1).toString();
+            added=true;
+          }
+        }
+        if(!added){
+          items.push({
+            'ubl':'0',
+            'alto':(p.product.height).toString(),
+            'ancho':(p.product.width).toString(),
+            'largo':(p.product.length).toString(),
+            'peso': (p.product.weight).toString(),
+            'unidades':'1',
+          });
+        }
+      }
+    }
+    requestArgs.p.detalle.item = items;
+    let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Cotizador_cotizar','prod','tracking');
+    await Order.updateOne({id:order.id}).set({fleteFijo:result.Cotizador_cotizarResult.flete_fijo,fleteVariable:result.Cotizador_cotizarResult.flete_variable,fleteTotal:result.Cotizador_cotizarResult.flete_total});
     return exits.success();
   }
 
