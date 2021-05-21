@@ -180,38 +180,32 @@ module.exports = {
       }
     }
     if(req.body.activo==='on'){isActive=true;}
+    let body = {
+      name:req.body.nombre,
+      description:req.body.descripcion,
+      tags: req.body.tags ? req.body.tags : '',
+      parent:parent.id,
+      url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
+      active:isActive,
+      level:parent.level+1
+    };
+
+    if(dafiticat){body.dafiti=dafiticat}
+    if(liniocat){body.linio=liniocat}
+    if(liniomxcat){body.liniomx=liniomxcat}
+    if(mercadolibrecat){body.mercadolibre=mercadolibrecat}
+    if(mercadolibremxcat){body.mercadolibremx=mercadolibremxcat}
+    
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
-      await Category.updateOne({id:category.id}).set({
-        name:req.body.nombre,
-        description:req.body.descripcion,
-        tags: req.body.tags ? req.body.tags : '',
-        parent:parent.id,
-        dafiti:dafiticat,
-        linio: liniocat,
-        liniomx: liniomxcat,
-        mercadolibre: mercadolibrecat,
-        mercadolibremx: mercadolibremxcat,
-        logo:uploaded[0].filename,
-        url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
-        active:isActive,
-        level:parent.level+1});
+      if(uploaded){
+        body.logo=uploaded[0].filename;
+      }
+      await Category.updateOne({id:category.id}).set(body);
     }catch(err){
       error = err.msg;
       if(err.code==='badRequest'){
-        await Category.updateOne({id:category.id}).set({
-          name:req.body.nombre,
-          description:req.body.descripcion,
-          tags: req.body.tags ? req.body.tags : '',
-          parent:parent.id,
-          url:(parent.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(category.name.trim().toLowerCase()).replace(/\s/g,'-'),
-          dafiti:dafiticat,
-          linio: liniocat,
-          liniomx: liniomxcat,
-          mercadolibre: mercadolibrecat,
-          mercadolibremx: mercadolibremxcat,
-          active:isActive,
-          level:parent.level+1});
+        await Category.updateOne({id:category.id}).set(body);
       }
     }
     if(req.body.parent!==parent.id){
