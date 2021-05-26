@@ -367,7 +367,6 @@
 		io.socket.post('/import',{importType, discount, asColor, channel, apiUrl, pk, sk, version, seller}, (resData, jwRes) =>{
 			if(jwRes.statusCode==200){
 				removeClass(box,'is-hidden');
-				console.log("resData", resData)
 				document.querySelector('.loading').innerHTML='';
 				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)
 			}

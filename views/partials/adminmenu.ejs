@@ -59,7 +59,7 @@
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/channelmessages/<%=session.user.seller%>">Mensajería</a></li><%}%>
       <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a href="/messages">Mensajes predeterminados</a></li><%}%>
     </ul>
-    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%>
+    <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders') || req.session.user.rights.permissions.includes('cms')){%>
       <p class="menu-label is-size-7">
         <i class='bx bx-paint' ></i>&nbsp;Componentes
         <span style="margin-right: 6px;" class="icon is-small is-pulled-right">
@@ -68,6 +68,7 @@
       </p>
       <ul class="menu-list">
         <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%><li><a class="navbar-item" href="/sliders">Sliders</a></li><%}%>
+        <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('cms')){%><li><a class="navbar-item" href="/cms">Páginas</a></li><%}%>
       </ul>
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%>
