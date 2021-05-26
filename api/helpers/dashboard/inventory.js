@@ -2,12 +2,11 @@ module.exports = {
   friendlyName: 'Dashboard inventory',
   description: 'Estadistica del dashboard pestaña inventario',
   inputs: {
-    profile: {
-      type:'string',
-      required: true,
-    },
     seller: {
       type:'string',
+    },
+    sid: {
+      type:'string'
     }
   },
   exits: {
@@ -19,18 +18,22 @@ module.exports = {
     let totalProductsReference = 0;
     let totalProductsReferenceInactive = 0;
     let totalProductsReferenceActive = 0;
-    let data = {};
 
-    if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
+    totalProductsReference = await Product.count({seller: inputs.seller});
+    let pages = Math.ceil(totalProductsReference / 200);
+    totalProductsReferenceActive = await Product.count({seller: inputs.seller, active: true});
+    totalProductsReferenceInactive = await Product.count({seller: inputs.seller, active: false});
+
+    for (let i = 1; i <= pages; i++) {
+      const stop = i === pages ? true : false;
       const productsSeller = await Product.find({
         where: {
           seller: inputs.seller
         },
+        skip: ((i - 1) * 200),
+        limit: 200,
         select: ['name', 'reference', 'active']
       }).populate('images');
-      totalProductsReference = await Product.count({seller: inputs.seller});
-      totalProductsReferenceActive = await Product.count({seller: inputs.seller, active: true});
-      totalProductsReferenceInactive = await Product.count({seller: inputs.seller, active: false});
       const dataVariations = await productsSeller.reduce(async (acc, product) => {
         const totalCant = await ProductVariation.sum('quantity').where({product: product.id});
         acc = await acc;
@@ -47,38 +50,17 @@ module.exports = {
         productsInventory: [],
         productsUnd: []
       });
-      data = {
-        totalProductsReference,
-        totalProductsReferenceActive,
-        totalProductsReferenceInactive,
-        totalInventory: dataVariations.totalInventory,
-        productsInventory: dataVariations.productsInventory,
-        productsUnd: dataVariations.productsUnd
-      };
-    } else {
-      const productsSeller = await Product.find({
-        where: {},
-        select: ['name', 'reference', 'active']
-      }).populate('images');
-      totalProductsReference = await Product.count({});
-      totalProductsReferenceActive = await Product.count({active: true});
-      totalProductsReferenceInactive = await Product.count({active: false});
-      const dataVariations = await productsSeller.reduce(async (acc, product) => {
-        const totalCant = await ProductVariation.sum('quantity').where({product: product.id});
-        acc = await acc;
-        acc.totalInventory = acc.totalInventory + totalCant;
-        return acc;
-      }, {
-        totalInventory: 0
-      });
-      data = {
-        totalProductsReference,
-        totalProductsReferenceActive,
-        totalProductsReferenceInactive,
-        totalInventory: dataVariations.totalInventory
-      };
-    }
 
-    return exits.success(data);
+      sails.sockets.broadcast(inputs.sid, 'datadashboardinventory', {
+        totalInventory: dataVariations.totalInventory,
+        totalProductsReference: totalProductsReference,
+        totalProductsReferenceInactive: totalProductsReferenceInactive,
+        totalProductsReferenceActive: totalProductsReferenceActive,
+        productsInventory: dataVariations.productsInventory,
+        productsUnd: dataVariations.productsUnd,
+        stop
+      });
+    }
+    return exits.success();
   }
 };

@@ -1,7 +1,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <div class="tabs is-boxed">
-  <ul>
+  <ul class="size-ul-menu">
     <li class="tab is-active" onclick="openTab(event,'Sales')">
       <a>
         <span class="icon is-small"><i class="bx bxs-shopping-bag" aria-hidden="true"></i></span>
@@ -15,6 +15,18 @@
           <span>Top 10 Productos</span>
         </a>
       </li>
+      <li class="tab" onclick="openTab(event,'Publish')">
+        <a>
+          <span class="icon is-small"><i class='bx bx-store'></i></span>
+          <span>Publicaciones</span>
+        </a>
+      </li>
+      <li class="tab" onclick="openTab(event,'Inventory')">
+        <a>
+          <span class="icon is-small"><i class="bx bxs-purchase-tag" aria-hidden="true"></i></span>
+          <span>Inventario</span>
+        </a>
+      </li>
     <%}%>
     <li class="tab" onclick="openTab(event,'Logistics')">
       <a>
@@ -22,19 +34,7 @@
         <span>Logística</span>
       </a>
     </li>
-    <!-- <li class="tab" onclick="openTab(event,'Inventory')">
-      <a>
-        <span class="icon is-small"><i class="bx bxs-purchase-tag" aria-hidden="true"></i></span>
-        <span>Inventario</span>
-      </a>
-    </li> -->
-    <!-- <li class="tab" onclick="openTab(event,'Account')">
-      <a>
-        <span class="icon is-small"><i class="bx bxs-dollar-circle" aria-hidden="true"></i></span>
-        <span>Estado de Cuenta</span>
-      </a>
-    </li> -->
-    <div class="is-right input-datepiker">
+    <div class="is-right input-datepiker size-datepicker">
       <input class="input" type="date" name="range"/>
     </div>
   </ul>
@@ -50,7 +50,7 @@
             <div class="card-content">
               <div class="level is-mobile">
                 <div class="level-item">
-                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                  <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Ventas totales
                   </h3>
                     <h1 class="title" id="totalSales"></h1>
@@ -69,7 +69,7 @@
             <div class="card-content">
               <div class="level is-mobile">
                 <div class="level-item">
-                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                  <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Total Productos Vendidos
                   </h3>
                     <h1 class="title" id="totalProducts"></h1>
@@ -88,7 +88,7 @@
             <div class="card-content">
               <div class="level is-mobile">
                 <div class="level-item">
-                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                  <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
                     Total Órdenes
                   </h3>
                     <h1 class="title" id="totalOrders"></h1>
@@ -171,6 +171,7 @@
                 <p class="card-header-title">
                   <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
                   Top 10 Productos más vendidos (Precio)
+                  <span class="icon download-right"><i class='bx bxs-cloud-download bx-sm' option="topProductsPrice"></i></span>
                 </p>
               </header>
               <div class="card-content">
@@ -187,6 +188,7 @@
                 <p class="card-header-title">
                   <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
                   Top 10 Productos más vendidos (Unidades)
+                  <span class="icon download-right"><i class='bx bxs-cloud-download bx-sm' option="topProductsCant"></i></span>
                 </p>
               </header>
               <div class="card-content">
@@ -200,61 +202,59 @@
         </div>
       </section>
     </div>
-  <%}%>
-  <!-- <div id="Inventory" class="content-tab" style="display:none">
-    <section class="section-dashboard">
-      <div class="tile is-ancestor">
-        <div class="tile is-parent">
-          <div class="card tile is-child radius-card">
-            <div class="card-content">
-              <div class="level is-mobile">
-                <div class="level-item">
-                  <div class="is-widget-label"><h3 class="subtitle is-spaced">
-                    Unidades en Inventario
-                  </h3>
-                    <h1 class="title" id="totalInventory"></h1>
-                  </div>
-                </div>
-                <div class="level-item has-widget-icon">
-                  <div class="is-widget-icon"><span class="icon has-text-info is-large"><i class='bx bxs-basket bx-md'></i></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="tile is-parent">
-          <div class="card tile is-child radius-card">
-            <div class="card-content">
-              <div class="level is-mobile">
-                <div class="level-item">
-                  <div class="is-widget-label">
-                    <h3 class="subtitle is-spaced">
-                      Total Referencias
+    <div id="Inventory" class="content-tab" style="display:none">
+      <section class="section-dashboard">
+        <div class="tile is-ancestor">
+          <div class="tile is-parent">
+            <div class="card tile is-child radius-card">
+              <div class="card-content">
+                <div class="level is-mobile">
+                  <div class="level-item">
+                    <div class="is-widget-label"><h3 class="subtitle is-spaced">
+                      Unidades en Inventario
                     </h3>
-                    <h1 class="title" id="totalProductsReference"></h1>
+                      <h1 class="title" id="totalInventory"></h1>
+                    </div>
                   </div>
-                </div>
-                <div class="level-item has-widget-icon">
-                  <div class="is-widget-icon"><span class="icon has-text-warning is-large"><i class='bx bxs-purchase-tag-alt bx-md'></i></span>
+                  <div class="level-item has-widget-icon">
+                    <div class="is-widget-icon"><span class="icon has-text-info is-large"><i class='bx bxs-basket bx-md'></i></span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="card-footer boder-foot">
-              <p class="card-footer-item boder-foot">
-                <span class="tag is-primary">Activas</span>
-                <a class="tag" id="totalProductsActive"></a>
-              </p>
-              <p class="card-footer-item boder-foot">
-                <span class="tag is-danger">Inactivas</span>
-                <a class="tag" id="totalProductsInactive"></a>
-              </p>
+          </div>
+          <div class="tile is-parent">
+            <div class="card tile is-child radius-card">
+              <div class="card-content">
+                <div class="level is-mobile">
+                  <div class="level-item">
+                    <div class="is-widget-label">
+                      <h3 class="subtitle is-spaced">
+                        Total Referencias
+                      </h3>
+                      <h1 class="title" id="totalProductsReference"></h1>
+                    </div>
+                  </div>
+                  <div class="level-item has-widget-icon">
+                    <div class="is-widget-icon"><span class="icon has-text-warning is-large"><i class='bx bxs-purchase-tag-alt bx-md'></i></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer boder-foot">
+                <p class="card-footer-item boder-foot">
+                  <span class="tag is-primary">Activas</span>
+                  <a class="tag" id="totalProductsActive"></a>
+                </p>
+                <p class="card-footer-item boder-foot">
+                  <span class="tag is-danger">Inactivas</span>
+                  <a class="tag" id="totalProductsInactive"></a>
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
         <div class="columns container-chart">
           <div class="column">
             <div class="card">
@@ -262,6 +262,7 @@
                 <p class="card-header-title">
                   <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
                   Productos con menos de 5 Unidades
+                  <span class="icon download-right"><i class='bx bxs-cloud-download bx-sm' option="productsUnd"></i></span>
                 </p>
               </header>
               <div class="card-content container-scroll">
@@ -278,6 +279,7 @@
                 <p class="card-header-title">
                   <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
                   Productos sin Inventario
+                  <span class="icon download-right"><i class='bx bxs-cloud-download bx-sm' option="productsInventory"></i></span>
                 </p>
               </header>
               <div class="card-content container-scroll">
@@ -296,6 +298,7 @@
                 <p class="card-header-title">
                   <span class="icon"><i class="bx bxs-spreadsheet"></i></span>
                   Productos menos Vendidos
+                  <span class="icon download-right"><i class='bx bxs-cloud-download bx-sm' option="lessProducts"></i></span>
                 </p>
               </header>
               <div class="card-content container-scroll">
@@ -307,9 +310,72 @@
             </div>
           </div>
         </div>
-      <%}%>
-    </section>
-  </div> -->
+      </section>
+    </div>
+    <div id="Publish" class="content-tab" style="display:none">
+      <section class="section-dashboard">
+        <div class="tile is-ancestor">
+          <div class="tile is-parent">
+            <div class="card tile is-child radius-card">
+              <div class="card-content">
+                <div class="level is-mobile">
+                  <div class="level-item card-logistic">
+                    <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
+                      Productos Publicados
+                    </h3>
+                      <h1 class="title" id="totalProductsPublish"></h1>
+                    </div>
+                  </div>
+                  <div class="level-item has-widget-icon">
+                    <div class="is-widget-icon"><span class="icon has-text-primary is-large"><i class='bx bxs-t-shirt bx-md'></i></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tile is-parent">
+            <div class="card tile is-child radius-card">
+              <div class="card-content">
+                <div class="level is-mobile">
+                  <div class="level-item card-logistic">
+                    <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
+                      Canales Conectados
+                    </h3>
+                      <h1 class="title" id="channelsConnect"></h1>
+                    </div>
+                  </div>
+                  <div class="level-item has-widget-icon">
+                    <div class="is-widget-icon"><span class="icon has-text-info is-large"><i class='bx bxs-store bx-md'></i></i></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tile is-parent">
+            <div class="card tile is-child radius-card">
+              <div class="card-content">
+                <div class="level is-mobile">
+                  <div class="level-item card-logistic">
+                    <div class="is-widget-label"><h3 class="subtitle is-spaced subtitle-card">
+                      Productos con Descuento
+                    </h3>
+                      <h1 class="title" id="productsDiscount"></h1>
+                    </div>
+                  </div>
+                  <div class="level-item has-widget-icon">
+                    <div class="is-widget-icon"><span class="icon has-text-success is-large"><i class='bx bxs-discount bx-md'></i></i></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  <%}%>
   <div id="Logistics" class="content-tab" style="display:none">
     <section class="section-dashboard">
       <div class="tile is-ancestor">
@@ -566,7 +632,9 @@
       }
     }
   });
-
+  let productsUnd = [];
+  let productsInventory = [];
+  
   function getCities(cities) {
     let total = 0;
     let dataCities = [];
@@ -663,14 +731,16 @@
   function showInfoTop10(data) {
     var ulTopProductsPrice = document.querySelector("#topProductsPrice");
     var ulTopProductsCant = document.querySelector("#topProductsCant");
-    // var ullessProducts = document.querySelector("#lessProducts");
+    var ullessProducts = document.querySelector("#lessProducts");
     ulTopProductsPrice.innerHTML = '';
     ulTopProductsCant.innerHTML = '';
-    // ullessProducts.innerHTML = '';
-
+    ullessProducts.innerHTML = '';
+    localStorage.setItem('topProductsPrice', JSON.stringify(data.topProductsPrice));
+    localStorage.setItem('topProductsCant', JSON.stringify(data.topProductsCant));
+    localStorage.setItem('lessProducts', JSON.stringify(data.lessProducts));
     processDataProductsOrders(data.topProductsPrice, ulTopProductsPrice);
     processDataProductsOrders(data.topProductsCant, ulTopProductsCant);
-    // processDataProductsOrders(data.lessProducts, ullessProducts);
+    processDataProductsOrders(data.lessProducts, ullessProducts);
   }
 
   function showInfoLogistics(data) {
@@ -688,7 +758,7 @@
     averageHoursClient.textContent = data.averageHoursClient + ' hrs';
     averageHoursCellar.textContent = data.averageHoursCellar + ' hrs';
   }
-
+  
   function showInfoInventory(data) {
     var totalInventory = document.querySelector('#totalInventory');
     var totalProductsReference = document.querySelector('#totalProductsReference');
@@ -696,20 +766,35 @@
     var totalProductsInactive = document.querySelector('#totalProductsInactive');
     var ulProductsUnd = document.querySelector("#productsUnd");
     var ulProductsInventory = document.querySelector("#productsInventory");
-    totalInventory.textContent = data.totalInventory;
+    totalInventory.textContent = Number(totalInventory.textContent) + data.totalInventory;
     totalProductsReference.textContent = data.totalProductsReference;
     totalProductsActive.textContent = data.totalProductsReferenceActive;
     totalProductsInactive.textContent = data.totalProductsReferenceInactive;
-    ulProductsUnd.innerHTML = '';
-    ulProductsInventory.innerHTML = '';
     
     if(user.rights.name !== 'superadmin' && user.rights.name !== 'admin'){
-      processDataProducts(data.productsUnd, ulProductsUnd);
-      processDataProducts(data.productsInventory, ulProductsInventory);
+      productsUnd = [...productsUnd, ...data.productsUnd];
+      productsInventory = [...productsInventory, ...data.productsInventory];
+      if (data.stop) {
+        processDataProducts(productsUnd, ulProductsUnd);
+        processDataProducts(productsInventory, ulProductsInventory);
+      } else {
+        ulProductsUnd.innerHTML = '';
+        ulProductsInventory.innerHTML = '';
+      }
     }
   }
 
-  function processDataProducts(products, ul) {
+  function showInfoPublish(data) {
+    const totalProductsPublish = document.querySelector('#totalProductsPublish');
+    const channelsConnect = document.querySelector('#channelsConnect');
+    const productsDiscount = document.querySelector('#productsDiscount');
+    
+    totalProductsPublish.textContent = `${data.productsPublish}%`;
+    channelsConnect.textContent = data.channels;
+    productsDiscount.textContent = data.productsDiscount;
+  }
+
+  function processDataProducts(products, ul, stop) {
     products.forEach(item => {
       let div = document.createElement('div');
       addClass(div,'list-item');
@@ -747,6 +832,29 @@
     });
   }
   
+  live('.download-right', 'click', function(e){
+    e.preventDefault();
+    const option = e.target.getAttribute('option');
+    const products = option === 'topProductsPrice' ? JSON.parse(localStorage.getItem('topProductsPrice')) : 
+    option === 'topProductsCant' ? JSON.parse(localStorage.getItem('topProductsCant')) :
+    option === 'lessProducts' ? JSON.parse(localStorage.getItem('lessProducts')) :
+    option === 'productsInventory' ? productsInventory :
+    option === 'productsUnd' ? productsUnd : []
+    if (products.length > 0) {
+      removeClass(e.target,'bxs-cloud-download');
+      addClass(e.target, 'bx-loader');
+      addClass(e.target, 'bx-spin');
+      io.socket.post('/downloadexcel', {products}, (resData, jwRes) =>{
+        if(jwRes.statusCode == 200) {
+          addClass(e.target,'bxs-cloud-download');
+          removeClass(e.target, 'bx-loader');
+          removeClass(e.target, 'bx-spin');
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Productos.xlsx`);
+        }
+      });
+    }
+  });
+
   io.socket.on('datadashboardorders', function (data){
     if(user !== undefined && data.id === user.id){
       showInfoOrders(data);
@@ -767,9 +875,11 @@
   });
 
   io.socket.on('datadashboardinventory', function (data){
-    if(user !== undefined && data.id === user.id){
-      showInfoInventory(data);
-    }
+    showInfoInventory(data);
+  });
+
+  io.socket.on('datadashboardpublish', function (data){
+    showInfoPublish(data);
   });
 
   io.socket.on('datadashboardlogistics', function (data){

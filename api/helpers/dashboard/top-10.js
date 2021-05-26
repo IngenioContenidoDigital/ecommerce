@@ -2,10 +2,6 @@ module.exports = {
   friendlyName: 'Dashboard top10',
   description: 'Estadistica del dashboard pestaña top10',
   inputs: {
-    profile: {
-      type:'string',
-      required: true,
-    },
     seller: {
       type:'string',
     },
@@ -30,22 +26,13 @@ module.exports = {
     let topProductsCant = [];
     let topProductsPrice = [];
 
-    if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
-      orders = await Order.find({
-        where: {
-          seller: inputs.seller,
-          createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
-        },
-        select: ['totalOrder', 'channel', 'totalOrder']
-      }).populate('addressDelivery').populate('currentstatus');
-    } else {
-      orders  =  await Order.find({
-        where: {
-          createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
-        },
-        select: ['totalOrder', 'channel', 'totalOrder']
-      }).populate('addressDelivery').populate('currentstatus');
-    }
+    orders = await Order.find({
+      where: {
+        seller: inputs.seller,
+        createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
+      },
+      select: ['totalOrder', 'channel', 'totalOrder']
+    }).populate('addressDelivery').populate('currentstatus');
 
     for(let order of orders){
       if (order.currentstatus.name !== 'cancelado' && order.currentstatus.name !== 'fallido' && order.currentstatus.name !== 'rechazado') {
@@ -81,7 +68,7 @@ module.exports = {
     return exits.success({
       topProductsCant,
       topProductsPrice,
-      lessProducts: topProducts.sort((a, b)=> a.quantity - b.quantity)
+      lessProducts: topProducts.sort((a, b)=> a.quantity - b.quantity).slice(0, 10)
     });
   }
 };
