@@ -68,6 +68,7 @@
       </p>
       <ul class="menu-list">
         <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('sliders')){%><li><a class="navbar-item" href="/sliders">Sliders</a></li><%}%>
+        <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('cms')){%><li><a class="navbar-item" href="/cms">Páginas</a></li><%}%>
       </ul>
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%>

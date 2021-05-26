@@ -1,3 +1,4 @@
+<%if(content){%>
 <div class="container">
     <div class="columns is-centered is-gapless">
         <div class="column">
@@ -5,3 +6,13 @@
         </div>
     </div>
 </div>
+<script>
+    live('a','click',e =>{
+      for(let s of document.querySelectorAll('.terms')){
+        addClass(s,'is-hidden');
+      }
+      let obj = document.querySelector('#'+e.target.getAttribute('target'))
+      removeClass(obj,'is-hidden')
+    })
+</script>
+<%}%>

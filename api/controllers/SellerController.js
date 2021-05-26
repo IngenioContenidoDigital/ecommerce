@@ -559,5 +559,51 @@ module.exports = {
     }
     let uniqueString = await sails.helpers.strings.uuid();
     return res.send(uniqueString);
+  },
+  cms: async (req,res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'cms')){
+      throw 'forbidden';
+    }
+    let seller = null;
+    let cms = null;
+    if(req.param('id')){
+      cms = await Cms.findOne({id:req.param('id')}).populate('seller');
+    }
+    let cmss = null;
+    let filter={};
+    let fseller={active:true};
+    let action = req.param('action') ? req.param('action') : null
+    if(rights.name!=='superadmin' && rights.name!=='admin'){ 
+      filter.seller = req.session.user.seller;
+      fseller.id = req.session.user.seller;
+    }
+    if(!action){
+      cmss = await Cms.find(filter).populate('seller').sort('updatedAt DESC');
+    }
+    let sellers = await Seller.find(fseller).sort('name ASC');
+    res.view('pages/sellers/cms',{layout:'layouts/admin',sellers:sellers,seller:seller,cmss:cmss, cms:cms, action:action});
+  },
+  cmsexecute: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'cms')){
+      throw 'forbidden';
+    }
+
+    let active = (req.body.activo==='on') ? true : false;
+    let action = req.param('action');
+    let body = {}
+    
+    body.name=req.body.name;
+    body.url=req.body.url;
+    body.active=active;
+    body.content=req.body.content;
+    body.position=req.body.position;
+    body.seller=req.body.seller ? req.body.seller : null;
+    
+    if(action==='create'){await Cms.create(body)}
+    if(action==='edit'){await Cms.updateOne({id:req.param('id')}).set(body)}
+    
+    return res.redirect('/cms');
   }
 };
