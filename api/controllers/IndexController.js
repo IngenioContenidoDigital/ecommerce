@@ -66,7 +66,6 @@ module.exports = {
   },
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    let questions = 0;
     let questionsSeller = 0;
     let seller = req.session.user.seller || '';
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
@@ -79,6 +78,7 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
+    let sid = sails.sockets.getId(req);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'dashboard')){
       throw 'forbidden';
@@ -114,13 +114,15 @@ module.exports = {
     });
 
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
-      let dataTop = await sails.helpers.dashboard.top10(rights.name, seller, dateStart, dateEnd);
+      let dataTop = await sails.helpers.dashboard.top10(seller, dateStart, dateEnd);
       sails.sockets.blast('datadashboardtop', {
         topProductsCant: dataTop.topProductsCant,
         topProductsPrice: dataTop.topProductsPrice,
         lessProducts: dataTop.lessProducts,
         id: req.session.user.id
       });
+      await sails.helpers.dashboard.publish(seller, sid);
+      await sails.helpers.dashboard.inventory(seller, sid);
     }
 
     let dataLogistics = await sails.helpers.dashboard.logistics(rights.name, seller, dateStart, dateEnd);
@@ -133,18 +135,6 @@ module.exports = {
       averageHoursCellar: dataLogistics.averageHoursCellar,
       id: req.session.user.id
     });
-
-    // let dataInventory = await sails.helpers.dashboard.inventory(rights.name, seller);
-    // sails.sockets.blast('datadashboardinventory', {
-    //   totalInventory: dataInventory.totalInventory,
-    //   totalProductsReference: dataInventory.totalProductsReference,
-    //   totalProductsReferenceInactive: dataInventory.totalProductsReferenceInactive,
-    //   totalProductsReferenceActive: dataInventory.totalProductsReferenceActive,
-    //   productsInventory: dataInventory.productsInventory,
-    //   productsUnd: dataInventory.productsUnd,
-    //   id: req.session.user.id
-    // });
-
     return res.ok();
   },
   generateReport:async (req, res) =>{
@@ -925,5 +915,28 @@ module.exports = {
     }else{
       return res.send('');
     }
-  }
+  },
+  downloadexcel: async function (req, res) {
+    const Excel = require('exceljs');
+    let products = req.body.products;
+    let resultProducts = [];
+    let workbook = new Excel.Workbook();
+    let worksheet = workbook.addWorksheet('Inventario');
+    worksheet.columns = [
+      { header: 'Id', key: 'id', width: 26 },
+      { header: 'Nombre', key: 'name', width: 45 },
+      { header: 'Referencia', key: 'reference', width: 20 }
+    ];
+    worksheet.getRow(1).font = { bold: true };
+    if (products[0].commission) {
+      for (const order of products) {
+        resultProducts.push(order.product);
+      }
+      worksheet.addRows(resultProducts);
+    } else {
+      worksheet.addRows(products);
+    }
+    const buffer = await workbook.xlsx.writeBuffer();
+    return res.send(buffer);
+  },
 };

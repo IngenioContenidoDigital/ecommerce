@@ -47,7 +47,7 @@ module.exports = {
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',rights,sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

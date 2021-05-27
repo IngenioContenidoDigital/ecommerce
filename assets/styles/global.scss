@@ -260,7 +260,7 @@ display: block;
 }
 
 .subtitle-card {
-    font-size: 1rem !important;
+    font-size: 1.1rem !important;
 }
 
 .radius-card {
@@ -617,5 +617,18 @@ article.post:last-child {
 .tag-status{
     margin-top: 25px;
     margin-left: 10px;
+}
+
+.size-ul-menu {
+    font-size: 0.88rem !important;
+}
+
+.size-datepicker {
+    width: 300px;
+}
+
+.download-right {
+    margin-left: 5rem;
+    cursor: pointer;
 }
 
