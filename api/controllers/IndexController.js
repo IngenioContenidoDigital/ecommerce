@@ -770,7 +770,7 @@ module.exports = {
           const order = await Order.findOne({channelref:data.OrderId});
           await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
           for(let it of data.OrderItemIds){
-            await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state});
+            await OrderItem.updateOne({order: order.id, externalReference: it,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())}).set({currentstatus: state});
           }
           await OrderHistory.create({
             order:order.id,
@@ -829,7 +829,7 @@ module.exports = {
           const order = await Order.findOne({channelref:data.OrderId});
           await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
           for(let it of data.OrderItemIds){
-            await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state});
+            await OrderItem.updateOne({order: order.id, externalReference: it,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())}).set({currentstatus: state});
           }
           await OrderHistory.create({
             order:order.id,
@@ -883,6 +883,9 @@ module.exports = {
           let dord = result.SuccessResponse.Body.Orders.Order;
           const order = await Order.findOne({channelref:data.OrderId});
           await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+          for(let it of data.OrderItemIds){
+            await OrderItem.updateOne({order: order.id, externalReference: it,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())}).set({currentstatus: state});
+          }
           await OrderHistory.create({
             order:order.id,
             state:state,

@@ -40,11 +40,12 @@ module.exports = {
               await Order.updateOne({id:ord.id}).set({updatedAt:parseInt(moment(shipping.last_updated).valueOf()),currentstatus:currentStatus,carrier: carrier ? carrier.id : ord.carrier});
               let oitems = await OrderItem.find({order:ord.id});
               for(let it of oitems){
-                await OrderItem.updateOne({id: it.id}).set({currentstatus: currentStatus});
+                await OrderItem.updateOne({id: it.id}).set({currentstatus: currentStatus,updatedAt:parseInt(moment(shipping.last_updated).valueOf())});
               }
               await OrderHistory.create({
                 order:ord.id,
-                state:currentStatus
+                state:currentStatus,
+                updatedAt:parseInt(moment(shipping.last_updated).valueOf())
               });
             }
           }
