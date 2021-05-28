@@ -15,7 +15,7 @@ module.exports = {
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
     }
-    if(req.hostname==='iridio.co' || req.hostname==='localhost'){
+    if(req.hostname==='iridio.co' || req.hostname!=='demo.1ecommerce.app' || req.hostname==='localhost'){
       slider = await Slider.find({active:true}).populate('textColor');
       cmsfilter.seller = null;
     }
@@ -49,7 +49,7 @@ module.exports = {
         }
       }
     }
-    if(req.hostname==='iridio.co' || req.hostname==='localhost'){
+    if(req.hostname==='iridio.co' || req.hostname!=='demo.1ecommerce.app' || req.hostname==='localhost'){
       brands = await Manufacturer.find({active:true}).sort('name ASC');
     }
     let menu ='';
@@ -323,7 +323,7 @@ module.exports = {
     }
 
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
 
     let addresses = null;
     addresses = await Address.find({user:req.session.user.id})
@@ -363,7 +363,7 @@ module.exports = {
     let object = null;
     let iridio = null;
     let productsFilter = {active:true};
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost'){
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='localhost'){
       seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/,active:true});
       if(seller){productsFilter.seller=seller.id;}
     }else{
@@ -459,7 +459,7 @@ module.exports = {
   search: async(req, res) =>{
     let seller = null;
     let ename=req.param('q');
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let AWS = require('aws-sdk');
     AWS.config.loadFromPath('./config.json');
     let csd = new AWS.CloudSearchDomain({endpoint: 'search-iridio-kqxoxbqunm62wui765a5ms5nca.us-east-1.cloudsearch.amazonaws.com'});
@@ -533,7 +533,7 @@ module.exports = {
   },
   listproduct: async function(req, res){
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let product = await Product.findOne({name:decodeURIComponent(req.param('name')),reference:decodeURIComponent(req.param('reference'))})
       .populate('manufacturer')
       .populate('mainColor')
@@ -605,7 +605,7 @@ module.exports = {
       seller:seller
     }
     
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/}); contentfilter.seller=seller.id;}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/}); contentfilter.seller=seller.id;}
     cms = (await Cms.find(contentfilter))[0];
     return res.view('pages/front/cms',{content:cms.content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
   },

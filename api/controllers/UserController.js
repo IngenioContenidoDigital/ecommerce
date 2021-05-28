@@ -83,7 +83,7 @@ module.exports = {
     let secret = null;
     if(req.hostname==='1ecommerce.app'){
       secret = '6Leo7ccZAAAAAFZspurQhYQ8NGn58vZiNqovrSKf'
-    }else if(req.hostname==='iridio.co' || req.hostname==='localhost'){
+    }else if(req.hostname==='iridio.co' || req.hostname==='demo.1ecommerce.app' || req.hostname==='localhost'){
       secret = '6LfK2-kUAAAAAF6eGv3Ykl2hiz1nxw7FexjIrqOt'
     }else if(req.hostname==='sanpolos.com'){
       secret = '6Lc4ItEZAAAAALMZ79KoHAM2NK6gIS3WJTBl5X8f'

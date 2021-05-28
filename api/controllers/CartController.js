@@ -9,7 +9,7 @@ module.exports = {
   viewcart: async function(req, res){
     let cart = null;
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     if(req.session.cart!==undefined){
       cart = await CartProduct.find({cart:req.session.cart.id}).sort('createdAt ASC')
       .populate('product')

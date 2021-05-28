@@ -22,7 +22,7 @@ module.exports = {
 
     let navbarmobile =`<aside class="menu">`;
     let cids = [];
-    if(inputs.hostname !== undefined && inputs.hostname !== '' && inputs.hostname!=='iridio.co' && inputs.hostname!=='localhost' && inputs.hostname!=='1ecommerce.app'){
+    if(inputs.hostname !== undefined && inputs.hostname !== '' && inputs.hostname!=='iridio.co' && inputs.hostname!=='demo.1ecommerce.app' && inputs.hostname!=='localhost' && inputs.hostname!=='1ecommerce.app'){
       seller = await Seller.findOne({domain:inputs.hostname,active:true}); 
       let categories = await Category.find({
         where: {active:true},

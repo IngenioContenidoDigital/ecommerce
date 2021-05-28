@@ -70,7 +70,7 @@ module.exports = {
   },
   createorder:async function(req, res){
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let order = [];
     let payment = null;
     let address = await Address.findOne({id:req.body.deliveryAddress})
@@ -433,7 +433,7 @@ module.exports = {
   },
   response: async(req, res)=>{
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let order = await Order.find({cart:req.param('tx')})
     .populate('currentstatus')
     .populate('seller');
