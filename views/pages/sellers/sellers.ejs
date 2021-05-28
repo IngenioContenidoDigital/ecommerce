@@ -650,43 +650,47 @@
         </script>
       </div>
       <div class="is-hidden" id="commissions">
-        <div class="control buttons is-right">
-          <button id="add-commission" class="button is-small is-rounded is-primary">
-            <span class="icon is-small">
-              <i class='bx bxs-briefcase'></i>
-            </span>
-            <span>Gestionar Comisiones</span>
-          </button>
-        </div>
+        <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
+          <div class="control buttons is-right">
+            <button id="add-commission" class="button is-small is-rounded is-primary">
+              <span class="icon is-small">
+                <i class='bx bxs-briefcase'></i>
+              </span>
+              <span>Gestionar Comisiones</span>
+            </button>
+          </div>
+        <% } %>
         <%if(action==='edit'){%>
-          <form method="POST" action="/commission/set/<%=seller.id%>">
-            <div class="columns">
-              <div class="column">
-                <div class="field">
-                  <label class="label is-size-7">Costo por SKU</label>
-                  <div class="control has-icons-left">
-                    <input class="input is-size-7" type="number" step="any" name="skuPrice" placeholder="Costo por SKU" <% if(action=='edit'){ %>value="<%= seller.skuPrice %>"<% }%>/>
-                    <span class="icon-input-left is-small is-left">
-                      <i class="bx bxs-badge-dollar"></i>
-                    </span>
+          <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
+            <form method="POST" action="/commission/set/<%=seller.id%>">
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Costo por SKU</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-size-7" type="number" step="any" name="skuPrice" placeholder="Costo por SKU" <% if(action=='edit'){ %>value="<%= seller.skuPrice %>"<% }%>/>
+                      <span class="icon-input-left is-small is-left">
+                        <i class="bx bxs-badge-dollar"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <div class="control">
+                      <label class="label is-size-7">SKU activos</label>
+                      <input id="activeSku" type="checkbox" name="activeSku" class="switch is-success" <% if(action=='edit' && seller.activeSku){%>checked<%}%>>
+                      <label for="activeSku"></label>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div class="column">
-                <div class="field">
-                  <div class="control">
-                    <label class="label is-size-7">SKU activos</label>
-                    <input id="activeSku" type="checkbox" name="activeSku" class="switch is-success" <% if(action=='edit' && seller.activeSku){%>checked<%}%>>
-                    <label for="activeSku"></label>
-                  </div>
-                </div>
+              <div class="control buttons">
+                <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Comisión</button>
               </div>
-            </div>
-            <div class="control buttons">
-              <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Comisión</button>
-            </div>
-          </form>
-          <br><br>
+            </form>
+            <br><br>
+          <% } %>
           <h6 class="title is-6">Comisiones por Canal</h4>
           <hr>
           <div class="columns">
@@ -696,7 +700,9 @@
                   <tr>
                     <th><small>Canal</small></th>
                     <th><small>Comisión</small></th>
-                    <th><small>Opciones</small></th>
+                    <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
+                      <th><small>Opciones</small></th>
+                    <% } %>
                   </tr>
                 </thead>
                 <tbody>
@@ -707,9 +713,11 @@
                         <td>
                           <%= commission.value %>
                         </td>
-                        <td>
-                          <a href="#" class="has-text-info" id="delete-commission" commissionId="<%= commission.id %>"><i class="is-size-4 bx bx-trash"></i></a>
-                        </td>
+                        <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
+                          <td>
+                            <a href="#" class="has-text-info" id="delete-commission" commissionId="<%= commission.id %>"><i class="is-size-4 bx bx-trash"></i></a>
+                          </td>
+                        <% } %>
                       </tr>
                     <% }) %>
                   <% } %>
@@ -728,7 +736,9 @@
                   <tr>
                     <th><small>Fecha</small></th>
                     <th><small>Comisión</small></th>
-                    <th><small>Opciones</small></th>
+                    <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
+                      <th><small>Opciones</small></th>
+                    <% } %>
                   </tr>
                 </thead>
                 <tbody>
@@ -739,9 +749,11 @@
                         <td>
                           <%= discount.value %>%
                         </td>
-                        <td>
-                          <a href="#" class="has-text-info" id="delete-discount" discountId="<%= discount.id %>"><i class="is-size-4 bx bx-trash"></i></a>
-                        </td>
+                        <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
+                          <td>
+                            <a href="#" class="has-text-info" id="delete-discount" discountId="<%= discount.id %>"><i class="is-size-4 bx bx-trash"></i></a>
+                          </td>
+                        <% } %>
                       </tr>
                     <% }) %>
                   <% } %>
@@ -914,13 +926,15 @@
             let columnsIntegration = document.querySelector('#img-channels');
             columnsIntegration.innerHTML = '';
             let content = `<input class="is-hidden" name="channel" value=""/><input class="is-hidden" name="idcommission" value=""/>`;
+            
             for (const channel of channels) {
-              content += `<div class="column">
+              content += `<div class="column is-one-fifth">
                 <img class="menu-title menu-channel image-integration" src="<%=imgurl%>/images/channels/${channel.logo}" id="${channel.id}"/>
               </div>`
             }
             addClass(div, 'columns');
             addClass(div, 'is-gapless');
+            addClass(div, 'is-multiline');
             div.innerHTML = content;
             columnsIntegration.appendChild(div);
           }
