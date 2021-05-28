@@ -662,7 +662,7 @@ module.exports = {
       }
       return res.redirect('/order/edit/'+order.id);
     } catch (err) {
-      return res.redirect('/order/edit/'+order.id+'?error='+err.message);
+      return res.redirect('/order/edit/'+id+'?error='+err.message);
     }
   }
 };
