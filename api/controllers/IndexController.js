@@ -22,7 +22,7 @@ module.exports = {
     }else{
       seller = await Seller.findOne({
         where:{domain:req.hostname},
-        select:['name','domain']
+        select:['name','domain','logo']
       });
       cmsfilter.seller = seller.id;
       slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
