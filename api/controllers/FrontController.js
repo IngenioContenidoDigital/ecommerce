@@ -132,13 +132,13 @@ module.exports = {
   account: async (req, res)=>{
     let seller = null;
     if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
-    return res.view('pages/account/account',{menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+    return res.view('pages/account/account',{seller:seller});
   },
   user: async (req, res)=>{
     let seller = null;
     if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
     let user = await User.findOne({id:req.param('id')});
-    return res.view('pages/account/user',{user:user, menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+    return res.view('pages/account/user',{user:user, seller:seller});
   },
   orders: async (req, res)=>{
     let moment = require('moment');
@@ -160,7 +160,7 @@ module.exports = {
       o.carrier = await Carrier.findOne({id:o.carrier});
       o.history = await OrderHistory.find({order:o.id}).sort('createdAt ASC').populate('state');
     }
-    return res.view('pages/account/orders',{orders:orders,moment:moment,menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+    return res.view('pages/account/orders',{orders:orders,moment:moment,seller:seller});
   }
 };
 

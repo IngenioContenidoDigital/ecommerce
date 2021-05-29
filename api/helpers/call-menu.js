@@ -16,7 +16,9 @@ module.exports = {
     let menu = null;
     let navmenu = {};
     let filter = {active:true};
-    let navbar = `<div class="navbar-item has-dropdown is-hoverable">
+    let productfilter={active:true};   
+
+      let navbar = `<div class="navbar-item has-dropdown is-hoverable">
       <div class="navbar-link is-uppercase is-size-7"><a class="has-text-dark" href="#">Categorías</a></div>
         <div class="navbar-dropdown">`
 
@@ -24,17 +26,19 @@ module.exports = {
     let cids = [];
     if(inputs.hostname !== undefined && inputs.hostname !== '' && inputs.hostname!=='iridio.co' && inputs.hostname!=='demo.1ecommerce.app' && inputs.hostname!=='localhost' && inputs.hostname!=='1ecommerce.app'){
       seller = await Seller.findOne({domain:inputs.hostname,active:true}); 
-      let categories = await Category.find({
-        where: {active:true},
-        select: ['name','url']
-      }).populate('products',{seller:seller.id,active:true});
-      for(let c of categories){
-        if(!cids.includes(c.id) && c.products.length>0){
-          cids.push(c.id);
-        }
-      }
-      filter.id=cids;
+      productfilter.seller=seller.id;
     }
+
+    let categories = await Category.find({
+      where: {active:true},
+      select: ['name','url']
+    }).populate('products',productfilter);
+    for(let c of categories){
+      if(!cids.includes(c.id) && c.products.length>0){
+        cids.push(c.id);
+      }
+    }
+    filter.id=cids;
 
       menu = await Category.findOne({
         where:{name:'inicio'},
@@ -120,6 +124,7 @@ module.exports = {
     
       navmenu.navbar = navbar;
       navmenu.navbarmobile = navbarmobile;
+    
     return exits.success(navmenu);
   }
 

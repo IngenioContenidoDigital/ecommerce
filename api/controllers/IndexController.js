@@ -11,22 +11,24 @@ module.exports = {
     let slider = null;
     let cms = null;
     let cmsfilter = {position:'home',active:true};
+    let brands = null;
 
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
-    }
-    if(req.hostname==='iridio.co' || req.hostname!=='demo.1ecommerce.app' || req.hostname==='localhost'){
+    }else if(req.hostname==='iridio.co' || req.hostname==='demo.1ecommerce.app' || req.hostname==='localhost'){
       slider = await Slider.find({active:true}).populate('textColor');
+      brands = await Manufacturer.find({active:true}).sort('name ASC');
       cmsfilter.seller = null;
-    }
-    if(req.hostname==='sanpolos.com'){
-      seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
+    }else{
+      seller = await Seller.findOne({
+        where:{domain:req.hostname},
+        select:['name','domain']
+      });
       cmsfilter.seller = seller.id;
       slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
     }
     let viewed=[];
     let pshow =[];
-    let brands = null;
     if(req.session.viewed && req.session.viewed.length>0){
       for(let i of req.session.viewed){
         if(!pshow.includes(i.product)){
@@ -49,20 +51,10 @@ module.exports = {
         }
       }
     }
-    if(req.hostname==='iridio.co' || req.hostname!=='demo.1ecommerce.app' || req.hostname==='localhost'){
-      brands = await Manufacturer.find({active:true}).sort('name ASC');
-    }
-    let menu ='';
-    if(req.session.menu && req.session.menu.navbarmobile.length>40){
-      menu = req.session.menu;
-    }else{
-      menu = await sails.helpers.callMenu(seller!==null ? seller.domain : undefined);
-      req.session.menu = menu;
-    }
 
     cms = (await Cms.find(cmsfilter))[0];
 
-    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),menu:menu,viewed:viewed,brands:brands, seller:seller,cms:cms});
+    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),viewed:viewed,brands:brands, seller:seller,cms:cms});
   },
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -363,7 +355,7 @@ module.exports = {
     let object = null;
     let iridio = null;
     let productsFilter = {active:true};
-    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='localhost'){
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost'){
       seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/,active:true});
       if(seller){productsFilter.seller=seller.id;}
     }else{
@@ -454,7 +446,7 @@ module.exports = {
     let brands = await Manufacturer.find({where:brandsFilter,select:['name']});
     let genders = await Gender.find(gendersFilter);
 
-    return res.view('pages/front/list',{entity:'ver/'+entity,ename:ename,page:page,pages:pages,object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+    return res.view('pages/front/list',{entity:'ver/'+entity,ename:ename,page:page,pages:pages,object:object,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),seller:seller});
   },
   search: async(req, res) =>{
     let seller = null;
@@ -528,7 +520,7 @@ module.exports = {
         }
         response['products'] = set;
       }
-      return res.view('pages/front/list',{entity:'buscar',ename:ename,page:page,pages:pages,object:response,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+      return res.view('pages/front/list',{entity:'buscar',ename:ename,page:page,pages:pages,object:response,colors:colors,brands:brands,genders:genders,tag:await sails.helpers.getTag(req.hostname),seller:seller});
     });
   },
   listproduct: async function(req, res){
@@ -575,7 +567,7 @@ module.exports = {
       description:description,
       keywords:keywords,
       tag:await sails.helpers.getTag(req.hostname),
-      menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+      seller:seller});
   },
   variationPrices: async (req, res)=>{
     if (!req.isSocket) {
@@ -607,7 +599,7 @@ module.exports = {
     
     if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/}); contentfilter.seller=seller.id;}
     cms = (await Cms.find(contentfilter))[0];
-    return res.view('pages/front/cms',{content:cms.content,tag:await sails.helpers.getTag(req.hostname),menu:await sails.helpers.callMenu(seller!==null ? seller.domain : undefined),seller:seller});
+    return res.view('pages/front/cms',{content:cms.content,tag:await sails.helpers.getTag(req.hostname),seller:seller});
   },
   notificationml: async function(req, res){
     let moment = require('moment');
@@ -905,16 +897,18 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let space = parseInt(req.param('screen'));
-    if(req.session.menu){
-      if(space<1024){
-        return res.send(req.session.menu.navbarmobile);
-      }else{
-        return res.send(req.session.menu.navbar);
-      }
-    }else{
-      return res.send('');
+    let space = parseInt(req.body.screen);
+    
+    if(!req.session.menu){
+      req.session.menu = await sails.helpers.callMenu(req.body.hostname);
     }
+    
+    if(space<1024){
+      return res.send(req.session.menu.navbarmobile);
+    }else{
+      return res.send(req.session.menu.navbar);
+    }
+    
   },
   downloadexcel: async function (req, res) {
     const Excel = require('exceljs');

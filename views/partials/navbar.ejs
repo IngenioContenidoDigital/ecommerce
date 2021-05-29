@@ -97,13 +97,13 @@
   });
   
   document.addEventListener("DOMContentLoaded", (event) => {
-    io.socket.get('/buildmenu/'+window.innerWidth,resData =>{
+    io.socket.post('/buildmenu',{screen:window.innerWidth,hostname:'<%= req.hostname %>'},resData =>{
       document.querySelector('#navbarContainer').innerHTML=resData;
     });
   });
 
   window.addEventListener('resize',() => {
-    io.socket.get('/buildmenu/'+window.innerWidth,resData =>{
+    io.socket.post('/buildmenu',{screen:window.innerWidth,hostname:'<%= req.hostname %>'},resData =>{
       document.querySelector('#navbarContainer').innerHTML=resData;
     });
   });
