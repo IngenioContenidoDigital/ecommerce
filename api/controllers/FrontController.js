@@ -46,7 +46,7 @@ module.exports = {
         text:req.body.text,
         textColor:(req.body.color) ? req.body.color : (await Color.findOne({name:'negro'})).id,
         position:req.body.position,
-        seller:req.body.seller,
+        seller:req.body.seller ? req.body.seller : null,
         url:req.body.url,
         active:isActive});
     }catch(err){
