@@ -1534,7 +1534,11 @@ module.exports = {
               }
               response.items.push(product);
             }
-            await sails.helpers.channel.productQc(integration, skus);
+            let number = Math.ceil(skus.length / 100);
+            for (let i = 1; i <= number; i++) {
+              const resultSkus = skus.slice((number - i) * 100, (number - (i-1)) * 100);
+              await sails.helpers.channel.productQc(integration, resultSkus);
+            }
           }else{
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');}
@@ -1639,7 +1643,11 @@ module.exports = {
               }
               response.items.push(product);
             }
-            await sails.helpers.channel.productQc(integration, skus);
+            let number = Math.ceil(skus.length / 100);
+            for (let i = 1; i <= number; i++) {
+              const resultSkus = skus.slice((number - i) * 100, (number - (i-1)) * 100);
+              await sails.helpers.channel.productQc(integration, resultSkus);
+            }
           }else{
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');}
