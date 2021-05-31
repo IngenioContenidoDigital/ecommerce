@@ -11,21 +11,22 @@ module.exports = {
     let slider = null;
     let cms = null;
     let cmsfilter = {position:'home',active:true};
+    let sliderfilter = {active:true};
     let brands = null;
 
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
     }else if(req.hostname==='iridio.co' || req.hostname==='demo.1ecommerce.app' || req.hostname==='localhost'){
-      slider = await Slider.find({active:true}).populate('textColor');
       brands = await Manufacturer.find({active:true}).sort('name ASC');
       cmsfilter.seller = null;
+      sliderfilter.seller=null;
     }else{
       seller = await Seller.findOne({
         where:{domain:req.hostname},
         select:['name','domain','logo']
       });
       cmsfilter.seller = seller.id;
-      slider = await Slider.find({active:true, seller:seller.id}).populate('textColor');
+      sliderfilter.seller=seller.id;
     }
     let viewed=[];
     let pshow =[];
@@ -53,6 +54,7 @@ module.exports = {
     }
 
     cms = (await Cms.find(cmsfilter))[0];
+    slider = await Slider.find(sliderfilter).populate('textColor');
 
     return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),viewed:viewed,brands:brands, seller:seller,cms:cms});
   },

@@ -65,7 +65,7 @@
                     <label class="label is-small">Seller</label>
                       <div class="field">
                         <div class="select is-small is-fullwidth">
-                            <select class="is-capitalized" name="seller" required >
+                            <select class="is-capitalized" name="seller">
                                 <option value="">-- Elegir Seller --</option>
                                 <% sellers.forEach(seller =>{%>
                                   <option class="is-capitalized" <%if(action=='edit' && slide.seller==seller.id){%>selected="selected"<%}%>value="<%=seller.id%>"><%=seller.name%></option>
