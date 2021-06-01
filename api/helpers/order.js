@@ -74,7 +74,10 @@ module.exports = {
             carrier: carrier && carrier.id ? carrier.id : null,
             channel:payment.data.channel ? payment.data.channel : 'direct',
             channelref:payment.data.channelref ? payment.data.channelref : '',
-            integration:payment.data.integration ? payment.data.integration : null
+            integration:payment.data.integration ? payment.data.integration : null,
+            modeMeli: payment.data.mode ? payment.data.mode: '',
+            shippingMeli: payment.data.shipping ? payment.data.shipping : '',
+            receiverId: payment.data.receiverId ? payment.data.receiverId : ''
           }).fetch();
 
           await OrderHistory.create({
