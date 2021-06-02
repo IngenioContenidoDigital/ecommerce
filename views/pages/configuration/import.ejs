@@ -12,7 +12,7 @@
 				<div id="tabs-with-content">
 					<div class="tabs is-centered">
 						<ul>
-							<li><a>CSV</a></li>
+							<li><a>EXCEL</a></li>
 							<li><a>INTEGRACIONES</a></li>
 						</ul>
 					</div>
@@ -34,13 +34,13 @@
 								<div class="field">
 									<div id="file-loader" class="file has-name is-fullwidth">
 										<label class="file-label">
-											<input class="file-input" required accept=".csv" type="file" id="file" name="file" />
+											<input class="file-input" required accept=".xlsx, .xls" type="file" id="file" name="file" />
 											<span class="file-cta">
 												<span class="file-icon">
 													<i class="bx bx-upload"></i>
 												</span>
 												<span class="file-label">
-													Archivo CSV
+													Archivo Excel
 												</span>
 											</span>
 											<span class="file-name has-text-grey">
@@ -381,10 +381,10 @@
 			document.querySelector('span .file-label').innerHTML='Imagenes a Procesar'
 			document.querySelector('.file-name').innerHTML='Cargar Varias Imagenes'
 		}else{
-			elm.setAttribute('accept','.csv');
+			elm.setAttribute('accept','.xlsx, .xls');
 			elm.removeAttribute('multiple');
-			document.querySelector('span .file-label').innerHTML='Archivo .CSV'
-			document.querySelector('.file-name').innerHTML='Cargar Archivo .csv a procesar'
+			document.querySelector('span .file-label').innerHTML='Archivo Excel'
+			document.querySelector('.file-name').innerHTML='Cargar Archivo a procesar'
 		}
 	})
 
