@@ -255,8 +255,8 @@
             <tr>
               <th><small>Integración</small></th>
               <th><small>Nombre</small></th>
-              <th><small>Ajuste de Precios</small></th>
-              <th><small>Descuento de Precios</small></th>
+              <th><small>Ajustar Precio</small></th>
+              <th><small>Ajustar Descuento</small></th>
               <th><small>Opciones</small></th>
             </tr>
           </thead>
@@ -284,11 +284,11 @@
                   <td>
                     <div class="select is-small <%if(integration.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
                       <select name="priceDiscount" id="<%= integration.id %>" <%if(integration.channel.name==='iridio'){%><%="disabled"%><%}%>>
-                      <option value="0" <%if(integration && integration.priceDiscount==0){%>selected<%}%>>+ 0%</option>
-                        <option value="0.05" <%if(integration && integration.priceDiscount==0.05){%>selected<%}%>>+ 5%</option>
-                        <option value="0.1" <%if(integration && integration.priceDiscount==0.1){%>selected<%}%>>+ 10%</option>
-                        <option value="0.15" <%if(integration && integration.priceDiscount==0.15){%>selected<%}%>>+ 15%</option>
-                        <option value="0.2" <%if(integration && integration.priceDiscount==0.2){%>selected<%}%>>+ 20%</option>
+                      <option value="0" <%if(integration && integration.priceDiscount==0){%>selected<%}%>>0%</option>
+                        <option value="0.05" <%if(integration && integration.priceDiscount==0.05){%>selected<%}%>>- 5%</option>
+                        <option value="0.1" <%if(integration && integration.priceDiscount==0.1){%>selected<%}%>>- 10%</option>
+                        <option value="0.15" <%if(integration && integration.priceDiscount==0.15){%>selected<%}%>>- 15%</option>
+                        <option value="0.2" <%if(integration && integration.priceDiscount==0.2){%>selected<%}%>>- 20%</option>
                       </select>
                     </div>
                   </td>
