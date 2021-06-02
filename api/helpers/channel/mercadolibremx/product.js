@@ -58,7 +58,7 @@ module.exports = {
       let stock = 0;
       let padj = inputs.mlprice ? parseFloat(inputs.mlprice) : inputs.channelPrice;
       let integration = await Integrations.findOne({id: inputs.integration}).populate('channel');
-
+      let priceDiscount = integration.priceDiscount || 0;
       let productimages = await ProductImage.find({product:product.id});
       productimages.forEach(image =>{
         images.push({'source':sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file});
@@ -72,15 +72,19 @@ module.exports = {
       //Si se habilita el recurso /promo en la MCO, se debe comentar Líneas 60 a 71 y habilitar líneas 168 a 188
         if(product.discount.length>0 && integration.seller!=='5f80fa751b23a04987116036' && integration.seller!=='5fc5579c77b155db533c52e3'){
           let discPrice=0;
+          let valueDisc=0;
           switch(product.discount[0].type){
             case 'P':
-              discPrice+=((variation.price*(1+padj))*(1-(product.discount[0].value/100)));
+              const productDisc = product.discount[0].value/100;
+              valueDisc = productDisc - priceDiscount;
+              discPrice+=((variation.price*(1+padj))*(valueDisc > 0 ? (1-valueDisc) : 0));
               break;
             case 'C':
-              discPrice+=((variation.price*(1+padj))-product.discount[0].value);
+              valueDisc = product.discount[0].value - (variation.price*priceDiscount);
+              discPrice+= valueDisc > 0 ? ((variation.price*(1+padj))-valueDisc) : 0;
               break;
           }
-          price = discPrice;
+          price = discPrice > 0 ? discPrice.toFixed(0) : (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
         }else{
           price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
         }

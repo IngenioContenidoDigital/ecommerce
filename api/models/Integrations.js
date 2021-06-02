@@ -19,7 +19,7 @@ module.exports = {
     },
     user:{
       type:'string',
-     /* required : true*/
+      /* required : true*/
     },
     key:{
       type:'string',
@@ -54,6 +54,8 @@ module.exports = {
     order_webhook_status:{
       type:'boolean', required:false
     },
+    priceAdjustment:{type:'number', defaultsTo:0},
+    priceDiscount:{type:'number', defaultsTo:0}
   },
 };
 

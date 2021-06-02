@@ -255,6 +255,8 @@
             <tr>
               <th><small>Integración</small></th>
               <th><small>Nombre</small></th>
+              <th><small>Ajuste de Precios</small></th>
+              <th><small>Descuento de Precios</small></th>
               <th><small>Opciones</small></th>
             </tr>
           </thead>
@@ -265,6 +267,30 @@
                   <td><img <%if(integration.channel.colorcode){%>style="background-color: <%= integration.channel.colorcode %>;width: 40px"<%}%> src="<%=imgurl%>/images/channels/<%= integration.channel.logo %>" width="100px"/></td>
                   <td>
                     <%= integration.name %>
+                  </td>
+                  <td>
+                    <div class="select is-small <%if(integration.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
+                      <select name="priceAdjustment" id="<%= integration.id %>" <%if(integration.channel.name==='iridio'){%><%="disabled"%><%}%>>
+                      <option value="0" <%if(integration && integration.priceAdjustment==0){%>selected<%}%>>+ 0%</option>
+                        <option value="0.05" <%if(integration && integration.priceAdjustment==0.05){%>selected<%}%>>+ 5%</option>
+                        <option value="0.1" <%if(integration && integration.priceAdjustment==0.1){%>selected<%}%>>+ 10%</option>
+                        <option value="0.15" <%if(integration && integration.priceAdjustment==0.15){%>selected<%}%>>+ 15%</option>
+                        <option value="0.2" <%if(integration && integration.priceAdjustment==0.2){%>selected<%}%>>+ 20%</option>
+                        <option value="0.25" <%if(integration && integration.priceAdjustment==0.25){%>selected<%}%>>+ 25%</option>
+                        <option value="0.3" <%if(integration && integration.priceAdjustment==0.3){%>selected<%}%>>+ 30%</option>
+                      </select>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="select is-small <%if(integration.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
+                      <select name="priceDiscount" id="<%= integration.id %>" <%if(integration.channel.name==='iridio'){%><%="disabled"%><%}%>>
+                      <option value="0" <%if(integration && integration.priceDiscount==0){%>selected<%}%>>+ 0%</option>
+                        <option value="0.05" <%if(integration && integration.priceDiscount==0.05){%>selected<%}%>>+ 5%</option>
+                        <option value="0.1" <%if(integration && integration.priceDiscount==0.1){%>selected<%}%>>+ 10%</option>
+                        <option value="0.15" <%if(integration && integration.priceDiscount==0.15){%>selected<%}%>>+ 15%</option>
+                        <option value="0.2" <%if(integration && integration.priceDiscount==0.2){%>selected<%}%>>+ 20%</option>
+                      </select>
+                    </div>
                   </td>
                   <td>
                     <a href="#" class="has-text-info" id="edit-integration"><i class="is-size-4 bx bxs-edit" integrationId="<%= integration.id %>"></i></a>
@@ -290,6 +316,26 @@
           <button class="modal-close is-large" aria-label="close"></button>
         </div>
         <script>
+          live('select[name="priceAdjustment"]','change', e =>{
+            let price = e.target.value;
+            const id = e.target.id;
+            io.socket.post('/updateintegration', {type: 'priceAdjustment', price, id}, resdata => {
+              if(resdata.error){
+                e.target.value = 0;
+              }
+            });
+          });
+
+          live('select[name="priceDiscount"]','change',e =>{
+            let price = e.target.value;
+            const id = e.target.id;
+            io.socket.post('/updateintegration', {type: 'priceDiscount', price, id}, resdata => {
+              if(resdata.error){
+                e.target.value = 0;
+              }
+            });
+          });
+
           live('#add-row','click',function(e){
             e.preventDefault();
             createColumnImages(false, '');

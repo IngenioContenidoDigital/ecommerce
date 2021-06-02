@@ -1479,6 +1479,7 @@ module.exports = {
     let sid = sails.sockets.getId(req);
     let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
     let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
+    let priceAdjust = integration.priceAdjustment || 0;
     let channel = integration.channel.name;
     let result = null;
     let response = { items: [], errors: [] };
@@ -1537,8 +1538,8 @@ module.exports = {
             await sails.helpers.channel.productQc(integration, skus);
           }else{
             let result = null;
-            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active');}
-            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active',false);}
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active',false);}
             
             let pageNumber = Math.ceil(result.Request.length / pageSize);
             for (let i = 1; i <= pageNumber; i++) {
@@ -1551,7 +1552,6 @@ module.exports = {
                 if(resData.SuccessResponse){
                   for (const pro of products) {
                     const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
-                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
                     if(action === 'ProductCreate'){
                       await ProductChannel.findOrCreate({id: productChannelId},{
                         product:pro.id,
@@ -1560,21 +1560,21 @@ module.exports = {
                         channelid:'',
                         status:false,
                         qc:false,
-                        price:0,
+                        price:priceAdjust,
                         iscreated:false,
                         socketid:sid
                       }).exec(async (err, record, created)=>{
                         if(err){return new Error(err.message);}
                         if(!created){
                           await ProductChannel.updateOne({id: record.id}).set({
-                            price:priceAjust,
+                            price:priceAdjust,
                             socketid:sid
                           });
                         }
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
                     }
                     response.items.push(pro);
                   }
@@ -1642,8 +1642,8 @@ module.exports = {
             await sails.helpers.channel.productQc(integration, skus);
           }else{
             let result = null;
-            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active');}
-            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, 0, 'active',false);}
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active',false);}
             
             let pageNumber = Math.ceil(result.Request.length / pageSize);
             for (let i = 1; i <= pageNumber; i++) {
@@ -1656,7 +1656,6 @@ module.exports = {
                 if(resData.SuccessResponse){
                   for (const pro of products) {
                     const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
-                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
                     if(action === 'ProductCreate'){
                       await ProductChannel.findOrCreate({id: productChannelId},{
                         product:pro.id,
@@ -1665,21 +1664,21 @@ module.exports = {
                         channelid:'',
                         status:false,
                         qc:false,
-                        price:0,
+                        price:priceAdjust,
                         iscreated:false,
                         socketid:sid
                       }).exec(async (err, record, created)=>{
                         if(err){return new Error(err.message);}
                         if(!created){
                           await ProductChannel.updateOne({id: record.id}).set({
-                            price:priceAjust,
+                            price:priceAdjust,
                             socketid:sid
                           });
                         }
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
                     }
                     response.items.push(pro);
                   }
@@ -1747,8 +1746,8 @@ module.exports = {
             await sails.helpers.channel.liniomx.productQc(integration, skus);
           }else{
             let result = null;
-            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.liniomx.product(products, integration, 0, 'active');}
-            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.liniomx.product(products, integration, 0, 'active',false);}
+            if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.liniomx.product(products, integration, priceAdjust, 'active');}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.liniomx.product(products, integration, priceAdjust, 'active',false);}
             
             let pageNumber = Math.ceil(result.Request.length / pageSize);
             for (let i = 1; i <= pageNumber; i++) {
@@ -1761,7 +1760,6 @@ module.exports = {
                 if(resData.SuccessResponse){
                   for (const pro of products) {
                     const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
-                    const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
                     if(action === 'ProductCreate'){
                       await ProductChannel.findOrCreate({id: productChannelId},{
                         product:pro.id,
@@ -1770,21 +1768,21 @@ module.exports = {
                         channelid:'',
                         status:false,
                         qc:false,
-                        price:0,
+                        price:priceAdjust,
                         iscreated:false,
                         socketid:sid
                       }).exec(async (err, record, created)=>{
                         if(err){return new Error(err.message);}
                         if(!created){
                           await ProductChannel.updateOne({id: record.id}).set({
-                            price:priceAjust,
+                            price:priceAdjust,
                             socketid:sid
                           });
                         }
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
                     }
                     response.items.push(pro);
                   }
@@ -1828,7 +1826,7 @@ module.exports = {
         if (products.length > 0) {
           let integration = await sails.helpers.channel.mercadolibre.sign(intgrationId);
           for (let pl of products) {
-            const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
+            const mlprice = priceAdjust;
             const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
             let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
@@ -1863,7 +1861,7 @@ module.exports = {
                     status:true,
                     qc:true,
                     iscreated: true,
-                    price:0
+                    price:mlprice
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
                     if(!created){
@@ -1908,7 +1906,7 @@ module.exports = {
         if (products.length > 0) {
           let integration = await sails.helpers.channel.mercadolibremx.sign(intgrationId);
           for (let pl of products) {
-            const mlprice = pl.channels.length > 0 ? pl.channels[0].price : 0;
+            const mlprice = priceAdjust;
             const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
             let body = await sails.helpers.channel.mercadolibremx.product(pl.id,action,integration.id, mlprice)
@@ -1943,7 +1941,7 @@ module.exports = {
                     status:true,
                     qc:true,
                     iscreated: true,
-                    price:0
+                    price:mlprice
                   }).exec(async (err, record, created)=>{
                     if(err){return new Error(err.message);}
                     if(!created){
