@@ -72,10 +72,12 @@ module.exports = {
                       estado:'Aceptado',
                       channel:'mercadolibre',
                       channelref:order.id,
-                      integration:integration.id
+                      integration:integration.id,
+                      mode: shipping.mode,
+                      shipping: shipping.id,
+                      receiverId: shipping.mode === 'custom' ? shipping.receiver_id : shipping.service_id
                     }
                   };
-
                   payment.data['ref_payco'] = order.id;
                   let cart = await Cart.create().fetch();
                   for(let item of order['order_items']){

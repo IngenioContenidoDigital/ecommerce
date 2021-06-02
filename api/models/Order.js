@@ -95,6 +95,18 @@ module.exports = {
     transport: {
       type:'string',
       defaultsTo:''
+    },
+    modeMeli: {
+      type:'string',
+      defaultsTo:''
+    },
+    shippingMeli: {
+      type:'string',
+      defaultsTo:''
+    },
+    receiverId: {
+      type:'string',
+      defaultsTo:''
     }
   },
   beforeCreate (obj, cb) {

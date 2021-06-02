@@ -1486,7 +1486,7 @@ module.exports = {
     let products = [];
     let action = '';
     let body={Request:[]};
-    const pageSize = 4000;
+    const pageSize = req.body.action === 'ProductQcStatus' ? 200 :  req.body.action === 'ProductCreate' ? 4000 : 2500;
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
@@ -1517,10 +1517,14 @@ module.exports = {
         }
         if (products.length > 0) {
           if(action === 'Image'){
-            let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
-            const imgxml = jsonxml(imgresult,true);
             let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
-            setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
+            let number = Math.ceil(imgresult.Request.length / pageSize);
+            for (let i = 1; i <= number; i++) {
+              body.Request = imgresult.Request.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+              const imgxml = jsonxml(body,true);
+              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            }
             for (const pro of products) {
               response.items.push(pro);
             }
@@ -1535,7 +1539,11 @@ module.exports = {
               }
               response.items.push(product);
             }
-            await sails.helpers.channel.productQc(integration, skus);
+            let number = Math.ceil(skus.length / pageSize);
+            for (let i = 1; i <= number; i++) {
+              const resultSkus = skus.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+              await sails.helpers.channel.productQc(integration, resultSkus);
+            }
           }else{
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
@@ -1621,10 +1629,14 @@ module.exports = {
 
         if (products.length > 0) {
           if(action === 'Image'){
-            let imgresult = await sails.helpers.channel.linio.images(products, integration.id);
-            const imgxml = jsonxml(imgresult,true);
-            let imgsign = await sails.helpers.channel.linio.sign(integration.id, 'Image', seller);
-            setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
+            let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
+            let number = Math.ceil(imgresult.Request.length / pageSize);
+            for (let i = 1; i <= number; i++) {
+              body.Request = imgresult.Request.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+              const imgxml = jsonxml(body,true);
+              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            }
             for (const pro of products) {
               response.items.push(pro);
             }
@@ -1639,7 +1651,11 @@ module.exports = {
               }
               response.items.push(product);
             }
-            await sails.helpers.channel.productQc(integration, skus);
+            let number = Math.ceil(skus.length / pageSize);
+            for (let i = 1; i <= number; i++) {
+              const resultSkus = skus.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+              await sails.helpers.channel.productQc(integration, resultSkus);
+            }
           }else{
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
@@ -1725,10 +1741,14 @@ module.exports = {
 
         if (products.length > 0) {
           if(action === 'Image'){
-            let imgresult = await sails.helpers.channel.liniomx.images(products, integration.id);
-            const imgxml = jsonxml(imgresult,true);
-            let imgsign = await sails.helpers.channel.liniomx.sign(integration.id, 'Image', seller);
-            setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            let imgsign = await sails.helpers.channel.dafiti.sign(integration.id, 'Image', seller);
+            let imgresult = await sails.helpers.channel.dafiti.images(products, integration.id);
+            let number = Math.ceil(imgresult.Request.length / pageSize);
+            for (let i = 1; i <= number; i++) {
+              body.Request = imgresult.Request.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+              const imgxml = jsonxml(body,true);
+              setTimeout(async () => {await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);}, 5000);
+            }
             for (const pro of products) {
               response.items.push(pro);
             }
@@ -1743,7 +1763,11 @@ module.exports = {
               }
               response.items.push(product);
             }
-            await sails.helpers.channel.liniomx.productQc(integration, skus);
+            let number = Math.ceil(skus.length / pageSize);
+            for (let i = 1; i <= number; i++) {
+              const resultSkus = skus.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+              await sails.helpers.channel.productQc(integration, resultSkus);
+            }
           }else{
             let result = null;
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.liniomx.product(products, integration, priceAdjust, 'active');}
@@ -2158,7 +2182,7 @@ module.exports = {
         }
       }
     } catch (err) {
-      response.errors.push(err.message);
+      response.errors.push('Error en el proceso, Intenta de nuevo más tarde.');
     }
     return res.send(response);
   },

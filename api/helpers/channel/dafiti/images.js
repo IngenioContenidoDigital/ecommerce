@@ -39,16 +39,12 @@ module.exports = {
               };
               imagebody.Request.push(img);
             };
-          }else{
-            throw new Error('Producto sin Variaciones');
           }
         }else{
           await ProductChannel.updateOne({product: p.id, integration : inputs.integration}).set({
             status:false,
             qc:false,
           });
-
-          throw new Error('Producto sin Imágenes');
         }
       }catch(err){
         console.log(err);

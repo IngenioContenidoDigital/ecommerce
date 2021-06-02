@@ -34,7 +34,8 @@ module.exports = {
     let params = {};
     let config = {
       headers: {
-        Authorization: `Bearer ${inputs.secret}`
+        Authorization: `Bearer ${inputs.secret}`,
+        'Accept-Encoding': 'gzip, deflate, br'
       }
     };
     if(inputs.secret === 'auth'){delete config.headers}
@@ -63,14 +64,14 @@ module.exports = {
       }
     }catch(err){
       let cause = '';
-      if (err.response.data && err.response.data.cause && err.response.data.cause.length > 0) {
+      if (err.response && err.response.data.cause && err.response.data.cause.length > 0) {
         for (const caus of err.response.data.cause) {
           if (caus.type === 'error') {
             cause = cause + ' | ' + caus.message;
           }
         }
       }
-      throw new Error(err.response.data ? cause ? cause : err.response.data.message : err.message);
+      throw new Error(err.response && err.response.data ? cause ? cause : err.response.data.message : err.message);
     }
   }
 };

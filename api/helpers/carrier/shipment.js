@@ -30,7 +30,7 @@ module.exports = {
     let integration = await Integrations.findOne({id: order.integration}).populate('channel');
 
     if(order.channel==='direct' || order.channel==='iridio' || (order.transport && order.transport === 'coordinadora')){
-      
+
       let recaudo = null;
       if(order.paymentMethod==='COD'){
         let formapago = 1;
@@ -124,7 +124,7 @@ module.exports = {
             'unidades':'1',
             'referencia':null,
             'nombre_empaque':null
-            });
+          });
         }else{
           let added = false;
           for(let it of items){
@@ -148,20 +148,41 @@ module.exports = {
         }
       }
       requestArgs.Guias_generarGuia.detalle.Agw_typeGuiaDetalle=items;
-      //   /**
-      //  *   Guias_generarGuiaInter - Generar Guía de Despacho Internacional
-      //  *   Guias_generarGuia - Generar Guía de Despacho Nacional
-      //  *   Guias_imprimirRotulos - Imprimir Rotulos para Paquetes
-      //  *   Cotizador_cotizar - Cotizar Costo de la guía
-      //  *   Seguimiento_simple - Verificación de Estado de Entrega
-      //  *   Guias_liquidacionGuia - Consultar el Valor de la Guía
-      //  */
+      /**
+       *   Guias_generarGuiaInter - Generar Guía de Despacho Internacional
+       *   Guias_generarGuia - Generar Guía de Despacho Nacional
+       *   Guias_imprimirRotulos - Imprimir Rotulos para Paquetes
+       *   Cotizador_cotizar - Cotizar Costo de la guía
+       *   Seguimiento_simple - Verificación de Estado de Entrega
+       *   Guias_liquidacionGuia - Consultar el Valor de la Guía
+       */
 
       let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Guias_generarGuia','prod','guides')
       .tolerate(() =>{ return; });
       if(result){
-        await Order.updateOne({id:inputs.order}).set({tracking:result.return.codigo_remision.$value});
+        const order = await Order.updateOne({id:inputs.order}).set({tracking:result.return.codigo_remision.$value});
         await sails.helpers.carrier.costs(result.return.codigo_remision.$value);
+        if (order.channel === 'mercadolibre' && order.shippingMeli) {
+          if (order.modeMeli === 'custom') {
+            const payment = {
+              shipping: order.shippingMeli,
+              status: order.currentstatus,
+              mode: 'custom',
+              receiverId: order.receiverId,
+              tracking: order.tracking
+            };
+            await sails.helpers.channel.mercadolibre.updateShipment(order.integration, payment);
+          } else if (order.modeMeli === 'me1') {
+            const payment = {
+              shipping: order.shippingMeli,
+              status: order.currentstatus,
+              mode: 'me1',
+              receiverId: order.receiverId,
+              tracking: order.tracking
+            };
+            await sails.helpers.channel.mercadolibre.updateShipment(order.integration, payment);
+          }
+        }
       }
     }
     if(order.channel==='dafiti'){
