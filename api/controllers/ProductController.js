@@ -1056,17 +1056,13 @@ module.exports = {
     }
 
     let route = sails.config.views.locals.imgurl;
-    const csv = require('csvtojson');
     let json = [];
     try {
       if (req.body.entity === 'ProductImage') {
         let imageslist = await sails.helpers.fileUpload(req, 'file', 200000000, 'images/products/tmp');
         json = imageslist;
       } else {
-        let filename = await sails.helpers.fileUpload(req, 'file', 2000000, 'uploads');
-        let response = await axios.get(route + '/uploads/' + filename[0].filename, { responseType: 'arraybuffer' });
-        let buffer = Buffer.from(response.data, 'utf-8');
-        json = await csv({ eol: '\n', delimiter: ';' }).fromString(buffer.toString());
+        json = await sails.helpers.convertExcel(req, 'file', 2000000);
       }
       return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, seller: seller, integrations: integrations, resultados: json, rights: rights.name, type: type });
     } catch (err) {
@@ -1141,7 +1137,6 @@ module.exports = {
         prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
         prod.seller = seller;
 
-
         let product = await Product.findOne({ reference: prod.supplierreference, seller: seller })
           .populate('tax')
           .populate('categories');
@@ -1154,36 +1149,35 @@ module.exports = {
             }
           });
           prod.product = product.id;
-          prod.price = parseInt(product.price * (1 + product.tax.value / 100));
+          prod.price = parseInt(req.body.product.price * (1 + product.tax.value / 100));
           let variation = await Variation.find({
             where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, seller: product.seller, manufacturer: product.manufacturer, category: { 'in': categories } },
             limit: 1
           });
-          if (variation) {
-            prod.variation = (variation[0]).id;
-
-            ProductVariation.findOrCreate({ product: prod.product, variation: prod.variation }, prod)
-              .exec(async (err, productVariat, wasCreated) => {
-                if (err) { throw err; }
-                if (!wasCreated) {
-                  let updateVariation = {
-                    supplierreference: prod.supplierreference,
-                    reference: prod.reference,
-                    ean13: prod.ean13,
-                    upc: prod.upc,
-                    quantity: prod.quantity,
-                    variation: prod.variation,
-                    product: prod.product,
-                    price: prod.price,
-                    seller: prod.seller
-                  };
-                  await ProductVariation.updateOne({ id: productVariat.id }).set(updateVariation);
-                }
-              });
-            result['items'].push(prod);
-          } else {
-            throw new Error('Variación ' + req.body.product.variation + ' no disponible para este producto');
+          if(!variation || variation.length == 0){
+            variation = await Variation.create({name:req.body.product.variation.toLowerCase().replace(',','.'),gender: product.gender,seller:product.seller,manufacturer:product.manufacturer,category:product.categories[0].id}).fetch();
           }
+          variation = variation.length > 0 ? variation[0] : variation;
+          prod.variation = variation.id;
+          ProductVariation.findOrCreate({ product: prod.product, variation: prod.variation }, prod)
+            .exec(async (err, productVariat, wasCreated) => {
+              if (err) { throw err; }
+              if (!wasCreated) {
+                let updateVariation = {
+                  supplierreference: prod.supplierreference,
+                  reference: prod.reference,
+                  ean13: prod.ean13,
+                  upc: prod.upc,
+                  quantity: prod.quantity,
+                  variation: prod.variation,
+                  product: prod.product,
+                  price: prod.price,
+                  seller: prod.seller
+                };
+                await ProductVariation.updateOne({ id: productVariat.id }).set(updateVariation);
+              }
+            });
+          result['items'].push(prod);
         } else {
           throw new Error('Producto principal no localizado');
         }
