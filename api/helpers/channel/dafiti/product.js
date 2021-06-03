@@ -155,6 +155,18 @@ module.exports = {
               if(i>0 && productvariation.length>1){
                 data.Product.ParentSku=parent;
               }
+
+              let productfeatures = await ProductFeature.find({product:p.id,value:{'!=':''}});
+              if(productfeatures.length>0){
+                for(let fc of productfeatures){
+                  if(fc.value){
+                    let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
+                    for(let cf of channelfeatures){
+                      data.Product.ProductData[cf.name] = fc.value;
+                    }
+                  }
+                }
+              }
             }
             /*if(brand==='speedo'){
               data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>');

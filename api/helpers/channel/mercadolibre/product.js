@@ -186,6 +186,19 @@ module.exports = {
         },
         'variations':variations,
       };
+
+      let productfeatures = await ProductFeature.find({product:product.id,value:{'!=':''}});
+      if(productfeatures.length>0){
+        for(let fc of productfeatures){
+          if(fc.value){
+            let channelfeatures = await FeatureChannel.find({channel:integration.channel.id,feature:fc.feature});
+            for(let cf of channelfeatures){
+              body.attributes.push({'id':cf.name,'value_name':fc.value});
+            }
+          }
+        }
+      }
+
       /*body['variations']=[];
         response.variations.forEach(mlv =>{
           for(let v in variations){

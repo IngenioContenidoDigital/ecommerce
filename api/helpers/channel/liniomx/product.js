@@ -107,7 +107,6 @@ module.exports = {
             if(categories.length<2){delete data.Product.Categories;}
             if(categories.includes('17937')/** Belleza y Cuidado*/ || categories.includes('14206')/** Salud y Bienestar*/){
               delete data.Product.ProductData.Gender;
-              data.Product.ProductData.SanitaryRegistration= product.register ? product.register : '';
               data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
               data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
               if(categories.includes('18397')/** Perfumes */){
@@ -121,6 +120,17 @@ module.exports = {
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
             }
+            let productfeatures = await ProductFeature.find({product:p.id,value:{'!=':''}});
+              if(productfeatures.length>0){
+                for(let fc of productfeatures){
+                  if(fc.value){
+                    let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
+                    for(let cf of channelfeatures){
+                      data.Product.ProductData[cf.name] = fc.value;
+                    }
+                  }
+                }
+              }
           }
           if(product.discount.length>0){
             let discPrice=0;

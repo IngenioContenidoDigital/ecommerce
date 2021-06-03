@@ -210,12 +210,12 @@
             if(channel.name == 'mercadolibre' || channel.name == 'mercadolibremx'){
               if(feature){
                 if(feature.channels.find(f => f.name == attr.name && f.channel == channel.id)){
-                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.name+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.id+'" checked/>'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
                 }else{
-                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.name+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.id+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
                 }
               } else {
-                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.name+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
+                  op.innerHTML='<span><input type="radio" name="'+channel.name+'" value="'+attr.id+'" />'+'<i class="bx bxs-purchase-tag-alt"></i><label class="tree-toggler">&nbsp;'+attr.name+'</label></span>'
               }
             }
             if(channel.name == 'linio' || channel.name == 'dafiti'){
