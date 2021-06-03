@@ -990,7 +990,6 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let axios = require('axios');
     let seller = req.body.seller ? req.body.seller : req.session.user.seller;
     let integrations = await Integrations.find({ seller: seller });
     let importType = req.body.importType;
