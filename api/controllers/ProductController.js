@@ -2959,7 +2959,9 @@ module.exports = {
         body.Request.push({Product: {SellerSku:pv.id}});
       }
       const xml = jsonxml(body, true);
-      let sign = channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integrationId, 'ProductRemove', integration.seller) : await sails.helpers.channel.linio.sign(integrationId, 'ProductRemove', integration.seller);
+      let sign = channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integrationId, 'ProductRemove', integration.seller) : 
+      channel === 'liniomx' ? await sails.helpers.channel.liniomx.sign(integrationId, 'ProductRemove', integration.seller) : 
+      await sails.helpers.channel.linio.sign(integrationId, 'ProductRemove', integration.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
       .then(async (resData)=>{
         resData = JSON.parse(resData);
