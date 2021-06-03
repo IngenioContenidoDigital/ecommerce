@@ -224,6 +224,9 @@
                       <th scope="col">Fin</th>
                       <th scope="col">Tipo</th>
                       <th scope="col">Valor</th>
+                      <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                        <th scope="col">Seller</th>
+                      <%}%>
                       <th scope="col">Opciones</th>
                   </tr>
                   </thead>
@@ -235,6 +238,9 @@
                               <td class="align-middle"><%= moment(discount.to).locale('es').format('DD MMMM YYYY HH:mm:ss'); %></td>
                               <td class="align-middle"><%= discount.type %></td>
                               <td class="align-middle"><%= discount.value %></td>
+                              <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
+                                <td class="align-middle"><%if(discount.seller && discount.seller.name){%><%= discount.seller.name %><%}%></td>
+                              <%}%>
                               <td class="align-middle">
                               <a href="/discounts/edit/<%= discount.id %>" class="button is-small">
                                   <span class="icon">

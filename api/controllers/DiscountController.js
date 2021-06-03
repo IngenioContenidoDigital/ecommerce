@@ -24,10 +24,10 @@ module.exports = {
     let sellers = null;
     if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({id:req.session.user.seller});
-      discounts = await CatalogDiscount.find({seller:req.session.user.seller}).sort([{createdAt: 'DESC'}]);
+      discounts = await CatalogDiscount.find({seller:req.session.user.seller}).sort([{createdAt: 'DESC'}]).populate('seller');
     }else{
       sellers = await Seller.find();
-      discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]);
+      discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]).populate('seller');
     }
     let genders = await Gender.find();
     let colors = await Color.find();
