@@ -131,8 +131,8 @@
         </div>
         <div class="columns">
           <div class="column">
-            <label class="label is-inline is-size-7" for="register">Registro Sanitario</label>
-            <input class="input is-size-7" type="text" placeholder="Registro Sanitario" name="register" <% if(action=='edit'){ %> value="<%= product.register %>" <% } %> />
+            <label class="label is-inline is-size-7" for="group">Grupo de Productos</label>
+            <input class="input is-size-7" type="text" placeholder="Grupo de Productos" name="group" <% if(action=='edit'){ %> value="<%= product.group %>" <% } %> />
             <br>
             <div class="tabs">
               <ul>
@@ -1171,7 +1171,7 @@
           weight:form.querySelector('input[name="weight"]').value,
           descriptionshort:textdescriptionshort,
           description:textdescription,
-          register:form.querySelector('input[name="register"]').value
+          group:form.querySelector('input[name="group"]').value
         }, 
         function (resData, jwRes) {
           if(jwRes.statusCode==200){
