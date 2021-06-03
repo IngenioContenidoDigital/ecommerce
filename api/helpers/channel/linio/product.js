@@ -128,7 +128,7 @@ module.exports = {
                   if(fc.value){
                     let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
                     for(let cf of channelfeatures){
-                      data.Product.ProductData[cf.name] = fc.value;
+                      data.Product.ProductData[cf.name] = fc.value.toLowerCase();
                     }
                   }
                 }
