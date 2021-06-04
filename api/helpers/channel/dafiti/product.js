@@ -110,7 +110,7 @@ module.exports = {
 
               data.Product.Name=product.name;
               data.Product.PrimaryCategory=product.mainCategory.dafiti.split(',')[0];
-              data.Product.Categories=categories.join(',');
+              //data.Product.Categories=categories.join(',');
               data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
               data.Product.Brand=brand;
               data.Product.Condition='new';
@@ -150,10 +150,22 @@ module.exports = {
                 data.Product.ProductData.Color=product.mainColor.name;
               }
 
-              if(categories.length<2){delete data.Product.Categories;}
+              //if(categories.length<2){delete data.Product.Categories;}
               if(categories.includes('2')/** Accesorios */ || categories.includes('138')/** Deportes */){delete data.Product.ProductData.ShortDescription;}
               if(i>0 && productvariation.length>1){
                 data.Product.ParentSku=parent;
+              }
+
+              let productfeatures = await ProductFeature.find({product:p.id,value:{'!=':''}});
+              if(productfeatures.length>0){
+                for(let fc of productfeatures){
+                  if(fc.value){
+                    let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
+                    for(let cf of channelfeatures){
+                      data.Product.ProductData[cf.name] = fc.value.toLowerCase();
+                    }
+                  }
+                }
               }
             }
             /*if(brand==='speedo'){

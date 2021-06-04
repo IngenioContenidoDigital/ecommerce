@@ -32,13 +32,19 @@ module.exports = {
         for(let i=0; i<uploadedFiles.length; i++){
           let filename = uploadedFiles[i].filename;
           let exceltojson = filename.split('.')[filename.split('.').length-1] === 'xlsx' ? xlsxtojson : xlstojson;
+          let records = [];
           exceltojson({
             input: uploadedFiles[i].fd,
             output: null,
-            allowEmptyKey: true,
+            allowEmptyKey: false,
           }, (err, result) => {
             if (err) {return exits.error(err);}
-            return exits.success(result);
+            result.forEach(obj => {
+              if (obj.reference) {
+                records.push(obj);
+              }
+            });
+            return exits.success(records);
           });
         }
       }

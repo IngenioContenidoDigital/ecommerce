@@ -89,7 +89,7 @@ module.exports = {
               data.Product.Name= product.name;
               data.Product.Variation= (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString();
               data.Product.PrimaryCategory= product.mainCategory.linio.split(',')[0];
-              data.Product.Categories= categories.join(',');
+              //data.Product.Categories= categories.join(',');
               data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
               data.Product.Brand= product.manufacturer.linioname ? product.manufacturer.linioname : product.manufacturer.name;
               data.Product.TaxClass= product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%';
@@ -104,11 +104,10 @@ module.exports = {
                 /*FilterColor: product.mainColor.name,*/
                 ConditionType: 'Nuevo',
               };
-              //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
-              if(categories.length<2){delete data.Product.Categories;}
+
+              //if(categories.length<2){delete data.Product.Categories;}
               if(categories.includes('13984')/** Belleza y Cuidado*/ || categories.includes('10253')/** Salud y Bienestar*/){ 
                 delete data.Product.ProductData.Gender; 
-                data.Product.ProductData.SanitaryRegistration= product.register ? product.register : '';
                 data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
                 data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
                 if(categories.includes('14444')/** Perfumes */){
@@ -122,6 +121,17 @@ module.exports = {
 
               if(i>0 && productvariation.length>1){
                 data.Product.ParentSku=parent;
+              }
+              let productfeatures = await ProductFeature.find({product:p.id,value:{'!=':''}});
+              if(productfeatures.length>0){
+                for(let fc of productfeatures){
+                  if(fc.value){
+                    let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
+                    for(let cf of channelfeatures){
+                      data.Product.ProductData[cf.name] = fc.value.toLowerCase();
+                    }
+                  }
+                }
               }
             }
             if(product.discount.length>0){

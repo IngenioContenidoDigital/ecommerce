@@ -281,7 +281,7 @@ module.exports = {
           reference: req.body.reference.toUpperCase().trim(),
           description: req.body.description,
           descriptionShort: req.body.descriptionshort,
-          register:req.body.register ? req.body.register : '',
+          group:req.body.group ? req.body.group : '',
           active: req.body.active,
           tax: req.body.tax,
           mainCategory: req.body.mainCategory,
@@ -301,7 +301,7 @@ module.exports = {
           reference: req.body.reference.toUpperCase().trim(),
           description: req.body.description,
           descriptionShort: req.body.descriptionshort,
-          register:req.body.register ? req.body.register : '',
+          group:req.body.group ? req.body.group : '',
           active: req.body.active,
           tax: req.body.tax,
           mainCategory: req.body.mainCategory,
@@ -990,7 +990,6 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    let axios = require('axios');
     let seller = req.body.seller ? req.body.seller : req.session.user.seller;
     let integrations = await Integrations.find({ seller: seller });
     let importType = req.body.importType;
@@ -1201,7 +1200,7 @@ module.exports = {
         prod.length = parseFloat(req.body.product.length.replace(',', '.'));
         prod.weight = parseFloat(req.body.product.weight.replace(',', '.'));
         prod.seller = seller;
-        prod.register = req.body.product.register || '';
+        prod.group = req.body.product.group || '';
         prod.description = req.body.product.description;
         prod.descriptionShort = req.body.product.descriptionShort;
 
@@ -1358,7 +1357,7 @@ module.exports = {
       }
       prod.active = req.body.product.active || false;
       prod.externalId = req.body.product.externalId || '';
-      prod.register = req.body.product.register || '';
+      prod.group = req.body.product.group || '';
       prod.active = req.body.product.active;
       prod.width = (req.body.product.width === undefined || req.body.product.width === null || req.body.product.width < 1) ? 15 : req.body.product.width;
       prod.height = (req.body.product.height === undefined || req.body.product.height === null || req.body.product.height < 1) ? 15 : req.body.product.height;

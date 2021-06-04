@@ -170,6 +170,17 @@ module.exports = {
         },
         'variations':variations,
       };
+      let productfeatures = await ProductFeature.find({product:product.id,value:{'!=':''}});
+      if(productfeatures.length>0){
+        for(let fc of productfeatures){
+          if(fc.value){
+            let channelfeatures = await FeatureChannel.find({channel:integration.channel.id,feature:fc.feature});
+            for(let cf of channelfeatures){
+              body.attributes.push({'id':cf.name,'value_name':fc.value.toLowerCase()});
+            }
+          }
+        }
+      }
       let category = await Category.findOne({id:product.mainCategory});
       body['category_id']= category.mercadolibremx;
       let storeid = await sails.helpers.channel.mercadolibremx.officialStore(integration, brand);
