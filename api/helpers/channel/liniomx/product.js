@@ -89,7 +89,7 @@ module.exports = {
             data.Product.Name= product.name;
             data.Product.Variation= (pv.variation.mx.toString() === 'Único' || pv.variation.mx.toString() === 'único' || pv.variation.mx.toString() === 'Única' || pv.variation.mx.toString() === 'única') ? 'Talla Única' : pv.variation.mx.toString();
             data.Product.PrimaryCategory= product.mainCategory.liniomx.split(',')[0];
-            data.Product.Categories= categories.join(',');
+            //data.Product.Categories= categories.join(',');
             data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
             data.Product.Brand= product.manufacturer.linioname ? product.manufacturer.linioname : product.manufacturer.name;
             data.Product.TaxClass= product.tax && product.tax.value === 16 ? 'IVA 16%' : 'IVA 0%';
@@ -104,7 +104,7 @@ module.exports = {
               ConditionType: 'Nuevo',
             };
             //if(product.register!=='' && product.register!==null){data.Product.SanitaryRegistration = product.register;}
-            if(categories.length<2){delete data.Product.Categories;}
+            //if(categories.length<2){delete data.Product.Categories;}
             if(categories.includes('17937')/** Belleza y Cuidado*/ || categories.includes('14206')/** Salud y Bienestar*/){
               delete data.Product.ProductData.Gender;
               data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
