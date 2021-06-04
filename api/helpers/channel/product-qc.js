@@ -47,7 +47,7 @@ module.exports = {
               const product = productVariation.product.id;
               const ref = productVariation.product.reference;
               if(!listProducts.some(e => e.product === product)){
-                listProducts.push({product: product, status: state.Status, reference: ref, message: state.Reason});
+                listProducts.push({product: product, status: state.Status, reference: ref, message: status.Reason ? status.Reason : ''});
               }
             }
           }
