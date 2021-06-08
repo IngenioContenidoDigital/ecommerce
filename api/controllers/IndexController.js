@@ -68,6 +68,13 @@ module.exports = {
     req.session.questions = questionsSeller;
     return res.view('pages/homeadmin',{layout:'layouts/admin'});
   },
+  reportsadmin:async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name !== 'superadmin' && rights.name !== 'admin'){
+      throw 'forbidden';
+    }
+    return res.view('pages/reports/reportorders',{layout:'layouts/admin'});
+  },
   filterDashboard:async (req, res) =>{
     if (!req.isSocket) {
       return res.badRequest();
@@ -140,14 +147,25 @@ module.exports = {
     }
     let sellerId = req.param('seller');
     let month = req.param('month');
-    let dateStart = new Date(moment(month, 'MMMM YYYY').subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
-    let dateEnd = new Date(moment(month, 'MMMM YYYY').subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
-    let orders = await Order.find({
-      where: {
-        seller: sellerId,
-        updatedAt: { '>': dateStart, '<': dateEnd }
-      }
-    }).populate('customer').populate('currentstatus');
+    let orders = [];
+    if (sellerId && month) {
+      let dateStart = new Date(moment(month, 'MMMM YYYY').subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
+      let dateEnd = new Date(moment(month, 'MMMM YYYY').subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
+      orders = await Order.find({
+        where: {
+          seller: sellerId,
+          updatedAt: { '>': dateStart, '<': dateEnd }
+        }
+      }).populate('customer').populate('currentstatus');
+    } else if(req.param('startDate') && req.param('endDate')){
+      let dateStart = new Date(req.param('startDate')).valueOf();
+      let dateEnd = new Date(req.param('endDate')).valueOf();
+      orders = await Order.find({
+        where: {
+          updatedAt: { '>': dateStart, '<': dateEnd }
+        }
+      }).populate('customer').populate('currentstatus');
+    }
     let workbook = new Excel.Workbook();
     let worksheet = workbook.addWorksheet('Reporte');
     let ordersItem = [];
@@ -169,6 +187,7 @@ module.exports = {
       { header: 'Referencia marketplace', key: 'channelref', width: 22 },
       { header: 'Referencia del pedido', key: 'orderref', width: 15 },
       { header: 'Número de rastreo', key: 'tracking', width: 20 },
+      { header: 'Comisión', key: 'commission', width: 20 },
       { header: 'Fecha de creación', key: 'createdAt', width: 20 },
       { header: 'Fecha de actualización', key: 'updatedAt', width: 22 },
     ];
@@ -934,5 +953,5 @@ module.exports = {
     }
     const buffer = await workbook.xlsx.writeBuffer();
     return res.send(buffer);
-  },
+  }
 };

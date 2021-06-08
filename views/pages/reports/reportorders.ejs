@@ -1,0 +1,73 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+<div class="container">
+  <div class="notification is-danger is-light is-hidden" id="error">
+  </div>
+  <h4 class="title is-4">Reporte de Ventas</h4>
+  <hr>
+  <div class="columns is-gapless">
+    <div class="column">
+      <div class="box">
+        <div class="field">
+          <label class="label">Rango de Fecha</label>
+          <div class="input-datepiker">
+            <input class="input" type="date" name="range"/>
+          </div>
+        </div>
+        <br>
+        <div class="buttons is-right is-fixed-bottom">
+          <br><br><br>
+          <button id="process" type="submit" class="button is-primary is-size-7"><i class='bx bx-download is-size-5'></i>&nbsp;&nbsp;Procesar Reporte</button>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+    </div>
+  </div>
+</div>
+<script>
+  const start = moment().startOf('month');
+  const end = moment().endOf('month');
+
+  const calendars = bulmaCalendar.attach('[name="range"]', {
+    type:'date',
+    isRange: true,
+    allowSameDayRange: true,
+    dateFormat:'YYYY-MM-DD',
+    displayMode:'default',
+    cancelLabel:'Cancelar',
+    clearLabel:'Limpiar',
+    todayLabel:'Hoy',
+    validateLabel:'Seleccionar'
+  });
+
+  calendars.forEach(calendar => {
+    calendar.on('select', date => {
+    });
+  });
+
+  live('#process','click', e =>{
+    e.preventDefault();
+    let dateRange = document.querySelector('input[name="range"]').value;
+    const startDate = dateRange ? moment(dateRange.split(' - ')[0]).format('YYYY/MM/DD') : null;
+    const endDate = dateRange ? moment(dateRange.split(' - ')[1]).add(1, 'days').format('YYYY/MM/DD') : null;
+    addClass(e.target, 'is-loading');
+    if (!startDate || !endDate) {
+      const divError = document.getElementById('error');
+      divError.textContent = 'Ingrese un intervalo de fecha';
+      removeClass(divError, 'is-hidden');
+      removeClass(e.target, 'is-loading');
+      setTimeout(function() {
+        if(divError){
+          addClass(divError, 'is-hidden');
+        }
+      }, 4000);
+    } else {
+      io.socket.post('/generatereport', {startDate, endDate}, (resData, jwRes) =>{
+        if(jwRes.statusCode == 200) {
+          removeClass(e.target, 'is-loading');
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Reporte Pedidos 1Ecommerce.xlsx`);
+        }
+      });
+    }
+  });
+</script>
