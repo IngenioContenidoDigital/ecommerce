@@ -72,7 +72,7 @@ module.exports = {
     }
     requestArgs.p.detalle.item = items;
     let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Cotizador_cotizar','prod','tracking');
-    await Order.updateOne({id:order.id}).set({fleteFijo:result.Cotizador_cotizarResult.flete_fijo,fleteVariable:result.Cotizador_cotizarResult.flete_variable,fleteTotal:result.Cotizador_cotizarResult.flete_total});
+    await Order.updateOne({id:order.id}).set({fleteFijo:parseFloat(result.Cotizador_cotizarResult.flete_fijo),fleteVariable:parseFloat(result.Cotizador_cotizarResult.flete_variable),fleteTotal:parseFloat(result.Cotizador_cotizarResult.flete_total)});
     return exits.success();
   }
 
