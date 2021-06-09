@@ -55,7 +55,7 @@ module.exports = {
         totalOrdersCancel += 1;
       }
       if (order.currentstatus.name !== 'cancelado' && order.currentstatus.name !== 'fallido' && order.currentstatus.name !== 'rechazado') {
-        totalShippingCost += order.fleteTotal;
+        totalShippingCost += parseFloat(order.fleteTotal);
       }
       if (order.currentstatus.name === 'entregado') {
         let states = [];
