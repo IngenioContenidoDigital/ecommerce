@@ -1479,7 +1479,7 @@ module.exports = {
     let products = [];
     let action = '';
     let body={Request:[]};
-    const pageSize = req.body.action === 'ProductQcStatus' ? 200 :  req.body.action === 'ProductCreate' ? 4000 : 2500;
+    const pageSize = req.body.action === 'ProductQcStatus' ? 100 :  req.body.action === 'ProductCreate' ? 4000 : 2500;
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
@@ -1497,7 +1497,7 @@ module.exports = {
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
+            products = products.filter(pro => pro.channels.length > 0 /*&& pro.channels[0].iscreated*/);
             break;
           case 'Image':
             action = 'Image';
@@ -1505,7 +1505,7 @@ module.exports = {
             break;
           case 'ProductQcStatus':
             action = 'ProductQcStatus';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && !pro.channels[0].qc);
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && (!pro.channels[0].qc || pro.channels[0].reason !== ''));
             break;
         }
         if (products.length > 0) {
@@ -1616,7 +1616,7 @@ module.exports = {
             break;
           case 'ProductQcStatus':
             action = 'ProductQcStatus';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && !pro.channels[0].qc);
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && (!pro.channels[0].qc || pro.channels[0].reason !== ''));
             break;
         }
 
@@ -1728,7 +1728,7 @@ module.exports = {
             break;
           case 'ProductQcStatus':
             action = 'ProductQcStatus';
-            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && !pro.channels[0].qc);
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && (!pro.channels[0].qc || pro.channels[0].reason !== ''));
             break;
         }
 
@@ -2175,7 +2175,7 @@ module.exports = {
         }
       }
     } catch (err) {
-      response.errors.push('Error en el proceso, Intenta de nuevo más tarde.');
+      response.errors.push(err.message);
     }
     return res.send(response);
   },
@@ -2975,7 +2975,9 @@ module.exports = {
         body.Request.push({Product: {SellerSku:pv.id}});
       }
       const xml = jsonxml(body, true);
-      let sign = channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integrationId, 'ProductRemove', integration.seller) : await sails.helpers.channel.linio.sign(integrationId, 'ProductRemove', integration.seller);
+      let sign = channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integrationId, 'ProductRemove', integration.seller) : 
+      channel === 'liniomx' ? await sails.helpers.channel.liniomx.sign(integrationId, 'ProductRemove', integration.seller) : 
+      await sails.helpers.channel.linio.sign(integrationId, 'ProductRemove', integration.seller);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
       .then(async (resData)=>{
         resData = JSON.parse(resData);
