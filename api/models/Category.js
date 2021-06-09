@@ -22,6 +22,7 @@ module.exports = {
     mercadolibremx:{type:'string'},
     linio:{type:'string'},
     liniomx:{type:'string'},
+    walmart:{type:'string'},
     parent:{
       model:'category'
     },

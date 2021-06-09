@@ -286,6 +286,110 @@ module.exports = {
         await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
       }
     }
+    if(order.channel==='walmart'){
+      let axios = require('axios');    
+      let token = await sails.helpers.channel.walmart.sign(integration);
+
+      let auth = `${integration.user}:${integration.key}`;
+      const buferArray = Buffer.from(auth);
+      let encodedAuth = buferArray.toString('base64');
+
+      let order_id_array = order.channelref.split("-");
+      let purchaseOrderId = order_id_array[0];
+      let order_line = order_id_array[1];
+            
+      let options = {
+        method: 'get',
+        url: `${integration.channel.endpoint}/v3/orders?purchaseOrderId=${purchaseOrderId}`,
+        headers: {
+            accept: 'application/json',                
+            'WM_MARKET' : 'mx',
+            'WM_SEC.ACCESS_TOKEN':token,
+            'WM_SVC.NAME' : 'Walmart Marketplace',
+            'WM_QOS.CORRELATION_ID': '11111111',
+            'Authorization': `Basic ${encodedAuth}`
+        }
+      };
+      let response_order = await axios(options).catch((e) => {error=e; console.log(e);});
+      if(response_order){
+      //   response_order.data.order[0].shipments=[
+
+      //     {
+
+      //         "shipmentLines": [
+
+      //             {
+
+      //                 "primeLineNo": "2",
+
+      //                 "shipmentLineNo": "1",
+
+      //                 "quantity": {
+
+      //                     "unitOfMeasurement": "EACH",
+
+      //                     "amount": "1"
+
+      //                 }
+
+      //             }
+
+      //         ],
+
+      //         "shipmentNo": "149059311",
+
+      //         "carrier": "MX-FEDX",
+
+      //         "trackingNumber": "936922412400",
+
+      //         "trackingUrl": "https://www.fedex.com/apps/fedextrack/?cntry_code=mx&tab=1&tracknums=936922412400",
+
+      //         "shipmentAdditionalDate": {
+
+      //             "shipmentActualCreatedDate": "2021-02-24T14:14:15.000-06:00",
+
+      //             "expectedShipmentACKDate": "2021-02-26T14:14:15.000-06:00",
+
+      //             "shipmentACKDate": "2021-02-24T20:36:36.000-06:00",
+
+      //             "expectedShipmentShippedDate": "2021-02-26T20:36:36.000-06:00"
+
+      //         }
+
+      //     },
+
+      //     {
+
+      //         "shipmentLines": [
+      //             {
+      //                 "primeLineNo": "1",
+      //                 "shipmentLineNo": "1",
+      //                 "quantity": {
+      //                     "unitOfMeasurement": "EACH",
+      //                     "amount": "1"
+      //                 }
+      //             }
+      //         ],
+      //         "shipmentNo": "149059322",
+      //         "carrier": "MX-FEDX",
+      //         "trackingNumber": "936922412385",
+      //         "trackingUrl": "https://www.fedex.com/apps/fedextrack/?cntry_code=mx&tab=1&tracknums=936922412385",
+      //         "shipmentAdditionalDate": {
+      //             "shipmentActualCreatedDate": "2021-02-24T14:14:17.000-06:00",
+      //             "expectedShipmentACKDate": "2021-02-26T14:14:16.000-06:00",
+      //             "shipmentACKDate": "2021-02-24T20:36:36.000-06:00",
+      //             "expectedShipmentShippedDate": "2021-02-26T20:36:36.000-06:00"
+      //         }
+
+      //     }
+
+      // ]
+        const result = response_order.data.order[0].shipments.filter(item => item.shipmentLines[0].primeLineNo === order_line);
+        let tracking = result[0].trackingNumber;
+        await Order.updateOne({id:order.id}).set({tracking:tracking});
+      }
+      
+    }
 
     return exits.success();
   }

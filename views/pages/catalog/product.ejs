@@ -856,7 +856,7 @@
                               <input id="<%= i.id %>" type="checkbox" name="productstatus" channelId='<%= i.channel.id %>' nameChannel="<%= i.channel.name %>" <%if(typeof product=='object' && productchannel && productchannel.status){%>checked<%}%> class="switch is-success">
                               <label for="<%= i.id %>"></label>
                             </td>
-                            <% if(productchannel && (i.channel.name === 'dafiti' || i.channel.name === 'linio' || i.channel.name === 'liniomx')){%>
+                            <% if(productchannel && (i.channel.name === 'dafiti' || i.channel.name === 'linio' || i.channel.name === 'liniomx' || i.channel.name === 'walmart')){%>
                               <td>
                                 <button id="deleteProduct" class="button is-danger is-outlined" integration="<%= i.id %>" productchannel="<%= productchannel.id %>" nameChannel="<%= i.channel.name %>">
                                   <span class="icon is-small">

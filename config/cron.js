@@ -170,6 +170,18 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },*/
+  walmart: {
+    schedule: '50 00 00 * * *',
+    onTick: async () => {
+      await sails.helpers.channel.walmart.qualityCheck();
+      let channel = await Channel.findOne({name: 'walmart'});
+      let integrations = await Integrations.find({channel: channel.id});
+      for(let i=0; i<integrations.length; i++){
+        await sails.helpers.channel.walmart.orders(integrations[i].id);
+      }
+    },
+    timezone: 'America/Bogota'
+  },
   /*linioOrders:{
     schedule: '05 45 * * * *',
     onTick: async () =>{

@@ -145,6 +145,10 @@ module.exports = {
       }else if(order.channel==='mercadolibremx'){
         guia = await sails.helpers.channel.mercadolibremx.shipping(order);
       }
+
+      if(order.channel==='walmart'){
+        guia = await sails.helpers.channel.walmart.shipping(order);
+      }
     }
     return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});
   },

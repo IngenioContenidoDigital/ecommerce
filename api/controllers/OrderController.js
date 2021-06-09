@@ -360,6 +360,14 @@ module.exports = {
         .populate('mainColor');
         item.currentstatus = await OrderState.findOne({id:item.currentstatus}).populate('color');
         item.productvariation = await ProductVariation.findOne({id:item.productvariation}).populate('variation');
+        if(order.channel==="walmart"){
+          let seller = await Seller.findOne({id:order.seller}).populate('currency');
+          let channel = await Channel.findOne({name:order.channel}).populate('currency');
+          if(seller.currency.isocode !== channel.currency.isocode){
+            let exchange_rate = await sails.helpers.currencyConverter(seller.currency.isocode, channel.currency.isocode);
+            item.originalPrice = item.originalPrice*exchange_rate.result;
+          }
+        }
       }
       countries = await Country.find();
     }

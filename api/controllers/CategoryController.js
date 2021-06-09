@@ -49,6 +49,7 @@ module.exports = {
     let liniomxcat = '';
     let mercadolibrecat = '';
     let mercadolibremxcat = '';
+    let walmartcat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -84,6 +85,13 @@ module.exports = {
         mercadolibremxcat = req.body['mercadolibremx[]'];
       }
     }
+    if(req.body['walmart[]']!==undefined){
+      if(typeof req.body['walmart[]']!=='string'){
+        walmartcat = req.body['walmart[]'].join(',');
+      }else{
+        walmartcat = req.body['walmart[]'];
+      }
+    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
@@ -96,6 +104,7 @@ module.exports = {
         liniomx: liniomxcat,
         mercadolibre: mercadolibrecat,
         mercadolibremx: mercadolibremxcat,
+        walmart: walmartcat,
         parent:current.id,
         active:isActive,
         url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
@@ -114,6 +123,7 @@ module.exports = {
           liniomx: liniomxcat,
           mercadolibre: mercadolibrecat,
           mercadolibremx: mercadolibremxcat,
+          walmart: walmartcat,
           active:isActive,
           url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
           level:current.level+1
@@ -144,6 +154,7 @@ module.exports = {
     let liniomxcat = '';
     let mercadolibrecat = '';
     let mercadolibremxcat = '';
+    let walmartcat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -179,6 +190,13 @@ module.exports = {
         mercadolibremxcat = req.body['mercadolibremx[]'];
       }
     }
+    if(req.body['walmart[]']!==undefined){
+      if(typeof req.body['walmart[]']!=='string'){
+        walmartcat = req.body['walmart[]'].join(',');
+      }else{
+        walmartcat = req.body['walmart[]'];
+      }
+    }
     if(req.body.activo==='on'){isActive=true;}
     let body = {
       name:req.body.nombre,
@@ -195,6 +213,7 @@ module.exports = {
     if(liniomxcat){body.liniomx=liniomxcat}
     if(mercadolibrecat){body.mercadolibre=mercadolibrecat}
     if(mercadolibremxcat){body.mercadolibremx=mercadolibremxcat}
+    if(walmartcat){body.walmart=walmartcat}
     
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
@@ -333,6 +352,23 @@ module.exports = {
         let route = await sails.helpers.channel.liniomx.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
         let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
+      }else{
+        return res.serverError();
+      }
+    }catch(err){
+      return res.serverError(err);
+    }
+  },
+  walmartcategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let channel = await Channel.find({name: 'walmart'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
+      if(integration.length>0){
+        let response = await sails.helpers.channel.walmart.categories();
+        return res.ok(response);
       }else{
         return res.serverError();
       }
