@@ -393,7 +393,7 @@
           }
           addClass(progress,'is-hidden');
         });
-      }else if (id === 'wald' && objWalmart.children.length === 0){
+      }else if (id === 'walm' && objWalmart.children.length === 0){
         removeClass(progress,'is-hidden');
         io.socket.get('/integrations/walmart/categories',(resData, res)=>{
           if(res.statusCode == 200){
