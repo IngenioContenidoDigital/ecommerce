@@ -187,6 +187,7 @@ module.exports = {
       { header: 'Referencia marketplace', key: 'channelref', width: 22 },
       { header: 'Referencia del pedido', key: 'orderref', width: 15 },
       { header: 'Número de rastreo', key: 'tracking', width: 20 },
+      { header: 'Flete Total', key: 'fleteTotal', width: 20 },
       { header: 'Comisión', key: 'commission', width: 20 },
       { header: 'Fecha de creación', key: 'createdAt', width: 20 },
       { header: 'Fecha de actualización', key: 'updatedAt', width: 22 },
@@ -212,6 +213,7 @@ module.exports = {
         item.channelref = order.channelref;
         item.orderref = order.reference;
         item.tracking = order.tracking;
+        item.fleteTotal = order.fleteTotal;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         ordersItem.push(item);
