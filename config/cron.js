@@ -195,4 +195,62 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   }*/
+    wooCommerceOrders:{
+    schedule: '05 45 * * * *',
+    onTick: async () =>{
+      console.log('Iniciando Captura de Ordenes Woocommerce');
+      let moment = require('moment');
+      let axios = require('axios');
+
+      let channel = await Channel.findOne({name: 'woocommerce'});
+      let integrations = await Integrations.find({channel: channel.id}).populate('channel');
+
+      integrations.forEach(async integration =>{
+        if(integration.order_webhook_status){
+          try{
+
+            let statuses = ['pending','proccesing','completed','on-hold','canceled','refunded','failed'];
+
+            statuses.forEach(async state =>{
+                let parameters = "";
+
+                if(state == "pending"){
+                     parameters= `before=${moment().toISOString(true)}&after=${moment().subtract(2, 'hours').toISOString(true)}&status=${state}`;
+                }else{
+                     parameters= `[updated_at_min]==${moment().toISOString(true)}&[updated_at_max]=${moment().subtract(2, 'hours').toISOString(true)}&status=${state}`;
+                }
+
+                let orders  = await axios.get(`${integration.url}wp-json/${integration.version}/orders?consumer_key=${integration.key}&consumer_secret=${integration.secret}&${parameters}`).catch((e)=>{
+                  console.log(`No se pudieron recuperar las ordenes del seller ${integration.url}`, e);
+                });
+
+                if(orders && (orders.status == 200)  && orders.data.length > 0){
+                    for (let index = 0; index < orders.data.length; index++) {
+                      const order = orders.data[index];
+
+                      let o = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                        integration.channel.name,
+                        integration.key,
+                        integration.secret,
+                        integration.url,
+                        integration.version,
+                        'ORDERID',
+                        order.id
+                      ).catch((e) => console.log(e));
+
+                      if (o) {
+                          await sails.helpers.marketplaceswebhooks.order(o, integration).catch((e)=>console.log(e));
+                      }
+                  }
+                }
+            });
+
+          }catch(err){
+            console.log(`No se pudieron recuperar las ordenes del seller ${integration.url}`, err);
+          }
+        }
+      });
+    },
+    timezone: 'America/Bogota'
+  }
 };
