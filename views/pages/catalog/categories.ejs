@@ -176,7 +176,7 @@
                     <p class="has-text-centered" id="melimx"><img src="/images/mercadolibre.png" /></p>
                     </a>
                 </li>
-                <li id="walmart">
+                <li id="walm">
                   <a>
                     <p class="has-text-centered" id="walm"><img src="/images/walmart.png" /></p>
                   </a>
@@ -352,7 +352,7 @@
             document.querySelector('.dafit').innerHTML='';
           }
           addClass(progress,'is-hidden');
-      } );
+        } );
       } else if(id === 'lini' && objLinio.children.length === 0){
         removeClass(progress,'is-hidden');
         io.socket.get('/integrations/linio/categories',(resData, res)=>{
@@ -401,6 +401,7 @@
           } else {
             document.querySelector('.walm').innerHTML='';
           }
+          addClass(progress,'is-hidden');
         });
       }
     }
