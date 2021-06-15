@@ -28,35 +28,49 @@ module.exports = {
       cmsfilter.seller = seller.id;
       sliderfilter.seller=seller.id;
     }
-    let viewed=[];
+    let viewed={};
     let pshow =[];
     if(req.session.viewed && req.session.viewed.length>0){
-      for(let i of req.session.viewed){
-        if(!pshow.includes(i.product)){
-          pshow.push(i.product);
+      req.session.viewed.sort((a,b) => {return b.viewedAt - a.viewedAt; });
+      req.session.viewed.slice(-4);
+      for(let i=0; i<=3; i++){
+        if(req.session.viewed[i]){
+          pshow.push(req.session.viewed[i].product);
         }
       }
       if(pshow.length>0){
-        let products = await Product.find({id:pshow,active:true})
-          .populate('mainColor')
-          .populate('tax')
-          .populate('gender')
-          .populate('manufacturer')
-          .populate('seller');
-
-        for(let p of products){
-          p.cover= await ProductImage.findOne({product:p.id,cover:1});
+        let products = await Product.find({
+          where:{id:pshow,active:true},
+          select:['name','description','seller','mainColor','manufacturer','gender','reference','mainCategory'],
+          sort: 'updatedAt DESC'
+        });
+        viewed.products=products;
+        for(let p of viewed.products){
+          p.seller=await Seller.findOne({
+            where:{id:p.seller},
+            select:['name','active']
+          });
+          p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
+          p.mainColor=await Color.findOne({id:p.mainColor});
+          p.mainCategory=await Category.findOne({
+            where:{id:p.mainCategory},
+            select:['name','url','level']
+          });
+          p.manufacturer=await Manufacturer.findOne({
+            where:{id:p.manufacturer},
+            select:['name']
+          });
           p.discount = await sails.helpers.discount(p.id);
+          p.gender = await Gender.findOne({id:p.gender});
           p.price = (await ProductVariation.find({product:p.id}))[0].price;
-          viewed.push(p);
         }
       }
     }
 
     cms = (await Cms.find(cmsfilter))[0];
-    slider = await Slider.find(sliderfilter).populate('textColor');
+    //slider = await Slider.find(sliderfilter).populate('textColor');
 
-    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),viewed:viewed,brands:brands, seller:seller,cms:cms});
+    return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),object:viewed,page:1,brands:brands, seller:seller,cms:cms});
   },
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
