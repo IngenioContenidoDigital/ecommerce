@@ -28,7 +28,7 @@ module.exports = {
       cmsfilter.seller = seller.id;
       sliderfilter.seller=seller.id;
     }
-    let viewed={};
+    let viewed={products:[]};
     let pshow =[];
     if(req.session.viewed && req.session.viewed.length>0){
       req.session.viewed.sort((a,b) => {return b.viewedAt - a.viewedAt; });
@@ -391,7 +391,7 @@ module.exports = {
     let iridio = null;
     let productsFilter = {active:true};
     if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost'){
-      seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/,active:true});
+      seller = await Seller.findOne({domain:req.hostname,active:true});
       if(seller){productsFilter.seller=seller.id;}
     }else{
       iridio = await Channel.findOne({name:'iridio'});
