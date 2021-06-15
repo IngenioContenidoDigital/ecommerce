@@ -7,14 +7,14 @@
               <div style="min-width:100%;" class="container">
                 <p class="carousel has-text-centered">
                   <%for(let m of main){%>
-                      <a href="<%=m.url%>"><img loading="lazy" src="<%=imgurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a>
+                      <a href="<%=m.url%>"><img loading="lazy" src="<%= cdnurl%>/images/slides/<%= m.image %>" alt="<%=m.name%>" /></a>
                   <%}%>
                   </p>
               </div>
             </section>
           <%}else if(main.length==1){%>
             <section class="hero is-hidden-mobile">
-              <a href="<%=main[0].url%>"><img loading="lazy" src="<%=imgurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a>
+              <a href="<%=main[0].url%>"><img loading="lazy" src="<%= cdnurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a>
             </section>
           <%}%>
           <div class="columns is-centered is-gapless">
@@ -25,7 +25,7 @@
                   <div class="columns">
                     <%for(let f of featured){%>
                       <div class="column">
-                        <p class="has-text-centered"><a href="<%=f.url%>"><img src="<%=imgurl%>/images/slides/<%= f.image %>" alt="<%=f.name%>"/></a></p>
+                        <p class="has-text-centered"><a href="<%=f.url%>"><img src="<%= cdnurl%>/images/slides/<%= f.image %>" alt="<%=f.name%>"/></a></p>
                       </div>
                     <%}%>
                   </div>
@@ -45,7 +45,7 @@
                     <div class="card-image">
                         <%if(vw.discount!==null && vw.discount!==undefined){%><span style="z-index: 30; right: 15px; top:15px;" class="badge is-danger"><%=vw.discount.value%>%</span><%}%>
                         <figure class="image is-256x256 is-inline-block">
-                            <a itemprop="url" href="/list/product/<%=encodeURIComponent((vw.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(vw.reference)%>"><%if(vw.cover!==undefined){%><img itemprop="image" style="justify-content: center;" src="<%=imgurl%>/images/products/<%=vw.id%>/<%= vw.cover.file %>" alt="<%vw.manufacturer.name%> - <%vw.reference%>"><%}%></a>
+                            <a itemprop="url" href="/list/product/<%=encodeURIComponent((vw.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(vw.reference)%>"><%if(vw.cover!==undefined){%><img itemprop="image" style="justify-content: center;" src="<%= cdnurl%>/images/products/<%=vw.id%>/<%= vw.cover.file %>" alt="<%vw.manufacturer.name%> - <%vw.reference%>"><%}%></a>
                         </figure>
                     </div>
                     <div class="card-content">
@@ -120,14 +120,14 @@
                           <div class="tile is-parent is-vertical">
                             <%let vertical = mosaic.filter(el => el.position =='vertical')%>
                             <%if(vertical.length>0){%>
-                            <article class="tile is-child notification" style="color:<%=vertical[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= vertical[0].image %>'); background-size: cover;">
+                            <article class="tile is-child notification" style="color:<%=vertical[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= vertical[0].image %>'); background-size: cover;">
                               <a style="text-decoration: none;" href="<%=vertical[0].url%>" ><div class="is-capitalized is-size-5"><%=vertical[0].name%></div>
                               <div class="is-size-6"><%=vertical[0].text%></div></a>
                             </article>
                             <%}%>
                             <%let bottom = mosaic.filter(el => el.position =='bottom')%>
                             <%if(bottom.length>0){%>
-                              <article class="tile is-child notification" style="color:<%=bottom[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= bottom[0].image %>'); background-size: cover;">
+                              <article class="tile is-child notification" style="color:<%=bottom[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= bottom[0].image %>'); background-size: cover;">
                                 <a style="text-decoration: none;" href="<%=bottom[0].url%>"><div class="is-capitalized is-size-5"><%=bottom[0].name%></div>
                               <div class="is-size-6"><%=bottom[0].text%></div></a>
                             </article>
@@ -137,7 +137,7 @@
                           <%let middle = mosaic.filter(el => el.position =='middle')%>
                           <%if(middle.length>0){%>
                             <div class="tile is-parent">
-                              <article class="tile is-child notification" style="color:<%=middle[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= middle[0].image %>'); background-size: cover;">
+                              <article class="tile is-child notification" style="color:<%=middle[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= middle[0].image %>'); background-size: cover;">
                                 <a style="text-decoration: none;" href="<%=middle[0].url%>" ><div class="is-capitalized is-size-5"><%=middle[0].name%></div>
                                 <div class="subtitle is-size-6"><%=middle[0].text%></div></a>
                                 <div class="content" style="min-height:180px;">
@@ -150,7 +150,7 @@
                         <%let wide = mosaic.filter(el => el.position =='wide')%>
                         <%if(wide.length>0){%>
                         <div class="tile is-parent">
-                          <article class="tile is-child notification" style="color:<%=wide[0].textColor.code%>; background-image: url('<%=imgurl%>/images/slides/<%= wide[0].image %>'); background-size: cover;">
+                          <article class="tile is-child notification" style="color:<%=wide[0].textColor.code%>; background-image: url('<%= cdnurl%>/images/slides/<%= wide[0].image %>'); background-size: cover;">
                             <a style="text-decoration: none;" href="<%=wide[0].url%>"><div class="is-capitalized is-size-5"><%=wide[0].name%></div>
                             <div class="is-size-6"><%=wide[0].text%></div>
                             <div style="min-height:250px;" class="content">
@@ -164,7 +164,7 @@
                       <%let tall = mosaic.filter(el => el.position =='tall')%>
                       <%if(tall.length>0){%>
                       <div class="tile is-parent" style="color:<%=tall[0].textColor.code%>">
-                        <article class="tile is-child notification" style="color:<%=tall[0].textColor.code%>;background-image: url('<%=imgurl%>/images/slides/<%= tall[0].image %>'); background-size: cover;">
+                        <article class="tile is-child notification" style="color:<%=tall[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= tall[0].image %>'); background-size: cover;">
                           <a style="text-decoration: none;" href="<%=tall[0].url%>"><div class="content">
                             <div class="is-capitalized is-size-5"><%=tall[0].name%></div>
                             <div class="is-size-6"><%=tall[0].text%></div>

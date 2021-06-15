@@ -10,7 +10,7 @@
                     <div class="media-left">
                         <%product.images.forEach((image)=>{%>
                             <figure class="image is-64x64">
-                                <img itemprop="image" src="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
+                                <img itemprop="image" src="cdnurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
                             </figure>
                         <%})%>
                     </div>
@@ -18,7 +18,7 @@
                         <%if(image.cover==1){%>
                             <div style="overflow-y: hidden;" class="media-content">
                                 <figure class="image is-square is-relative">
-                                    <img id="main" itemprop="image" src="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" data-zoom="<%=imgurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
+                                    <img id="main" itemprop="image" src="cdnurl%>/images/products/<%=product.id%>/<%= image.file %>" data-zoom="cdnurl%>/images/products/<%=product.id%>/<%= image.file %>" alt="<%=product.name%>">
                                 </figure>                        
                             </div>
                         <%}%>

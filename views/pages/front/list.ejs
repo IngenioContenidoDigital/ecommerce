@@ -1,4 +1,3 @@
-<% let impressions = [];%>
 <div class="container">
     <%if(object.products.length<1){%>
     <div class="columns is-gapless">
@@ -50,7 +49,7 @@
         </div>
         <div class="column is-10">
             <%if(object.logo!== undefined && object.logo!== null && object.logo!==''){%>
-                <p class="has-text-centered"><img src="<%=imgurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
+                <p class="has-text-centered"><img src="<%=cdnurl%><%=object.route%><%= object.logo %>" alt="<%=object.description%>"></p>
             <%}%>
             <%if(pages>1){%>
             <div class="container">
@@ -84,85 +83,8 @@
             </div>
             <br><div class="is-hidden-desktop"><br><br><br></div>
             <%}%>
-            <div class="container" itemscope itemtype="https://schema.org/ItemList">
-                <% let position = ((page*32)-32)+1; %>
-                <% object.products.forEach((product)=>{ %>               
-                    <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
-                        <span class="is-hidden productid" itemprop="productID"><%=product.id%></span>
-                        <span class="is-hidden position"><%=position%></span>
-                        <span class="is-hidden category"><%=product.mainCategory.name%></span>
-
-                        <%let discval = 0%>                       
-                        <%if(product.discount!==null && product.discount!==undefined){%>
-                        <%if(product.discount.type==='C'){%><% discval= ((product.discount.value/product.price)*100).toFixed(0) %><%}%>
-                        <%if(product.discount.type==='P'){%><% discval= product.discount.value %><%}%>
-                        <%}%>
-
-                        <div class="card-image">
-                            <%if(product.discount!==null && product.discount!==undefined){%><span style="right: 15px; top:15px;" class="badge is-danger"><%=discval%>%</span><%}%>
-                            <a itemprop="url" href="/list/product/<%=encodeURIComponent((product.name).replace(/\./g, '%2E'))%>/<%=encodeURIComponent(product.reference)%>"><%if(product.cover!==undefined){%><img itemprop="image" style="justify-content: center; max-height: 256px;" src="<%=imgurl%>/images/products/<%=product.id%>/<%= product.cover.file %>" loading="lazy" alt="<%= product.manufacturer.name %> - <%= product.reference%>"><%}%></a>
-                        </div>
-                        <div class="card-content">
-                                <div itemprop="description" class="is-hidden"><%-product.description%></div>
-                                <div itemprop="disambiguatingDescription" class="is-hidden"><%-product.descriptionShort%></div>
-                                <% if(product.mainColor){ %>
-                                <p><span class="is-pulled-right"><span class="color is-hidden" itemprop="color"><%=product.mainColor.name%></span><span class="color-container" color="<%=product.mainColor.name%>" style="background-color: <%= product.mainColor.code %>;border:solid 1px <%= product.mainColor.code %>;"></span></span>
-                                <%}%>
-                                <span itemprop="brand" brand="<%=product.manufacturer.name%>" class="brand subtitle is-7 is-capitalized"><%=product.manufacturer.name%></span>&nbsp;-&nbsp;<span gender="<%=product.gender.name%>" class="gender subtitle is-7 is-capitalized"><%=product.gender.name%></span></p>
-                                <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><span itemprop="name" class="name has-text-weight-bold is-uppercase"><%=product.name%></span></p>
-                                <p><span class="sku is-hidden" itemprop="sku"><%=product.reference%></span>
-                                <div itemprop="offers" itemscope itemtype="https://schema.org/Offer">
-                                    <meta itemprop="priceCurrency" content="COP">
-                                    <link itemprop="availability" href="https://schema.org/InStock" />
-                                    <%if(product.discount!==null && product.discount!==undefined){%>
-                                        <div itemprop="itemOffered" itemscope itemtype="https://schema.org/AggregateOffer">
-                                            <span itemprop="highPrice" class="is-size-7 has-text-danger old-price highPrice">$ <%= Math.round(product.price).toLocaleString("es-CO");%></span>
-                                            <span itemprop="lowPrice" class="is-size-6 has-text-dark has-text-weight-bold lowPrice">$ <%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
-                                            <span class="is-hidden" itemprop="offerCount">1</span>
-                                            <span class="is-hidden savings"></span>
-                                        </div>
-                                        <span itemprop="price" content="<%=Math.round(product.discount.price)%>" data-price="<%=Math.round(product.discount.price)%>" class="is-hidden bestPrice"><%= Math.round(product.discount.price).toLocaleString("es-CO");%></span>
-                                    <%}else{%>
-                                        <span class="is-size-6 has-text-dark has-text-weight-bold">$ </span><span itemprop="price" content="<%= Math.round(product.price)%>" data-price="<%= Math.round(product.price)%>" class="is-size-6 has-text-dark has-text-weight-bold price bestPrice"><%= Math.round(product.price).toLocaleString("es-CO");%></span>
-                                    <%}%>
-                                </div>
-                                </p>
-                                <br>
-                                <div class="dropdown is-fullwidth is-hoverable">
-                                    <div class="dropdown-trigger">
-                                        <button class="button is-small" product="<%=product.id%>" aria-haspopup="true" aria-controls="dropdown-menu">
-                                            <span id="drop-selected" class="is-uppercase is-size-7" value="0" >Opciones</span>
-                                            <span class="icon is-small">
-                                                <i class='bx bx-chevron-down'></i>
-                                            </span>
-                                        </button>
-                                    </div>
-                                    <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                                        <div class="dropdown-content">
-                                        </div>
-                                    </div>
-                                </div>
-                                <br>
-                                <div class="buttons">
-                                    <button id="push-to-cart" product="<%=product.id%>" disabled="disabled" class="button is-disabled is-size-7 is-right is-fullwidth">COMPRAR</button>
-                                </div>
-                        </div>
-                    </div>
-                    <% let current = {};%>
-                    <% current['item_name'] = product.name %>
-                    <% current['item_id'] = product.id %>
-                    <% current['item_brand'] = product.manufacturer.name %>
-                    <% current['item_reference'] = product.reference %>
-                    <% current['item_category'] = product.mainCategory.name %>
-                    <% current['item_color'] = product.mainColor.name %>
-                    <% current['price'] = product.discount && product.discount.price ? product.discount.price.toString() : product.price.toString() %>
-                    <% current['item_list_name'] = 'Lista Categorias' %>
-                    <% current['index'] = position %>
-                    <% current['quantity'] = '1' %>
-                    <% impressions.push(current); %>
-                    <% position++;%>
-            <%})%>
-            </div>
+            <%- partial('../../partials/productlist.ejs') %>
+            
         </div>
     </div>
     <%}%>
@@ -239,14 +161,6 @@
         }else{
             removeClass(e.target.parentNode.parentNode,'has-background-light');
         }
-    });
-
-    dataLayer.push({ ecommerce: null });
-    dataLayer.push({
-      'event':'view_item_list',
-      'ecommerce': {
-        'items': <%- JSON.stringify(impressions) %>
-      }
     });
 
     live('.card-image > a', 'click', e => {
