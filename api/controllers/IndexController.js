@@ -28,7 +28,7 @@ module.exports = {
       cmsfilter.seller = seller.id;
       sliderfilter.seller=seller.id;
     }
-    let viewed={products:[]};
+    let viewed={};
     let pshow =[];
     if(req.session.viewed && req.session.viewed.length>0){
       req.session.viewed.sort((a,b) => {return b.viewedAt - a.viewedAt; });
@@ -448,8 +448,7 @@ module.exports = {
 
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
-      object.products = object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
-
+      object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
       for(let p of object.products){
         p.seller=await Seller.findOne({
           where:{id:p.seller},
@@ -457,7 +456,10 @@ module.exports = {
         });
         p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
         p.mainColor=await Color.findOne({id:p.mainColor});
-        p.mainCategory=await Category.findOne({id:p.mainCategory});
+        p.mainCategory=await Category.findOne({
+          where:{id:p.mainCategory},
+          select:['name','url','level']
+        });
         p.manufacturer=await Manufacturer.findOne({
           where:{id:p.manufacturer},
           select:['name']
@@ -469,7 +471,6 @@ module.exports = {
         if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id);}
         if(p.manufacturer && !brandsList.includes(p.manufacturer.id)){brandsList.push(p.manufacturer.id);}
         if(p.gender && !gendersList.includes(p.gender.id)){gendersList.push(p.gender.id);}
-
       }
     }
 
