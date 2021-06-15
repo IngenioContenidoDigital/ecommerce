@@ -28,7 +28,7 @@ module.exports = {
       cmsfilter.seller = seller.id;
       sliderfilter.seller=seller.id;
     }
-    let viewed={};
+    let viewed={products:[]};
     let pshow =[];
     if(req.session.viewed && req.session.viewed.length>0){
       req.session.viewed.sort((a,b) => {return b.viewedAt - a.viewedAt; });
