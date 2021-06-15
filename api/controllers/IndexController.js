@@ -68,7 +68,7 @@ module.exports = {
     }
 
     cms = (await Cms.find(cmsfilter))[0];
-    //slider = await Slider.find(sliderfilter).populate('textColor');
+    slider = await Slider.find(sliderfilter).populate('textColor');
 
     return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),object:viewed,page:1,brands:brands, seller:seller,cms:cms});
   },
