@@ -553,8 +553,9 @@ module.exports = {
         pages = Math.ceil(set.length/perPage);
 
         for(let p of set){
-          p.cover= await ProductImage.findOne({product:p.id,cover:1});
+          p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
           p.discount = await sails.helpers.discount(p.id);
+          p.price = (await ProductVariation.find({product:p.id}))[0].price;
           if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
           if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
           if(!await exists(genders, p.gender)){genders.push(p.gender);}
