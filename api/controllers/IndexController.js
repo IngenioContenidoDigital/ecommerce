@@ -418,9 +418,7 @@ module.exports = {
           .populate('products',{
             where:productsFilter,
             select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
-            sort: 'updatedAt DESC',
-            skip:skip,
-            limit:limit
+            sort: 'updatedAt DESC'
           });
           object.route = '/images/categories/';
         }catch(err){
@@ -432,9 +430,7 @@ module.exports = {
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
             where:productsFilter,
             select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
-            sort: 'updatedAt DESC',
-            skip:skip,
-            limit:limit
+            sort: 'updatedAt DESC'
           });
           object.route = '/images/brands/';
         }catch(err){
@@ -454,6 +450,7 @@ module.exports = {
 
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
+      object.products = object.products.slice(skip,limit);
       for(let p of object.products){
         p.price = await ProductVariation.avg('price',{product:p.id});
         p.seller=await Seller.findOne({

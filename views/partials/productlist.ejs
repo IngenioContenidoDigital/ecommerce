@@ -1,10 +1,10 @@
-<% let impressions = [];%>
+<%# let impressions = [];%>
 <div class="container" itemscope itemtype="https://schema.org/ItemList">
-    <% let position = ((page*32)-32)+1; %>
+    <%# let position = ((page*32)-32)+1; %>
     <% for(let product of object.products){ %>               
         <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
             <span class="is-hidden productid" itemprop="productID"><%=product.id%></span>
-            <span class="is-hidden position"><%=position%></span>
+            <!--<span class="is-hidden position"><%#=position%></span>-->
             <span class="is-hidden category"><%=product.mainCategory.name%></span>
 
             <%let discval = 0%>                       
@@ -63,27 +63,27 @@
                     </div>
             </div>
         </div>
-        <% let current = {};%>
-        <% current['item_name'] = product.name %>
-        <% current['item_id'] = product.id %>
-        <% current['item_brand'] = product.manufacturer.name %>
-        <% current['item_reference'] = product.reference %>
-        <% current['item_category'] = product.mainCategory.name %>
-        <% current['item_color'] = product.mainColor.name %>
-        <% current['price'] = (product.discount!==null && typeof product.discount === undefined) ? product.discount.price.toString() : product.price.toString() %>
-        <% current['item_list_name'] = 'Lista Categorias' %>
-        <% current['index'] = position %>
-        <% current['quantity'] = '1' %>
-        <% impressions.push(current); %>
-        <% position++;%>
+        <%# let current = {};%>
+        <%# current['item_name'] = product.name %>
+        <%# current['item_id'] = product.id %>
+        <%# current['item_brand'] = product.manufacturer.name %>
+        <%# current['item_reference'] = product.reference %>
+        <%# current['item_category'] = product.mainCategory.name %>
+        <%# current['item_color'] = product.mainColor.name %>
+        <%# current['price'] = (product.discount!==null && typeof product.discount === undefined) ? product.discount.price.toString() : product.price.toString() %>
+        <%# current['item_list_name'] = 'Lista Categorias' %>
+        <%# current['index'] = position %>
+        <%# current['quantity'] = '1' %>
+        <%# impressions.push(current); %>
+        <%# position++;%>
 <%}%>
 </div>
-<script>
-    dataLayer.push({ ecommerce: null });
+<!--<script>
+    /*dataLayer.push({ ecommerce: null });
     dataLayer.push({
       'event':'view_item_list',
       'ecommerce': {
-        'items': <%- JSON.stringify(impressions) %>
+        'items': <%#- JSON.stringify(impressions) %>
       }
-    });
-</script>
+    });*/
+</script>-->
