@@ -82,7 +82,7 @@ module.exports = {
     for (const order of orders) {
       if (order.currentstatus.name === 'entregado'){
         let items = await OrderItem.find({order: order.id});
-        fleteTotal += order.fleteTotal;
+        fleteTotal += parseFloat(order.fleteTotal);
         for (const item of items) {
           const salesCommission = item.commission || 0;
           let commissionFee = item.price * (salesCommission/100);
