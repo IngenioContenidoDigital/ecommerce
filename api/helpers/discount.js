@@ -22,8 +22,7 @@ module.exports = {
     let product = await Product.findOne({id:inputs.productid})
     .populate('tax')
     .populate('variations',filter)
-    .populate('discount',
-    {
+    .populate('discount',{
       where:{
         to:{'>=':moment().valueOf()},
         from:{'<=':moment().valueOf()}

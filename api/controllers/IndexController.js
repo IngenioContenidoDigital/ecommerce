@@ -18,15 +18,15 @@ module.exports = {
       return res.redirect('/login');
     }else if(req.hostname==='iridio.co' || req.hostname==='demo.1ecommerce.app' || req.hostname==='localhost'){
       brands = await Manufacturer.find({active:true}).sort('name ASC');
-      cmsfilter.seller = null;
-      sliderfilter.seller=null;
+      cmsfilter['seller'] = null;
+      sliderfilter['seller']=null;
     }else{
       seller = await Seller.findOne({
         where:{domain:req.hostname},
         select:['name','domain','logo']
       });
-      cmsfilter.seller = seller.id;
-      sliderfilter.seller=seller.id;
+      cmsfilter['seller'] = seller.id;
+      sliderfilter['seller']=seller.id;
     }
     let viewed={products:[]};
     let pshow =[];
@@ -62,13 +62,13 @@ module.exports = {
           });
           p.discount = await sails.helpers.discount(p.id);
           p.gender = await Gender.findOne({id:p.gender});
-          p.price = await ProductVariation.avg('price').where({product:p.id});
+          p.price = await ProductVariation.avg('price',{product:p.id});
         }
       }
     }
 
     cms = (await Cms.find(cmsfilter))[0];
-    slider = await Slider.find(sliderfilter).populate('textColor');
+    slider = await Slider.find(sliderfilter);
 
     return res.view('pages/homepage',{slider:slider,tag:await sails.helpers.getTag(req.hostname),object:viewed,page:1,brands:brands, seller:seller,cms:cms});
   },
@@ -384,15 +384,17 @@ module.exports = {
     let entity = req.param('entity');
     let ename = req.param('name');
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
-    let perPage = 28;
+    let perPage = 20;
     let pages = 0;
     let seller = null;
     let object = null;
     let iridio = null;
     let productsFilter = {active:true};
+    let skip = ((page-1)*perPage);
+    let limit = (((page-1)*perPage)+perPage);
     if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost'){
       seller = await Seller.findOne({domain:req.hostname,active:true});
-      if(seller){productsFilter.seller=seller.id;}
+      if(seller){productsFilter['seller']=seller.id;}
     }else{
       iridio = await Channel.findOne({name:'iridio'});
       let iridioproducts = await ProductChannel.find({
@@ -403,7 +405,7 @@ module.exports = {
         select:['product']
       });
       iridioproducts = iridioproducts.map(i => i.product);
-      productsFilter.id = iridioproducts;
+      productsFilter['id'] = iridioproducts;
     }
 
     switch(entity){
@@ -416,7 +418,9 @@ module.exports = {
           .populate('products',{
             where:productsFilter,
             select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
-            sort: 'updatedAt DESC'
+            sort: 'updatedAt DESC',
+            skip:skip,
+            limit:limit
           });
           object.route = '/images/categories/';
         }catch(err){
@@ -428,7 +432,9 @@ module.exports = {
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
             where:productsFilter,
             select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
-            sort: 'updatedAt DESC'
+            sort: 'updatedAt DESC',
+            skip:skip,
+            limit:limit
           });
           object.route = '/images/brands/';
         }catch(err){
@@ -448,9 +454,8 @@ module.exports = {
 
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
-      object.products = object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
       for(let p of object.products){
-        p.price = await ProductVariation.avg('price').where({product:p.id});
+        p.price = await ProductVariation.avg('price',{product:p.id});
         p.seller=await Seller.findOne({
           where:{id:p.seller},
           select:['name','active']
