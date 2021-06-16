@@ -31,8 +31,8 @@ module.exports = {
     let viewed={products:[]};
     let pshow =[];
     if(req.session.viewed && req.session.viewed.length>0){
-      req.session.viewed.sort((a,b) => {return b.viewedAt - a.viewedAt; });
-      req.session.viewed.slice(-4);
+      req.session.viewed = req.session.viewed.sort((a,b) => {return b.viewedAt - a.viewedAt; });
+      req.session.viewed = req.session.viewed.slice(-4);
       for(let i=0; i<=3; i++){
         if(req.session.viewed[i]){
           pshow.push(req.session.viewed[i].product);
@@ -62,7 +62,7 @@ module.exports = {
           });
           p.discount = await sails.helpers.discount(p.id);
           p.gender = await Gender.findOne({id:p.gender});
-          p.price = (await ProductVariation.find({product:p.id}))[0].price;
+          p.price = await ProductVariation.avg('price').where({product:p.id});
         }
       }
     }
@@ -384,7 +384,7 @@ module.exports = {
     let entity = req.param('entity');
     let ename = req.param('name');
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
-    let perPage = 32;
+    let perPage = 28;
     let pages = 0;
     let seller = null;
     let object = null;
@@ -415,7 +415,7 @@ module.exports = {
           })
           .populate('products',{
             where:productsFilter,
-            select:['name','description','seller','mainColor','manufacturer','gender','reference','mainCategory'],
+            select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/categories/';
@@ -427,7 +427,7 @@ module.exports = {
         try{
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
             where:productsFilter,
-            select:['name','description','seller','mainColor','manufacturer','gender','reference','mainCategory'],
+            select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/brands/';
@@ -448,8 +448,9 @@ module.exports = {
 
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
-      object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
+      object.products = object.products.slice(((page-1)*perPage),((page-1)*perPage)+perPage);
       for(let p of object.products){
+        p.price = await ProductVariation.avg('price').where({product:p.id});
         p.seller=await Seller.findOne({
           where:{id:p.seller},
           select:['name','active']
@@ -466,7 +467,6 @@ module.exports = {
         });
         p.discount = await sails.helpers.discount(p.id);
         p.gender = await Gender.findOne({id:p.gender});
-        p.price = (await ProductVariation.find({product:p.id}))[0].price;
 
         if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id);}
         if(p.manufacturer && !brandsList.includes(p.manufacturer.id)){brandsList.push(p.manufacturer.id);}

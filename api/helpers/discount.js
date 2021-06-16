@@ -28,6 +28,7 @@ module.exports = {
         to:{'>=':moment().valueOf()},
         from:{'<=':moment().valueOf()}
       },
+      select:['type','value','from','to'],
       sort: 'createdAt DESC',
       limit: 1
     });
