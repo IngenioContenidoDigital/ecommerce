@@ -25,8 +25,10 @@ module.exports = {
         where:{domain:req.hostname},
         select:['name','domain','logo']
       });
-      cmsfilter['seller'] = seller.id;
-      sliderfilter['seller']=seller.id;
+      if(seller && seller.id){
+        cmsfilter['seller'] = seller.id;
+        sliderfilter['seller']=seller.id;
+      }
     }
     let viewed={products:[]};
     let pshow =[];
@@ -584,7 +586,7 @@ module.exports = {
       }
       if(!exists){req.session.viewed.push({viewedAt:moment().valueOf(),product:product.id});}
     }
-    let discount = await sails.helpers.discount(product.id);
+    let discount = product.id ? await sails.helpers.discount(product.id) : null;
     let title = product.name;
     let description = product.descriptionShort.replace(/<\/?[^>]+(>|$)/g, '')+' '+product.description.replace(/<\/?[^>]+(>|$)/g, '');
     let words = product.name.split(' ');
