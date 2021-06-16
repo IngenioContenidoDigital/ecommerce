@@ -383,10 +383,11 @@ module.exports = {
     return res.view('pages/front/checkout', {addresses:addresses, cart:cart, error:error, tokens:tokens,tag:await sails.helpers.getTag(req.hostname),seller:seller});
   },
   list: async function(req, res){
+    req.setTimeout(0);
     let entity = req.param('entity');
     let ename = req.param('name');
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
-    let perPage = 12;
+    let perPage = 32;
     let pages = 0;
     let seller = null;
     let object = null;

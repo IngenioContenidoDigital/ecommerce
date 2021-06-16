@@ -1,6 +1,6 @@
 <% let impressions = [];%>
 <div class="container" itemscope itemtype="https://schema.org/ItemList">
-    <% let position = ((page*12)-12)+1; %>
+    <% let position = ((page*32)-32)+1; %>
     <% for(let product of object.products){ %>               
         <div itemprop="itemListElement" itemscope itemtype="https://schema.org/Product" class="card card-catalog is-size-7">
             <span class="is-hidden productid" itemprop="productID"><%=product.id%></span>
