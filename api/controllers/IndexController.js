@@ -64,7 +64,7 @@ module.exports = {
           });
           p.discount = await sails.helpers.discount(p.id);
           p.gender = await Gender.findOne({id:p.gender});
-          p.price = await ProductVariation.avg('price',{product:p.id});
+          p.price = (await ProductVariation.find({product:p.id}))[0].price;
         }
       }
     }
@@ -386,7 +386,7 @@ module.exports = {
     let entity = req.param('entity');
     let ename = req.param('name');
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
-    let perPage = 16;
+    let perPage = 12;
     let pages = 0;
     let seller = null;
     let object = null;
@@ -416,8 +416,7 @@ module.exports = {
           object = await Category.findOne({
             where:{url:ename,active:true},
             select:['name','url','logo','description','tags']
-          })
-          .populate('products',{
+          }).populate('products',{
             where:productsFilter,
             select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
             sort: 'updatedAt DESC'
@@ -442,7 +441,6 @@ module.exports = {
       default:
         return res.notFound();
     }
-
     let colorFilter = {};
     let gendersFilter = {};
     let brandsFilter = {active:true};
@@ -454,12 +452,13 @@ module.exports = {
     if(object.products.length>0){
       object.products = object.products.slice(skip,limit);
       for(let p of object.products){
-        p.price = await ProductVariation.avg('price',{product:p.id});
+        p.price = (await ProductVariation.find({product:p.id}))[0].price;
+        p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
+        p.discount = await sails.helpers.discount(p.id);
         p.seller=await Seller.findOne({
           where:{id:p.seller},
           select:['name','active']
         });
-        p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
         p.mainColor=await Color.findOne({id:p.mainColor});
         p.mainCategory=await Category.findOne({
           where:{id:p.mainCategory},
@@ -469,7 +468,6 @@ module.exports = {
           where:{id:p.manufacturer},
           select:['name']
         });
-        p.discount = await sails.helpers.discount(p.id);
         p.gender = await Gender.findOne({id:p.gender});
 
         if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id);}
@@ -629,14 +627,13 @@ module.exports = {
   },
   cms: async (req,res)=>{
     let seller = null;
-    let content = null;
     let contentfilter={
       position:'landing',
       active:true,
       url:req.param('route'),
       seller:seller
-    }
-    
+    };
+
     if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/}); contentfilter.seller=seller.id;}
     cms = (await Cms.find(contentfilter))[0];
     return res.view('pages/front/cms',{content:cms.content,tag:await sails.helpers.getTag(req.hostname),seller:seller});
