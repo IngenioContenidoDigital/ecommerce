@@ -1,3 +1,5 @@
+const CatalogDiscount = require('../../../models/CatalogDiscount');
+
 module.exports = {
   friendlyName: 'Product',
   description: 'Product dafiti.',
@@ -33,9 +35,9 @@ module.exports = {
     var jsonxml = require('jsontoxml');
     let body={Request:[]};
     let pvstock = 0;
-      for(let p of inputs.products){
-        try{
-          let product = await Product.findOne({id:p.id})
+    for(let p of inputs.products){
+      try{
+        let product = await Product.findOne({id:p.id})
           .populate('gender')
           .populate('mainColor')
           .populate('manufacturer')
@@ -52,130 +54,135 @@ module.exports = {
             limit: 1
           })
           .populate('channels',{integration:inputs.integration.id});
-          let priceadjust = (inputs.dafitiprice && inputs.dafitiprice > 0) ? parseFloat(inputs.dafitiprice) : 0;
-          let priceDiscount = inputs.integration.priceDiscount || 0;
-          let status= inputs.status ? inputs.status : 'active';
-          let productvariation = await ProductVariation.find({product:product.id})
+        let priceadjust = (inputs.dafitiprice && inputs.dafitiprice > 0) ? parseFloat(inputs.dafitiprice) : 0;
+        let priceDiscount = inputs.integration.priceDiscount || 0;
+        let status= inputs.status ? inputs.status : 'active';
+        let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
-          let parent = productvariation.length > 0 ? productvariation[0].id : '';
-          let categories = [];
-          let brand = null;
-          if(inputs.alldata){
-            if((product.description.length + product.descriptionShort.length)<=30){throw new Error('Producto sin Descripcion');}
-            for (let c of product.categories){
-              let cd = c.dafiti.split(',');
-              for(let dd of cd){
-                if(!categories.includes(dd) && dd!== '' && dd!==null){
-                  categories.push(dd);
-                }
+        let parent = productvariation.length > 0 ? productvariation[0].id : '';
+        let categories = [];
+        let brand = null;
+        if(inputs.alldata){
+          if((product.description.length + product.descriptionShort.length)<=30){throw new Error('Producto sin Descripcion');}
+          for (let c of product.categories){
+            let cd = c.dafiti.split(',');
+            for(let dd of cd){
+              if(!categories.includes(dd) && dd!== '' && dd!==null){
+                categories.push(dd);
               }
             }
-            
-            switch(product.manufacturer.name){
-              case 'adidas':
-                brand = 'Adidas Performance';
-                break;
-              case 'rosé pistol':
-                brand = 'rose pistol';
-                break;
-              case '7 de color siete':
-                brand = 'color siete';
-                break;
-              case 'color siete care':
-                brand = 'color siete';
-                break;
-              case 'ondademar colombia':
-                brand = 'ondademar';
-                break;
-              default:
-                brand = product.manufacturer.name;
-                break;
-            }
+          }
+
+          switch(product.manufacturer.name){
+            case 'adidas':
+              brand = 'Adidas Performance';
+              break;
+            case 'rosé pistol':
+              brand = 'rose pistol';
+              break;
+            case '7 de color siete':
+              brand = 'color siete';
+              break;
+            case 'color siete care':
+              brand = 'color siete';
+              break;
+            case 'ondademar colombia':
+              brand = 'ondademar';
+              break;
+            default:
+              brand = product.manufacturer.name;
+              break;
+          }
         }
-          let i = 0;
-          for(let pv of productvariation){
+        let i = 0;
+        for(let pv of productvariation){
 
-            pvstock = (pv.quantity-product.seller.safestock);
+          pvstock = (pv.quantity-product.seller.safestock);
 
-            let data={
-              Product:{
-                SellerSku:pv.id,
-                Status:status,
-                Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0),
-                Quantity:pvstock < 0 ? '0' : pvstock.toString(),
-              }
-            };
+          let data={
+            Product:{
+              SellerSku:pv.id,
+              Status:status,
+              Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0),
+              Quantity:pvstock < 0 ? '0' : pvstock.toString(),
+            }
+          };
             
-            if(inputs.alldata){
+          if(inputs.alldata){
 
-              data.Product.Name=product.name;
-              data.Product.PrimaryCategory=product.mainCategory.dafiti.split(',')[0];
-              //data.Product.Categories=categories.join(',');
-              data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
-              data.Product.Brand=brand;
-              data.Product.Condition='new';
-              data.Product.Variation=pv.variation.col.replace(/\.5/,'½').toString();
+            data.Product.Name=product.name;
+            data.Product.PrimaryCategory=product.mainCategory.dafiti.split(',')[0];
+            //data.Product.Categories=categories.join(',');
+            data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
+            data.Product.Brand=brand;
+            data.Product.Condition='new';
+            data.Product.Variation=pv.variation.col.replace(/\.5/,'½').toString();
 
-              data.Product.ProductData = {};
+            data.Product.ProductData = {};
 
-              if(product.gender && product.gender.name){
-                switch(product.gender.name){
-                  case 'niños':
-                    data.Product.ProductData.Gender='Niños (8 - 16 Años)';
-                    break;
-                  case 'niñas':
-                    data.Product.ProductData.Gender='Niñas (8 - 16 Años)'
-                    break;
-                  case 'bebés niña':
-                    data.Product.ProductData.Gender='Bebés Niña (2 - 7 Años)';
-                    break;
-                  case 'bebés niño':
-                    data.Product.ProductData.Gender='Bebés Niño (2 - 7 Años)';
-                    break;
-                  case 'recién nacido':
-                    data.Product.ProductData.Gender='Recién Nacido (0 - 24 meses)';
-                    break;
-                  case 'recién nacida':
-                    data.Product.ProductData.Gender='Recién Nacida (0 - 24 meses)';
-                    break;
-                  default:
-                    data.Product.ProductData.Gender=product.gender.name;
-                    break;
-                }
+            if(product.gender && product.gender.name){
+              switch(product.gender.name){
+                case 'niños':
+                  data.Product.ProductData.Gender='Niños (8 - 16 Años)';
+                  break;
+                case 'niñas':
+                  data.Product.ProductData.Gender='Niñas (8 - 16 Años)'
+                  break;
+                case 'bebés niña':
+                  data.Product.ProductData.Gender='Bebés Niña (2 - 7 Años)';
+                  break;
+                case 'bebés niño':
+                  data.Product.ProductData.Gender='Bebés Niño (2 - 7 Años)';
+                  break;
+                case 'recién nacido':
+                  data.Product.ProductData.Gender='Recién Nacido (0 - 24 meses)';
+                  break;
+                case 'recién nacida':
+                  data.Product.ProductData.Gender='Recién Nacida (0 - 24 meses)';
+                  break;
+                default:
+                  data.Product.ProductData.Gender=product.gender.name;
+                  break;
               }
+            }
 
-              if(product.mainColor && product.mainColor.name){
-                data.Product.ProductData.ColorNameBrand=product.mainColor.name;
-                data.Product.ProductData.ColorFamily=product.mainColor.name;
-                data.Product.ProductData.Color=product.mainColor.name;
-              }
+            if(product.mainColor && product.mainColor.name){
+              data.Product.ProductData.ColorNameBrand=product.mainColor.name;
+              data.Product.ProductData.ColorFamily=product.mainColor.name;
+              data.Product.ProductData.Color=product.mainColor.name;
+            }
 
-              //if(categories.length<2){delete data.Product.Categories;}
-              if(categories.includes('2')/** Accesorios */ || categories.includes('138')/** Deportes */){delete data.Product.ProductData.ShortDescription;}
-              if(i>0 && productvariation.length>1){
-                data.Product.ParentSku=parent;
-              }
+            //if(categories.length<2){delete data.Product.Categories;}
+            if(categories.includes('2')/** Accesorios */ || categories.includes('138')/** Deportes */){delete data.Product.ProductData.ShortDescription;}
+            if(i>0 && productvariation.length>1){
+              data.Product.ParentSku=parent;
+            }
 
-              let productfeatures = await ProductFeature.find({product:p.id,value:{'!=':''}});
-              if(productfeatures.length>0){
-                for(let fc of productfeatures){
-                  if(fc.value){
-                    let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
-                    for(let cf of channelfeatures){
-                      data.Product.ProductData[cf.name] = fc.value.toLowerCase();
-                    }
+            let productfeatures = await ProductFeature.find({product:p.id,value:{'!=':''}});
+            if(productfeatures.length>0){
+              for(let fc of productfeatures){
+                if(fc.value){
+                  let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
+                  for(let cf of channelfeatures){
+                    data.Product.ProductData[cf.name] = fc.value.toLowerCase();
                   }
                 }
               }
             }
-            /*if(brand==='speedo'){
+          }
+          /*if(brand==='speedo'){
               data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>');
             }else{
               data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
             }*/
             
-            i++;
-            if(product.discount.length>0){
+          i++;
+          data.Product.SalePrice=null;
+          data.Product.SaleStartDate=null;
+          data.Product.SaleEndDate=null;
+          if(product.discount.length>0){
+            let allowedDiscount = await CatalogDiscount.findOne({id:product.discount[0].id}).populate('integrations',{id:inputs.integration.id});
+            if(allowedDiscount.integrations.length>0){
               let discPrice=0;
               let valueDisc=0;
               switch(product.discount[0].type){
@@ -192,17 +199,14 @@ module.exports = {
               data.Product.SalePrice= discPrice.toFixed(2) > 0 ? discPrice.toFixed(2) : null;
               data.Product.SaleStartDate= discPrice.toFixed(2) > 0 ? moment(product.discount[0].from).format() : null;
               data.Product.SaleEndDate= discPrice.toFixed(2) > 0 ? moment(product.discount[0].to).format() : null;
-            }else{
-              data.Product.SalePrice=null;
-              data.Product.SaleStartDate=null;
-              data.Product.SaleEndDate=null;
             }
-            body.Request.push(data);
           }
-        }catch(err){
-          console.log(err);
+          body.Request.push(data);
         }
+      }catch(err){
+        console.log(err);
       }
+    }
     return exits.success(body);
   }
 };

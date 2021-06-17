@@ -31,6 +31,9 @@ module.exports = {
       sort: 'createdAt DESC',
       limit: 1
     });
+    if(product.discount.length>0){
+      product.discount[0].integrations= (await CatalogDiscount.findOne({id:product.discount[0].id}).populate('integrations')).integrations;
+    }
 
     let discPrice=0;
     let discAmount=0;
@@ -52,7 +55,5 @@ module.exports = {
       return exits.success();
     }
   }
-
-
 };
 

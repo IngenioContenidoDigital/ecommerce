@@ -82,27 +82,29 @@ module.exports = {
       });
       let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
 
-      productvariations.forEach(variation =>{
+      for(let variation of productvariations){
         pvstock = (variation.quantity-product.seller.safestock);
         //Se usa para llevar el precio con descuento debido a que el recurso promo no está disponible para colombia Líneas 163 a 182
         //Si se habilita el recurso /promo en la MCO, se debe comentar Líneas 60 a 71 y habilitar líneas 168 a 188
+        price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
         if(product.discount.length>0 && integration.seller!=='5f80fa751b23a04987116036' && integration.seller!=='5fc5579c77b155db533c52e3'){
-          let discPrice=0;
-          let valueDisc=0;
-          switch(product.discount[0].type){
-            case 'P':
-              const productDisc = product.discount[0].value/100;
-              valueDisc = productDisc - priceDiscount;
-              discPrice+=((variation.price*(1+padj))*(valueDisc > 0 ? (1-valueDisc) : 0));
-              break;
-            case 'C':
-              valueDisc = product.discount[0].value - (variation.price*priceDiscount);
-              discPrice+= valueDisc > 0 ? ((variation.price*(1+padj))-valueDisc) : 0;
-              break;
+          let allowedDiscount = await CatalogDiscount.findOne({id:product.discount[0].id}).populate('integrations',{id:integration.id});
+          if(allowedDiscount.integrations.length>0){
+            let discPrice=0;
+            let valueDisc=0;
+            switch(product.discount[0].type){
+              case 'P':
+                const productDisc = product.discount[0].value/100;
+                valueDisc = productDisc - priceDiscount;
+                discPrice+=((variation.price*(1+padj))*(valueDisc > 0 ? (1-valueDisc) : 0));
+                break;
+              case 'C':
+                valueDisc = product.discount[0].value - (variation.price*priceDiscount);
+                discPrice+= valueDisc > 0 ? ((variation.price*(1+padj))-valueDisc) : 0;
+                break;
+            }
+            price = discPrice > 0 ? discPrice.toFixed(0) : (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
           }
-          price = discPrice > 0 ? discPrice.toFixed(0) : (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
-        }else{
-          price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
         }
         let v = {
           'attribute_combinations':[
@@ -121,7 +123,7 @@ module.exports = {
         };
         stock+=parseInt(variation.quantity);
         variations.push(v);
-      });
+      }
 
       let brand = null;
       switch(product.manufacturer.name){
