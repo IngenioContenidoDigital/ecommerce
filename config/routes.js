@@ -88,6 +88,7 @@ module.exports.routes = {
   'GET /integrations/linio/features' : {controller:'FeaturesController',action:'liniofeatures'},
   'GET /integrations/mercadolibre/features' : {controller:'FeaturesController',action:'mercadolibrefeatures'},
   'GET /integrations/mercadolibremx/features' : {controller:'FeaturesController',action:'mercadolibremxfeatures'},
+  'GET /findintegrations/:seller' : {controller:'DiscountController',action:'findintegrations'},
   'GET /sellers/:action?/:id?' : {controller:'SellerController',action:'showsellers'},
   'POST /hash' : {controller:'SellerController', action:'createhash'},
   'GET /channelmessages/:seller' : {controller:'ConversationController',action:'showmessages'},

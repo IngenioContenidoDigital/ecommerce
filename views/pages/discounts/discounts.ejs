@@ -48,21 +48,56 @@
                               <label class="label">Seller</label>
                               <div class="control select">
                                 <select class="is-capitalized" name="seller" required>
-                                  <option value="">-- Elegir Seller --</option>
-                                  <%sellers.forEach(seller =>{%>
-                                    <option class="is-capitalized" value="<%=seller.id%>"<%if(action=='edit' && seller.id==discount.seller){%>selected="selected"<%}%>><%=seller.name%></option>
-                                  <%})%>
+                                  <%if(action=='create'){%>
+                                    <option value="" selected>-- Elegir Seller --</option>
+                                    <%sellers.forEach(seller =>{%>
+                                      <option class="is-capitalized" value="<%=seller.id%>"><%=seller.name%></option>
+                                    <%})%>
+                                  <%}%>
+                                  <%if(action=='edit'){%>
+                                    <option class="is-capitalized" value="<%=discount.seller.id%>" selected="selected"><%=discount.seller.name%></option>
+                                  <%}%>
                                 </select>
                               </div>
                           </div>
                           </div>
                       </div>
-                    <div class="field">
-                        <label class="label">Periodo de descuento</label>
-                        <div class="control">
-                            <input class="input" type="date" name="range" required placeholder="Fecha de Inicio"/>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label">Periodo de descuento</label>
+                          <div class="control">
+                              <input class="input" type="date" name="range" required placeholder="Fecha de Inicio"/>
+                          </div>
                         </div>
-                    </div>
+                      </div>
+                      <div class="column">
+                        <div class="columns">
+                          <div class="column">
+                            <article class="message is-small is-link">
+                              <div class="message-header">
+                                <p>Restringir Descuentos</p>
+                              </div>
+                              <div class="message-body">
+                                De manera predeterminada, los descuentos son válidos para todas las integraciones disponibles. <br> <br><b>Si lo desea, puede restringir este descuento a una o varias integraciones.</b>
+                              </div>
+                            </article>
+                          </div>
+                          <div class="column">
+                            <div class="field" id="integrations-block">
+                              <label class="label">Integraciones</label>
+                              <%if(integrations){%>
+                              <%integrations.forEach(integration =>{%>
+                                <span><input type="checkbox" 
+                                  <%for(let integ of discount.integrations){%>
+                                    <%if(integ.id===integration.id){%>checked<%}%>
+                                  <%}%>
+                                  name="integrations[]" value="<%=integration.id%>"/>&nbsp;<%=integration.name%></span><br>
+                              <%})%>
+                              <%}%>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                   </div>
                   <div class="column">
                     <div class="columns is-mobile">
@@ -172,6 +207,7 @@
             }
 
             function childTree(elm){
+                let category = <%if(action=='edit' && discount.category){%>'<%= discount.category %>'<%}else{%>null<%}%>;
                 return new Promise(resolve =>{
                 elm.forEach((child) =>{
                     if(!hasClass(child,'visited')){
@@ -179,8 +215,17 @@
                         var d = document.createElement('ul');
                         resData.forEach(function(son){
                             let ca = document.createElement('li');
+                            let str = '';
                             ca.style.paddingLeft = 5*son.level+'px';
-                            ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="radio" name="category" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
+                            str = `<a class="panel-block is-active" category="`+son.id+`" level="`+son.level+`">`;
+                              if(category && son.id==category){
+                                str+=`<input type="radio" name="category" value="`+son.id+`" checked />`;
+                              }else{
+                                str+=`<input type="radio" name="category" value="`+son.id+`" />`;
+                              }
+                              str+=`&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span>
+                              <span class="cat_name is-capitalized">`+son.name+`</span></a>`;
+                              ca.innerHTML = str;
                             d.appendChild(ca);
                         });
                         insertAfter(d,child);
@@ -210,10 +255,26 @@
 
             init();
 
+            live('select[name="seller"]','change', e =>{
+              let iblock = document.querySelector('#integrations-block');
+              let sl = e.target.options[e.target.selectedIndex].value;
+              if(sl){
+                io.socket.get('/findintegrations/'+sl,resData =>{
+                  let str = '<label class="label">Integraciones</label>';
+                  for(let data of resData){
+                    str+='<span><input type="checkbox" name="integrations[]" value="'+data.id+'"/>&nbsp;'+data.name+'</span><br>';
+                  };
+                  iblock.innerHTML=str;
+                });
+              }else{
+                iblock.innerHTML='<label class="label">Integraciones</label>';
+              }
+            });
+
         </script>
       <% } else { %>
           <p style="text-align: right;font-size: 20px; margin-right: 5px;">
-              <a href="/discounts/create" class="has-text-primary"><i class='bx bxs-plus-square'></i></a>
+              <a href="/discounts/create" class="button is-primary is-size-7"><i class='bx bxs-discount is-size-5'></i></i>&nbsp;&nbsp;Crear Descuento</a>
           </p>
           <div class="table-container">
               <table class="table is-hoverable" id="discounts-table">
@@ -259,6 +320,8 @@
                   searchable:true,
                   sortable:true,
                   paging:true,
+                  perPageSelect:[5,10,20,30,50],
+                  perPage:50,
                   labels: {
                       placeholder: "Buscar...",
                       perPage: "{select} registros por página",
