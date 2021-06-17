@@ -80,7 +80,9 @@ module.exports = {
     const ordersFailed = {total: 0, price:0};
     let fleteTotal = 0;
     for (const order of orders) {
-      if (order.currentstatus.name === 'entregado'){
+      if (order.currentstatus.name === 'aceptado' || order.currentstatus.name === 'enviado'
+          || order.currentstatus.name === 'empacado' || order.currentstatus.name === 'en procesamiento'
+          || order.currentstatus.name === 'entregado'){
         let items = await OrderItem.find({order: order.id});
         fleteTotal += order.fleteTotal;
         for (const item of items) {
