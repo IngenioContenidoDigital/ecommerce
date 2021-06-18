@@ -120,7 +120,7 @@
 
     live('select[name="variations"]','change',(e)=>{
         let variation = e.target.options[e.target.selectedIndex].getAttribute('value')!=='0' ? e.target.options[e.target.selectedIndex].getAttribute('value') : e.target.options[1].getAttribute('value');
-        io.socket.post('/findprice',{variation:variation},(resData) => {
+        io.socket.post('/findprice',{variation:variation,hostname:window.location.hostname},(resData) => {
             if(resData.highPrice){document.querySelector('.highPrice').innerHTML = '$ '+Math.round(resData.highPrice).toLocaleString("es-CO");}
             if(resData.lowPrice){document.querySelector('.lowPrice').innerHTML = '$ '+Math.round(resData.lowPrice).toLocaleString("es-CO");}
             if(resData.savings){document.querySelector('.savings').innerHTML = '$ '+Math.round(resData.savings).toLocaleString("es-CO");}
@@ -202,7 +202,7 @@
         if(e.target.getAttribute('disabled')!=='disabled'){
             let qty = document.querySelector('select[name="quantity"]').value
             let vrt = document.querySelector('select[name="variations"]').value
-            io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create'},(resData)=>{
+            io.socket.put('/cart',{variation:vrt,quantity:qty,action:'create',hostname:window.location.hostname},(resData)=>{
                 dataLayer.push({ ecommerce: null });
                 dataLayer.push({
                     'event': 'add_to_cart',

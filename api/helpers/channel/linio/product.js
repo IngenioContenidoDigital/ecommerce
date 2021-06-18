@@ -48,8 +48,7 @@ module.exports = {
               to:{'>=':moment().valueOf()},
               from:{'<=':moment().valueOf()}
             },
-            sort: 'createdAt DESC',
-            limit: 1
+            sort: 'createdAt DESC'
           })
           .populate('channels',{integration:inputs.integration.id});
         let priceadjust = (inputs.linioprice && inputs.linioprice > 0) ? parseFloat(inputs.linioprice) : 0;
@@ -138,24 +137,26 @@ module.exports = {
           data.Product.SaleStartDate=null;
           data.Product.SaleEndDate=null;
           if(product.discount.length>0){
-            let allowedDiscount = await CatalogDiscount.findOne({id:product.discount[0].id}).populate('integrations',{id:inputs.integration.id});
-            if(allowedDiscount.integrations.length>0){
+            let discountids = product.discount.map(d => d.id);
+            let allowedDiscount = await CatalogDiscount.find({id:discountids}).populate('integrations',{id:inputs.integration.id});
+            allowedDiscount = allowedDiscount.filter(ad =>{ if(ad.integrations && ad.integrations.length > 0){return ad;}});
+            if(allowedDiscount.length>0){
               let discPrice=0;
               let valueDisc=0;
-              switch(product.discount[0].type){
+              switch(allowedDiscount[0].type){
                 case 'P':
-                  const productDisc = product.discount[0].value/100;
+                  const productDisc = allowedDiscount[0].value/100;
                   valueDisc = productDisc - priceDiscount;
                   discPrice+=((pv.price*(1+priceadjust || 0))*(valueDisc > 0 ? (1-valueDisc) : 0));
                   break;
                 case 'C':
-                  valueDisc = product.discount[0].value - (pv.price*priceDiscount);
+                  valueDisc = allowedDiscount[0].value - (pv.price*priceDiscount);
                   discPrice+= valueDisc > 0 ? ((pv.price*(1+priceadjust || 0)) - valueDisc) : 0;
                   break;
               }
               data.Product.SalePrice= discPrice.toFixed(2) > 0 ? discPrice.toFixed(2) : null;
-              data.Product.SaleStartDate= discPrice.toFixed(2) > 0 ? moment(product.discount[0].from).format() : null;
-              data.Product.SaleEndDate= discPrice.toFixed(2) > 0 ? moment(product.discount[0].to).format() : null;
+              data.Product.SaleStartDate= discPrice.toFixed(2) > 0 ? moment(allowedDiscount[0].from).format() : null;
+              data.Product.SaleEndDate= discPrice.toFixed(2) > 0 ? moment(allowedDiscount[0].to).format() : null;
             }
           }
           body.Request.push(data);

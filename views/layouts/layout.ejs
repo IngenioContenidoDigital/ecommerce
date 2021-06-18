@@ -155,7 +155,7 @@
         let option = e.target
         let elm = e.target.parentNode.parentNode.parentNode;
         let selected = elm.querySelector('#drop-selected');
-        io.socket.post('/findprice',{variation:option.getAttribute('value')},(resData) => {
+        io.socket.post('/findprice',{variation:option.getAttribute('value'),hostname:window.location.hostname},(resData) => {
             if(resData.highPrice){elm.parentNode.querySelector('.highPrice').innerHTML = '$ '+Math.round(resData.highPrice).toLocaleString("es-CO");}
             if(resData.lowPrice){elm.parentNode.querySelector('.lowPrice').innerHTML = '$ '+Math.round(resData.lowPrice).toLocaleString("es-CO");}
             if(resData.savings){elm.parentNode.querySelector('.savings').innerHTML = '$ '+Math.round(resData.savings).toLocaleString("es-CO");}
@@ -186,7 +186,7 @@
 
     live('#push-to-cart','click',(e)=>{
       let vrt = e.target.parentNode.parentNode.querySelector('#drop-selected').getAttribute('value');
-        io.socket.put('/cart',{variation:vrt,quantity:1,action:'create'},(resData)=>{
+        io.socket.put('/cart',{variation:vrt,quantity:1,action:'create',hostname:window.location.hostname},(resData)=>{
           dataLayer.push({ ecommerce: null });
           dataLayer.push({
               'event': 'add_to_cart',

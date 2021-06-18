@@ -18,6 +18,7 @@ module.exports = {
     let root = await Category.findOne({name:'inicio'});
     let discount = null;
     let integrations = null;
+
     if(id){
       discount = await CatalogDiscount.findOne({id:id})
       .populate('seller')
@@ -89,6 +90,13 @@ module.exports = {
           await CatalogDiscount.replaceCollection(discount.id,'products').members(affected);
           if(req.body.integrations){
             await CatalogDiscount.replaceCollection(discount.id,'integrations').members(req.body.integrations);
+          }else{
+            let intlist = [];
+            let integrations = await Integrations.find({where:{seller:req.body.seller},select:['id']});
+            for(let integration of integrations){
+              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+            }
+            await CatalogDiscount.replaceCollection(discount.id,'integrations').members(intlist);
           }
         }else{
           discount = await CatalogDiscount.create({
@@ -107,6 +115,13 @@ module.exports = {
           await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
           if(req.body.integrations){
             await CatalogDiscount.addToCollection(discount.id,'integrations').members(req.body.integrations);
+          }else{
+            let intlist = [];
+            let integrations = await Integrations.find({where:{seller:req.body.seller},select:['id']});
+            for(let integration of integrations){
+              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+            }
+            await CatalogDiscount.addToCollection(discount.id,'integrations').members(intlist);
           }
         }
       }else{
@@ -211,6 +226,14 @@ module.exports = {
     affected.push(product.id);
 
     await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
+
+    let intlist = [];
+    let integrations = await Integrations.find({where:{seller:product.seller},select:['id']});
+    for(let integration of integrations){
+      if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+    }
+    await CatalogDiscount.addToCollection(discount.id,'integrations').members(intlist);
+
     await sails.helpers.channel.channelSync(product);
     //let discounts = await Product.findOne({id:product.id}).populate('discount');
 

@@ -112,7 +112,7 @@
     live('.delete','click', (e) =>{
         let qty = 0
         let vrt = e.target.getAttribute('variation');
-        io.socket.put('/cart',{variation:vrt,quantity:qty,action:'remove'},(res) =>{
+        io.socket.put('/cart',{variation:vrt,quantity:qty,action:'remove',hostname:window.location.hostname},(res) =>{
             if(res.items<1){
                 let box = document.querySelector('.box');
                 box.innerHTML=`<section class="hero is-warning">
@@ -142,7 +142,7 @@
     live('select[name="quantity"]','change',(e) => {
         let qty = e.target.value;
         let vrt = e.target.parentNode.parentNode.parentNode.querySelector('a').getAttribute('variation');
-        io.socket.put('/cart',{variation:vrt,quantity:qty,action:'update'},(res) => {
+        io.socket.put('/cart',{variation:vrt,quantity:qty,action:'update',hostname:window.location.hostname},(res) => {
             let price = e.target.parentNode.parentNode.parentNode.querySelector('#item-price');
             let itemprice = price.getAttribute('price');
             price.innerHTML='$&nbsp;'+Math.round(itemprice*qty).toLocaleString("es-CO");

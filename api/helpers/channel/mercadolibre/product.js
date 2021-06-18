@@ -50,8 +50,7 @@ module.exports = {
           to:{'>=':moment().valueOf()},
           from:{'<=':moment().valueOf()}
         },
-        sort: 'createdAt DESC',
-        limit: 1
+        sort: 'createdAt DESC'
       });
       let body = null;
       let price = 0;
@@ -88,18 +87,20 @@ module.exports = {
         //Si se habilita el recurso /promo en la MCO, se debe comentar Líneas 60 a 71 y habilitar líneas 168 a 188
         price = (Math.ceil((variation.price*(1+padj))*100)/100).toFixed(0);
         if(product.discount.length>0 && integration.seller!=='5f80fa751b23a04987116036' && integration.seller!=='5fc5579c77b155db533c52e3'){
-          let allowedDiscount = await CatalogDiscount.findOne({id:product.discount[0].id}).populate('integrations',{id:integration.id});
-          if(allowedDiscount.integrations.length>0){
+          let discountids = product.discount.map(d => d.id);
+          let allowedDiscount = await CatalogDiscount.find({id:discountids}).populate('integrations',{id:integration.id});
+          allowedDiscount = allowedDiscount.filter(ad =>{ if(ad.integrations && ad.integrations.length > 0){return ad;}});
+          if(allowedDiscount.length>0){
             let discPrice=0;
             let valueDisc=0;
-            switch(product.discount[0].type){
+            switch(allowedDiscount[0].type){
               case 'P':
-                const productDisc = product.discount[0].value/100;
+                const productDisc = allowedDiscount[0].value/100;
                 valueDisc = productDisc - priceDiscount;
                 discPrice+=((variation.price*(1+padj))*(valueDisc > 0 ? (1-valueDisc) : 0));
                 break;
               case 'C':
-                valueDisc = product.discount[0].value - (variation.price*priceDiscount);
+                valueDisc = allowedDiscount[0].value - (variation.price*priceDiscount);
                 discPrice+= valueDisc > 0 ? ((variation.price*(1+padj))-valueDisc) : 0;
                 break;
             }

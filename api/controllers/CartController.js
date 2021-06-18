@@ -9,7 +9,12 @@ module.exports = {
   viewcart: async function(req, res){
     let cart = null;
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    let iridio = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){
+      seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
+    }else{
+      iridio = await Channel.findOne({name:'iridio'});
+    }
     if(req.session.cart!==undefined){
       cart = await CartProduct.find({cart:req.session.cart.id}).sort('createdAt ASC')
       .populate('product')
@@ -22,7 +27,13 @@ module.exports = {
         .populate('mainCategory')
         .populate('manufacturer')
         .populate('tax');
-        cartproduct.product.discount = await sails.helpers.discount(cartproduct.product.id);
+        let discounts = await sails.helpers.discount(cartproduct.product.id);
+        if(iridio && discounts){
+          let integrations = await ProductChannel.find({channel:iridio.id,product:cartproduct.product.id});
+          integrations = integrations.map(itg => itg.integration);
+          discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+        }
+        cartproduct.product.discount = discounts ? discounts[0] : null;
         cartproduct.productvariation.variation = await Variation.findOne({id:cartproduct.productvariation.variation});
       }
     }
@@ -31,6 +42,10 @@ module.exports = {
   addtocart: async function(req, res){
     if (!req.isSocket) {
       return res.badRequest();
+    }
+    let iridio = null;
+    if(req.body.hostname==='iridio.co' || req.body.hostname==='demo.1ecommerce.app' || req.body.hostname==='localhost' || req.body.hostname==='1ecommerce.app'){
+      iridio = await Channel.findOne({name:'iridio'});
     }
     let cart = null;
     let products = null;
@@ -47,7 +62,13 @@ module.exports = {
       await CartProduct.destroy({cart:cart.id,product:productvariation.product,productvariation:productvariation.id});
     }else{
       await CartProduct.destroy({cart:cart.id,product:productvariation.product,productvariation:productvariation.id});
-      let discount = await sails.helpers.discount(productvariation.product,productvariation.id);
+      let discounts = await sails.helpers.discount(productvariation.product,productvariation.id);
+      if(iridio && discounts){
+        let integrations = await ProductChannel.find({channel:iridio.id,product:productvariation.product});
+        integrations = integrations.map(itg => itg.integration);
+        discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+      }
+      let discount = discounts ? discounts[0] : null;
       for(let i=0; i<req.body.quantity; i++){
         if(discount){
           await CartProduct.create({cart:cart.id,product:productvariation.product,productvariation:productvariation.id,totalDiscount:discount.amount,totalPrice:discount.price});
