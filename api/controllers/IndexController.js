@@ -998,9 +998,9 @@ module.exports = {
     }
     let space = parseInt(req.body.screen);
     
-    //if(!req.session.menu){
+    if(!req.session.menu){
       req.session.menu = await sails.helpers.callMenu(req.body.hostname);
-    //}
+    }
     
     if(space<1024){
       return res.send(req.session.menu.navbarmobile);
