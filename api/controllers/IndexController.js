@@ -440,7 +440,7 @@ module.exports = {
             select:['name','url','logo','description','tags']
           }).populate('products',{
             where:productsFilter,
-            select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
+            select:['id'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/categories/';
@@ -452,7 +452,7 @@ module.exports = {
         try{
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
             where:productsFilter,
-            select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
+            select:['id'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/brands/';
@@ -473,34 +473,35 @@ module.exports = {
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
       object.products = object.products.slice(skip,limit);
-      for(let p of object.products){
-        p.price = (await ProductVariation.find({product:p.id}))[0].price;
-        p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
-        let discounts = await sails.helpers.discount(p.id);
+      for(let p in object.products){
+        object.products[p] = await Product.findOne({where:{id:object.products[p].id},select:['name','tax','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory']});
+        object.products[p].price = (await ProductVariation.find({product:object.products[p].id}))[0].price;
+        object.products[p].cover= (await ProductImage.find({product:object.products[p].id,cover:1}))[0];
+        let discounts = await sails.helpers.discount(object.products[p].id);
         if(iridio && discounts){
-          let integrations = await ProductChannel.find({channel:iridio.id,product:p.id});
+          let integrations = await ProductChannel.find({channel:iridio.id,product:object.products[p].id});
           integrations = integrations.map(itg => itg.integration);
           discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
         }
-        p.discount = discounts ? discounts[0] : null;
-        p.seller=await Seller.findOne({
-          where:{id:p.seller},
+        object.products[p].discount = discounts ? discounts[0] : null;
+        object.products[p].seller=await Seller.findOne({
+          where:{id:object.products[p].seller},
           select:['name','active']
         });
-        p.mainColor=await Color.findOne({id:p.mainColor});
-        p.mainCategory=await Category.findOne({
-          where:{id:p.mainCategory},
+        object.products[p].mainColor=await Color.findOne({id:object.products[p].mainColor});
+        object.products[p].mainCategory=await Category.findOne({
+          where:{id:object.products[p].mainCategory},
           select:['name','url','level']
         });
-        p.manufacturer=await Manufacturer.findOne({
-          where:{id:p.manufacturer},
+        object.products[p].manufacturer=await Manufacturer.findOne({
+          where:{id:object.products[p].manufacturer},
           select:['name']
         });
-        p.gender = await Gender.findOne({id:p.gender});
+        object.products[p].gender = await Gender.findOne({id:object.products[p].gender});
 
-        if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id);}
-        if(p.manufacturer && !brandsList.includes(p.manufacturer.id)){brandsList.push(p.manufacturer.id);}
-        if(p.gender && !gendersList.includes(p.gender.id)){gendersList.push(p.gender.id);}
+        if(object.products[p].mainColor && !colorList.includes(object.products[p].mainColor.id)){colorList.push(object.products[p].mainColor.id);}
+        if(object.products[p].manufacturer && !brandsList.includes(object.products[p].manufacturer.id)){brandsList.push(object.products[p].manufacturer.id);}
+        if(object.products[p].gender && !gendersList.includes(object.products[p].gender.id)){gendersList.push(object.products[p].gender.id);}
       }
     }
 
@@ -562,7 +563,7 @@ module.exports = {
       let genders = [];
       let response = {products:[]};
       let page = 1;
-      let perPage = 28;
+      let perPage = 32;
       let pages = 0;
 
       if(err){console.log(err, err.stack);}
