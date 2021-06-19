@@ -77,14 +77,14 @@ module.exports = {
           if(allowedDiscount.length>0){
             let discPrice=0;
             let valueDisc=0;
-            switch(allowedDiscount[0].type){
+            switch(allowedDiscount[allowedDiscount.length-1].type){
               case 'P':
-                const productDisc = allowedDiscount[0].value/100;
+                const productDisc = allowedDiscount[allowedDiscount.length-1].value/100;
                 valueDisc = productDisc - priceDiscount;
                 discPrice+=((variation.price*(1+padj))*(valueDisc > 0 ? (1-valueDisc) : 0));
                 break;
               case 'C':
-                valueDisc = allowedDiscount[0].value - (variation.price*priceDiscount);
+                valueDisc = allowedDiscount[allowedDiscount.length-1].value - (variation.price*priceDiscount);
                 discPrice+= valueDisc > 0 ? ((variation.price*(1+padj))-valueDisc) : 0;
                 break;
             }
