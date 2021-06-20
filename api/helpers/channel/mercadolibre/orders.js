@@ -54,15 +54,6 @@ module.exports = {
             profile:profile.id
           });
           let address = null;
-          let payment = {
-            data:{
-              estado:'Aceptado',
-              channel:'mercadolibre',
-              channelref:order.id,
-              integration:integration.id
-            }
-          };
-          payment.data['ref_payco'] = order.id;
           if(shipping){
             let cityname = shipping['receiver_address'].city.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             let state = shipping['receiver_address'].state.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -83,6 +74,16 @@ module.exports = {
               });
             }
           }
+          let payment = {
+            data:{
+              estado:'Aceptado',
+              channel:'mercadolibre',
+              channelref:order.id,
+              integration:integration.id,
+              shipping: order.shipping.id ? order.shipping.id : ''
+            }
+          };
+          payment.data['ref_payco'] = order.id;
           let cart = await Cart.create().fetch();
           for(let item of order['order_items']){
             let productvariation;
