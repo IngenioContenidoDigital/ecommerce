@@ -22,11 +22,10 @@ module.exports = {
   },
   fn: async function (inputs,exits) {    
     try{
-      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource, inputs.url, inputs.token);      
+      let response = await sails.helpers.channel.mercadolibre.request(inputs.resource, inputs.url, inputs.token);
       if(response){return exits.success(response);}
     }catch(err){
       return exits.error(err.message);
     } 
   }
 };
-

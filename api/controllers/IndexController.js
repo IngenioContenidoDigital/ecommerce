@@ -701,13 +701,13 @@ module.exports = {
     return res.view('pages/front/cms',{content:cms.content,tag:await sails.helpers.getTag(req.hostname),seller:seller});
   },
   notificationml: async function(req, res){
+    await sails.helpers.channel.successRequest(res);
     let moment = require('moment');
     let resource = req.body.resource;
     let userId = req.body.user_id;
     let topic = req.body.topic;
     let integration = await Integrations.findOne({useridml: userId}).populate('seller');
     if (integration) {
-      await sails.helpers.channel.successRequest(res);
       let seller = integration.seller.id;
       const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
       try {
