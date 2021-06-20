@@ -8,7 +8,7 @@
           <% mosaic = slider.filter(el => (el.position =='vertical' || el.position =='bottom' || el.position =='wide' || el.position =='middle' || el.position =='tall'));%>
         <%}%>
           <%if(main!==null && main.length>1){%>
-            <section class="hero is-hidden-mobile">
+            <section class="hero">
               <div style="min-width:100%;" class="container">
                 <p class="carousel has-text-centered">
                   <%for(let m of main){%>
@@ -18,7 +18,7 @@
               </div>
             </section>
           <%}else if(main!==null && main.length==1){%>
-            <section class="hero is-hidden-mobile">
+            <section class="hero">
               <a href="<%=main[0].url%>"><img loading="lazy" src="<%= cdnurl%>/images/slides/<%= main[0].image %>" alt="<%=main[0].name%>"/></a>
             </section>
           <%}%>
@@ -58,7 +58,7 @@
           <div class="columns is-centered is-gapless">
             <div class="column is-8">
             <%if(mosaic!==null && mosaic.length>=1){%>
-                <section class="section">
+                <section class="section is-paddingless">
                 <p class="container has-text-centered">
                   <div class="tile is-ancestor">
                     <%let vbm = mosaic.filter(el => el.position =='vertical' || el.position =='bottom'|| el.position =='middle')%>
