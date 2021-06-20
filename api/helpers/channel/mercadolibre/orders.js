@@ -80,7 +80,9 @@ module.exports = {
               channel:'mercadolibre',
               channelref:order.id,
               integration:integration.id,
-              shipping: order.shipping.id ? order.shipping.id : ''
+              shipping: order.shipping.id ? order.shipping.id : '',
+              mode: shipping ? shipping.logistic.mode: '',
+              receiverId: shipping ? shipping.destination.receiver_id : ''
             }
           };
           payment.data['ref_payco'] = order.id;
