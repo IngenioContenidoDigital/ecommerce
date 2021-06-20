@@ -34,6 +34,7 @@ module.exports = {
         orderfilter[0]={channel:'mercadolibre', channelref:order.id, integration: inputs.integration};
         if(order.shipping.id){
           orderfilter[1]={channel:'mercadolibre', shippingMeli:order.shipping.id, integration: inputs.integration};
+          orderfilter[2]={channel:'mercadolibre', tracking:order.shipping.id, integration: inputs.integration};
           shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
             return exits.error(err.message);
           });
