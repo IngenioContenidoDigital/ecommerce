@@ -104,8 +104,8 @@ module.exports = {
                   cart:cart.id,
                   product:productvariation.product,
                   productvariation:productvariation.id,
-                  totalDiscount:parseFloat(0),
-                  totalPrice:parseFloat(item['full_unit_price']),
+                  totalDiscount:parseFloat(item['full_unit_price']-item['unit_price']),
+                  totalPrice:parseFloat(item['unit_price']),
                   externalReference:item.item['variation_id'] ? item.item['variation_id'] : ''
                 });
               }
@@ -140,8 +140,8 @@ module.exports = {
                     cart: oexists[0].cart,
                     product:productvariation.product,
                     productvariation:productvariation.id,
-                    totalDiscount:parseFloat(0),
-                    totalPrice:parseFloat(item['full_unit_price']),
+                    totalDiscount:parseFloat(item['full_unit_price']-item['unit_price']),
+                    totalPrice:parseFloat(item['unit_price']),
                     externalReference:item.item['variation_id'] ? item.item['variation_id'] : ''
                   }).fetch();
                   cartproduct = await CartProduct.findOne({id: cartproduct.id}).populate('product').populate('productvariation');
