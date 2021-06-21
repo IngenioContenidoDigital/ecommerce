@@ -13,6 +13,7 @@ module.exports = {
     let cmsfilter = {position:'home',active:true};
     let sliderfilter = {active:true};
     let brands = null;
+    let iridio = null;
 
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
@@ -20,6 +21,7 @@ module.exports = {
       brands = await Manufacturer.find({active:true}).sort('name ASC');
       cmsfilter['seller'] = null;
       sliderfilter['seller']=null;
+      iridio = await Channel.findOne({name:'iridio'});
     }else{
       seller = await Seller.findOne({
         where:{domain:req.hostname},
@@ -62,7 +64,13 @@ module.exports = {
             where:{id:p.manufacturer},
             select:['name']
           });
-          p.discount = await sails.helpers.discount(p.id);
+          let discounts = await sails.helpers.discount(p.id);
+          if(iridio && discounts){
+            let integrations = await ProductChannel.find({channel:iridio.id,product:p.id});
+            integrations = integrations.map(itg => itg.integration);
+            discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+          }
+          p.discount = discounts ? discounts[0] : null;
           p.gender = await Gender.findOne({id:p.gender});
           p.price = (await ProductVariation.find({product:p.id}))[0].price;
         }
@@ -203,6 +211,7 @@ module.exports = {
       { header: 'Referencia marketplace', key: 'channelref', width: 22 },
       { header: 'Referencia del pedido', key: 'orderref', width: 15 },
       { header: 'Número de rastreo', key: 'tracking', width: 20 },
+      { header: 'Flete Total', key: 'fleteTotal', width: 20 },
       { header: 'Comisión', key: 'commission', width: 20 },
       { header: 'Fecha de creación', key: 'createdAt', width: 20 },
       { header: 'Fecha de actualización', key: 'updatedAt', width: 22 },
@@ -228,6 +237,7 @@ module.exports = {
         item.channelref = order.channelref;
         item.orderref = order.reference;
         item.tracking = order.tracking;
+        item.fleteTotal = order.fleteTotal;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         ordersItem.push(item);
@@ -352,7 +362,12 @@ module.exports = {
     }
 
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    let iridio = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){
+      seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
+    }else{
+      iridio = await Channel.findOne({name:'iridio'});
+    }
 
     let addresses = null;
     addresses = await Address.find({user:req.session.user.id})
@@ -373,7 +388,13 @@ module.exports = {
         .populate('mainColor')
         .populate('manufacturer')
         .populate('tax');
-        cartproduct.product.discount = await sails.helpers.discount(cartproduct.product.id);
+        let discounts = await sails.helpers.discount(cartproduct.product.id);
+        if(iridio && discounts){
+          let integrations = await ProductChannel.find({channel:iridio.id,product:cartproduct.product.id});
+          integrations = integrations.map(itg => itg.integration);
+          discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+        }
+        cartproduct.product.discount = discounts ? discounts[0] : null;
         cartproduct.productvariation.variation = await Variation.findOne({id:cartproduct.productvariation.variation});
       }
     }
@@ -383,10 +404,11 @@ module.exports = {
     return res.view('pages/front/checkout', {addresses:addresses, cart:cart, error:error, tokens:tokens,tag:await sails.helpers.getTag(req.hostname),seller:seller});
   },
   list: async function(req, res){
+    req.setTimeout(0);
     let entity = req.param('entity');
     let ename = req.param('name');
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
-    let perPage = 12;
+    let perPage = 32;
     let pages = 0;
     let seller = null;
     let object = null;
@@ -404,7 +426,7 @@ module.exports = {
           channel:iridio.id,
           status:true
         },
-        select:['product']
+        select:['product','integration']
       });
       iridioproducts = iridioproducts.map(i => i.product);
       productsFilter['id'] = iridioproducts;
@@ -418,7 +440,7 @@ module.exports = {
             select:['name','url','logo','description','tags']
           }).populate('products',{
             where:productsFilter,
-            select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
+            select:['id'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/categories/';
@@ -430,7 +452,7 @@ module.exports = {
         try{
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
             where:productsFilter,
-            select:['name','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory'],
+            select:['id'],
             sort: 'updatedAt DESC'
           });
           object.route = '/images/brands/';
@@ -451,28 +473,35 @@ module.exports = {
     pages = Math.ceil(object.products.length/perPage);
     if(object.products.length>0){
       object.products = object.products.slice(skip,limit);
-      for(let p of object.products){
-        p.price = (await ProductVariation.find({product:p.id}))[0].price;
-        p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
-        p.discount = await sails.helpers.discount(p.id);
-        p.seller=await Seller.findOne({
-          where:{id:p.seller},
+      for(let p in object.products){
+        object.products[p] = await Product.findOne({where:{id:object.products[p].id},select:['name','tax','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory']});
+        object.products[p].price = (await ProductVariation.find({product:object.products[p].id}))[0].price;
+        object.products[p].cover= (await ProductImage.find({product:object.products[p].id,cover:1}))[0];
+        let discounts = await sails.helpers.discount(object.products[p].id);
+        if(iridio && discounts){
+          let integrations = await ProductChannel.find({channel:iridio.id,product:object.products[p].id});
+          integrations = integrations.map(itg => itg.integration);
+          discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+        }
+        object.products[p].discount = discounts ? discounts[0] : null;
+        object.products[p].seller=await Seller.findOne({
+          where:{id:object.products[p].seller},
           select:['name','active']
         });
-        p.mainColor=await Color.findOne({id:p.mainColor});
-        p.mainCategory=await Category.findOne({
-          where:{id:p.mainCategory},
+        object.products[p].mainColor=await Color.findOne({id:object.products[p].mainColor});
+        object.products[p].mainCategory=await Category.findOne({
+          where:{id:object.products[p].mainCategory},
           select:['name','url','level']
         });
-        p.manufacturer=await Manufacturer.findOne({
-          where:{id:p.manufacturer},
+        object.products[p].manufacturer=await Manufacturer.findOne({
+          where:{id:object.products[p].manufacturer},
           select:['name']
         });
-        p.gender = await Gender.findOne({id:p.gender});
+        object.products[p].gender = await Gender.findOne({id:object.products[p].gender});
 
-        if(p.mainColor && !colorList.includes(p.mainColor.id)){colorList.push(p.mainColor.id);}
-        if(p.manufacturer && !brandsList.includes(p.manufacturer.id)){brandsList.push(p.manufacturer.id);}
-        if(p.gender && !gendersList.includes(p.gender.id)){gendersList.push(p.gender.id);}
+        if(object.products[p].mainColor && !colorList.includes(object.products[p].mainColor.id)){colorList.push(object.products[p].mainColor.id);}
+        if(object.products[p].manufacturer && !brandsList.includes(object.products[p].manufacturer.id)){brandsList.push(object.products[p].manufacturer.id);}
+        if(object.products[p].gender && !gendersList.includes(object.products[p].gender.id)){gendersList.push(object.products[p].gender.id);}
       }
     }
 
@@ -488,8 +517,13 @@ module.exports = {
   },
   search: async(req, res) =>{
     let seller = null;
+    let iridio = null;
     let ename=req.param('q');
-    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){
+      seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
+    }else{
+      iridio = await Channel.findOne({name:'iridio'});
+    }
     let AWS = require('aws-sdk');
     AWS.config.loadFromPath('./config.json');
     let csd = new AWS.CloudSearchDomain({endpoint: 'search-iridio-kqxoxbqunm62wui765a5ms5nca.us-east-1.cloudsearch.amazonaws.com'});
@@ -529,7 +563,7 @@ module.exports = {
       let genders = [];
       let response = {products:[]};
       let page = 1;
-      let perPage = 28;
+      let perPage = 32;
       let pages = 0;
 
       if(err){console.log(err, err.stack);}
@@ -550,8 +584,15 @@ module.exports = {
         pages = Math.ceil(set.length/perPage);
 
         for(let p of set){
-          p.cover= await ProductImage.findOne({product:p.id,cover:1});
-          p.discount = await sails.helpers.discount(p.id);
+          p.cover= (await ProductImage.find({product:p.id,cover:1}))[0];
+          let discounts = await sails.helpers.discount(p.id);
+          if(iridio && discounts){
+            let integrations = await ProductChannel.find({channel:iridio.id,product:p.id});
+            integrations = integrations.map(itg => itg.integration);
+            discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+          }
+          p.discount = discounts ? discounts[0] : null;
+          p.price = (await ProductVariation.find({product:p.id}))[0].price;
           if(!await exists(colors, p.mainColor)){colors.push(p.mainColor);}
           if(!await exists(brands, p.manufacturer)){brands.push(p.manufacturer);}
           if(!await exists(genders, p.gender)){genders.push(p.gender);}
@@ -563,7 +604,12 @@ module.exports = {
   },
   listproduct: async function(req, res){
     let seller = null;
-    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});}
+    let iridio = null;
+    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost' && req.hostname!=='1ecommerce.app'){
+      seller = await Seller.findOne({domain:req.hostname/*'sanpolos.com'*/});
+    }else{
+      iridio = await Channel.findOne({name:'iridio'});
+    }
     let product = await Product.findOne({name:decodeURIComponent(req.param('name')),reference:decodeURIComponent(req.param('reference'))})
       .populate('manufacturer')
       .populate('mainColor')
@@ -584,7 +630,13 @@ module.exports = {
       }
       if(!exists){req.session.viewed.push({viewedAt:moment().valueOf(),product:product.id});}
     }
-    let discount = product.id ? await sails.helpers.discount(product.id) : null;
+    let discounts = await sails.helpers.discount(product.id);
+    if(iridio && discounts){
+      let integrations = await ProductChannel.find({channel:iridio.id,product:product.id});
+      integrations = integrations.map(itg => itg.integration);
+      discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+    }
+    let discount = discounts ? discounts[0] : null;
     let title = product.name;
     let description = product.descriptionShort.replace(/<\/?[^>]+(>|$)/g, '')+' '+product.description.replace(/<\/?[^>]+(>|$)/g, '');
     let words = product.name.split(' ');
@@ -612,9 +664,19 @@ module.exports = {
       return res.badRequest();
     }
     let prices ={};
+    let iridio = null;
+    if(req.body.hostname==='iridio.co' || req.body.hostname==='demo.1ecommerce.app' || req.body.hostname==='localhost' || req.body.hostname==='1ecommerce.app'){
+      iridio = await Channel.findOne({name:'iridio'});
+    }
     let productvariation = await ProductVariation.findOne({ id: req.body.variation});
     if(productvariation){
-      let discount = await sails.helpers.discount(productvariation.product,productvariation.id);
+      let discounts = await sails.helpers.discount(productvariation.product,productvariation.id);
+      if(iridio && discounts){
+        let integrations = await ProductChannel.find({channel:iridio.id,product:productvariation.product});
+        integrations = integrations.map(itg => itg.integration);
+        discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+      }
+      let discount = discounts ? discounts[0] : null;
       prices.price = productvariation.price;
       if(discount){
         prices.highPrice = productvariation.price;
@@ -639,13 +701,13 @@ module.exports = {
     return res.view('pages/front/cms',{content:cms.content,tag:await sails.helpers.getTag(req.hostname),seller:seller});
   },
   notificationml: async function(req, res){
+    await sails.helpers.channel.successRequest(res);
     let moment = require('moment');
     let resource = req.body.resource;
     let userId = req.body.user_id;
     let topic = req.body.topic;
     let integration = await Integrations.findOne({useridml: userId}).populate('seller');
     if (integration) {
-      await sails.helpers.channel.successRequest(res);
       let seller = integration.seller.id;
       const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
       try {

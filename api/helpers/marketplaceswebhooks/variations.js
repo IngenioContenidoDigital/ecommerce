@@ -45,6 +45,12 @@ module.exports = {
               seller: pro.seller
             }).fetch();
             await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
+            let intlist = [];
+            let integrations = await Integrations.find({where:{seller:pro.seller},select:['id']});
+            for(let integration of integrations){
+              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+            }
+            await CatalogDiscount.addToCollection(discountresult.id,'integrations').members(intlist);
           }
         }
       }
@@ -97,6 +103,12 @@ module.exports = {
                     seller: pro.seller
                   }).fetch();
                   await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
+                  let intlist = [];
+                  let integrations = await Integrations.find({where:{seller:pro.seller},select:['id']});
+                  for(let integration of integrations){
+                    if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+                  }
+                  await CatalogDiscount.addToCollection(discountresult.id,'integrations').members(intlist);
                 }
               }
             }

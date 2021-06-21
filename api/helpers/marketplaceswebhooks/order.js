@@ -27,14 +27,15 @@ module.exports = {
     const integration = inputs.integration;
     try{
       let oexists = await Order.find({channel:order.channel, channelref:order.channelref, integration: integration.id});
-      if(order.address.region==='bogota, d.c.' || order.address.region ==='bogota d.c.'){order.address.region='bogotá dc';}
-      if(order.address.city==='bogota d.c.' ||  order.address.city==='bogota, d.c.'){order.address.city='bogota';}
-      let region = await Region.find({name: order.address.region});
-      region = region.length > 0 ? region[0].id : '';
+      if(order.address.region==='bogota, d.c.' || order.address.region ==='bogota d.c.' || order.address.region ==='bogota'){order.address.region='bogotá dc';}
+      if(order.address.city==='bogota d.c.' ||  order.address.city==='bogota, d.c.' || order.address.city==='bogota'){order.address.city='bogota';}
       
       if(order.address.city.split(",").length == 2){
+
         city = await City.find({name:[order.address.city.split(",")[0].toLowerCase().trim(), order.address.city.split(",")[1].toLowerCase().trim()]}).populate('region');
       }else{
+        let region = await Region.find({name: order.address.region});
+        region = region.length > 0 ? region[0].id : '';
         city = await City.find({name: order.address.city, region: region}).populate('region');
       }
 

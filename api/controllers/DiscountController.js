@@ -17,22 +17,27 @@ module.exports = {
     let id = req.param('id') ? req.param('id') : null;
     let root = await Category.findOne({name:'inicio'});
     let discount = null;
+    let integrations = null;
+
     if(id){
-      discount = await CatalogDiscount.findOne({id:id});
+      discount = await CatalogDiscount.findOne({id:id})
+      .populate('seller')
+      .populate('integrations');
+      integrations = await Integrations.find({seller:discount.seller.id});
     }
     let discounts = null;
     let sellers = null;
     if(rights.name!=='superadmin' && rights.name!=='admin'){
-      sellers = await Seller.find({id:req.session.user.seller});
+      sellers = await Seller.find({id:req.session.user.seller,active:true});
       discounts = await CatalogDiscount.find({seller:req.session.user.seller}).sort([{createdAt: 'DESC'}]).populate('seller');
     }else{
-      sellers = await Seller.find();
+      sellers = await Seller.find({active:true});
       discounts = await CatalogDiscount.find().sort([{createdAt: 'DESC'}]).populate('seller');
     }
     let genders = await Gender.find();
     let colors = await Color.find();
     let manufacturers = await Manufacturer.find();
-    return res.view('pages/discounts/discounts', {layout:'layouts/admin',error:error, discounts:discounts, sellers:sellers, genders:genders, colors:colors,manufacturers:manufacturers,action:action, discount:discount, moment:moment, root:root});
+    return res.view('pages/discounts/discounts', {layout:'layouts/admin',error:error, discounts:discounts, integrations: integrations, sellers:sellers, genders:genders, colors:colors,manufacturers:manufacturers,action:action, discount:discount, moment:moment, root:root});
   },
   creatediscount: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -83,6 +88,16 @@ module.exports = {
             gender:req.body.gender ? req.body.gender : null
           });
           await CatalogDiscount.replaceCollection(discount.id,'products').members(affected);
+          if(req.body.integrations){
+            await CatalogDiscount.replaceCollection(discount.id,'integrations').members(req.body.integrations);
+          }else{
+            let intlist = [];
+            let integrations = await Integrations.find({where:{seller:req.body.seller},select:['id']});
+            for(let integration of integrations){
+              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+            }
+            await CatalogDiscount.replaceCollection(discount.id,'integrations').members(intlist);
+          }
         }else{
           discount = await CatalogDiscount.create({
             name:req.body.name.toLowerCase().trim(),
@@ -98,6 +113,16 @@ module.exports = {
           }).fetch();
 
           await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
+          if(req.body.integrations){
+            await CatalogDiscount.addToCollection(discount.id,'integrations').members(req.body.integrations);
+          }else{
+            let intlist = [];
+            let integrations = await Integrations.find({where:{seller:req.body.seller},select:['id']});
+            for(let integration of integrations){
+              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+            }
+            await CatalogDiscount.addToCollection(discount.id,'integrations').members(intlist);
+          }
         }
       }else{
         let msg='No hay productos que coincidan con los criterios seleccionados. Por favor intenta nuevamente';
@@ -201,6 +226,14 @@ module.exports = {
     affected.push(product.id);
 
     await CatalogDiscount.addToCollection(discount.id,'products').members(affected);
+
+    let intlist = [];
+    let integrations = await Integrations.find({where:{seller:product.seller},select:['id']});
+    for(let integration of integrations){
+      if(!intlist.includes(integration.id)){intlist.push(integration.id);}
+    }
+    await CatalogDiscount.addToCollection(discount.id,'integrations').members(intlist);
+
     await sails.helpers.channel.channelSync(product);
     //let discounts = await Product.findOne({id:product.id}).populate('discount');
 
@@ -225,6 +258,14 @@ module.exports = {
       console.log(err);
       return res.send(err.message);
     }
+  },
+  findintegrations: async (req, res) =>{
+    if(!req.isSocket){
+      return res.badRequest();
+    }
+    let seller= req.param('seller');
+    let integrations = await Integrations.find({where:{seller:seller},select:['name']});
+    return res.send(integrations);
   }
 
 };

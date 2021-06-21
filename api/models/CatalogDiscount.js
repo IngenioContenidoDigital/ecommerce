@@ -45,6 +45,10 @@ module.exports = {
     category:{
       model:'category'
     },
+    integrations:{
+      collection:'integrations',
+      via:'discount'
+    },
     products:{
       collection:'product',
       via:'discount'

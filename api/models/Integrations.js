@@ -36,6 +36,10 @@ module.exports = {
       model:'seller',
       required:true
     },
+    discount:{
+      collection:'catalogdiscount',
+      via:'integrations'
+    },
     version:{
       type:'string'
     },

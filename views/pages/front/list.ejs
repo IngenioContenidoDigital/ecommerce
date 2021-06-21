@@ -84,7 +84,38 @@
             <br><div class="is-hidden-desktop"><br><br><br></div>
             <%}%>
             <%- partial('../../partials/productlist.ejs') %>
-            
+            <br>
+            <%if(pages>1){%>
+                <div class="container">
+                    <div class="columns">
+                        <div class="column">
+                            <nav class="pagination is-small is-pulled-right" role="navigation" aria-label="pagination">
+                                <%if(pages>5){%>
+                                <a <%if(page>1){%>href="/<%=entity%>/<%=ename%>/<%=page-1%>"<%}%> class="pagination-previous" <%if(page<=1){%>disabled<%}%> rel="follow"><i class='bx bxs-chevron-left'></i></a>
+                                <%}%>
+                                <%if(pages>=10){%>
+                                <a href="/<%=entity%>/<%=ename%>/" class="pagination-previous" rel="follow">Primera</a>
+                                <a href="/<%=entity%>/<%=ename%>/<%=pages%>" class="pagination-previous" rel="follow">Ultima</a>
+                                <%}%>
+                                <%if(pages>5){%>
+                                <a <%if(page<pages){%>href="/<%=entity%>/<%=ename%>/<%=page+1%>"<%}%> class="pagination-next" <%if(page>=pages){%>disabled<%}%> rel="follow"><i class='bx bxs-chevron-right'></i></a>
+                                <%}%>
+                                <ul class="pagination-list">
+                                <%let inicio = 1; let fin = 5;%>
+                                <% if(page >= 5){%>
+                                    <% inicio = page-2;%>
+                                    <% fin = page+2;%>
+                                <%}%>
+                                <%if(fin>pages){fin=pages;}%>
+                                <%for(i=inicio;i<=fin;i++){%>
+                                  <li><a href="/<%=entity%>/<%=ename%>/<%=i%>" page="<%=i%>" class="pagination-link <%if(i===page){%>has-text-white has-background-grey-dark<%}%>" rel="follow"><%=i%></a></li>
+                                <%}%>
+                                </ul>
+                            </nav>
+                        </div>    
+                    </div>
+                </div>
+                <%}%>
         </div>
     </div>
     <%}%>

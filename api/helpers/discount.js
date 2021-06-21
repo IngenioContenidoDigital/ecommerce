@@ -28,31 +28,31 @@ module.exports = {
         from:{'<=':moment().valueOf()}
       },
       select:['type','value','from','to'],
-      sort: 'createdAt DESC',
-      limit: 1
+      sort: 'createdAt DESC'
     });
-
-    let discPrice=0;
-    let discAmount=0;
     if(product.discount.length>0){
-      switch(product.discount[0].type){
-        case 'P':
-          discPrice+=((product.variations[0].price)-(product.variations[0].price*(product.discount[0].value/100)));
-          discAmount+=(product.variations[0].price*(product.discount[0].value/100));
-          break;
-        case 'C':
-          discPrice+=(product.variations[0].price)-product.discount[0].value;
-          discAmount+=product.discount[0].value;
-          break;
+      for(let discount of product.discount){
+        let discPrice=0;
+        let discAmount=0;
+        let cd = await CatalogDiscount.findOne({id:discount.id}).populate('integrations');
+        discount.integrations= cd.integrations;
+        switch(discount.type){
+          case 'P':
+            discPrice+=((product.variations[0].price)-(product.variations[0].price*(discount.value/100)));
+            discAmount+=(product.variations[0].price*(discount.value/100));
+            break;
+          case 'C':
+            discPrice+=(product.variations[0].price)-discount.value;
+            discAmount+=discount.value;
+            break;
+        }
+        discount.price=discPrice;
+        discount.amount=discAmount;
       }
-      product.discount[0].price=discPrice;
-      product.discount[0].amount=discAmount;
-      return exits.success(product.discount[0]);
+      return exits.success(product.discount);
     }else{
       return exits.success();
     }
   }
-
-
 };
 
