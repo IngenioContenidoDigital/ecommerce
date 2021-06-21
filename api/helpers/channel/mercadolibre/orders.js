@@ -38,6 +38,7 @@ module.exports = {
           shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
             return exits.error(err.message);
           });
+          console.log(shipping);
         }
         let oexists = await Order.find({or:orderfilter});
         if(oexists.length < 1 && order.status==='paid'){
@@ -81,8 +82,8 @@ module.exports = {
               channelref:order.id,
               integration:integration.id,
               shipping: order.shipping.id ? order.shipping.id : '',
-              mode: shipping ? shipping.logistic.mode: '',
-              receiverId: shipping ? shipping.destination.receiver_id : ''
+              mode: shipping ? shipping.mode: '',
+              receiverId: shipping ? shipping['receiver id'] : ''
             }
           };
           payment.data['ref_payco'] = order.id;
