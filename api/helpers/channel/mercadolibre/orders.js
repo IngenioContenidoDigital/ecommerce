@@ -38,7 +38,6 @@ module.exports = {
           shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
             return exits.error(err.message);
           });
-          console.log(shipping);
         }
         let oexists = await Order.find({or:orderfilter});
         if(oexists.length < 1 && order.status==='paid'){
@@ -123,7 +122,7 @@ module.exports = {
           let cartProducts = [];
           let orderItems = await OrderItem.find({externalOrder: order.id});
           const channelref = order.id;
-          if (!orderItems) {
+          if (orderItems.length<1) {
             for(let item of order['order_items']){
               let productvariation;
               if(item.item['seller_sku']){
@@ -150,7 +149,7 @@ module.exports = {
                 }
               }
             }
-            await sails.helpers.channel.orderShipping({cartProducts, channelref, order: oexists[0].id});
+            await sails.helpers.channel.orderShipping({cartProducts, channelref, order: oexists[0]});
           }
         }else{
           for (const ord of oexists) {
