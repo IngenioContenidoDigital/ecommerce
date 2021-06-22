@@ -24,6 +24,8 @@ module.exports = {
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     let dateStart = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
     let dateEnd = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
+    let dateStartCommission = new Date(moment(inputs.month, 'MMMM YYYY').subtract(2, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
+    let dateEndCommission = new Date(moment(inputs.month, 'MMMM YYYY').subtract(2, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let totalPrice = 0;
     let totalCommissionFee = 0;
     let totalCommissionVat = 0;
@@ -31,13 +33,37 @@ module.exports = {
     let totalRetIca = 0;
     let totalSkuInactive = 0;
     let totalSkuActive = 0;
+    let statesIds = [];
+    let packed= await OrderState.find({
+      where:{name:['fallido','retornado']},
+      select:['id']
+    });
+    for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
     let orders = await Order.find({
       where: {
         seller: inputs.sellerId,
-        updatedAt: { '>': dateStart, '<': dateEnd }
+        createdAt: { '>': dateStart, '<': dateEnd }
       }
     }).populate('currentstatus');
 
+    let ordersCommission = await Order.find({
+      where: {
+        seller: inputs.sellerId,
+        currentstatus: statesIds,
+        createdAt: { '>': dateStartCommission, '<': dateEndCommission }
+      }
+    });
+    let commissionFeeOrdersFailed = 0;
+    let commissionVatOrdersFailed = 0;
+    for (const order of ordersCommission) {
+      let items = await OrderItem.find({order: order.id});
+      for (const item of items) {
+        const salesCommission = item.commission || 0;
+        const commissionFee = item.price * (salesCommission/100);
+        commissionFeeOrdersFailed += commissionFee;
+        commissionVatOrdersFailed += (commissionFee * 0.19);
+      }
+    }
     totalSkuInactive = await Product.count({
       where: {
         seller: inputs.sellerId,
@@ -80,7 +106,9 @@ module.exports = {
     const ordersFailed = {total: 0, price:0};
     let fleteTotal = 0;
     for (const order of orders) {
-      if (order.currentstatus.name === 'entregado'){
+      if (order.currentstatus.name === 'aceptado' || order.currentstatus.name === 'enviado'
+          || order.currentstatus.name === 'empacado' || order.currentstatus.name === 'en procesamiento'
+          || order.currentstatus.name === 'entregado'){
         let items = await OrderItem.find({order: order.id});
         fleteTotal += parseFloat(order.fleteTotal);
         for (const item of items) {
@@ -112,7 +140,7 @@ module.exports = {
       seller,
       address,
       totalPrice,
-      totalCommission: totalCommissionFee + totalCommissionVat,
+      totalCommission: (totalCommissionFee + totalCommissionVat) - (commissionFeeOrdersFailed + commissionVatOrdersFailed),
       totalSku,
       totalRetFte,
       totalRetIca,
