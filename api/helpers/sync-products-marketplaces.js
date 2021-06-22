@@ -25,6 +25,8 @@ module.exports = {
     const channel = inputs.channel;
     try {
       let products = [];
+      let body={Request:[]};
+      const pageSize = 1500;
       if (channel.name === 'dafiti') {
         products = await Product.find({seller: integration.seller}).populate('channels',{
           where:{
@@ -36,23 +38,27 @@ module.exports = {
         if (products.length > 0) {
           products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
           let result = await sails.helpers.channel.dafiti.product(products, integration, 0, 'active', false);
-          const xml = jsonxml(result, true);
-          let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'ProductUpdate', integration.seller);
-          await sails.helpers.request(channel.endpoint,'/?'+sign,'POST', xml)
-          .then(async (resData)=>{
-            resData = JSON.parse(resData);
-            if(resData.SuccessResponse){
-              for (const pro of products) {
-                const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
-                await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+          let pageNumber = Math.ceil(result.Request.length / pageSize);
+          for (let i = 1; i <= pageNumber; i++) {
+            body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
+            const xml = jsonxml(body, true);
+            let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'ProductUpdate', integration.seller);
+            await sails.helpers.request(channel.endpoint,'/?'+sign,'POST', xml)
+            .then(async (resData)=>{
+              resData = JSON.parse(resData);
+              if(resData.SuccessResponse){
+                for (const pro of products) {
+                  const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
+                  await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                }
+              }else{
+                return exits.error(resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
               }
-            }else{
-              return exits.error(resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
-            }
-          })
-          .catch(err =>{
-            return exits.error(err || 'Error en el proceso, Intenta de nuevo más tarde.');
-          });
+            })
+            .catch(err =>{
+              return exits.error(err || 'Error en el proceso, Intenta de nuevo más tarde.');
+            });
+          }
         } else {
           return exits.error('Sin Productos para Procesar');
         }
@@ -68,28 +74,31 @@ module.exports = {
         if (products.length > 0) {
           products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated);
           let result = await sails.helpers.channel.linio.product(products, integration, 0, 'active', false);
-          const xml = jsonxml(result, true);
-          let sign = await sails.helpers.channel.linio.sign(integration.id, 'ProductUpdate', integration.seller);
-          await sails.helpers.request(channel.endpoint,'/?'+sign,'POST', xml)
-          .then(async (resData)=>{
-            resData = JSON.parse(resData);
-            if(resData.SuccessResponse){
-              for (const pro of products) {
-                const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
-                await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+          let pageNumber = Math.ceil(result.Request.length / pageSize);
+          for (let i = 1; i <= pageNumber; i++) {
+            body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
+            const xml = jsonxml(body, true);
+            let sign = await sails.helpers.channel.linio.sign(integration.id, 'ProductUpdate', integration.seller);
+            await sails.helpers.request(channel.endpoint,'/?'+sign,'POST', xml)
+            .then(async (resData)=>{
+              resData = JSON.parse(resData);
+              if(resData.SuccessResponse){
+                for (const pro of products) {
+                  const priceAjust = pro.channels.length > 0 ? pro.channels[0].price : 0;
+                  await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAjust});
+                }
+              }else{
+                return exits.error(resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
               }
-            }else{
-              return exits.error(resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
-            }
-          })
-          .catch(err =>{
-            return exits.error(err || 'Error en el proceso, Intenta de nuevo más tarde.');
-          });
+            })
+            .catch(err =>{
+              return exits.error(err || 'Error en el proceso, Intenta de nuevo más tarde.');
+            });
+          }
         } else {
           return exits.error('Sin Productos para Procesar');
         }
       }
-
     } catch (err) {
       return exits.error(err.message);
     }
