@@ -116,7 +116,7 @@ module.exports = {
               }
             }
             if(categories.includes('15215')/** Hogar*/ || categories.includes('11496') /** Libros y Peliculas */ || categories.includes('12792')/** Deportes*/ || categories.includes('10232')/** Papeleria y Oficina*/ || categories.includes('11799')/** Electrodomeśticos*/){ delete data.Product.ProductData.Gender; }
-            if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/ || categories.includes('10170') /** Automotriz */){ delete data.Product.ProductData.Gender;}
+            if(categories.includes('11672') || categories.includes('15033') || categories.includes('11426')  /** Salud y Bienestar*/ || categories.includes('10170') /** Automotriz */ || categories.includes('14831' /* Mascotas */ )){ delete data.Product.ProductData.Gender;}
 
             if(i>0 && productvariation.length>1){
               data.Product.ParentSku=parent;
