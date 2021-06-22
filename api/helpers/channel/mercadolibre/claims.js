@@ -44,7 +44,8 @@ module.exports = {
               status: 'UNANSWERED',
               dateCreated: parseInt(moment(message.date_created).valueOf()),
               conversation: conversation.id,
-              integration: integration.id
+              integration: integration.id,
+              senderRole: message.sender_role
             };
             const existsQuest = await Question.findOne({idMl: message.id});
             if (!existsQuest) {

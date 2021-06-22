@@ -1567,7 +1567,7 @@ module.exports = {
     let products = [];
     let action = '';
     let body={Request:[]};
-    const pageSize = req.body.action === 'ProductQcStatus' ? 100 :  req.body.action === 'ProductCreate' ? 4000 : 2500;
+    const pageSize = req.body.action === 'ProductQcStatus' ? 100 :  req.body.action === 'ProductCreate' ? 4000 : 1500;
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
@@ -1626,7 +1626,7 @@ module.exports = {
               await sails.helpers.channel.productQc(integration, resultSkus);
             }
           }else{
-            let result = null;
+            let result = [];
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
             if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active',false);}
             
@@ -1738,7 +1738,7 @@ module.exports = {
               await sails.helpers.channel.productQc(integration, resultSkus);
             }
           }else{
-            let result = null;
+            let result = [];
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
             if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active',false);}
             
@@ -1850,7 +1850,7 @@ module.exports = {
               await sails.helpers.channel.productQc(integration, resultSkus);
             }
           }else{
-            let result = null;
+            let result = [];
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.liniomx.product(products, integration, priceAdjust, 'active');}
             if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.liniomx.product(products, integration, priceAdjust, 'active',false);}
             
@@ -2359,6 +2359,7 @@ module.exports = {
         }
       }
     } catch (err) {
+      console.log(err);
       response.errors.push(err.message);
     }
     return res.send(response);
