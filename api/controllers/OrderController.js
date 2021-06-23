@@ -314,6 +314,7 @@ module.exports = {
         
         row = [
           '<td scope="row" class="align-middle">'+o.reference+'</td>',
+          '<td scope="row" class="align-middle">'+o.channel+'</td>',
           '<td scope="row" class="align-middle">'+o.paymentId ? o.paymentId : ''+'</td>',
           '<td class="align-middle is-uppercase">'+o.paymentMethod+'</td>',
           '<td class="align-middle">'+o.customer.fullName+'</td>',
