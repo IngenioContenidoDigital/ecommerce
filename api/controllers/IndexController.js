@@ -238,7 +238,7 @@ module.exports = {
         item.channelref = order.channelref;
         item.orderref = order.reference;
         item.tracking = order.tracking;
-        item.fleteTotal = order.fleteTotal;
+        item.fleteTotal = !sellerId ? (order.fleteTotal*order.conversionRate).toFixed(2) + ' USD' : order.fleteTotal;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         ordersItem.push(item);

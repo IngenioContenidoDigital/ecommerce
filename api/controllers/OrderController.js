@@ -315,6 +315,7 @@ module.exports = {
 
       row = [
         '<td scope="row" class="align-middle">'+o.reference+'</td>',
+        '<td scope="row" class="align-middle">'+o.channel+'</td>',
         '<td scope="row" class="align-middle">'+o.paymentId ? o.paymentId : ''+'</td>',
         '<td class="align-middle is-uppercase">'+o.paymentMethod+'</td>',
         '<td class="align-middle">'+o.customer.fullName+'</td>',
@@ -327,7 +328,7 @@ module.exports = {
       if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(7,1);}
       ordersdata.push(row);
     }
-          '<td scope="row" class="align-middle">'+o.channel+'</td>',
+
     return res.send(ordersdata);
   },
   ordermgt: async (req, res) =>{
