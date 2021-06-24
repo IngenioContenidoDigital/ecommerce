@@ -327,6 +327,7 @@ module.exports = {
       if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(7,1);}
       ordersdata.push(row);
     }
+          '<td scope="row" class="align-middle">'+o.channel+'</td>',
     return res.send(ordersdata);
   },
   ordermgt: async (req, res) =>{

@@ -70,26 +70,26 @@
                           <div class="tile is-parent is-vertical">
                             <%let vertical = mosaic.filter(el => el.position =='vertical')%>
                             <%if(vertical.length>0){%>
-                            <article class="tile is-child notification" style="color:<%=vertical[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= vertical[0].image %>'); background-size: cover;background-position:center;">
-                              <a style="text-decoration: none;" href="<%=vertical[0].url%>" ><div class="is-capitalized is-size-5"><%=vertical[0].name%></div>
+                            <article destination="<%=vertical[0].url%>" class="tile is-child notification" style="color:<%=vertical[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= vertical[0].image %>'); background-size: cover;background-position:center;">
+                              <div class="is-capitalized is-size-5"><%=vertical[0].name%></div>
                               <div class="is-size-6"><%=vertical[0].text%></div>
                             </article>
                             <%}%>
                             <%let bottom = mosaic.filter(el => el.position =='bottom')%>
                             <%if(bottom.length>0){%>
-                              <article class="tile is-child notification" style="color:<%=bottom[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= bottom[0].image %>'); background-size: cover;background-position:center;">
-                                <a style="text-decoration: none;" href="<%=bottom[0].url%>"><div class="is-capitalized is-size-5"><%=bottom[0].name%></div>
-                              <div class="is-size-6"><%=bottom[0].text%></div></a>
-                            </article>
+                              <article destination="<%=bottom[0].url%>" class="tile is-child notification" style="color:<%=bottom[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= bottom[0].image %>'); background-size: cover;background-position:center;">
+                                <div class="is-capitalized is-size-5"><%=bottom[0].name%></div>
+                                <div class="is-size-6"><%=bottom[0].text%></div>
+                              </article>
                             <%}%>
                           </div>
                           <%}%>
                           <%let middle = mosaic.filter(el => el.position =='middle')%>
                           <%if(middle.length>0){%>
                             <div class="tile is-parent">
-                              <article class="tile is-child notification" style="color:<%=middle[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= middle[0].image %>'); background-size: cover;background-position:center;">
-                                <a style="text-decoration: none;" href="<%=middle[0].url%>" ><div class="is-capitalized is-size-5"><%=middle[0].name%></div>
-                                <div class="subtitle is-size-6"><%=middle[0].text%></div></a>
+                              <article destination="<%=middle[0].url%>" class="tile is-child notification" style="color:<%=middle[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= middle[0].image %>'); background-size: cover;background-position:center;">
+                                <div class="is-capitalized is-size-5"><%=middle[0].name%></div>
+                                <div class="subtitle is-size-6"><%=middle[0].text%></div>
                                 <div class="content" style="min-height:180px;">
                                   <!-- Content -->
                                 </div>
@@ -100,12 +100,12 @@
                         <%let wide = mosaic.filter(el => el.position =='wide')%>
                         <%if(wide.length>0){%>
                         <div class="tile is-parent">
-                          <article class="tile is-child notification" style="color:<%=wide[0].textColor.code%>; background-image: url('<%= cdnurl%>/images/slides/<%= wide[0].image %>'); background-size: cover;background-position:center;">
-                            <a style="text-decoration: none;" href="<%=wide[0].url%>"><div class="is-capitalized is-size-5"><%=wide[0].name%></div>
+                          <article destination="<%=wide[0].url%>" class="tile is-child notification" style="color:<%=wide[0].textColor.code%>; background-image: url('<%= cdnurl%>/images/slides/<%= wide[0].image %>'); background-size: cover;background-position:center;">
+                            <div class="is-capitalized is-size-5"><%=wide[0].name%></div>
                             <div class="is-size-6"><%=wide[0].text%></div>
                             <div style="min-height:250px;" class="content">
                               <!-- Content -->
-                            </div></a>
+                            </div>
                           </article>
                         </div>
                         <%}%>
@@ -114,14 +114,14 @@
                       <%let tall = mosaic.filter(el => el.position =='tall')%>
                       <%if(tall.length>0){%>
                       <div class="tile is-parent" style="color:<%=tall[0].textColor.code%>">
-                        <article class="tile is-child notification" style="color:<%=tall[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= tall[0].image %>'); background-size: cover;background-position:center;">
-                          <a style="text-decoration: none;" href="<%=tall[0].url%>"><div class="content">
+                        <article destination="<%=tall[0].url%>" class="tile is-child notification" style="color:<%=tall[0].textColor.code%>;background-image: url('<%= cdnurl%>/images/slides/<%= tall[0].image %>'); background-size: cover;background-position:center;">
+                          <div class="content">
                             <div class="is-capitalized is-size-5"><%=tall[0].name%></div>
                             <div class="is-size-6"><%=tall[0].text%></div>
                             <div class="content" style="min-height: 320px;">
                               <!-- Content -->
                             </div>
-                          </div></a>
+                          </div>
                         </article>
                       </div>
                       <%}%>
@@ -157,4 +157,13 @@
         pagination:'HH:mm',
         autoplaySpeed:4000,
         pauseOnHover:true});
+
+    live('article > .subtitle','click',e=>{
+      let route = e.target.parentNode.getAttribute('destination');
+      window.location.href=route;
+    });
+    live('article > .content','click',e=>{
+      let route = e.target.parentNode.getAttribute('destination');
+      window.location.href=route;
+    });
 </script>

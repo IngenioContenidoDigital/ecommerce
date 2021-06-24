@@ -632,3 +632,5 @@ article.post:last-child {
     cursor: pointer;
 }
 
+article > .subtitle:hover{cursor:pointer;}
+article > .content:hover{cursor:pointer;}
