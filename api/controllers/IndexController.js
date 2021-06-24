@@ -227,6 +227,7 @@ module.exports = {
         item.seller = product.seller.name;
         item.dni = product.seller.dni;
         item.product = product.name;
+        item.price = !sellerId ? (item.price*order.conversionRate).toFixed(2) + ' USD' : item.price;
         item.color = product.mainColor ? product.mainColor.name : '';
         item.size = productVariation ? productVariation.variation.col : '';
         item.customer = order.customer.fullName;

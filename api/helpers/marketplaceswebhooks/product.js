@@ -43,6 +43,7 @@ module.exports = {
           const updatedProduct = await Product.updateOne({id: exists.id}).set(pro);
           if (updatedProduct) {
             await sails.helpers.marketplaceswebhooks.variations(variations, updatedProduct.id, seller, inputs.discount);
+            await sails.helpers.marketplaceswebhooks.images(images, updatedProduct.id, seller);
             await sails.helpers.channel.channelSync(exists);
           }
         }
