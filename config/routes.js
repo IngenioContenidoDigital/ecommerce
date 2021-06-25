@@ -242,6 +242,7 @@ module.exports.routes = {
   'GET /token' : {action:'security/grant-csrf-token'},
   'PUT /menu' : {controller:'UserController',action:'menuvisible'},
   'GET /mlauth/:appid' : {controller:'IntegrationsController', action:'meliauth'},
+  'POST /reauthmeli/:integration' : {controller:'IntegrationsController',action:'reauthmeli'},
   'POST /updateintegration' : {controller:'IntegrationsController', action:'updateintegration'},
   'GET /getcover/:productid' : {controller:'ProductController', action:'getcover'},
   'GET /colorindex/:action':{controller:'ColorController',action:'colorindex'},
