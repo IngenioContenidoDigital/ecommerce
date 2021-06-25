@@ -50,59 +50,62 @@ module.exports = {
     let cart = null;
     let products = null;
     let action = req.body.action;
-    if(req.session.cart === undefined){
-      cart = await Cart.create().fetch();
-      req.session.cart = cart;
-    }else{
-      cart = await Cart.findOne({id:req.session.cart.id}).populate('discount');
-    }
-    let productvariation = await ProductVariation.findOne({id:req.body.variation});
-
-    if(action==='remove'){
-      await CartProduct.destroy({cart:cart.id,product:productvariation.product,productvariation:productvariation.id});
-    }else{
-      await CartProduct.destroy({cart:cart.id,product:productvariation.product,productvariation:productvariation.id});
-      let discounts = await sails.helpers.discount(productvariation.product,productvariation.id);
-      if(iridio && discounts){
-        let integrations = await ProductChannel.find({channel:iridio.id,product:productvariation.product});
-        integrations = integrations.map(itg => itg.integration);
-        discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+    let productvariation = await ProductVariation.findOne({id:req.body.variation}).populate('product').populate('seller');
+    if (productvariation.product.active && productvariation.seller.active) {
+      if(req.session.cart === undefined){
+        cart = await Cart.create().fetch();
+        req.session.cart = cart;
+      }else{
+        cart = await Cart.findOne({id:req.session.cart.id}).populate('discount');
       }
-      let discount = discounts ? discounts[0] : null;
-      for(let i=0; i<req.body.quantity; i++){
-        if(discount){
-          await CartProduct.create({cart:cart.id,product:productvariation.product,productvariation:productvariation.id,totalDiscount:discount.amount,totalPrice:discount.price});
-        }else{
-          await CartProduct.create({cart:cart.id,product:productvariation.product,productvariation:productvariation.id,totalDiscount:0,totalPrice:productvariation.price});
+      if(action==='remove'){
+        await CartProduct.destroy({cart:cart.id,product:productvariation.product.id,productvariation:productvariation.id});
+      }else{
+        await CartProduct.destroy({cart:cart.id,product:productvariation.product.id,productvariation:productvariation.id});
+        let discounts = await sails.helpers.discount(productvariation.product.id,productvariation.id);
+        if(iridio && discounts){
+          let integrations = await ProductChannel.find({channel:iridio.id,product:productvariation.product.id});
+          integrations = integrations.map(itg => itg.integration);
+          discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+        }
+        let discount = discounts ? discounts[0] : null;
+        for(let i=0; i<req.body.quantity; i++){
+          if(discount){
+            await CartProduct.create({cart:cart.id,product:productvariation.product.id,productvariation:productvariation.id,totalDiscount:discount.amount,totalPrice:discount.price});
+          }else{
+            await CartProduct.create({cart:cart.id,product:productvariation.product.id,productvariation:productvariation.id,totalDiscount:0,totalPrice:productvariation.price});
+          }
         }
       }
-    }
 
-    let cartvalue = await CartProduct.sum('totalPrice',{cart:cart.id});
-    let items = await CartProduct.count({cart:cart.id});
-    req.session.cart.totalProducts = cartvalue ? cartvalue : 0;
-    products = await sails.helpers.tools.cart(req,cart.id);
-    if(cart.discount!==undefined && cart.discount!==null){
-      if(cart.discount.type==='P'){
-        discount = cartvalue*(cart.discount.value/100);
+      let cartvalue = await CartProduct.sum('totalPrice',{cart:cart.id});
+      let items = await CartProduct.count({cart:cart.id});
+      req.session.cart.totalProducts = cartvalue ? cartvalue : 0;
+      products = await sails.helpers.tools.cart(req,cart.id);
+      if(cart.discount!==undefined && cart.discount!==null){
+        if(cart.discount.type==='P'){
+          discount = cartvalue*(cart.discount.value/100);
+        }else{
+          discount = cart.discount.value;
+        }
+        req.session.cart.discount = discount;
+        req.session.cart.total = cartvalue-discount+cart.shipping;
       }else{
-        discount = cart.discount.value;
+        req.session.cart.total = cartvalue+cart.shipping;
       }
-      req.session.cart.discount = discount;
-      req.session.cart.total = cartvalue-discount+cart.shipping;
-    }else{
-      req.session.cart.total = cartvalue+cart.shipping;
+  
+      if(items<1){
+        await Cart.destroyOne({id:cart.id});
+        delete req.session.cart;
+        products=null;
+      }else{
+        req.session.cart.items = items;
+      }
+      sails.sockets.blast('addtocart', {items: items, value:cartvalue});
+      return res.send({items: items, value:cartvalue,products:products});
+    } else {
+      return res.send({items: 0, value:0, products:[]});
     }
-
-    if(items<1){
-      await Cart.destroyOne({id:cart.id});
-      delete req.session.cart;
-      products=null;
-    }else{
-      req.session.cart.items = items;
-    }
-    sails.sockets.blast('addtocart', {items: items, value:cartvalue});
-    return res.send({items: items, value:cartvalue,products:products});
   },
   applycoupon: async (req,res)=>{
     if (!req.isSocket) {

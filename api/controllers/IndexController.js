@@ -616,8 +616,9 @@ module.exports = {
       .populate('mainCategory')
       .populate('tax')
       .populate('variations',{sort: 'createdAt ASC'})
-      .populate('images');
-
+      .populate('images')
+      .populate('seller');
+      
     if(req.session.viewed===undefined){
       req.session.viewed=[];
     }else{
