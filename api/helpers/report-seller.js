@@ -135,7 +135,7 @@ module.exports = {
       }
     }
     totalRetFte = totalSku !== 0 ? totalRetFte + (totalSku >= 142000 ? (totalSku/1.19)*0.04 : 0) : totalRetFte;
-    let totalBalance = (totalCommissionFee + totalCommissionVat + totalSku) - (totalRetFte + totalRetIca);
+    let totalBalance = ((totalCommissionFee + totalCommissionVat) - (commissionFeeOrdersFailed + commissionVatOrdersFailed)) + totalSku - (totalRetFte + totalRetIca);
     return exits.success({
       seller,
       address,
