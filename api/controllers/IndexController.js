@@ -178,7 +178,7 @@ module.exports = {
       orders = await Order.find({
         where: {
           seller: sellerId,
-          updatedAt: { '>': dateStart, '<': dateEnd }
+          createdAt: { '>': dateStart, '<': dateEnd }
         }
       }).populate('customer').populate('currentstatus');
     } else if(req.param('startDate') && req.param('endDate')){
@@ -186,7 +186,7 @@ module.exports = {
       let dateEnd = new Date(req.param('endDate')).valueOf();
       orders = await Order.find({
         where: {
-          updatedAt: { '>': dateStart, '<': dateEnd }
+          createdAt: { '>': dateStart, '<': dateEnd }
         }
       }).populate('customer').populate('currentstatus');
     }
