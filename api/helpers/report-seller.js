@@ -50,11 +50,14 @@ module.exports = {
       where: {
         seller: inputs.sellerId,
         currentstatus: statesIds,
-        createdAt: { '>': dateStartCommission, '<': dateEndCommission }
+        createdAt: { '>': dateStartCommission, '<': dateEndCommission },
+        updatedAt: {'>': dateStart, '<': dateEnd}
       }
-    });
+    }).populate('currentstatus');
     let commissionFeeOrdersFailed = 0;
     let commissionVatOrdersFailed = 0;
+    const ordersReturnComission = {total: 0, price:0};
+    const ordersFailedComission = {total: 0, price:0};
     for (const order of ordersCommission) {
       let items = await OrderItem.find({order: order.id});
       for (const item of items) {
@@ -62,6 +65,13 @@ module.exports = {
         const commissionFee = item.price * (salesCommission/100);
         commissionFeeOrdersFailed += commissionFee;
         commissionVatOrdersFailed += (commissionFee * 0.19);
+      }
+      if(order.currentstatus.name === 'fallido'){
+        ordersFailedComission.total += 1;
+        ordersFailedComission.price += order.totalOrder;
+      }else if(order.currentstatus.name === 'retornado'){
+        ordersReturnComission.total += 1;
+        ordersReturnComission.price += order.totalOrder;
       }
     }
     totalSkuInactive = await Product.count({
@@ -150,7 +160,9 @@ module.exports = {
       ordersCancel,
       ordersReturn,
       ordersFailed,
-      fleteTotal
+      fleteTotal,
+      ordersFailedComission,
+      ordersReturnComission
     });
   }
 };
