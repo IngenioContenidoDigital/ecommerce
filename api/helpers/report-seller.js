@@ -56,6 +56,8 @@ module.exports = {
     }).populate('currentstatus');
     let commissionFeeOrdersFailed = 0;
     let commissionVatOrdersFailed = 0;
+    let totalRetFteCommission = 0;
+    let totalRetIcaCommission = 0;
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
     for (const order of ordersCommission) {
@@ -65,6 +67,10 @@ module.exports = {
         const commissionFee = item.price * (salesCommission/100);
         commissionFeeOrdersFailed += commissionFee;
         commissionVatOrdersFailed += (commissionFee * 0.19);
+        totalRetFteCommission += (commissionFee * 0.04);
+        if (address.city.name === 'bogota') {
+          totalRetIcaCommission += (commissionFee * (9.66/1000));
+        }
       }
       if(order.currentstatus.name === 'fallido'){
         ordersFailedComission.total += 1;
@@ -144,13 +150,18 @@ module.exports = {
         ordersReturn.price += order.totalOrder;
       }
     }
-    totalRetFte = totalSku !== 0 ? totalRetFte + (totalSku >= 142000 ? (totalSku/1.19)*0.04 : 0) : totalRetFte;
-    let totalBalance = ((totalCommissionFee + totalCommissionVat) - (commissionFeeOrdersFailed + commissionVatOrdersFailed)) + totalSku + fleteTotal - (totalRetFte + totalRetIca);
+    totalRetIca = totalRetIca - totalRetIcaCommission;
+    totalRetFte = totalRetFte - totalRetFteCommission;
+    let totalCommission = (totalCommissionFee + totalCommissionVat) - (commissionFeeOrdersFailed + commissionVatOrdersFailed);
+    let totalOtherConcepts = totalSku + fleteTotal;
+    totalRetFte = totalSku !== 0 ? totalRetFte + (totalSku >= 142000 ? (totalOtherConcepts/1.19)*0.04 : 0) : totalRetFte;
+    totalRetIca = totalSku !== 0  && address.city.name === 'bogota' ? totalRetIca + (totalSku >= 142000 ? (totalOtherConcepts/1.19)*(9.66/1000) : 0) : totalRetIca;
+    let totalBalance = totalCommission + totalOtherConcepts - (totalRetFte + totalRetIca);
     return exits.success({
       seller,
       address,
       totalPrice,
-      totalCommission: (totalCommissionFee + totalCommissionVat) - (commissionFeeOrdersFailed + commissionVatOrdersFailed),
+      totalCommission,
       totalSku,
       totalRetFte,
       totalRetIca,
