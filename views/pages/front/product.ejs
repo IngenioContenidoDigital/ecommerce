@@ -111,13 +111,12 @@
         f.addEventListener("mouseover",showimage);
         f.addEventListener("click",showimage);
     }
-
     
     let drift = new Drift(document.querySelector('#main'),{
         inlineContainer: document.querySelector('.img-zoom'),
         inlinePane: 320,
     });
-
+    
     live('select[name="variations"]','change',(e)=>{
         let variation = e.target.options[e.target.selectedIndex].getAttribute('value')!=='0' ? e.target.options[e.target.selectedIndex].getAttribute('value') : e.target.options[1].getAttribute('value');
         io.socket.post('/findprice',{variation:variation,hostname:window.location.hostname},(resData) => {
@@ -136,8 +135,10 @@
         let label = document.querySelector('#avail');
         let add = document.querySelector('#add-to-cart');
         let sizet = document.querySelector('#size-table');
+        const statusProduct = <%- product.active %>;
+        const statusSeller = <%- product.seller.active %>;
         quantity.innerHTML='';
-        if(e.target.options[e.target.selectedIndex].value!=='0'){
+        if(e.target.options[e.target.selectedIndex].value!=='0' && statusProduct && statusSeller){
             let col =e.target.options[e.target.selectedIndex].getAttribute('col');
             let cm=e.target.options[e.target.selectedIndex].getAttribute('cm');
             let us=e.target.options[e.target.selectedIndex].getAttribute('us');
@@ -185,6 +186,16 @@
                 removeClass(add,'is-warning');
                 add.setAttribute('disabled','disabled');
             }
+        
+        }else if(!statusProduct || !statusSeller){
+            label.innerHTML='El producto esta <b>Inactivo</b>'
+            removeClass(label, 'has-text-success');
+            addClass(label, 'has-text-danger');
+            addClass(quantity.parentNode,'is-hidden');
+            addClass(sizet,'is-hidden');
+            sizet.innerHTML='';
+            removeClass(add,'is-warning');
+            add.setAttribute('disabled','disabled');
         }else{
             label.innerHTML='Para comprar elige <b>Talla</b>';
             removeClass(label, 'has-text-success');

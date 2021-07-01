@@ -294,6 +294,11 @@
                   </td>
                   <td>
                     <a href="#" class="has-text-info" id="edit-integration"><i class="is-size-4 bx bxs-edit" integrationId="<%= integration.id %>"></i></a>
+                    <%if(integration.channel.name==='mercadolibre' || integration.channel.name==='mercadolibremx'){%>
+                      <a href="#" class="has-text-info" onclick="document.getElementById('form-reauthmeli-<%= integration.id %>').submit();"><i class='bx bx-check-square is-size-4'></i></a>
+                      <form method="POST" action="/reauthmeli/<%= integration.id %>" id="form-reauthmeli-<%= integration.id %>">
+                      </form>
+                    <% } %>
                   </td>
                 </tr>
               <% }) %>
@@ -548,7 +553,7 @@
                   </div>
                   <br>
                   <div class="control is-right">
-                    <button type="submit" class="button is-info is-small">Autorizar Acceso</button>
+                    <button type="submit" class="button is-info is-small">${edit ? 'Actualizar Integración' : 'Autorizar Acceso'}</button>
                   </div>
                 </div>
               </form>`:

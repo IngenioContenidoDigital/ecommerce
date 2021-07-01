@@ -25,7 +25,20 @@ module.exports = {
 
     if(response){
       await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token'],useridml:response['user_id']});
-      return res.redirect('/sellers?success=Integración Habilitada Exitosamente');
+      return res.redirect('/sellers/edit/' + integration.seller + '?success=Integración Habilitada Exitosamente');
+    }
+  },
+  reauthmeli:async (req, res)=> {
+    let integration = req.param('integration');
+    integration = await Integrations.findOne({id: integration}).populate('channel');
+    if (integration) {
+      if(integration.channel.name === 'mercadolibre'){
+        return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+integration.user+'&state='+integration.id+'&redirect_uri='+'https://1ecommerce.app'+'/mlauth/'+integration.user);
+      }else if(integration.channel.name === 'mercadolibremx'){
+        return res.redirect('https://auth.mercadolibre.com.mx/authorization?response_type=code&client_id='+integration.user+'&state='+integration.id+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+integration.user);
+      }
+    } else {
+      return res.redirect('/sellers/edit/' + integration.seller + '?error=No existe la integración');
     }
   },
   updateintegration:async (req,res) =>{
