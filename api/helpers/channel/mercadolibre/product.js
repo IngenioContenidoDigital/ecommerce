@@ -60,11 +60,6 @@ module.exports = {
       let priceDiscount = integration.priceDiscount || 0;
       /** ELIMINAR LAS PROMOCIONES ASOCIADAS A UN PRODUCTO */
       /*
-      let promotions = null;
-      let pchannel = await ProductChannel.findOne({product:inputs.product,integration:inputs.integration});
-      if(pchannel && pchannel.channelid){
-        promotions = await sails.helpers.channel.mercadolibre.request('seller-promotions/items/'+pchannel.channelid,integration.channel.endpoint,integration.secret);
-      }
 
       if(promotions){
         for(let prom of promotions){
@@ -80,7 +75,14 @@ module.exports = {
         vimages.push(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
       });
       let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
-
+      
+      let promotions = null;
+      if (inputs.action==='ProductUpdate' || inputs.action==='Update') {
+        let pchannel = await ProductChannel.findOne({product:inputs.product,integration:inputs.integration});
+        if(pchannel && pchannel.channelid){
+          promotions = await sails.helpers.channel.mercadolibre.request(`seller-promotions/items/${pchannel.channelid}`,integration.channel.endpoint,integration.secret);
+        }
+      }
       for(let variation of productvariations){
         pvstock = (variation.quantity-product.seller.safestock);
         //Se usa para llevar el precio con descuento debido a que el recurso promo no está disponible para colombia Líneas 163 a 182
@@ -122,6 +124,9 @@ module.exports = {
           }],
           'picture_ids':vimages
         };
+        if (promotions && promotions.length > 0) {
+          delete v.price;
+        }
         stock+=parseInt(variation.quantity);
         variations.push(v);
       }
