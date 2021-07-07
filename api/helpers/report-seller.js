@@ -53,7 +53,7 @@ module.exports = {
         createdAt: { '>': dateStartCommission, '<': dateEndCommission },
         updatedAt: {'>': dateStart, '<': dateEnd}
       }
-    }).populate('currentstatus');
+    }).populate('currentstatus').populate('customer');
     let commissionFeeOrdersFailed = 0;
     let commissionVatOrdersFailed = 0;
     let totalRetFteCommission = 0;
@@ -173,7 +173,8 @@ module.exports = {
       ordersFailed,
       fleteTotal,
       ordersFailedComission,
-      ordersReturnComission
+      ordersReturnComission,
+      ordersCommission
     });
   }
 };
