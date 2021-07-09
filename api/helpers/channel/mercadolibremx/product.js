@@ -65,6 +65,13 @@ module.exports = {
       });
       let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
 
+      let promotions = null;
+      if (inputs.action==='ProductUpdate' || inputs.action==='Update') {
+        let pchannel = await ProductChannel.findOne({product:inputs.product,integration:inputs.integration});
+        if(pchannel && pchannel.channelid){
+          promotions = await sails.helpers.channel.mercadolibremx.request(`seller-promotions/items/${pchannel.channelid}`,integration.channel.endpoint,integration.secret);
+        }
+      }
       for(let variation of productvariations){
         pvstock = (variation.quantity-product.seller.safestock);
         //Se usa para llevar el precio con descuento debido a que el recurso promo no está disponible para colombia Líneas 163 a 182
@@ -106,6 +113,9 @@ module.exports = {
           }],
           'picture_ids':vimages
         };
+        if (promotions && promotions.length > 0) {
+          delete v.price;
+        }
         stock+=parseInt(variation.quantity);
         variations.push(v);
       }

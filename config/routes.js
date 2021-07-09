@@ -60,6 +60,7 @@ module.exports.routes = {
   'POST /buildmenu' : {controller:'IndexController',action:'buildmenu'},
   'POST /findprice' : {controller: 'IndexController',action:'variationPrices'},
   'POST /order' : {controller:'OrderController',action:'createorder'},
+  'POST /downloadordersexcel' : {controller:'OrderController',action:'downloadordersexcel'},
   'GET /sliders/:action?/:id?' : {controller:'FrontController',action:'listslider'},
   'POST /slide/create' : {controller:'FrontController',action:'createslider'},
   'POST /slide/edit/:id' : {controller:'FrontController',action:'editslider'},
