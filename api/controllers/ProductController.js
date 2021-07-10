@@ -1094,41 +1094,58 @@ module.exports = {
 
       switch (importType) {
         case constants.PRODUCT_TYPE:
-          let pagination = await sails.helpers.commerceImporter(
-            req.body.channel,
-            req.body.pk,
-            req.body.sk,
-            req.body.apiUrl,
-            req.body.version,
-            'PAGINATION',
-            { page, pageSize, next: next || null }
-          ).catch((e) => console.log(e));
-          return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+
+          try {
+            let pagination = await sails.helpers.commerceImporter(
+              req.body.channel,
+              req.body.pk,
+              req.body.sk,
+              req.body.apiUrl,
+              req.body.version,
+              'PAGINATION',
+              { page, pageSize, next: next || null }
+            )
+
+            return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+
+          } catch (error) {
+            return res.send({error: error.message, resultados: [], integrations: integrations, rights: rights.name, pagination : null, pageSize : null, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          }
+          
           break;
         case constants.PRODUCT_VARIATION:
-          let paginationVariation = await sails.helpers.commerceImporter(
-            req.body.channel,
-            req.body.pk,
-            req.body.sk,
-            req.body.apiUrl,
-            req.body.version,
-            'PAGINATION',
-            { page, pageSize, next: next || null }
-          ).catch((e) => console.log(e));
-          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, asColor, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          try {
+            let paginationVariation = await sails.helpers.commerceImporter(
+              req.body.channel,
+              req.body.pk,
+              req.body.sk,
+              req.body.apiUrl,
+              req.body.version,
+              'PAGINATION',
+              { page, pageSize, next: next || null }
+            ).catch((e) => console.log(e));
+            return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, asColor, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          } catch (error) {
+            return res.send({error: error.message, resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize, discount, asColor, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          }
           break;
         case constants.IMAGE_TYPE:
-          let paginationImage = await sails.helpers.commerceImporter(
-            req.body.channel,
-            req.body.pk,
-            req.body.sk,
-            req.body.apiUrl,
-            req.body.version,
-            'PAGINATION',
-            { page, pageSize, next: next || null }
-          ).catch((e) => console.log(e));
-
-          return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+          try {
+            let paginationImage = await sails.helpers.commerceImporter(
+              req.body.channel,
+              req.body.pk,
+              req.body.sk,
+              req.body.apiUrl,
+              req.body.version,
+              'PAGINATION',
+              { page, pageSize, next: next || null }
+            ).catch((e) => console.log(e));
+  
+            return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}}); 
+          } catch (error) {
+            return res.send({error: error.message, resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}}); 
+          }
+         
           break;
         default:
           break;
