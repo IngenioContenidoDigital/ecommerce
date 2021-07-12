@@ -116,7 +116,7 @@ module.exports = {
         if (promotions && promotions.length > 0) {
           delete v.price;
         }
-        stock+=parseInt(variation.quantity);
+        stock+=parseInt(pvstock);
         variations.push(v);
       }
 

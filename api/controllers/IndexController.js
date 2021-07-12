@@ -295,8 +295,6 @@ module.exports = {
       doc.setFont('times', 'normal');
       doc.text('Retención TC (Abono)', 70, 104);
       doc.text(`$ ${Math.round(data.rteTc).toLocaleString('es-CO')}`, 130, 104);
-
-
       doc.setFont('times', 'bold');
       doc.text('Subtotal Comisiones',70, 125);
       doc.text(`$ ${Math.round(data.totalCommission).toLocaleString('es-CO')}`,160, 125);
