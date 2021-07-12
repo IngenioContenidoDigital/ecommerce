@@ -26,21 +26,23 @@
       <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Detalles Ordenes:&nbsp;</span></p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Valor Pedidos Entregados</span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.totalPrice).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Total 1Ecommerce:</span></td><td><p class="has-text-success has-text-right is-size-6">$ <%= Math.round(data.totalPrice).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <% data.salesPerChannel.forEach((sale) =>{ %>
+            <tr><td><span class="is-size-7">Pedidos Procesados <%= sale.channel%></span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(sale.sales.totalPrice).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <%})%>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal Pedidos:</span></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.totalPrice).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Siniestros</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ajustes (CC)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Total Otros Ingresos:</span></td><td><p class="has-text-success has-text-right is-size-6">$ 0&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Retención TC (Abono)</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.rteTc).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal Retenciones:</span></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.rteTc).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Comisión 1Ecommerce</span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.totalCommission).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Penalidades (PEN)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Marketplace en siniestros</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Total Cargos:</span></td><td><p class="has-text-success has-text-right is-size-6">$ <%= Math.round(data.totalCommission).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <% data.salesPerChannel.forEach((sale) =>{ %>
+            <tr><td><span class="is-size-7">Comisión <%= sale.channel%></span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(sale.sales.totalCommission).toLocaleString('es-CO')%>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(sale.sales.totalCommissionIva).toLocaleString('es-CO')%> +IVA&nbsp;</p></td></tr>
+          <%})%>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal Comisiones:</span></td><td><p class="has-text-dark has-text-right"></p></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.totalCommission).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          
         </table>
-      </p>
+        </p>
     </div>
   </div>
   <div class="column">
@@ -50,10 +52,10 @@
       <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Ordenes Mes Actual:&nbsp;</span></p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturn.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Canceladas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersCancel.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.ordersCancel.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailed.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right"> $ <%= Math.round(data.ordersFailed.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Total:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturn.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Canceladas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersCancel.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersCancel.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailed.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right"> $<%= Math.round(data.ordersFailed.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
       </p>
       <p class="container is-capitalized">
@@ -62,9 +64,18 @@
       </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturnComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailedComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right"> $ <%= Math.round(data.ordersFailedComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Total:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailedComission.total + data.ordersReturnComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.ordersFailedComission.price + data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturnComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailedComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right"> $<%= Math.round(data.ordersFailedComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailedComission.total + data.ordersReturnComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailedComission.price + data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+        </table>
+      </p>
+      <p class="container is-capitalized">
+        <span class="is-capitalized has-text-weight-bold">Reintegro Comisiones:&nbsp;</span>
+      </p>
+      <p class="container is-capitalized">
+        <table class="table is-fullwidth">
+          <tr><td><span class="is-size-7">Comisión</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.commissionFeeOrdersFailed).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal Mes Ant:</span></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.commissionFeeOrdersFailed).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
       </p>
     </div>
@@ -81,12 +92,12 @@
           <tr><td><span class="has-text-weight-bold is-size-6">Total Referencias:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.totalSkuInactive + data.totalSkuActive %>&nbsp;</p></td></tr>
         </table>
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7"><%= data.seller.activeSku ? 'Referencias Activas (SKU)' : 'Referencias (SKU)' %></span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.totalSku).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Fotografia (FTG)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Marketing (MKT)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Serv Envío (ENV)</span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.fleteTotal).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ajustes (CC - CAN)</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Total:</span></td><td><p class="has-text-success has-text-right is-size-6">$ <%= Math.round(data.totalSku + data.fleteTotal).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7"><%= data.seller.activeSku ? 'Referencias Activas (SKU)' : 'Referencias (SKU)' %></span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.totalSku).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Fotografia (FTG)</span></td><td><p class="has-text-dark has-text-right">$0&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Marketing (MKT)</span></td><td><p class="has-text-dark has-text-right">$0&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Serv Envío (ENV)</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.fleteTotal).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ajustes (CC - CAN)</span></td><td><p class="has-text-dark has-text-right">$0&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotales:</span></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.totalSku + data.fleteTotal).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
         </table>
       </p>
     </div>
@@ -99,10 +110,10 @@
       <hr>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Retencion por servicios</span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.totalRetFte).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Retencion de Ica 9,66/1000</span></td><td><p class="has-text-dark has-text-right">$ <%= Math.round(data.totalRetIca).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ajuste al peso</span></td><td><p class="has-text-dark has-text-right">$ 0&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-4">Balance Total:</span></td><td><p class="has-text-success has-text-right is-size-4">$ <%= Math.round(data.totalBalance).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Retencion por servicios</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.totalRetFte).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Retencion de Ica 9,66/1000</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.totalRetIca).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ajuste al peso</span></td><td><p class="has-text-dark has-text-right">$0&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-4">Balance Total:</span></td><td><p class="has-text-success has-text-right is-size-4">$<%= Math.round(data.totalBalance).toLocaleString('es-CO')%>&nbsp;</p></td></tr>
         </table>
       </p>
     </div>

@@ -19,65 +19,35 @@ module.exports = {
   fn: async function (inputs, exits) {
     const moment = require('moment');
     moment.locale('es');
-    let ordersItem = [];
     let seller = await Seller.findOne({ id: inputs.sellerId });
+    let integrations = await Integrations.find({ seller: inputs.sellerId }).populate('channel');
+    integrations = integrations.filter(int => int.channel.type === 'marketplace');
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     let dateStart = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
     let dateEnd = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let dateStartCommission = new Date(moment(inputs.month, 'MMMM YYYY').subtract(2, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
     let dateEndCommission = new Date(moment(inputs.month, 'MMMM YYYY').subtract(2, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let totalPrice = 0;
-    let totalCommissionFee = 0;
-    let totalCommissionVat = 0;
     let totalRetFte = 0;
     let totalRetIca = 0;
     let totalSkuInactive = 0;
     let totalSkuActive = 0;
-    let statesIds = [];
-    let packed= await OrderState.find({
-      where:{name:['fallido','retornado']},
-      select:['id']
-    });
-    for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
-    let orders = await Order.find({
-      where: {
-        seller: inputs.sellerId,
-        createdAt: { '>': dateStart, '<': dateEnd }
-      }
-    }).populate('currentstatus');
-
-    let ordersCommission = await Order.find({
-      where: {
-        seller: inputs.sellerId,
-        currentstatus: statesIds,
-        createdAt: { '>': dateStartCommission, '<': dateEndCommission },
-        updatedAt: {'>': dateStart, '<': dateEnd}
-      }
-    }).populate('currentstatus').populate('customer');
+    let fleteTotal = 0;
+    let salesPerChannel = [];
+    let totalCommission = 0;
+    let rteTc = 0;
     let commissionFeeOrdersFailed = 0;
-    let commissionVatOrdersFailed = 0;
-    let totalRetFteCommission = 0;
-    let totalRetIcaCommission = 0;
+    let totalCommissionNotIva = 0;
+    const ordersCancel = {total: 0, price:0};
+    const ordersReturn = {total: 0, price:0};
+    const ordersFailed = {total: 0, price:0};
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
-    for (const order of ordersCommission) {
-      let items = await OrderItem.find({order: order.id});
-      for (const item of items) {
-        const salesCommission = item.commission || 0;
-        const commissionFee = item.price * (salesCommission/100);
-        commissionFeeOrdersFailed += commissionFee;
-        commissionVatOrdersFailed += (commissionFee * 0.19);
-        totalRetFteCommission += (commissionFee * 0.04);
-        if (address.city.name === 'bogota') {
-          totalRetIcaCommission += (commissionFee * (9.66/1000));
-        }
-      }
-      if(order.currentstatus.name === 'fallido'){
-        ordersFailedComission.total += 1;
-        ordersFailedComission.price += order.totalOrder;
-      }else if(order.currentstatus.name === 'retornado'){
-        ordersReturnComission.total += 1;
-        ordersReturnComission.price += order.totalOrder;
+    let ordersCommission = [];
+    for (const integration of integrations) {
+      const sales = await sails.helpers.salesPerChannel(seller.id, integration.id, dateStart, dateEnd, dateStartCommission, dateEndCommission);
+      if (sales.totalPrice > 0) {
+        salesPerChannel.push({channel: integration.channel.name, sales});
       }
     }
     totalSkuInactive = await Product.count({
@@ -117,53 +87,41 @@ module.exports = {
       totalProducts = reportSkuPrice.totalProducts;
     }
     let totalSku = totalProducts ? (Math.ceil(totalProducts /100)) * skuPrice * 1.19 : 0;
-    const ordersCancel = {total: 0, price:0};
-    const ordersReturn = {total: 0, price:0};
-    const ordersFailed = {total: 0, price:0};
-    let fleteTotal = 0;
-    for (const order of orders) {
-      if (order.currentstatus.name === 'aceptado' || order.currentstatus.name === 'enviado'
-          || order.currentstatus.name === 'empacado' || order.currentstatus.name === 'en procesamiento'
-          || order.currentstatus.name === 'entregado'){
-        let items = await OrderItem.find({order: order.id});
-        fleteTotal += parseFloat(order.fleteTotal);
-        for (const item of items) {
-          const salesCommission = item.commission || 0;
-          let commissionFee = item.price * (salesCommission/100);
-          totalCommissionFee += commissionFee;
-          totalCommissionVat += (commissionFee * 0.19);
-          totalRetFte += (commissionFee * 0.04);
-          if (address.city.name === 'bogota') {
-            totalRetIca += (commissionFee * (9.66/1000));
-          }
-          totalPrice += item.price;
-          ordersItem.push(item);
-        }
-      }else if(order.currentstatus.name === 'cancelado'){
-        ordersCancel.total += 1;
-        ordersCancel.price += order.totalOrder;
-      }else if(order.currentstatus.name === 'fallido'){
-        ordersFailed.total += 1;
-        ordersFailed.price += order.totalOrder;
-      }else if(order.currentstatus.name === 'retornado'){
-        ordersReturn.total += 1;
-        ordersReturn.price += order.totalOrder;
-      }
+
+    for (const sale of salesPerChannel) {
+      totalRetIca += sale.sales.totalRetIca;
+      totalRetFte += sale.sales.totalCommission*0.04;
+      fleteTotal += sale.sales.fleteTotal;
+      totalPrice += sale.sales.totalPrice;
+      totalCommission += sale.sales.totalCommissionIva;
+      totalCommissionNotIva += sale.sales.totalCommission;
+      ordersCancel.total += sale.sales.ordersCancel.total;
+      ordersCancel.price += sale.sales.ordersCancel.price;
+      ordersReturn.total += sale.sales.ordersReturn.total;
+      ordersReturn.price += sale.sales.ordersReturn.price;
+      ordersFailed.total += sale.sales.ordersFailed.total;
+      ordersFailed.price += sale.sales.ordersFailed.price;
+      ordersReturnComission.total += sale.sales.ordersReturnComission.total;
+      ordersReturnComission.price += sale.sales.ordersReturnComission.price;
+      ordersFailedComission.total += sale.sales.ordersFailedComission.total;
+      ordersFailedComission.price += sale.sales.ordersFailedComission.price;
+      rteTc += sale.sales.rteTc;
+      commissionFeeOrdersFailed += sale.sales.totalDiscountOrders;
+      ordersCommission = [...ordersCommission, ...sale.sales.ordersCommission];
     }
-    totalRetIca = totalRetIca - totalRetIcaCommission;
-    totalRetFte = totalRetFte - totalRetFteCommission;
-    let totalCommission = (totalCommissionFee + totalCommissionVat) - (commissionFeeOrdersFailed + commissionVatOrdersFailed);
     let totalOtherConcepts = totalSku + fleteTotal;
-    totalRetFte = totalSku !== 0 ? totalRetFte + (totalSku >= 142000 ? (totalOtherConcepts/1.19)*0.04 : 0) : totalRetFte;
-    totalRetIca = totalSku !== 0  && address.city.name === 'bogota' ? totalRetIca + (totalSku >= 142000 ? (totalOtherConcepts/1.19)*(9.66/1000) : 0) : totalRetIca;
-    let totalBalance = totalCommission + totalOtherConcepts - (totalRetFte + totalRetIca);
+    let resultRetFte = totalSku !== 0 && totalCommission === 0 ? totalRetFte + (totalSku >= 145000 ? (totalOtherConcepts/1.19)*0.04 : 0) : totalSku !== 0 ? totalRetFte + (totalOtherConcepts/1.19)*0.04 : totalRetFte;
+    totalRetIca = totalSku !== 0  && address.city.name === 'bogota' ? totalRetIca + (totalSku >= 145000 ? (totalOtherConcepts/1.19)*(9.66/1000) : 0) : totalRetIca;
+    let totalBalance = (totalCommission + totalOtherConcepts + rteTc) - commissionFeeOrdersFailed - (resultRetFte + totalRetIca);
     return exits.success({
+      rteTc,
       seller,
       address,
-      totalPrice,
       totalCommission,
+      totalCommissionNotIva,
+      totalPrice,
       totalSku,
-      totalRetFte,
+      totalRetFte: resultRetFte,
       totalRetIca,
       totalBalance,
       totalSkuInactive,
@@ -174,7 +132,9 @@ module.exports = {
       fleteTotal,
       ordersFailedComission,
       ordersReturnComission,
-      ordersCommission
+      ordersCommission,
+      salesPerChannel,
+      commissionFeeOrdersFailed
     });
   }
 };
