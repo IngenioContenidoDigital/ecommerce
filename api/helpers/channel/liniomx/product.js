@@ -108,6 +108,10 @@ module.exports = {
               delete data.Product.ProductData.Gender;
               data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
               data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
+              if(categories.includes('17937')/** Belleza y Cuidado*/){
+                delete data.Product.ProductData.UnitMeasure;
+                delete data.Product.ProductData.Volume;
+              }
               if(categories.includes('18397')/** Perfumes */){
                 data.Product.ProductData.ProductContent= pv.variation.name;
                 //let intencity = ['Perfume Extract','Eau de Parfum','Eau de Toilette','Eau de Cologne'];
