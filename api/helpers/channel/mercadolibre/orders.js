@@ -82,7 +82,7 @@ module.exports = {
               integration:integration.id,
               shipping: order.shipping.id ? order.shipping.id : '',
               mode: shipping ? shipping.mode: '',
-              receiverId: shipping ? shipping['receiver id'] : ''
+              receiverId: shipping && shipping.mode === 'custom' ? shipping.receiver_id : shipping.service_id
             }
           };
           payment.data['ref_payco'] = order.id;
