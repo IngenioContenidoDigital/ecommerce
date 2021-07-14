@@ -192,7 +192,7 @@ module.exports = {
           litems.push(it.externalReference);
         }
       }
-      if(oitems[0].shippingType && oitems[0].shippingType === 'Crossdocking'){
+      if(oitems[0].shippingType && oitems[0].shippingType === 'Cross docking'){
         let route = await sails.helpers.channel.dafiti.sign(order.integration, 'SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=pickup','ShippingProvider=']);
         let response = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'POST');
         let result = JSON.parse(response);
@@ -206,9 +206,9 @@ module.exports = {
           }else{
             items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
           }
-          const tracking = items.OrderItem[0].TrackingCode;
-          await Order.updateOne({id:order.id}).set({tracking:tracking});
-          let rts = await sails.helpers.channel.dafiti.sign(order.integration,'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=pickup','ShippingProvider=','TrackingNumber='+tracking]);
+          const orderNumber = items.OrderItem[0].PurchaseOrderNumber;
+          await Order.updateOne({id:order.id}).set({tracking:orderNumber});
+          let rts = await sails.helpers.channel.dafiti.sign(order.integration,'SetStatusToReadyToShip',order.seller,['OrderItemIds=['+litems.join(',')+']','DeliveryType=pickup','ShippingProvider=','TrackingNumber='+orderNumber]);
           await sails.helpers.request(integration.channel.endpoint,'/?'+rts,'POST');
         }
       } else {

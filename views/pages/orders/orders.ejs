@@ -12,6 +12,7 @@
                 <th scope="col">Id</th>
                 <th scope="col">Canal</th>
                 <th scope="col">Referencia</th>
+                <th scope="col">Manifested</th>
                 <th scope="col">Medio de Pago</th>
                 <th scope="col">Cliente</th>
                 <th scope="col">Estado</th>
@@ -65,6 +66,23 @@
           let loader = document.querySelector('.pageloader');
           if(hasClass(loader,'is-active')){removeClass(loader,'is-active');}
         }
+
+        live('.trackingCrossDocking','click', e => {
+          e.preventDefault();
+          const tracking = e.target.getAttribute('tracking')
+          io.socket.get(`/shipmentcrossdocking/${tracking}`, resData =>{
+            if (resData) {
+              const fileWindow = window.open();
+              fileWindow.document.write(
+                `<title>Visualisación</title>
+                <embed src="data:text/html;base64,${resData}" width="922"; height="800">`
+              );
+              fileWindow.focus();
+              fileWindow.print();
+              fileWindow.document.close();
+            }
+          });
+        });
         
       </script>
 </div>

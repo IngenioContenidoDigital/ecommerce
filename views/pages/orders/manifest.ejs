@@ -1,6 +1,5 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/js/bulma-tagsinput.min.js"></script>
 <link href='https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/css/bulma-tagsinput.min.css' rel='stylesheet'>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <div class="container">
     <h4 class="title is-4">Generar manifiesto Cross-Docking</h4>
     <hr>
@@ -35,12 +34,49 @@
         </div>
     </div>
     <div class="columns">
-        <div class="column" id="pdf">
+        <div class="column">
+            <table class="table is-hoverable is-size-6 is-mediumwidth" id="manifest-table">
+                <thead>
+                  <tr>
+                    <th><small>Manifes Id</small></th>
+                    <th><small>Opciones</small></th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <% listOrders.forEach(manifest => { %>
+                        <tr>
+                            <td>
+                                <%= manifest %>
+                            </td>
+                            <td>
+                                <a href="#" class="has-text-info manifest" manifest='<%= manifest %>'><i class="is-size-4 bx bx-printer" manifest='<%= manifest %>'></i></a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 <script>
     bulmaTagsinput.attach();
+
+    live('.manifest','click', e => {
+        e.preventDefault();
+        const manifest = e.target.getAttribute('manifest')
+        io.socket.post(`/showmanifest`,{manifest}, resData =>{
+            if (resData) {
+                const fileWindow = window.open();
+                fileWindow.document.write(
+                `<title>Visualisación</title>
+                <embed src="data:text/html;base64,${resData}" width="922"; height="800">`
+                );
+                fileWindow.focus();
+                fileWindow.print();
+                fileWindow.document.close();
+            }
+        });
+    });
 
     live('#process','click',e=>{
         e.preventDefault();
@@ -49,21 +85,26 @@
         let errors = document.querySelector('#errors');
         let report = document.querySelector('#report');
         let notifi = document.querySelector('#notifi');
-        let pdf = document.querySelector('#pdf');
         loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
         errors.innerHTML= '';
-        pdf.innerHTML = '';
         if(!hasClass(report,'is-hidden')){addClass(report,'is-hidden');}
         if(!hasClass(notifi,'is-hidden')){addClass(notifi,'is-hidden');}
         io.socket.post('/generatemanifest',{numbers}, resData =>{
             loading.innerHTML= '';
-            if (resData.guia) {
-                pdf.innerHTML =
-                `<div class="box">
-                    <p class="container has-text-centered">
-                        <embed src="data:application/pdf;base64,`+ resData.guia +`" width="100%" height="500">
-                    </p>
-                </div>`;
+            if (resData.manifest) {
+                const table = document.getElementById('manifest-table');
+                let newrow=[
+                    `<td>
+                        ${resData.manifest}
+                    </td>`,
+                    `<td>
+                        <a href="#" class="has-text-info manifest" manifest=${resData.manifest}><i class="is-size-4 bx bx-printer" manifest=${resData.manifest}></i></a>
+                    </td>`
+                ];
+                let row = table.tBodies[0].insertRow(table.tBodies[0].rows.length);
+                newrow.forEach((cell, index)=>{
+                    row.insertCell(index).innerHTML=cell;
+                });
                 if(hasClass(notifi,'is-hidden')){removeClass(notifi,'is-hidden');}
             } else {
                 if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}

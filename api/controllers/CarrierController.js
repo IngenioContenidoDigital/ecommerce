@@ -195,30 +195,33 @@ module.exports = {
       if (orders && orders.length > 0) {
         let documents = [];
         for (const order of orders) {
-          if(!order.tracking){
-            await sails.helpers.carrier.shipment(order.id);
-          }
-          const resultOrder = await Order.findOne({id: order.id});
-          if (resultOrder.tracking) {
-            await Order.updateOne({id: order.id}).set({currentstatus: state.id});
-            await OrderHistory.create({order: order.id, state: state.id});
-            let litems = [];
-            let oitems = await OrderItem.find({order:order.id}).populate('product');
-            let integration = await Integrations.findOne({id: order.integration}).populate('channel');
-            for(let it of oitems){
-              await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
-              if(!litems.includes(it.externalReference)){
-                litems.push(it.externalReference);
-              }
+          let oitems = await OrderItem.find({order:order.id}).populate('product');
+          const documentType = oitems[0].shippingType;
+          if (documentType !== 'Cross docking') {
+            if(!order.tracking){
+              await sails.helpers.carrier.shipment(order.id);
             }
-            let route = order.channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(order.integration, 'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
-            order.channel === 'liniomx' ? await sails.helpers.channel.liniomx.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
-            await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
-            let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
-            let result = JSON.parse(respo);
-            if(result.SuccessResponse){
-              const resultBuf = Buffer.from(result.SuccessResponse.Body.Documents.Document.File, 'base64');
-              documents.push(resultBuf);
+            const resultOrder = await Order.findOne({id: order.id});
+            if (resultOrder.tracking) {
+              await Order.updateOne({id: order.id}).set({currentstatus: state.id});
+              await OrderHistory.create({order: order.id, state: state.id});
+              let litems = [];
+              let integration = await Integrations.findOne({id: order.integration}).populate('channel');
+              for(let it of oitems){
+                await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
+                if(!litems.includes(it.externalReference)){
+                  litems.push(it.externalReference);
+                }
+              }
+              let route = order.channel === 'dafiti' ? await sails.helpers.channel.dafiti.sign(order.integration, 'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
+              order.channel === 'liniomx' ? await sails.helpers.channel.liniomx.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']) :
+              await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
+              let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
+              let result = JSON.parse(respo);
+              if(result.SuccessResponse){
+                const resultBuf = Buffer.from(result.SuccessResponse.Body.Documents.Document.File, 'base64');
+                documents.push(resultBuf);
+              }
             }
           }
         }
@@ -239,5 +242,42 @@ module.exports = {
     } catch (error) {
       return res.send({guia: null, error: 'Error al procesar guias'});
     }
+  },
+  shipmentcrossdocking: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'shipment')){
+      throw 'forbidden';
+    }
+    let tracking = req.param('tracking');
+    let orders = await Order.find({tracking: tracking});
+    let guia='';
+    for(let order of orders){
+      let oitems = await OrderItem.find({order:order.id});
+      let litems = [];
+      for(let it of oitems){
+        if(!litems.includes(it.externalReference)){
+          litems.push(it.externalReference);
+        }
+      }
+      let route = await sails.helpers.channel.dafiti.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']',`DocumentType=shippingLabel`]);
+      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+      let result = JSON.parse(response);
+      if (result.SuccessResponse) {
+        guia = result.SuccessResponse.Body.Documents.Document.File;
+      }
+    }
+    return res.send(guia);
+  },
+  showmanifest: async function(req, res){
+    let manifest = req.body.manifest;
+    let orders = await Order.find({manifest: manifest});
+    let resultManifest='';
+    let sign = await sails.helpers.channel.dafiti.sign(orders[0].integration,'GetManifestDocument',orders[0].seller,['ManifestCode='+manifest]);
+    let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET');
+    let result = JSON.parse(response);
+    if (result.SuccessResponse) {
+      resultManifest = result.SuccessResponse.Body.File;
+    }
+    return res.send(resultManifest);
   }
 };

@@ -299,34 +299,49 @@ module.exports = {
     ordersdata = [];
     let orders = null;
     orders = await Order.find({
-        where: filter,
-        sort: 'createdAt DESC',
-        skip: ((page-1)*perPage),
-        limit: perPage,
-      })
+      where: filter,
+      sort: 'createdAt DESC',
+      skip: ((page-1)*perPage),
+      limit: perPage,
+    })
       .populate('customer')
       .populate('seller');
 
-      for(let o of orders){
-        let track = '';
-        o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
-        if(o.tracking!==''){track ='<a href="/guia/'+o.tracking+'" target="_blank" class="button"><span class="icon"><i class="bx bx-printer"></i></span></a>';}
-        
-        row = [
-          '<td scope="row" class="align-middle">'+o.reference+'</td>',
-          '<td scope="row" class="align-middle">'+o.channel+'</td>',
-          '<td scope="row" class="align-middle">'+o.paymentId ? o.paymentId : ''+'</td>',
-          '<td class="align-middle is-uppercase">'+o.paymentMethod+'</td>',
-          '<td class="align-middle">'+o.customer.fullName+'</td>',
-          '<td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:'+o.currentstatus.color.code+'"><span class="is-size-7 has-text-black has-background-white">'+o.currentstatus.name+'</span></p></td>',
-          '<td class="align-middle is-capitalized has-text-right">$&nbsp;'+Math.round(o.totalOrder).toLocaleString('es-CO')+'</td>',
-          '<td class="align-middle">'+moment(o.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
-          '<td class="align-middle"><span>'+o.seller.name+'</span></td>',
-          '<td class="align-middle"><a href="/order/edit/'+o.id+'" target="_blank" class="button"><span class="icon"><i class="bx bx-duplicate"></i></span></a>'+track+'</td>',
-        ];
-        if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(8,1);}
-        ordersdata.push(row);
+    for(let o of orders){
+      let track = '';
+      let oitems = await OrderItem.find({order:o.id});
+      const documentType = oitems[0].shippingType;
+      o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
+      if(o.tracking!==''){
+        if (documentType === 'Cross docking') {
+          track = `<a href="#" class="button trackingCrossDocking" tracking=${o.tracking}><span class="icon" tracking=${o.tracking}><i class="bx bx-printer" tracking=${o.tracking}></i></span></a>`;
+        } else {
+          track ='<a href="/guia/'+o.tracking+'" target="_blank" class="button"><span class="icon"><i class="bx bx-printer"></i></span></a>';
+        }
       }
+      const color = o.manifest ? 'has-text-success' : 'has-text-danger';
+      let manifested =
+      `<div class="icon-text">
+        <span class="icon ${color}">
+          <i class='bx bxs-circle bx-xs'></i>
+        </span>
+      </div>`;
+      row = [
+        '<td scope="row" class="align-middle">'+o.reference+'</td>',
+        '<td scope="row" class="align-middle">'+o.channel+'</td>',
+        '<td scope="row" class="align-middle">'+o.paymentId ? o.paymentId : ''+'</td>',
+        `<td class="align-middle"><ul>` + manifested + `</ul></td>`,
+        '<td class="align-middle is-uppercase">'+o.paymentMethod+'</td>',
+        '<td class="align-middle">'+o.customer.fullName+'</td>',
+        '<td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:'+o.currentstatus.color.code+'"><span class="is-size-7 has-text-black has-background-white">'+o.currentstatus.name+'</span></p></td>',
+        '<td class="align-middle is-capitalized has-text-right">$&nbsp;'+Math.round(o.totalOrder).toLocaleString('es-CO')+'</td>',
+        '<td class="align-middle">'+moment(o.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
+        '<td class="align-middle"><span>'+o.seller.name+'</span></td>',
+        '<td class="align-middle"><a href="/order/edit/'+o.id+'" target="_blank" class="button"><span class="icon"><i class="bx bx-duplicate"></i></span></a>'+track+'</td>',
+      ];
+      if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(8,1);}
+      ordersdata.push(row);
+    }
     return res.send(ordersdata);
   },
   ordermgt: async (req, res) =>{
@@ -338,6 +353,7 @@ module.exports = {
     let ostates = null;
     let items = null;
     let countries = null;
+    let documentType = null;
     if(id){
       order = await Order.findOne({id:id})
       .populate('addressDelivery')
@@ -353,7 +369,7 @@ module.exports = {
       ostates = await OrderState.find().populate('color');
 
       items = await OrderItem.find({order:order.id});
-
+      documentType = items[0].shippingType;
       for(let item of items){
         item.product = await Product.findOne({id:item.product})
         .populate('images',{cover:1})
@@ -361,7 +377,7 @@ module.exports = {
         .populate('mainColor');
         item.currentstatus = await OrderState.findOne({id:item.currentstatus}).populate('color');
         item.productvariation = await ProductVariation.findOne({id:item.productvariation}).populate('variation');
-        if(order.channel==="walmart"){
+        if(order.channel==='walmart'){
           let seller = await Seller.findOne({id:order.seller}).populate('currency');
           let channel = await Channel.findOne({name:order.channel}).populate('currency');
           if(seller.currency.isocode !== channel.currency.isocode){
@@ -380,7 +396,8 @@ module.exports = {
       order:order,
       items:items,
       states:ostates,
-      countries
+      countries,
+      documentType
     });
   },
   updateorder: async (req, res) =>{
@@ -467,7 +484,7 @@ module.exports = {
       }
     };
     return res.view('pages/front/order',{order:order, payment:payment, tag:await sails.helpers.getTag(req.hostname),seller:seller});
-  },  
+  },
   report: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name!=='superadmin' && !_.contains(rights.permissions,'report')) {
@@ -494,7 +511,7 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
     }
- 
+
     let dateStart = new Date(req.param('startFilter')).valueOf();
     let dateEnd = new Date(req.param('endFilter')).valueOf();
     let seller = req.body.seller;
@@ -503,7 +520,7 @@ module.exports = {
       where: {
         updatedAt: { '>': dateStart, '<': dateEnd },
         seller:seller
-      }      
+      }
     }).populate('customer').populate('currentstatus');
 
     let workbook = new Excel.Workbook();
@@ -519,7 +536,7 @@ module.exports = {
       { header: 'Producto', key: 'product', width: 56 },
       { header: 'Referencia', key: 'externalReference', width: 22 },
       { header: 'Color', key: 'color', width: 15 },
-      { header: 'Talla', key: 'size', width: 15 },      
+      { header: 'Talla', key: 'size', width: 15 },
       { header: 'Precio', key: 'price', width: 12 },
       { header: 'Método de pago', key: 'paymentMethod', width: 26 },
       { header: 'Código de pago', key: 'paymentId', width: 20 },
@@ -570,13 +587,21 @@ module.exports = {
     }
     try{
       let response = await sails.helpers.channel.coppel.shipping(req.body);
-      return res.send(response);;
+      return res.send(response);
     }catch(e){
       console.log(e);
     }
   },
   manifest: async function(req, res){
-    res.view('pages/orders/manifest',{layout:'layouts/admin'});
+    const seller = req.session.user.seller;
+    let listOrders = [];
+    let orders = await Order.find({where: {seller: seller, channel: 'dafiti', manifest: {'!=': ''}}});
+    for(let order of orders){
+      if(!listOrders.includes(order.manifest) && order.manifest){
+        listOrders.push(order.manifest);
+      }
+    }
+    res.view('pages/orders/manifest',{layout:'layouts/admin', listOrders});
   },
   generatemanifest: async (req, res) =>{
     const jsonxml = require('jsontoxml');
@@ -606,32 +631,27 @@ module.exports = {
           Request: {
             OrderItemIds
           }
-        }
+        };
         let integration = await Integrations.findOne({id: orders[0].integration}).populate('channel');
         const xml = jsonxml(body, true);
-        let sign = await sails.helpers.channel.dafiti.sign(integration.id,'CreateForwardManifest',order.seller);
+        let sign = await sails.helpers.channel.dafiti.sign(integration.id,'CreateForwardManifest',integration.seller);
         await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml).then(async (resData)=>{
           resData = JSON.parse(resData);
-          if(resData.SuccessResponse.Body.ManifestId){
-            const manifest = resData.SuccessResponse.Body.TrackingCode;
+          if(resData.SuccessResponse.Body.ManifestCode){
+            const manifest = resData.SuccessResponse.Body.ManifestCode;
             for (const order of orders) {
               await Order.updateOne({id:order.id}).set({manifest:manifest});
             }
-            const resultManifest = await sails.helpers.channel.dafiti.manifest(manifest, integration);
-            if (resultManifest.guia) {
-              return res.send({guia: resultManifest.guia, error: null});
-            } else {
-              return res.send({guia: null, error: 'Error al generar el pdf'});
-            }
+            return res.send({manifest, error: null});
           }else{
-            return res.send({guia: null, error: resData.ErrorResponse.Head.ErrorMessage});
+            return res.send({manifest: null, error: resData.ErrorResponse.Head.ErrorMessage});
           }
-        })
+        });
       } else {
-        return res.send({guia: null, error: 'No hay items para generar el manifiesto'});
+        return res.send({manifest: null, error: 'No hay items para generar el manifiesto'});
       }
     } catch (error) {
-      return res.send({guia: null, error: 'Error al generar el manifiesto'});
+      return res.send({manifest: null, error: 'Error al generar el manifiesto'});
     }
   },
   verifyorder: async (req, res) =>{
