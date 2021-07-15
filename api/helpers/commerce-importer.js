@@ -64,9 +64,12 @@ let fetch = async (data) => {
       }
     }).catch((e) => reject(e));
 
-    if (response && response.data) {
+    if (response && response.data && response.data.data[Object.keys(response.data.data)[0]] != null) {
         return resolve(response.data.data[Object.keys(response.data.data)[0]]);
+    }else{
+      reject(new Error(`Error en la peticion con el servidor : ${data.apiUrl} obteniendo el recurso ${data.resource}`));
     }
+
   });
 };
 
