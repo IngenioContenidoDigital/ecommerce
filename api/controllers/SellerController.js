@@ -58,6 +58,7 @@ module.exports = {
     let filename = null;
     let isActive = (req.body.activo==='on') ? true : false;
     let integrationErp = (req.body.integrationErp==='on') ? true : false;
+    let retIca = (req.body.retIca==='on') ? true : false;
     try{
 
       let addData = {
@@ -83,6 +84,7 @@ module.exports = {
         currency : req.body.currency,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp,
+        retIca,
         safestock: req.body.safestock ? req.body.safestock : 0
       }
 
@@ -112,6 +114,7 @@ module.exports = {
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let integrationErp = (req.body.integrationErp==='on') ? true : false;
+    let retIca = (req.body.retIca==='on') ? true : false;
     let id = req.param('id');
     let seller = await Seller.findOne({id:id});
     let address = null;
@@ -154,6 +157,7 @@ module.exports = {
         currency : req.body.currency,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp,
+        retIca,
         safestock: req.body.safestock ? req.body.safestock : 0
       });
 
@@ -173,6 +177,7 @@ module.exports = {
           currency : req.body.currency,
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           integrationErp,
+          retIca,
           safestock: req.body.safestock ? req.body.safestock : 0
         });
       }

@@ -81,7 +81,7 @@ module.exports = {
         if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
           totalTcComission += item.price / 1.19;
         }
-        if (address.city.name === 'bogota') {
+        if (address.city.name === 'bogota' || seller.retIca) {
           totalRetIcaCommission += (commissionFee * (9.66/1000));
         }
       }
@@ -106,7 +106,7 @@ module.exports = {
           if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
             totalCc += item.price / 1.19;
           }
-          if (address.city.name === 'bogota') {
+          if (address.city.name === 'bogota' || seller.retIca) {
             totalRetIca += (commissionFee * (9.66/1000));
           }
           totalPrice += item.price;

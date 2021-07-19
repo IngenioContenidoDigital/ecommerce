@@ -116,6 +116,15 @@
                 <div class="column">
                   <div class="field">
                     <div class="control">
+                      <label class="label is-size-7">Retención Ica</label>
+                      <input id="retIca" type="checkbox" name="retIca" class="switch is-success" <% if(action=='edit' && seller.retIca){%>checked<%}%>>
+                      <label for="retIca"></label>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <div class="control">
                       <label for="safestock" class="label is-size-7">Stock de Seguridad</label>
                       <input id="safestock" type="number" min="0" max="5" name="safestock" class="input is-size-7" value="<% if(action=='edit'){%><%= seller.safestock %><%}else{%>0<%}%>" >
                     </div>
