@@ -25,6 +25,7 @@
           <li class="is-active"><a option="infobasics" >Información General</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="commissions">Comisiones</a></li>
+          <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="suscriptions">Mis Tarjetas</a></li>
         </ul>
       </div>
       <div id ="infobasics">
@@ -1029,6 +1030,136 @@
          
         </script>
       </div>
+      <div class="is-hidden" id="suscriptions">
+        <div class="control buttons is-right">
+          <button id="add-card" class="button is-small is-rounded is-primary">
+            <span class="icon is-small">
+              <i class='bx bxs-credit-card'></i>
+            </span>
+            <span>Agregar Tarjeta</span>
+          </button>
+        </div>
+        <div class="box is-mediumwidth is-hidden" id="formcard">
+          <h4 class="title is-6">Nueva Tarjeta</h4>
+          <p class="has-text-centered">
+            <img src="/images/paymentlogos.webp">
+          </p>
+          <div class="content is-size-7">
+            <form action="/createcreditcard/<%=seller.id%>" method="POST">
+              <div class="field">
+                <div class="control has-icons-right">
+                  <input class="input is-small" type="number" name="card" placeholder="Número de la Tarjeta"/>
+                  <span class="icon is-right">
+                    <i class='bx bx-credit-card-front'></i>
+                  </span>
+                </div>
+              </div>
+              <div class="columns is-mobile">
+                <div class="column is-5">
+                  <label class="label is-small" for="month">Fecha vencimiento</label>
+                  <div class="control is-inline-block">
+                    <div class="select is-small">
+                      <select name="month">
+                        <%for(let i=1; i<=12; i++){%>
+                          <%if(i<10){%>
+                            <option value="0<%=i%>">0<%=i%></option>
+                          <%}else{%>
+                            <option value="<%=i%>"><%=i%></option>
+                          <%}%>
+                        <%}%>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="control is-inline-block">
+                    <div class="select is-small">
+                      <% let year = (new Date()).getFullYear() %>
+                      <select name="year">
+                        <%for(let i=year; i<=year+8; i++){%>
+                          <option value="<%=i%>"><%=i%></option>
+                        <%}%>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-4">
+                  <label class="label is-small" for="cvv">Cod. seguridad</label>
+                  <div class="field">
+                    <div class="control">
+                      <input class="input is-small" type="number" name="cvv" placeholder="CVV / CVC"/>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="field">
+                <div class="control has-icons-right">
+                  <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
+                  <span class="icon is-right">
+                    <i class='bx bxs-user-rectangle' ></i>
+                  </span>
+                </div>
+              </div>
+              <div class="columns is-mobile">
+                <div class="column is-two-fifths">
+                  <div class="field">
+                    <div class="control">
+                      <div class="select is-small">
+                        <select name="tid">
+                          <option value="CC">CC</option>
+                          <option value="CE">CE</option>
+                          <option value="NIT">NIT</option>
+                          <option value="PPN">PPN</option>
+                          <option value="SSN">SSN</option>
+                          <option value="LIC">LIC</option>
+                          <option value="DNI">DNI</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="column is-three-fifths">
+                  <div class="field">
+                    <div class="control has-icons-right">
+                      <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
+                      <span class="icon is-right">
+                        <i class='bx bx-id-card'></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p style="padding:8px;" class="content has-text-centered">
+                <button id="order" class="button is-size-7 is-primary has-text-weight-bold">Guardar Tarjeta</button>
+                <button id="cancel" class="button is-size-7 is-default has-text-weight-bold">Cancelar</button>
+              </p>
+            </form>
+          </div>
+        </div>
+        <%if(tokens.length>0){%>
+          <h7 class="title is-6">Mis Tarjetas</h7>
+          <%tokens.forEach(token =>{%>
+            <div class="box is-mediumwidth">
+              <img class="img-creditcard" src="/images/<%=token.frchimg%>.webp">
+              <span class="is-uppercase is-size-7 has-text-weight-bold">&nbsp;<%=token.frch%>&nbsp;<%=token.mask%></span>
+            </div>
+          <%})%>
+        <%}%>
+      </div>
+      <script>
+        <%if(tokens.length === 0){%>
+          const formCard = document.querySelector('#formcard')
+          removeClass(formCard,'is-hidden');
+        <%}%>
+        live('#add-card','click',function(e){
+          e.preventDefault();
+          const formCard = document.querySelector('#formcard')
+          removeClass(formCard,'is-hidden');
+        });
+        live('#cancel','click',function(e){
+          e.preventDefault();
+          const formCard = document.querySelector('#formcard')
+          addClass(formCard,'is-hidden');
+        });
+      </script>
     </div>
     <script>
       live('#activo','click',function(){

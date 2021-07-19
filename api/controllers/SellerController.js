@@ -23,6 +23,7 @@ module.exports = {
     let channels = null;
     let commissiondiscount = null;
     let commissionchannel = null;
+    let tokens = [];
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(rights.name!=='superadmin' && rights.name!=='admin'){
@@ -44,10 +45,19 @@ module.exports = {
       }).populate('channel');
       commissiondiscount = await CommissionDiscount.find({seller:id});
       commissionchannel = await CommissionChannel.find({seller: id}).populate('channel');
+      tokens = await Token.find({user:id}).sort([{createdAt: 'DESC'}]);
+      for (const token of tokens) {
+        const stringFrch = token.frch.toLowerCase();
+        const frch = stringFrch.includes('master') || stringFrch.includes('maestro') ? 'master' :
+        stringFrch.includes('diners') ? 'diners' :
+        stringFrch.includes('american') ? 'amex' :
+        stringFrch.includes('visa') ? 'visa' : '';
+        token.frchimg = frch;
+      }
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',rights,sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',rights,sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment, tokens});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -605,5 +615,89 @@ module.exports = {
     if(action==='edit'){await Cms.updateOne({id:req.param('id')}).set(body)}
     
     return res.redirect('/cms');
-  }
+  },
+  createcreditcard: async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'creditcard')){
+      throw 'forbidden';
+    }
+    let id = req.param('seller');
+    try {
+      const seller = await Seller.findOne({id: id}).populate('mainAddress');
+      const city = await City.findOne({id: seller.mainAddress.city});
+      const tokens = await Token.find({user:id});
+      let creditInfo = {
+        'card[number]': req.body.card,
+        'card[exp_year]': req.body.year,
+        'card[exp_month]': req.body.month,
+        'card[cvc]': req.body.cvv
+      };
+      let token = await sails.helpers.payment.tokenize(creditInfo);
+      if (tokens.length > 0) {
+        const addDefaultCardCustomer = {
+          franchise : token.card.name,
+          token : token.id,
+          mask : token.card.mask,
+          customer_id: tokens[0].customerId
+        };
+        const epayco = await sails.helpers.payment.init('CC');
+        await epayco.customers.addDefaultCard(addDefaultCardCustomer);
+        await Token.create({
+          token:token.id,
+          customerId:tokens[0].customerId,
+          docType:req.body.tid,
+          docNumber:req.body.dni,
+          mask:token.card.mask,
+          frch:token.card.name,
+          dues:1,
+          name:req.body.cardname,
+          user:seller.id,
+          default: true
+        });
+        for (const token of tokens) {
+          await Token.updateOne({id:token.id}).set({default: false});
+        }
+      } else {
+        let customerInfo = {
+          token_card: token.id,
+          name: req.body.cardname.toUpperCase().trim(),
+          last_name: ' ',
+          email: seller.email,
+          default: true,
+          city: city.name,
+          address: seller.mainAddress.addressline1+' '+seller.mainAddress.addressline2,
+          cell_phone: seller.phone.toString()
+        };
+        let customer = await sails.helpers.payment.customer(customerInfo, 'CC');
+        await Token.create({
+          token:token.id,
+          customerId:customer.data.customerId,
+          docType:req.body.tid,
+          docNumber:req.body.dni,
+          mask:token.card.mask,
+          frch:token.card.name,
+          dues:1,
+          name:req.body.cardname,
+          user:seller.id,
+          default: true
+        });
+      }
+      return res.redirect(`/sellers/edit/${id}?success=Se agrego correctamente la tarjeta`);
+    } catch (err) {
+      console.log(err);
+      return res.redirect(`/sellers/edit/${id}?error=${err.message}`);
+    }
+  },
+  confirmationinvoice: async(req, res)=>{
+    let invoice = await Invoice.findOne({reference:req.body.x_ref_payco});
+    let state = await sails.helpers.orderState(req.body.x_response);
+    if(invoice){
+      if(invoice.state !== state){
+        await Invoice.updateOne({id:invoice.id}).set({
+          state: state
+        });
+      }
+    }
+    return res.ok();
+  },
 };
