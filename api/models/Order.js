@@ -92,6 +92,9 @@ module.exports = {
       type:'string',
       defaultsTo:''
     },
+    dateManifest: {
+      type:'number'
+    },
     transport: {
       type:'string',
       defaultsTo:''

@@ -360,6 +360,11 @@
             removeClass(loader,'is-active');
           }
           datatable.rows().add(p);
+          checkboxChecked.forEach(check =>{
+            const resultCheck = document.querySelector(`#${check.id}`);
+            resultCheck.checked = true;
+            addClass(resultCheck,'has-background-color');
+          });
           catalogQuery(page+=1);
         });
       }
