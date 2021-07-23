@@ -58,7 +58,6 @@ module.exports = {
     let filename = null;
     let isActive = (req.body.activo==='on') ? true : false;
     let integrationErp = (req.body.integrationErp==='on') ? true : false;
-    let retIca = (req.body.retIca==='on') ? true : false;
     try{
 
       let addData = {
@@ -84,7 +83,6 @@ module.exports = {
         currency : req.body.currency,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp,
-        retIca,
         safestock: req.body.safestock ? req.body.safestock : 0
       }
 
@@ -114,7 +112,6 @@ module.exports = {
     let error=null;
     let isActive = (req.body.activo==='on') ? true : false;
     let integrationErp = (req.body.integrationErp==='on') ? true : false;
-    let retIca = (req.body.retIca==='on') ? true : false;
     let id = req.param('id');
     let seller = await Seller.findOne({id:id});
     let address = null;
@@ -157,7 +154,6 @@ module.exports = {
         currency : req.body.currency,
         skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp,
-        retIca,
         safestock: req.body.safestock ? req.body.safestock : 0
       });
 
@@ -177,7 +173,6 @@ module.exports = {
           currency : req.body.currency,
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           integrationErp,
-          retIca,
           safestock: req.body.safestock ? req.body.safestock : 0
         });
       }
@@ -206,6 +201,33 @@ module.exports = {
         await Seller.updateOne({id:id}).set({
           skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           activeSku: (req.body.activeSku ==='on') ? true : false
+        });
+      }
+    }
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/sellers/edit/'+id+'?success=Se Actualizó Correctamente.');
+    }else{
+      return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
+  settaxes: async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let id = req.param('seller');
+    try{
+      await Seller.updateOne({id: id}).set({
+        retIca: req.body.retIca ? req.body.retIca : 0,
+        retFte: req.body.retFte ? req.body.retFte : 0
+      });
+    }catch(err){
+      error=err;
+      if(err.code==='badRequest'){
+        await Seller.updateOne({id:id}).set({
+          retIca: req.body.retIca ? req.body.retIca : 0,
+          retFte: req.body.retFte ? req.body.retFte : 0
         });
       }
     }

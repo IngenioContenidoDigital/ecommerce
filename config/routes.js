@@ -222,6 +222,7 @@ module.exports.routes = {
 
   'POST /integration/set/:seller/:channel/:namechannel' : {controller:'SellerController',action:'setintegration'},
   'POST /commission/set/:seller' : {controller:'SellerController',action:'setcommission'},
+  'POST /settaxes/:seller' : {controller:'SellerController',action:'settaxes'},
   'POST /commissiondiscount/create/:seller' : {controller:'SellerController',action:'createcommissiondiscount'},
   'PUT /removecommissiondiscount' : {controller:'SellerController',action:'removecommissiondiscount'},
   'POST /commissionchannel/:seller' : {controller:'SellerController',action:'commissionchannel'},

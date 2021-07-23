@@ -25,6 +25,7 @@
           <li class="is-active"><a option="infobasics" >Información General</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="commissions">Comisiones</a></li>
+          <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="taxes">Impuestos</a></li>
         </ul>
       </div>
       <div id ="infobasics">
@@ -110,15 +111,6 @@
                       <label class="label is-size-7">Integracion ERP</label>
                       <input id="integrationErp" type="checkbox" name="integrationErp" class="switch is-success" <% if(action=='edit' && seller.integrationErp){%>checked<%}%>>
                       <label for="integrationErp"></label>
-                    </div>
-                  </div>
-                </div>
-                <div class="column">
-                  <div class="field">
-                    <div class="control">
-                      <label class="label is-size-7">Retención Ica</label>
-                      <input id="retIca" type="checkbox" name="retIca" class="switch is-success" <% if(action=='edit' && seller.retIca){%>checked<%}%>>
-                      <label for="retIca"></label>
                     </div>
                   </div>
                 </div>
@@ -746,7 +738,7 @@
                 </div>
               </div>
               <div class="control buttons">
-                <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Comisión</button>
+                <button type="submit" class="button is-primary is-size-7"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Comisión</button>
               </div>
             </form>
             <br><br>
@@ -1037,6 +1029,37 @@
           });
          
         </script>
+      </div>
+      <div class="is-hidden" id="taxes">
+        <form method="POST" action="/settaxes/<%=seller.id%>">
+          <div class="columns">
+            <div class="column">
+              <div class="field">
+                <label class="label is-size-7">Retención Ica</label>
+                <div class="control has-icons-left">
+                  <input class="input is-size-7" type="number" step="any" min='0' name="retIca" placeholder="Porcentaje de Retención ica" <% if(action=='edit'){ %>value="<%= seller.retIca %>"<% }%>/>
+                  <span class="icon-input-left is-small is-left">
+                    <i class='bx bxs-offer'></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-size-7">Retención en la fuente</label>
+                <div class="control has-icons-left">
+                  <input class="input is-size-7" type="number" step="any" min='0' name="retFte" placeholder="Porcentaje de Retención en la fuente" <% if(action=='edit'){ %>value="<%= seller.retFte %>"<% }%>/>
+                  <span class="icon-input-left is-small is-left">
+                    <i class='bx bxs-offer'></i>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="control buttons">
+            <button type="submit" class="button is-primary is-size-7"><i class="bx bxs-pencil"></i>&nbsp;Actualizar</button>
+          </div>
+        </form>
       </div>
     </div>
     <script>

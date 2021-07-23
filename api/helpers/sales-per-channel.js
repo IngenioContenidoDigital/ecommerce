@@ -49,7 +49,8 @@ module.exports = {
     const ordersFailed = {total: 0, price:0};
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
-
+    const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
+    const retFte = seller.retFte && seller.retFte > 0 ? seller.retFte : 0.04;
     let orders = await Order.find({
       where: {
         seller: inputs.sellerId,
@@ -81,8 +82,8 @@ module.exports = {
         if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
           totalTcComission += item.price / 1.19;
         }
-        if (address.city.name === 'bogota' || seller.retIca) {
-          totalRetIcaCommission += (commissionFee * (9.66/1000));
+        if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
+          totalRetIcaCommission += (commissionFee * (retIca/1000));
         }
       }
       if(order.currentstatus.name === 'fallido'){
@@ -106,8 +107,8 @@ module.exports = {
           if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
             totalCc += item.price / 1.19;
           }
-          if (address.city.name === 'bogota' || seller.retIca) {
-            totalRetIca += (commissionFee * (9.66/1000));
+          if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
+            totalRetIca += (commissionFee * (retIca/1000));
           }
           totalPrice += item.price;
         }
@@ -126,7 +127,7 @@ module.exports = {
     let rteTc = (totalCc * 0.015) + (rteIca * 0.15) + (totalCc * 0.00414);
 
     const vrBase = (commissionFeeOrdersFailed / 1.19);
-    const totalDiscountOrders = commissionFeeOrdersFailed + (totalTcComission * 0.015) + ((totalTcComission * 0.19)*0.15) - (vrBase * 0.04) - totalRetIcaCommission;
+    const totalDiscountOrders = commissionFeeOrdersFailed + (totalTcComission * 0.015) + ((totalTcComission * 0.19)*0.15) - (vrBase * retFte) - totalRetIcaCommission;
     return exits.success({
       rteTc,
       totalPrice,
