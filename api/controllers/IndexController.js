@@ -851,10 +851,10 @@ module.exports = {
         if(identifier){
           let order = req.body.payload.OrderId;
           let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller,  ['OrderId='+order]);
-          let seller = await Seller.findOne({id: integration.seller});
-          if (data && seller.integrationErp) {
-            await sails.helpers.integrationsiesa.exportOrder(data);
-          }
+          // let seller = await Seller.findOne({id: integration.seller});
+          // if (data && seller.integrationErp) {
+          //   await sails.helpers.integrationsiesa.exportOrder(data);
+          // }
         }
         break;
       case 'onOrderItemsStatusChanged':

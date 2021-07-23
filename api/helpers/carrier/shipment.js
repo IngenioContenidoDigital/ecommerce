@@ -194,8 +194,10 @@ module.exports = {
       }
       if(oitems[0].shippingType && oitems[0].shippingType === 'Cross docking'){
         let route = await sails.helpers.channel.dafiti.sign(order.integration, 'SetStatusToPackedByMarketplace',seller.id,['OrderItemIds=['+litems.join(',')+']','DeliveryType=pickup','ShippingProvider=']);
+        console.log(route);
         let response = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'POST');
         let result = JSON.parse(response);
+        console.log(result);
         if(result.SuccessResponse){
           let itemsign = await sails.helpers.channel.dafiti.sign(order.integration,'GetOrderItems',order.seller,['OrderId='+order.channelref]);
           let citems = await sails.helpers.request(integration.channel.endpoint,'/?'+itemsign,'GET');

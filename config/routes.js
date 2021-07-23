@@ -190,7 +190,7 @@ module.exports.routes = {
   'POST /order/generatereport': {controller:'OrderController', action:'generateReportExcel'},
   'GET /manifest' : {controller:'OrderController', action:'manifest'},
   'GET /shipmentcrossdocking/:tracking' : {controller:'CarrierController', action:'shipmentcrossdocking'},
-  'POST /showmanifest' : {controller:'CarrierController', action:'showmanifest'},
+  'GET /showmanifest' : {controller:'CarrierController', action:'showmanifest'},
   'POST /generatemanifest': {controller:'OrderController', action:'generatemanifest'},
   'GET /respuesta' : {controller: 'OrderController', action: 'response'},
   'POST /confirmacion' : {controller:'OrderController', action:'confirmation', csrf:false},

@@ -74,7 +74,7 @@
                 <%if(order.channel==='coppel'){%>
                   <a href="https://www.fedex.com" target="_blank" id="tracking" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>
                 <%}else if(documentType === 'Cross docking'){%>
-                  <button id="trackingCrossDocking" class="button"><i class='bx bx-printer'></i></button>
+                  <a href="/shipmentcrossdocking/<%=order.tracking%>" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>
                 <%}else{%>
                   <a href="/guia/<%=order.tracking%>" id="tracking" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>
                 <%}%>
@@ -268,25 +268,6 @@
       }
 
       quantites();
-
-      live('#trackingCrossDocking','click', e => {
-        e.preventDefault();
-        const element = e.target.nextSibling ? e.target : e.target.parentNode;
-        addClass(element, 'is-loading');
-        io.socket.get(`/shipmentcrossdocking/<%=order.tracking%>`, resData =>{
-          if (resData) {
-            removeClass(element, 'is-loading');
-            const fileWindow = window.open();
-            fileWindow.document.write(
-              `<title>Visualisación</title>
-              <embed src="data:text/html;base64,${resData}" width="922"; height="800">`
-            );
-            fileWindow.focus();
-            fileWindow.print();
-            fileWindow.document.close();
-          }
-        });
-      });
 
       live('#stt','click',(e) =>{
         e.preventDefault();

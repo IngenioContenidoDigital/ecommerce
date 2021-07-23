@@ -314,7 +314,7 @@ module.exports = {
       o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
       if(o.tracking!==''){
         if (documentType === 'Cross docking') {
-          track = `<a href="#" class="button trackingCrossDocking" tracking=${o.tracking}><span class="icon" tracking=${o.tracking}><i class="bx bx-printer" tracking=${o.tracking}></i></span></a>`;
+          track = `<a href="/shipmentcrossdocking/${o.tracking}" target="_blank" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>`;
         } else {
           track ='<a href="/guia/'+o.tracking+'" target="_blank" class="button"><span class="icon"><i class="bx bx-printer"></i></span></a>';
         }
