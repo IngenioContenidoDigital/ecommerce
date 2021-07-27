@@ -125,15 +125,15 @@ module.exports = {
     }
     const rteIca = (totalCc * 0.19);
     let rteTc = (totalCc * 0.015) + (rteIca * 0.15) + (totalCc * 0.00414);
-
+    let rteTcComission = (totalTcComission * 0.015) + (totalTcComission*0.15) + (totalTcComission * 0.00414);
     const vrBase = (commissionFeeOrdersFailed / 1.19);
-    const totalDiscountOrders = commissionFeeOrdersFailed + (totalTcComission * 0.015) + ((totalTcComission * 0.19)*0.15) - (vrBase * retFte) - totalRetIcaCommission;
     return exits.success({
       rteTc,
+      rteTcComission,
       totalPrice,
-      totalRetIca,
+      totalRetIca: totalRetIca - totalRetIcaCommission,
       totalCommissionIva: totalCommissionFee,
-      totalCommission: totalCommissionFee/1.19,
+      totalCommission: (totalCommissionFee/1.19) - vrBase,
       ordersCancel,
       ordersReturn,
       ordersFailed,
@@ -141,7 +141,7 @@ module.exports = {
       ordersFailedComission,
       ordersReturnComission,
       ordersCommission,
-      totalDiscountOrders
+      totalDiscountOrders: commissionFeeOrdersFailed
     });
   }
 };
