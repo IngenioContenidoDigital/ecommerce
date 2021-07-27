@@ -50,7 +50,6 @@ module.exports = {
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
     const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
-    const retFte = seller.retFte && seller.retFte > 0 ? seller.retFte : 0.04;
     let orders = await Order.find({
       where: {
         seller: inputs.sellerId,

@@ -114,8 +114,8 @@ module.exports = {
       ordersCommission = [...ordersCommission, ...sale.sales.ordersCommission];
     }
     let totalOtherConcepts = totalSku + fleteTotal;
-    let resultRetFte = totalSku !== 0 && totalCommission === 0 ? totalRetFte + ((totalOtherConcepts/1.19)*0.04) : totalSku !== 0 ? totalRetFte + (totalOtherConcepts/1.19)*0.04 : totalRetFte;
-    totalRetIca = totalSku !== 0  && (address.city.name === 'bogota' || seller.retIca) ? totalRetIca + ((totalOtherConcepts/1.19)*(9.66/1000)) : totalRetIca;
+    let resultRetFte = totalSku !== 0 && totalCommission === 0 ? totalRetFte + ((totalOtherConcepts/1.19)*retFte) : totalSku !== 0 ? totalRetFte + (totalOtherConcepts/1.19)*retFte : totalRetFte;
+    totalRetIca = totalSku !== 0  && (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) ? totalRetIca + ((totalOtherConcepts/1.19)*(retIca/1000)) : totalRetIca;
     let totalBalance = (totalCommission + totalOtherConcepts + rteTc - rteTcComission) - commissionFeeOrdersFailed - (resultRetFte + totalRetIca);
     return exits.success({
       rteTc,
