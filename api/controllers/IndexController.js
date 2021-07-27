@@ -476,6 +476,21 @@ module.exports = {
           return res.notFound(err);
         }
         break;
+      case 'seller':
+        seller = await Seller.findOne({id:ename,active:true});
+        if(seller){
+          productsFilter.seller = seller.id;
+          object = {};
+          object.products = await Product.find({
+            where:productsFilter,
+            select:['id'],
+            sort: 'updatedAt DESC'
+          });
+          object.route = '';
+        }else{
+          return res.notFound('Seller no localizado');
+        }
+        break;
       default:
         return res.notFound();
     }
