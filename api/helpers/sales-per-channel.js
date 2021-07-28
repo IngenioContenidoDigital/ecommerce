@@ -47,6 +47,7 @@ module.exports = {
     const ordersCancel = {total: 0, price:0};
     const ordersReturn = {total: 0, price:0};
     const ordersFailed = {total: 0, price:0};
+    const ordersDelivered = {total: 0, price:0};
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
     const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
@@ -61,8 +62,8 @@ module.exports = {
       where:{name:['fallido','retornado']},
       select:['id']
     });
+    let status = await OrderState.findOne({name: 'entregado'});
     for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
-
     let ordersCommission = await Order.find({
       where: {
         seller: inputs.sellerId,
@@ -72,6 +73,18 @@ module.exports = {
         updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
       }
     }).populate('currentstatus').populate('customer');
+    let ordersDelv = await Order.find({
+      where: {
+        seller: inputs.sellerId,
+        currentstatus: status.id,
+        integration: inputs.integration,
+        updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
+      }
+    }).populate('currentstatus').populate('customer');
+    for (const order of ordersDelv) {
+      ordersDelivered.total += 1;
+      ordersDelivered.price += order.totalOrder;
+    }
     for (const order of ordersCommission) {
       let items = await OrderItem.find({order: order.id});
       for (const item of items) {
@@ -136,10 +149,12 @@ module.exports = {
       ordersCancel,
       ordersReturn,
       ordersFailed,
+      ordersDelivered,
       fleteTotal,
       ordersFailedComission,
       ordersReturnComission,
       ordersCommission,
+      resultOrdersDelivered: ordersDelv,
       totalDiscountOrders: commissionFeeOrdersFailed
     });
   }
