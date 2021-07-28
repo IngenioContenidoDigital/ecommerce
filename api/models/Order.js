@@ -94,7 +94,7 @@ module.exports = {
     },
     dateManifest: {
       type:'number',
-      allowNull: true
+      allowNull:true,
     },
     transport: {
       type:'string',

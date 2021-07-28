@@ -31,28 +31,28 @@
       <div class="navbar-item is-inline-block">
           <div class="buttons">
             <a href="/cart" id="cart-button" class="button">
-              <span title="Badge top right" class="badge is-info"><%if(session.cart !== undefined ){%><%=session.cart.items%> <%}else{%>0<%}%></span>
+              <span title="Badge top right" class="badge is-info"><%if(session && session.cart){%><%=session.cart.items%> <%}else{%>0<%}%></span>
               <i class='is-size-4 bx bxs-cart'></i>
             </a>
             <div class="dropdown is-right is-hoverable">
               <div class="dropdown-trigger">
                 <button id="account-menu" class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
-                  <% if(session.user === undefined) { %>
-                    <span><i class="is-size-4 bx bxs-user"></i></span>
-                  <%}else{%>
+                  <% if(session && session.user === undefined) { %>
                     <span><i class='is-size-4 bx bxs-user-detail'></i></span>
+                  <%}else{%>
+                    <span><i class="is-size-4 bx bxs-user"></i></span>
                   <%}%>
                 </button>
               </div>
               <div class="dropdown-menu" id="dropdown-menu4" role="menu">
                 <div class="dropdown-content">
-                  <% if(session.user === undefined) { %>
-                  <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
+                  <% if(session && session.user) { %>
+                    <a href="/account" class="dropdown-item">Mi Cuenta</a>
+                    <a href="/addresses" class="dropdown-item">Direcciones</a>
+                    <hr class="dropdown-divider">
+                    <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
                   <% } else { %>
-                  <a href="/account" class="dropdown-item">Mi Cuenta</a>
-                  <a href="/addresses" class="dropdown-item">Direcciones</a>
-                  <hr class="dropdown-divider">
-                  <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
+                    <a href="/login" id="login" class="dropdown-item">Iniciar Sesión</a>
                   <% }%>
                 </div>
               </div>

@@ -310,6 +310,7 @@ module.exports = {
     for(let o of orders){
       let track = '';
       let oitems = await OrderItem.find({order:o.id});
+      const currency = await Currency.findOne({id: o.seller.currency});
       const documentType = oitems[0].shippingType;
       o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
       if(o.tracking!==''){
@@ -331,14 +332,16 @@ module.exports = {
         '<td class="align-middle is-uppercase">'+o.paymentMethod+'</td>',
         '<td class="align-middle">'+o.customer.fullName+'</td>',
         '<td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:'+o.currentstatus.color.code+'"><span class="is-size-7 has-text-black has-background-white">'+o.currentstatus.name+'</span></p></td>',
-        '<td class="align-middle is-capitalized has-text-right">$&nbsp;'+Math.round(o.totalOrder).toLocaleString('es-CO')+'</td>',
+        '<td class="align-middle is-capitalized has-text-right">$&nbsp;'+Math.round(o.totalOrder).toLocaleString('es-CO')+ ` ${currency.isocode}` +'</td>',
         '<td class="align-middle">'+moment(o.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
         '<td class="align-middle"><span>'+o.seller.name+'</span></td>',
         '<td class="align-middle"><a href="/order/edit/'+o.id+'" target="_blank" class="button"><span class="icon"><i class="bx bx-duplicate"></i></span></a>'+track+'</td>',
       ];
+
       if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(10,1);}
       ordersdata.push(row);
     }
+
     return res.send(ordersdata);
   },
   ordermgt: async (req, res) =>{

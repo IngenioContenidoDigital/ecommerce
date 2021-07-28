@@ -38,21 +38,22 @@ module.exports = {
           seller: inputs.seller,
           createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
         },
-        select: ['totalOrder', 'channel', 'totalOrder']
+        select: ['totalOrder', 'channel', 'totalOrder', 'conversionRate']
       }).populate('addressDelivery').populate('currentstatus');
     } else {
       orders  =  await Order.find({
         where: {
           createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
         },
-        select: ['totalOrder', 'channel', 'totalOrder']
+        select: ['totalOrder', 'channel', 'totalOrder', 'conversionRate']
       }).populate('addressDelivery').populate('currentstatus');
     }
 
     for(let order of orders){
       if (order.addressDelivery && order.currentstatus.name !== 'cancelado' && order.currentstatus.name !== 'fallido' && order.currentstatus.name !== 'rechazado') {
+        const totalOrder = inputs.profile !== 'superadmin' && inputs.profile !== 'admin' ? order.totalOrder : order.totalOrder*order.conversionRate;
         totalOrders += 1;
-        totalSales += order.totalOrder;
+        totalSales += totalOrder;
         totalProducts += await OrderItem.count({order: order.id});
         var tempKey = order.channel;
         if (!channels.hasOwnProperty(tempKey)) {
@@ -85,7 +86,7 @@ module.exports = {
     citiesCant = Object.keys(citiesCant).map((key) => {
       return citiesCant[key];
     });
-
+    
     return exits.success({
       totalOrders,
       totalProducts,

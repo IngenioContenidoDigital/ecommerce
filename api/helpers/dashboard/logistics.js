@@ -55,7 +55,8 @@ module.exports = {
         totalOrdersCancel += 1;
       }
       if (order.currentstatus.name !== 'cancelado' && order.currentstatus.name !== 'fallido' && order.currentstatus.name !== 'rechazado') {
-        totalShippingCost += parseFloat(order.fleteTotal);
+        const fleteTotal = inputs.profile !== 'superadmin' && inputs.profile !== 'admin' ? parseFloat(order.fleteTotal) : parseFloat(order.fleteTotal)*order.conversionRate;
+        totalShippingCost += fleteTotal;
       }
       if (order.currentstatus.name === 'entregado') {
         let states = [];
@@ -92,7 +93,7 @@ module.exports = {
       totalShippingCost,
       averageHoursLogist,
       averageHoursClient,
-      averageHoursCellar
+      averageHoursCellar: averageHoursCellar > 0 ? averageHoursCellar : 0
     });
   }
 };

@@ -716,10 +716,12 @@
   function showInfoOrders(data) {
     let dataCh = getChannels(data.channels);
     let dataCit = getCities(data.cities);
-    var totalSales = document.querySelector('#totalSales');
-    var totalProducts = document.querySelector('#totalProducts');
-    var totalOrders = document.querySelector('#totalOrders');
-    totalSales.textContent = '$' + Math.round(data.totalSales).toLocaleString('es-CO');
+    const totalSales = document.querySelector('#totalSales');
+    const totalProducts = document.querySelector('#totalProducts');
+    const totalOrders = document.querySelector('#totalOrders');
+    const rights = '<%- session.user.rights.name %>';
+    const codeCurrency = rights === 'admin' || rights === 'superadmin' ? 'USD' : '';
+    totalSales.textContent = `$ ${Math.round(data.totalSales).toLocaleString('es-CO')} ${codeCurrency}`;
     totalProducts.textContent = data.totalProducts;
     totalOrders.textContent = data.totalOrders;
     
@@ -750,8 +752,9 @@
     var averageHoursLogist = document.querySelector('#averageHoursLogist');
     var averageHoursClient = document.querySelector('#averageHoursClient');
     var averageHoursCellar = document.querySelector('#averageHoursCellar');
-    
-    totalShippingCost.textContent = '$' + Math.round(data.totalShippingCost).toLocaleString('es-CO');
+    const rights = '<%- session.user.rights.name %>';
+    const codeCurrency = rights === 'admin' || rights === 'superadmin' ? 'USD' : '';
+    totalShippingCost.textContent = `$ ${Math.round(data.totalShippingCost).toLocaleString('es-CO')} ${codeCurrency}`;
     totalOrdersReturned.textContent = data.totalOrdersReturned;
     totalOrdersCancel.textContent = data.totalOrdersCancel;
     averageHoursLogist.textContent = data.averageHoursLogist + ' hrs';

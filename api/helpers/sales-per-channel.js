@@ -49,7 +49,7 @@ module.exports = {
     const ordersFailed = {total: 0, price:0};
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
-
+    const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
     let orders = await Order.find({
       where: {
         seller: inputs.sellerId,
@@ -81,8 +81,8 @@ module.exports = {
         if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
           totalTcComission += item.price / 1.19;
         }
-        if (address.city.name === 'bogota') {
-          totalRetIcaCommission += (commissionFee * (9.66/1000));
+        if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
+          totalRetIcaCommission += (commissionFee * (retIca/1000));
         }
       }
       if(order.currentstatus.name === 'fallido'){
@@ -106,8 +106,8 @@ module.exports = {
           if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
             totalCc += item.price / 1.19;
           }
-          if (address.city.name === 'bogota') {
-            totalRetIca += (commissionFee * (9.66/1000));
+          if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
+            totalRetIca += (commissionFee * (retIca/1000));
           }
           totalPrice += item.price;
         }
@@ -124,15 +124,15 @@ module.exports = {
     }
     const rteIca = (totalCc * 0.19);
     let rteTc = (totalCc * 0.015) + (rteIca * 0.15) + (totalCc * 0.00414);
-
+    let rteTcComission = (totalTcComission * 0.015) + (totalTcComission*0.15) + (totalTcComission * 0.00414);
     const vrBase = (commissionFeeOrdersFailed / 1.19);
-    const totalDiscountOrders = commissionFeeOrdersFailed + (totalTcComission * 0.015) + ((totalTcComission * 0.19)*0.15) - (vrBase * 0.04) - totalRetIcaCommission;
     return exits.success({
       rteTc,
+      rteTcComission,
       totalPrice,
-      totalRetIca,
+      totalRetIca: totalRetIca - totalRetIcaCommission,
       totalCommissionIva: totalCommissionFee,
-      totalCommission: totalCommissionFee/1.19,
+      totalCommission: (totalCommissionFee/1.19) - vrBase,
       ordersCancel,
       ordersReturn,
       ordersFailed,
@@ -140,7 +140,7 @@ module.exports = {
       ordersFailedComission,
       ordersReturnComission,
       ordersCommission,
-      totalDiscountOrders
+      totalDiscountOrders: commissionFeeOrdersFailed
     });
   }
 };

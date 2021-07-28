@@ -227,6 +227,7 @@ module.exports = {
         item.seller = product.seller.name;
         item.dni = product.seller.dni;
         item.product = product.name;
+        item.price = !sellerId ? (item.price*order.conversionRate).toFixed(2) + ' USD' : item.price;
         item.color = product.mainColor ? product.mainColor.name : '';
         item.size = productVariation ? productVariation.variation.col : '';
         item.customer = order.customer.fullName;
@@ -237,7 +238,7 @@ module.exports = {
         item.channelref = order.channelref;
         item.orderref = order.reference;
         item.tracking = order.tracking;
-        item.fleteTotal = order.fleteTotal;
+        item.fleteTotal = !sellerId ? (order.fleteTotal*order.conversionRate).toFixed(2) + ' USD' : order.fleteTotal;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         ordersItem.push(item);
@@ -473,6 +474,21 @@ module.exports = {
           object.route = '/images/brands/';
         }catch(err){
           return res.notFound(err);
+        }
+        break;
+      case 'seller':
+        seller = await Seller.findOne({id:ename,active:true});
+        if(seller){
+          productsFilter.seller = seller.id;
+          object = {};
+          object.products = await Product.find({
+            where:productsFilter,
+            select:['id'],
+            sort: 'updatedAt DESC'
+          });
+          object.route = '';
+        }else{
+          return res.notFound('Seller no localizado');
         }
         break;
       default:
