@@ -606,6 +606,7 @@ module.exports = {
   },
   generatemanifest: async (req, res) =>{
     const jsonxml = require('jsontoxml');
+    const moment = require('moment');
     const seller = req.session.user.seller;
     const result = req.body.ordersSelected;
     let listItems = [];
@@ -634,7 +635,7 @@ module.exports = {
         await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml).then(async (resData)=>{
           resData = JSON.parse(resData);
           if(resData.SuccessResponse.Body.ManifestCode){
-            const manifest = resData.SuccessResponse.Body.ManifestCode;
+            let manifest = resData.SuccessResponse.Body.ManifestCode;
             for (const order of orders) {
               await Order.updateOne({id:order.id}).set({manifest:manifest, dateManifest: moment().valueOf()});
             }

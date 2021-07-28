@@ -193,6 +193,7 @@
               }
               notifi.innerHTML = resData.manifest ? 'Se genero correctament el manifiesto' : 'Error al procesar el manifiesto';
               cleanCheckbox()
+              window.location = '/manifest'
             } else {
               if(hasClass(notifi,'is-hidden')){
                 removeClass(notifi,'is-hidden');
