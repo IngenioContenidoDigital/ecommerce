@@ -315,7 +315,7 @@ module.exports = {
       o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
       if(o.tracking!==''){
         if (documentType === 'Cross docking') {
-          track = `<a href="#" class="button trackingCrossDocking" tracking=${o.tracking}><span class="icon" tracking=${o.tracking}><i class="bx bx-printer" tracking=${o.tracking}></i></span></a>`;
+          track = `<a href="/shipmentcrossdocking/${o.tracking}" target="_blank" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>`;
         } else {
           track ='<a href="/guia/'+o.tracking+'" target="_blank" class="button"><span class="icon"><i class="bx bx-printer"></i></span></a>';
         }
@@ -606,6 +606,7 @@ module.exports = {
   },
   generatemanifest: async (req, res) =>{
     const jsonxml = require('jsontoxml');
+    const moment = require('moment');
     const seller = req.session.user.seller;
     const result = req.body.ordersSelected;
     let listItems = [];
@@ -634,7 +635,7 @@ module.exports = {
         await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml).then(async (resData)=>{
           resData = JSON.parse(resData);
           if(resData.SuccessResponse.Body.ManifestCode){
-            const manifest = resData.SuccessResponse.Body.ManifestCode;
+            let manifest = resData.SuccessResponse.Body.ManifestCode;
             for (const order of orders) {
               await Order.updateOne({id:order.id}).set({manifest:manifest, dateManifest: moment().valueOf()});
             }

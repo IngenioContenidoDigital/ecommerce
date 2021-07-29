@@ -21,7 +21,7 @@
                                 <%= moment(data.date).locale('es').format('DD MMMM YYYY HH:mm:ss') %>
                             </td>
                             <td>
-                                <a href="#" class="has-text-info manifest" manifest='<%= data.manifest %>'><i class="is-size-4 bx bx-printer" manifest='<%= data.manifest %>'></i></a>
+                                <a href="/showmanifest?manifest=<%=data.manifest%>" target="_blank" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>
                             </td>
                         </tr>
                     <% }) %>
@@ -44,21 +44,5 @@
             noRows: "No se encontraron datos",
             info: "Mostrando {start} a {end} de {rows} registros",
         }
-    });
-    live('.manifest','click', e => {
-        e.preventDefault();
-        const manifest = e.target.getAttribute('manifest')
-        io.socket.post(`/showmanifest`,{manifest}, resData =>{
-            if (resData) {
-                const fileWindow = window.open();
-                fileWindow.document.write(
-                `<title>Visualisación</title>
-                <embed src="data:text/html;base64,${resData}" width="922"; height="800">`
-                );
-                fileWindow.focus();
-                fileWindow.print();
-                fileWindow.document.close();
-            }
-        });
     });
 </script>

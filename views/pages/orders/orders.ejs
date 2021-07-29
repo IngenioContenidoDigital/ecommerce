@@ -65,8 +65,21 @@
           checkCheckbox(page);
         });
 
-        datatable.on('datatable.perpage', function(page) {
-          cleanCheckbox()
+        datatable.on('datatable.update', function() {
+          for (let i = datatable.totalPages; i >= 1; i--) {
+            datatable.page(i);
+            let checkboxs = document.querySelectorAll('.is-checkradio');
+            checkboxs.forEach(check =>{
+              if (hasClass(check,'has-background-color')) {
+                checkboxChecked.map(item => {
+                  if (item.element.id == check.id) {
+                    item.page = i;
+                    return item;
+                  }
+                });
+              };
+            });
+          }
         });
 
         let pages = parseInt(<%= pages; %>);
@@ -95,23 +108,6 @@
           if(hasClass(loader,'is-active')){removeClass(loader,'is-active');}
         }
 
-        live('.trackingCrossDocking','click', e => {
-          e.preventDefault();
-          const tracking = e.target.getAttribute('tracking')
-          io.socket.get(`/shipmentcrossdocking/${tracking}`, resData =>{
-            if (resData) {
-              const fileWindow = window.open();
-              fileWindow.document.write(
-                `<title>Visualisación</title>
-                <embed src="data:text/html;base64,${resData}" width="922"; height="800">`
-              );
-              fileWindow.focus();
-              fileWindow.print();
-              fileWindow.document.close();
-            }
-          });
-        });
-
         live('.is-checkradio','click',e=>{
           let element = e.target;
           const selectall = e.target.id;
@@ -119,16 +115,15 @@
           const divDatatable = document.querySelector('.dataTable-container');
           const spanNumber = document.querySelector('#numberselected');
           const divOptions = document.querySelector('#optionEdit');
-          let productId = element.getAttribute('data-product');
           const divSelectedAll = document.querySelector('#selectedall');
           if (selectall === 'checkboxselectall') {
             addClass(divSelectedAll,'is-hidden');
             let checkboxs = document.querySelectorAll('.is-checkradio');
             checkboxs.forEach(check =>{
               if (check.id !== 'checkboxselectall') {
-                let productId = check.getAttribute('data-product');
-                if(!ordersSelected.includes(productId) && !checkboxChecked.some(item => item.element.id === check.id)){
-                  ordersSelected.push(productId);
+                let orderId = check.getAttribute('data-product');
+                if(!ordersSelected.includes(orderId) && !checkboxChecked.some(item => item.element.id === check.id)){
+                  ordersSelected.push(orderId);
                   checkboxChecked.push({element: check, page});
                   cont++;
                   check.checked = true;
@@ -137,14 +132,15 @@
               }
             });
           } else {
+            let orderId = element.getAttribute('data-product');
             if (hasClass(element,'has-background-color')) {
               cont--;
-              ordersSelected = ordersSelected.filter(item => item !== productId);
+              ordersSelected = ordersSelected.filter(item => item !== orderId);
               checkboxChecked = checkboxChecked.filter(item => item.element.id !== element.id);
               removeClass(element,'has-background-color');
             } else {
               cont++;
-              ordersSelected.push(productId);
+              ordersSelected.push(orderId);
               checkboxChecked.push({element, page});
               addClass(element,'has-background-color');
             }
@@ -163,7 +159,12 @@
               </p>
               <p class="control">
                 <button id="generateManifest" class="button is-small">
-                  <span>Generar Manifiesto</span>
+                  Generar Manifiesto
+                </button>
+              </p>
+              <p class="control">
+                <button id="generateGuia" class="button is-small">
+                  Generar Guias
                 </button>
               </p>
             </div>`;
@@ -181,10 +182,10 @@
 
         live('#generateManifest','click', e =>{
           e.preventDefault();
-          addClass(this, 'is-loading');
+          addClass(e.target, 'is-loading');
           let notifi = document.querySelector('#notifi');   
           io.socket.post('/generatemanifest',{ordersSelected}, resData =>{
-            removeClass(this, 'is-loading');
+            removeClass(e.target, 'is-loading');
             if (resData.manifest) {
               if(hasClass(notifi,'is-hidden')){
                 removeClass(notifi,'is-hidden');
@@ -192,6 +193,7 @@
               }
               notifi.innerHTML = resData.manifest ? 'Se genero correctament el manifiesto' : 'Error al procesar el manifiesto';
               cleanCheckbox()
+              window.location = '/manifest'
             } else {
               if(hasClass(notifi,'is-hidden')){
                 removeClass(notifi,'is-hidden');
@@ -200,6 +202,44 @@
               notifi.innerHTML = resData.error ? resData.error : 'Error al procesar el manifiesto';
             }
           });
+
+          setTimeout(function() {
+            if(!hasClass(notifi,'is-hidden')){
+              addClass(notifi,'is-hidden');
+              removeClass(notifi,'is-danger');
+              removeClass(notifi,'is-success');
+            }
+          }, 5000);
+        });
+
+        live('#generateGuia','click', e =>{
+          e.preventDefault();
+          addClass(e.target, 'is-loading');
+          let notifi = document.querySelector('#notifi');
+          io.socket.post('/multipleguides',{numbers:'',startDate:null,endDate:null,ordersSelected}, resData =>{
+            removeClass(e.target, 'is-loading');
+            if (resData.guia) {
+              const fileWindow = window.open();
+              fileWindow.document.write(
+                `<title>Visualisación</title>
+                <div class="box">
+                  <p class="container has-text-centered">
+                    <embed src="data:application/pdf;base64,${resData.guia}" width="100%" height="500">
+                  </p>
+                </div>`
+              );
+              fileWindow.focus();
+              fileWindow.document.close();
+              cleanCheckbox()
+            } else {
+              if(hasClass(notifi,'is-hidden')){
+                removeClass(notifi,'is-hidden');
+                addClass(notifi,'is-danger');
+              }
+              notifi.innerHTML = resData.error ? resData.error : 'Error al procesar guias';
+            }
+          });
+
           setTimeout(function() {
             if(!hasClass(notifi,'is-hidden')){
               addClass(notifi,'is-hidden');
@@ -224,8 +264,10 @@
             const checkbox = checkboxChecked.filter(item => item.page == page);
             checkbox.forEach(check =>{
               const resultCheck = document.querySelector(`#${check.element.id}`);
-              resultCheck.checked = false;
-              removeClass(resultCheck,'has-background-color');
+              if (resultCheck) {
+                resultCheck.checked = false;
+                removeClass(resultCheck,'has-background-color');
+              }
             });
           }
           if (divOptions) {
