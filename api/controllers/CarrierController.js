@@ -157,12 +157,14 @@ module.exports = {
   },
   multipleguides: async function(req, res){
     const PDFDocument = require('pdf-lib').PDFDocument;
+    const htmlPdf  = require('html-pdf-node');
     let orderState = await OrderState.findOne({name: 'aceptado'});
     let state = await OrderState.findOne({name: 'empacado'});
     let stateProcess = await OrderState.findOne({name: 'en procesamiento'});
     const dateStart = req.body.startDate;
     const dateEnd = req.body.endDate;
     let numbers = req.body.numbers;
+    let ordersSelected = req.body.ordersSelected;
     const seller = req.session.user.seller;
     let orders = null;
     try {
@@ -191,16 +193,58 @@ module.exports = {
           },
           sort: 'createdAt DESC'
         });
+      } else if(ordersSelected){
+        orders = await Order.find({
+          where: {
+            seller: seller,
+            channel: ['dafiti'],
+            currentstatus: [orderState.id, stateProcess.id, state.id],
+            id: ordersSelected
+          },
+          sort: 'createdAt DESC'
+        });
       }
       if (orders && orders.length > 0) {
         let documents = [];
         for (const order of orders) {
           let oitems = await OrderItem.find({order:order.id}).populate('product');
           const documentType = oitems[0].shippingType;
-          if (documentType !== 'Cross docking') {
-            if(!order.tracking){
-              await sails.helpers.carrier.shipment(order.id);
+          if(!order.tracking){
+            await sails.helpers.carrier.shipment(order.id);
+          }
+          if (documentType === 'Cross docking' && order.channel === 'dafiti') {
+            const resultOrder = await Order.findOne({id: order.id});
+            if (resultOrder.tracking) {
+              await Order.updateOne({id: order.id}).set({currentstatus: state.id});
+              await OrderHistory.create({order: order.id, state: state.id});
+              let litems = [];
+              let integration = await Integrations.findOne({id: order.integration}).populate('channel');
+              for(let it of oitems){
+                await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
+                if(!litems.includes(it.externalReference)){
+                  litems.push(it.externalReference);
+                }
+              }
+              let route = await sails.helpers.channel.dafiti.sign(order.integration, 'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingLabel']);
+              let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
+              let result = JSON.parse(respo);
+              if(result.SuccessResponse){
+                const html = `<html lang="en">
+                  <head>
+                    <meta charset="utf-8">
+                    <title>Template Report</title>
+                  </head>
+                  <body>
+                    <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800">
+                  </body>
+                </html>`;
+                const options = { format: 'A4'};
+                let file = { content: html };
+                const resultBuf = await htmlPdf.generatePdf(file, options);
+                documents.push(resultBuf);
+              }
             }
+          } else {
             const resultOrder = await Order.findOne({id: order.id});
             if (resultOrder.tracking) {
               await Order.updateOne({id: order.id}).set({currentstatus: state.id});
@@ -248,9 +292,10 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'shipment')){
       throw 'forbidden';
     }
+    const htmlPdf  = require('html-pdf-node');
     let tracking = req.param('tracking');
     let orders = await Order.find({tracking: tracking});
-    let guia='';
+    let guia=null;
     for(let order of orders){
       let oitems = await OrderItem.find({order:order.id});
       let litems = [];
@@ -263,21 +308,46 @@ module.exports = {
       let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
       let result = JSON.parse(response);
       if (result.SuccessResponse) {
-        guia = result.SuccessResponse.Body.Documents.Document.File;
+        const html = `<html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>Template Report</title>
+          </head>
+          <body>
+            <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800">
+          </body>
+        </html>`;
+        const options = { format: 'A4'};
+        let file = { content: html };
+        const buffer = await htmlPdf.generatePdf(file, options);
+        guia = Buffer.from(new Uint8Array(buffer)).toString('base64');
       }
     }
-    return res.send(guia);
+    return res.view('pages/pdf',{layout:'layouts/admin',guia, label:null});
   },
   showmanifest: async function(req, res){
-    let manifest = req.body.manifest;
+    const htmlPdf  = require('html-pdf-node');
+    let manifest = req.query.manifest;
     let orders = await Order.find({manifest: manifest});
-    let resultManifest='';
+    let resultManifest=null;
     let sign = await sails.helpers.channel.dafiti.sign(orders[0].integration,'GetManifestDocument',orders[0].seller,['ManifestCode='+manifest]);
     let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET');
     let result = JSON.parse(response);
     if (result.SuccessResponse) {
-      resultManifest = result.SuccessResponse.Body.File;
+      const html = `<html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>Template Report</title>
+        </head>
+        <body>
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}" width="922"; height="800">
+        </body>
+      </html>`;
+      const options = { format: 'A4'};
+      let file = { content: html };
+      const buffer = await htmlPdf.generatePdf(file, options);
+      resultManifest = Buffer.from(new Uint8Array(buffer)).toString('base64');
     }
-    return res.send(resultManifest);
+    return res.view('pages/pdf',{layout:'layouts/admin',guia: resultManifest, label:null});
   }
 };
