@@ -10,6 +10,7 @@
     "@sailshq/lodash": "^3.10.3",
     "@sailshq/socket.io-redis": "^5.2.0",
     "@sentry/node": "^5.20.1",
+    "agentkeepalive": "^4.1.4",
     "apollo-link": "^1.2.14",
     "apollo-link-ws": "^1.0.20",
     "aws-sdk": "^2.675.0",
