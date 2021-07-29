@@ -59,8 +59,24 @@
         </table>
       </p>
       <p class="container is-capitalized">
+        <span class="is-capitalized has-text-weight-bold">Ordenes Entregadas:&nbsp;</span>
+        <span class="icon download-right" id="downloadDelivered"><i class='bx bxs-cloud-download bx-sm'></i></span>
+      </p>
+      <p class="container is-capitalized">
+        <table class="table is-fullwidth">
+          <% total = 0 %>
+          <% price = 0 %>
+          <% data.salesPerChannel.forEach((sale) =>{ %>
+            <% total += sale.sales.ordersDelivered.total %>
+            <% price += sale.sales.ordersDelivered.price %>
+            <tr><td><span class="is-size-7">Ordenes Entregadas <%= sale.channel%></span></td><td><p class="has-text-dark has-text-right"><%= sale.sales.ordersDelivered.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(sale.sales.ordersDelivered.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <%})%>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+        </table>
+      </p>
+      <p class="container is-capitalized">
         <span class="is-capitalized has-text-weight-bold">Ordenes Mes Anterior:&nbsp;</span>
-        <span class="icon download-right"><i class='bx bxs-cloud-download bx-sm'></i></span>
+        <span class="icon download-right" id="downloadOrders"><i class='bx bxs-cloud-download bx-sm'></i></span>
       </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
@@ -120,10 +136,9 @@
   </div>
 </div>
 <script>
-  live('.download-right', 'click', function(e){
+  live('#downloadOrders', 'click', function(e){
     e.preventDefault();
     const orders = <%- JSON.stringify(data.ordersCommission) %>;
-    console.log(orders);
     if (orders.length > 0) {
       removeClass(e.target,'bxs-cloud-download');
       addClass(e.target, 'bx-loader');
@@ -134,6 +149,24 @@
           removeClass(e.target, 'bx-loader');
           removeClass(e.target, 'bx-spin');
           saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes.xlsx`);
+        }
+      });
+    }
+  });
+
+  live('#downloadDelivered', 'click', function(e){
+    e.preventDefault();
+    const orders = <%- JSON.stringify(data.ordersDelivered) %>;
+    if (orders.length > 0) {
+      removeClass(e.target,'bxs-cloud-download');
+      addClass(e.target, 'bx-loader');
+      addClass(e.target, 'bx-spin');
+      io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
+        if(jwRes.statusCode == 200) {
+          addClass(e.target,'bxs-cloud-download');
+          removeClass(e.target, 'bx-loader');
+          removeClass(e.target, 'bx-spin');
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes Entregadas.xlsx`);
         }
       });
     }
