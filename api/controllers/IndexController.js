@@ -131,7 +131,8 @@ module.exports = {
       const dateStart = new Date(date1).valueOf();
       const dateEnd = new Date(date2).valueOf();
       const count = await sails.helpers.dashboard.ordersToday(rights.name, seller, dateStart, dateEnd);
-      ordersByDay.push({day: day, total: count.totalOrders, totalPrice: count.totalPrice});
+      const total = rights.name !=='superadmin' && rights.name !=='admin' ? count.totalPrice : (count.totalPrice*count.conversionRate).toFixed(2);
+      ordersByDay.push({day: day, total: count.totalOrders, totalPrice: total});
     }
     sails.sockets.blast('datadashboardgraphics', {
       ordersByDay,
@@ -867,10 +868,10 @@ module.exports = {
         if(identifier){
           let order = req.body.payload.OrderId;
           let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller,  ['OrderId='+order]);
-          // let seller = await Seller.findOne({id: integration.seller});
-          // if (data && seller.integrationErp) {
-          //   await sails.helpers.integrationsiesa.exportOrder(data);
-          // }
+          let seller = await Seller.findOne({id: integration.seller});
+          if (data && seller.integrationErp) {
+            await sails.helpers.integrationsiesa.exportOrder(data);
+          }
         }
         break;
       case 'onOrderItemsStatusChanged':

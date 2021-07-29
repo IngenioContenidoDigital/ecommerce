@@ -26,6 +26,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let totalOrders = 0;
     let totalPrice = 0;
+    let conversionRate = 0;
     if(inputs.profile !== 'superadmin' && inputs.profile !== 'admin'){
       totalOrders  =  await Order.count({
         seller: inputs.seller,
@@ -42,6 +43,14 @@ module.exports = {
         }
       });
     } else {
+      const orders = await Order.find({
+        conversionRate: { '!=' : 0 },
+        createdAt: {
+          '>=': inputs.date,
+          '<': inputs.dateEnd
+        }
+      });
+      conversionRate = orders[0] ? orders[0].conversionRate : 0;
       totalOrders  =  await Order.count({
         createdAt: {
           '>=': inputs.date,
@@ -57,6 +66,7 @@ module.exports = {
     }
 
     return exits.success({
+      conversionRate,
       totalOrders,
       totalPrice: totalPrice.toFixed(2)
     });
