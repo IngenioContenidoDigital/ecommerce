@@ -157,7 +157,7 @@ module.exports = {
   },
   multipleguides: async function(req, res){
     const PDFDocument = require('pdf-lib').PDFDocument;
-    const htmlPdf  = require('html-pdf-node');
+    let htmlPdf  = require('html-pdf');
     let orderState = await OrderState.findOne({name: 'aceptado'});
     let state = await OrderState.findOne({name: 'empacado'});
     let stateProcess = await OrderState.findOne({name: 'en procesamiento'});
@@ -238,10 +238,16 @@ module.exports = {
                     <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800">
                   </body>
                 </html>`;
-                const options = { format: 'A4'};
-                let file = { content: html };
-                const resultBuf = await htmlPdf.generatePdf(file, options);
-                documents.push(resultBuf);
+                const options = { format: 'Letter', timeout: '200000'};
+                const createPDF = (html, options) => new Promise(((resolve, reject) => {
+                  htmlPdf.create(html, options).toBuffer((err, buffer) => {
+                    if (err !== null) {reject(err);}
+                    else {resolve(buffer);}
+                  });
+                }));
+
+                const buffer = await createPDF(html, options);
+                documents.push(buffer);
               }
             }
           } else {
@@ -292,41 +298,42 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'shipment')){
       throw 'forbidden';
     }
-    const htmlPdf  = require('html-pdf-node');
+    let htmlPdf  = require('html-pdf');
     let tracking = req.param('tracking');
     let orders = await Order.find({tracking: tracking});
     let guia=null;
-    for(let order of orders){
-      let oitems = await OrderItem.find({order:order.id});
-      let litems = [];
-      for(let it of oitems){
-        if(!litems.includes(it.externalReference)){
-          litems.push(it.externalReference);
-        }
-      }
-      let route = await sails.helpers.channel.dafiti.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']',`DocumentType=shippingLabel`]);
-      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
-      let result = JSON.parse(response);
-      if (result.SuccessResponse) {
-        const html = `<html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <title>Template Report</title>
-          </head>
-          <body>
-            <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800">
-          </body>
-        </html>`;
-        const options = { format: 'A4'};
-        let file = { content: html };
-        const buffer = await htmlPdf.generatePdf(file, options);
-        guia = Buffer.from(new Uint8Array(buffer)).toString('base64');
+    let oitems = await OrderItem.find({order:orders[0].id});
+    let litems = [];
+    for(let it of oitems){
+      if(!litems.includes(it.externalReference)){
+        litems.push(it.externalReference);
       }
     }
-    return res.view('pages/pdf',{layout:'layouts/admin',guia, label:null});
+    let route = await sails.helpers.channel.dafiti.sign(orders[0].integration,'GetDocument',orders[0].seller,['OrderItemIds=['+litems.join(',')+']',`DocumentType=shippingLabel`]);
+    let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+    let result = JSON.parse(response);
+    if (result.SuccessResponse) {
+      const html = `<html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>Template Report</title>
+        </head>
+        <body>
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800">
+        </body>
+      </html>`;
+      const options = { format: 'Letter', timeout: '200000'};
+      htmlPdf.create(html, options).toBuffer((err, buffer) => {
+        if (err) {return console.log(err);}
+        guia = Buffer.from(new Uint8Array(buffer)).toString('base64');
+        return res.view('pages/pdf',{layout:'layouts/admin',guia, label:null});
+      });
+    } else {
+      return res.view('pages/pdf',{layout:'layouts/admin',guia, label:null});
+    }
   },
   showmanifest: async function(req, res){
-    const htmlPdf  = require('html-pdf-node');
+    let htmlPdf  = require('html-pdf');
     let manifest = req.query.manifest;
     let orders = await Order.find({manifest: manifest});
     let resultManifest=null;
@@ -343,11 +350,18 @@ module.exports = {
           <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}" width="922"; height="800">
         </body>
       </html>`;
-      const options = { format: 'A4'};
-      let file = { content: html };
-      const buffer = await htmlPdf.generatePdf(file, options);
-      resultManifest = Buffer.from(new Uint8Array(buffer)).toString('base64');
+      const options = {
+        height: '29cm',
+        width: '24.7cm',
+        timeout: '200000'
+      };
+      htmlPdf.create(html, options).toBuffer((err, buffer) => {
+        if (err) {return console.log(err);}
+        resultManifest = Buffer.from(new Uint8Array(buffer)).toString('base64');
+        return res.view('pages/pdf',{layout:'layouts/admin',guia: resultManifest, label:null});
+      });
+    } else {
+      return res.view('pages/pdf',{layout:'layouts/admin',guia: resultManifest, label:null});
     }
-    return res.view('pages/pdf',{layout:'layouts/admin',guia: resultManifest, label:null});
   }
 };
