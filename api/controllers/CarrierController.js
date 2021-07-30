@@ -235,10 +235,29 @@ module.exports = {
                     <title>Template Report</title>
                   </head>
                   <body>
-                    <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800">
+                    <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800"
+                    style="
+                      width: 922px; 
+                      height: 800px;
+                      border: 0;
+                      -ms-transform: scale(0.7);
+                      -moz-transform: scale(0.7);
+                      -o-transform: scale(0.7);
+                      -webkit-transform: scale(0.7);
+                      transform: scale(0.7);
+                      -ms-transform-origin: 0 0;
+                      -moz-transform-origin: 0 0;
+                      -o-transform-origin: 0 0;
+                      -webkit-transform-origin: 0 0;
+                      transform-origin: 0 0;
+                    " />
                   </body>
                 </html>`;
-                const options = { format: 'Letter', timeout: '200000'};
+                const options = {
+                  height: '29cm',
+                  width: '24.7cm',
+                  timeout: '200000'
+                };
                 const createPDF = (html, options) => new Promise(((resolve, reject) => {
                   htmlPdf.create(html, options).toBuffer((err, buffer) => {
                     if (err !== null) {reject(err);}
@@ -319,10 +338,29 @@ module.exports = {
           <title>Template Report</title>
         </head>
         <body>
-          <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800">
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800" 
+          style="
+            width: 922px; 
+            height: 800px;
+            border: 0;
+            -ms-transform: scale(0.7);
+            -moz-transform: scale(0.7);
+            -o-transform: scale(0.7);
+            -webkit-transform: scale(0.7);
+            transform: scale(0.7);
+            -ms-transform-origin: 0 0;
+            -moz-transform-origin: 0 0;
+            -o-transform-origin: 0 0;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+          " />
         </body>
       </html>`;
-      const options = { format: 'Letter', timeout: '200000'};
+      const options = {
+        height: '29cm',
+        width: '24.7cm',
+        timeout: '200000'
+      };
       htmlPdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {return console.log(err);}
         guia = Buffer.from(new Uint8Array(buffer)).toString('base64');
@@ -347,7 +385,22 @@ module.exports = {
           <title>Template Report</title>
         </head>
         <body>
-          <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}" width="922"; height="800">
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}" width="922"; height="800"
+          style="
+            width: 922px; 
+            height: 800px;
+            border: 0;
+            -ms-transform: scale(0.7);
+            -moz-transform: scale(0.7);
+            -o-transform: scale(0.7);
+            -webkit-transform: scale(0.7);
+            transform: scale(0.7);
+            -ms-transform-origin: 0 0;
+            -moz-transform-origin: 0 0;
+            -o-transform-origin: 0 0;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+          " />
         </body>
       </html>`;
       const options = {
