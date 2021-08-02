@@ -54,7 +54,8 @@ module.exports = {
         }else{
           total = carttotal;
         }
-
+        const resultSeller = await Seller.findOne({id: seller}).populate('currency');
+        let exchangeRate = await sails.helpers.currencyConverter(resultSeller.currency.isocode, 'USD');
         try{
           let order = await Order.create({
             totalOrder:total,
@@ -62,7 +63,7 @@ module.exports = {
             totalProducts:carttotal,
             totalDiscount:totaldiscount,
             productsDiscount:productsdiscount,
-            conversionRate:1,
+            conversionRate: exchangeRate.result,
             customer:user.id,
             addressDelivery: address ? address.id : null,
             cart:cart.id,

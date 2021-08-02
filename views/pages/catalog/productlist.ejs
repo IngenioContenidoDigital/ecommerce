@@ -151,6 +151,7 @@
     live('.is-checkradio','click',e=>{
       let element = e.target;
       const selectall = e.target.id;
+      const page = datatable.currentPage;
       const divDatatable = document.querySelector('.dataTable-container');
       const spanNumber = document.querySelector('#numberselected');
       const divOptions = document.querySelector('#optionEdit');
@@ -161,9 +162,9 @@
         checkboxs.forEach(check =>{
           if (check.id !== 'checkboxselectall') {
             let productId = check.getAttribute('data-product');
-            if(!productsSelected.includes(productId) && !checkboxChecked.includes(check)){
+            if(!productsSelected.includes(productId) && !checkboxChecked.some(item => item.element.id === check.id)){
               productsSelected.push(productId);
-              checkboxChecked.push(check);
+              checkboxChecked.push({element: check, page});
               cont++;
               check.checked = true;
               addClass(check,'has-background-color');
@@ -175,12 +176,12 @@
         if (hasClass(element,'has-background-color')) {
           cont--;
           productsSelected = productsSelected.filter(item => item !== productId);
-          checkboxChecked = checkboxChecked.filter(item => item !== element);
+          checkboxChecked = checkboxChecked.filter(item => item.element.id !== element.id);
           removeClass(element,'has-background-color');
         } else {
           cont++;
           productsSelected.push(productId);
-          checkboxChecked.push(element);
+          checkboxChecked.push({element, page});
           addClass(element,'has-background-color');
         }
       }
@@ -303,17 +304,50 @@
         removeClass(divSelectedAll,'is-hidden');
         document.querySelector('#checkboxselectall').checked = false;
       }
+      checkCheckbox(page);
+    });
+
+    datatable.on('datatable.update', function() {
+      for (let i = datatable.totalPages; i >= 1; i--) {
+        datatable.page(i);
+        let checkboxs = document.querySelectorAll('.is-checkradio');
+        checkboxs.forEach(check =>{
+          if (hasClass(check,'has-background-color')) {
+            checkboxChecked.map(item => {
+              if (item.element.id == check.id) {
+                item.page = i;
+                return item;
+              }
+            });
+          };
+        });
+      }
     });
 
     function cleanCheckbox() {
+      const pages = []
+      cont = 0;
       const divSelectedAll = document.querySelector('#selectedall');
       const divOptions = document.querySelector('#optionEdit');
-      cont = 0;
       checkboxChecked.forEach(check =>{
-        check.checked = false;
-        removeClass(check,'has-background-color');
+        if (!pages.includes(check.page)) {
+          pages.push(check.page)
+        }
       });
-      divOptions.remove();
+      for (const page of pages) {
+        datatable.page(parseInt(page));
+        const checkbox = checkboxChecked.filter(item => item.page == page);
+        checkbox.forEach(check =>{
+          const resultCheck = document.querySelector(`#${check.element.id}`);
+          if (resultCheck) {
+            resultCheck.checked = false;
+            removeClass(resultCheck,'has-background-color');
+          }
+        });
+      }
+      if (divOptions) {
+        divOptions.remove();
+      }
       document.querySelector('#checkboxselectall').checked = false;
       removeClass(divSelectedAll,'is-hidden');
       checkboxChecked = [];
@@ -360,10 +394,23 @@
             removeClass(loader,'is-active');
           }
           datatable.rows().add(p);
+          const currentPage = datatable.currentPage;
+          checkCheckbox(currentPage);
           catalogQuery(page+=1);
         });
       }
     };
     catalogQuery(1);
+
+    function checkCheckbox(page) {
+      const resultCheckbox = checkboxChecked.filter(item => item.page == page);
+      resultCheckbox.forEach(check =>{
+        const resultCheck = document.querySelector(`#${check.element.id}`);
+        if (resultCheck) {
+          resultCheck.checked = true;
+          addClass(resultCheck,'has-background-color');
+        }
+      });
+    }
   </script>
 </div>

@@ -1,55 +1,27 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/js/bulma-tagsinput.min.js"></script>
 <link href='https://cdn.jsdelivr.net/npm/bulma-tagsinput@2.0.0/dist/css/bulma-tagsinput.min.css' rel='stylesheet'>
 <div class="container">
-    <h4 class="title is-4">Generar manifiesto Cross-Docking</h4>
-    <hr>
-    <div class="columns is-gapless">
-        <div class="column">
-            <div class="box">
-                <div class="field">
-                    <label class="label">Números de pedidos</label>
-                    <div class="control">
-                        <input class="input" type="tags" name='tags' placeholder="Agrega tu número" value="">
-                    </div>
-                </div>
-                <br />
-                <div class="buttons is-right is-fixed-bottom">
-                    <br><br><br>
-                    <button id="process" type="submit" class="button is-primary"><i class='bx bxs-file-export'></i>&nbsp;Generar</button>
-                </div>
-            </div>
-        </div>
-        <div class="column">
-            <div class="loading container is-fluid"></div>
-            <div id="report" class="container is-fluid is-hidden">
-                <div class="notification is-danger">
-                    <p id="errors"></p>
-                </div>
-            </div>
-            <div id="notifi" class="container is-fluid is-hidden">
-                <div class="notification is-primary">
-                    Se ha generado las guias correctamente.
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="columns">
         <div class="column">
-            <table class="table is-hoverable is-size-6 is-mediumwidth" id="manifest-table">
+            <table class="table is-hoverable is-size-6" id="manifest-table">
                 <thead>
                   <tr>
                     <th><small>Manifes Id</small></th>
+                    <th><small>Fecha</small></th>
                     <th><small>Opciones</small></th>
                   </tr>
                 </thead>
                 <tbody>
-                    <% listOrders.forEach(manifest => { %>
+                    <% listOrders.forEach(data => { %>
                         <tr>
                             <td>
-                                <%= manifest %>
+                                <%= data.manifest %>
                             </td>
                             <td>
-                                <a href="#" class="has-text-info manifest" manifest='<%= manifest %>'><i class="is-size-4 bx bx-printer" manifest='<%= manifest %>'></i></a>
+                                <%= moment(data.date).locale('es').format('DD MMMM YYYY HH:mm:ss') %>
+                            </td>
+                            <td>
+                                <a href="/showmanifest?manifest=<%=data.manifest%>" target="_blank" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>
                             </td>
                         </tr>
                     <% }) %>
@@ -60,56 +32,17 @@
 </div>
 <script>
     bulmaTagsinput.attach();
-
-    live('.manifest','click', e => {
-        e.preventDefault();
-        const manifest = e.target.getAttribute('manifest')
-        io.socket.post(`/showmanifest`,{manifest}, resData =>{
-            if (resData) {
-                const fileWindow = window.open();
-                fileWindow.document.write(
-                `<title>Visualisación</title>
-                <embed src="data:text/html;base64,${resData}" width="922"; height="800">`
-                );
-                fileWindow.focus();
-                fileWindow.print();
-                fileWindow.document.close();
-            }
-        });
-    });
-
-    live('#process','click',e=>{
-        e.preventDefault();
-        let numbers = document.querySelector('input[name="tags"]').value;
-        let loading = document.querySelector('.loading');
-        let errors = document.querySelector('#errors');
-        let report = document.querySelector('#report');
-        let notifi = document.querySelector('#notifi');
-        loading.innerHTML='<br><p>Por favor espera, estamos ejecutando el proceso solicitado. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-        errors.innerHTML= '';
-        if(!hasClass(report,'is-hidden')){addClass(report,'is-hidden');}
-        if(!hasClass(notifi,'is-hidden')){addClass(notifi,'is-hidden');}
-        io.socket.post('/generatemanifest',{numbers}, resData =>{
-            loading.innerHTML= '';
-            if (resData.manifest) {
-                const table = document.getElementById('manifest-table');
-                let newrow=[
-                    `<td>
-                        ${resData.manifest}
-                    </td>`,
-                    `<td>
-                        <a href="#" class="has-text-info manifest" manifest=${resData.manifest}><i class="is-size-4 bx bx-printer" manifest=${resData.manifest}></i></a>
-                    </td>`
-                ];
-                let row = table.tBodies[0].insertRow(table.tBodies[0].rows.length);
-                newrow.forEach((cell, index)=>{
-                    row.insertCell(index).innerHTML=cell;
-                });
-                if(hasClass(notifi,'is-hidden')){removeClass(notifi,'is-hidden');}
-            } else {
-                if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-                errors.innerHTML = resData.error ? resData.error : 'Error al procesar el manifiesto';
-            }
-        });
+    let datatable = new simpleDatatables.DataTable('#manifest-table',{
+        searchable:true,
+        sortable:true,
+        paging:true,
+        perPageSelect:[5,10,20,30,50],
+        perPage:50,
+        labels: {
+            placeholder: "Buscar...",
+            perPage: "{select} registros por página",
+            noRows: "No se encontraron datos",
+            info: "Mostrando {start} a {end} de {rows} registros",
+        }
     });
 </script>

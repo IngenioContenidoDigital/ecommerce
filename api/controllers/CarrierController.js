@@ -157,12 +157,14 @@ module.exports = {
   },
   multipleguides: async function(req, res){
     const PDFDocument = require('pdf-lib').PDFDocument;
+    let htmlPdf  = require('html-pdf');
     let orderState = await OrderState.findOne({name: 'aceptado'});
     let state = await OrderState.findOne({name: 'empacado'});
     let stateProcess = await OrderState.findOne({name: 'en procesamiento'});
     const dateStart = req.body.startDate;
     const dateEnd = req.body.endDate;
     let numbers = req.body.numbers;
+    let ordersSelected = req.body.ordersSelected;
     const seller = req.session.user.seller;
     let orders = null;
     try {
@@ -191,16 +193,83 @@ module.exports = {
           },
           sort: 'createdAt DESC'
         });
+      } else if(ordersSelected){
+        orders = await Order.find({
+          where: {
+            seller: seller,
+            channel: ['dafiti'],
+            currentstatus: [orderState.id, stateProcess.id, state.id],
+            id: ordersSelected
+          },
+          sort: 'createdAt DESC'
+        });
       }
       if (orders && orders.length > 0) {
         let documents = [];
         for (const order of orders) {
           let oitems = await OrderItem.find({order:order.id}).populate('product');
           const documentType = oitems[0].shippingType;
-          if (documentType !== 'Cross docking') {
-            if(!order.tracking){
-              await sails.helpers.carrier.shipment(order.id);
+          if(!order.tracking){
+            await sails.helpers.carrier.shipment(order.id);
+          }
+          if (documentType === 'Cross docking' && order.channel === 'dafiti') {
+            const resultOrder = await Order.findOne({id: order.id});
+            if (resultOrder.tracking) {
+              await Order.updateOne({id: order.id}).set({currentstatus: state.id});
+              await OrderHistory.create({order: order.id, state: state.id});
+              let litems = [];
+              let integration = await Integrations.findOne({id: order.integration}).populate('channel');
+              for(let it of oitems){
+                await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
+                if(!litems.includes(it.externalReference)){
+                  litems.push(it.externalReference);
+                }
+              }
+              let route = await sails.helpers.channel.dafiti.sign(order.integration, 'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingLabel']);
+              let respo = await sails.helpers.request(integration.channel.endpoint,'/?'+route,'GET');
+              let result = JSON.parse(respo);
+              if(result.SuccessResponse){
+                const html = `<html lang="en">
+                  <head>
+                    <meta charset="utf-8">
+                    <title>Template Report</title>
+                  </head>
+                  <body>
+                    <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800"
+                    style="
+                      width: 922px; 
+                      height: 800px;
+                      border: 0;
+                      -ms-transform: scale(0.7);
+                      -moz-transform: scale(0.7);
+                      -o-transform: scale(0.7);
+                      -webkit-transform: scale(0.7);
+                      transform: scale(0.7);
+                      -ms-transform-origin: 0 0;
+                      -moz-transform-origin: 0 0;
+                      -o-transform-origin: 0 0;
+                      -webkit-transform-origin: 0 0;
+                      transform-origin: 0 0;
+                    " />
+                  </body>
+                </html>`;
+                const options = {
+                  height: '29cm',
+                  width: '24.7cm',
+                  timeout: '200000'
+                };
+                const createPDF = (html, options) => new Promise(((resolve, reject) => {
+                  htmlPdf.create(html, options).toBuffer((err, buffer) => {
+                    if (err !== null) {reject(err);}
+                    else {resolve(buffer);}
+                  });
+                }));
+
+                const buffer = await createPDF(html, options);
+                documents.push(buffer);
+              }
             }
+          } else {
             const resultOrder = await Order.findOne({id: order.id});
             if (resultOrder.tracking) {
               await Order.updateOne({id: order.id}).set({currentstatus: state.id});
@@ -248,36 +317,104 @@ module.exports = {
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'shipment')){
       throw 'forbidden';
     }
+    let htmlPdf  = require('html-pdf');
     let tracking = req.param('tracking');
     let orders = await Order.find({tracking: tracking});
-    let guia='';
-    for(let order of orders){
-      let oitems = await OrderItem.find({order:order.id});
-      let litems = [];
-      for(let it of oitems){
-        if(!litems.includes(it.externalReference)){
-          litems.push(it.externalReference);
-        }
-      }
-      let route = await sails.helpers.channel.dafiti.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']',`DocumentType=shippingLabel`]);
-      let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
-      let result = JSON.parse(response);
-      if (result.SuccessResponse) {
-        guia = result.SuccessResponse.Body.Documents.Document.File;
+    let guia=null;
+    let oitems = await OrderItem.find({order:orders[0].id});
+    let litems = [];
+    for(let it of oitems){
+      if(!litems.includes(it.externalReference)){
+        litems.push(it.externalReference);
       }
     }
-    return res.send(guia);
+    let route = await sails.helpers.channel.dafiti.sign(orders[0].integration,'GetDocument',orders[0].seller,['OrderItemIds=['+litems.join(',')+']',`DocumentType=shippingLabel`]);
+    let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
+    let result = JSON.parse(response);
+    if (result.SuccessResponse) {
+      const html = `<html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>Template Report</title>
+        </head>
+        <body>
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800" 
+          style="
+            width: 922px; 
+            height: 800px;
+            border: 0;
+            -ms-transform: scale(0.7);
+            -moz-transform: scale(0.7);
+            -o-transform: scale(0.7);
+            -webkit-transform: scale(0.7);
+            transform: scale(0.7);
+            -ms-transform-origin: 0 0;
+            -moz-transform-origin: 0 0;
+            -o-transform-origin: 0 0;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+          " />
+        </body>
+      </html>`;
+      const options = {
+        height: '29cm',
+        width: '24.7cm',
+        timeout: '200000'
+      };
+      htmlPdf.create(html, options).toBuffer((err, buffer) => {
+        if (err) {return console.log(err);}
+        guia = Buffer.from(new Uint8Array(buffer)).toString('base64');
+        return res.view('pages/pdf',{layout:'layouts/admin',guia, label:null});
+      });
+    } else {
+      return res.view('pages/pdf',{layout:'layouts/admin',guia, label:null});
+    }
   },
   showmanifest: async function(req, res){
-    let manifest = req.body.manifest;
+    let htmlPdf  = require('html-pdf');
+    let manifest = req.query.manifest;
     let orders = await Order.find({manifest: manifest});
-    let resultManifest='';
+    let resultManifest=null;
     let sign = await sails.helpers.channel.dafiti.sign(orders[0].integration,'GetManifestDocument',orders[0].seller,['ManifestCode='+manifest]);
     let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+sign,'GET');
     let result = JSON.parse(response);
     if (result.SuccessResponse) {
-      resultManifest = result.SuccessResponse.Body.File;
+      const html = `<html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <title>Template Report</title>
+        </head>
+        <body>
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}" width="922"; height="800"
+          style="
+            width: 922px; 
+            height: 800px;
+            border: 0;
+            -ms-transform: scale(0.7);
+            -moz-transform: scale(0.7);
+            -o-transform: scale(0.7);
+            -webkit-transform: scale(0.7);
+            transform: scale(0.7);
+            -ms-transform-origin: 0 0;
+            -moz-transform-origin: 0 0;
+            -o-transform-origin: 0 0;
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+          " />
+        </body>
+      </html>`;
+      const options = {
+        height: '29cm',
+        width: '24.7cm',
+        timeout: '200000'
+      };
+      htmlPdf.create(html, options).toBuffer((err, buffer) => {
+        if (err) {return console.log(err);}
+        resultManifest = Buffer.from(new Uint8Array(buffer)).toString('base64');
+        return res.view('pages/pdf',{layout:'layouts/admin',guia: resultManifest, label:null});
+      });
+    } else {
+      return res.view('pages/pdf',{layout:'layouts/admin',guia: resultManifest, label:null});
     }
-    return res.send(resultManifest);
   }
 };

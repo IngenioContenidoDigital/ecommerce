@@ -47,9 +47,10 @@ module.exports = {
     const ordersCancel = {total: 0, price:0};
     const ordersReturn = {total: 0, price:0};
     const ordersFailed = {total: 0, price:0};
+    const ordersDelivered = {total: 0, price:0};
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
-
+    const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
     let orders = await Order.find({
       where: {
         seller: inputs.sellerId,
@@ -61,8 +62,8 @@ module.exports = {
       where:{name:['fallido','retornado']},
       select:['id']
     });
+    let status = await OrderState.findOne({name: 'entregado'});
     for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
-
     let ordersCommission = await Order.find({
       where: {
         seller: inputs.sellerId,
@@ -72,6 +73,18 @@ module.exports = {
         updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
       }
     }).populate('currentstatus').populate('customer');
+    let ordersDelv = await Order.find({
+      where: {
+        seller: inputs.sellerId,
+        currentstatus: status.id,
+        integration: inputs.integration,
+        updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
+      }
+    }).populate('currentstatus').populate('customer');
+    for (const order of ordersDelv) {
+      ordersDelivered.total += 1;
+      ordersDelivered.price += order.totalOrder;
+    }
     for (const order of ordersCommission) {
       let items = await OrderItem.find({order: order.id});
       for (const item of items) {
@@ -81,8 +94,8 @@ module.exports = {
         if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
           totalTcComission += item.price / 1.19;
         }
-        if (address.city.name === 'bogota') {
-          totalRetIcaCommission += (commissionFee * (9.66/1000));
+        if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
+          totalRetIcaCommission += (commissionFee * (retIca/1000));
         }
       }
       if(order.currentstatus.name === 'fallido'){
@@ -106,8 +119,8 @@ module.exports = {
           if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
             totalCc += item.price / 1.19;
           }
-          if (address.city.name === 'bogota') {
-            totalRetIca += (commissionFee * (9.66/1000));
+          if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
+            totalRetIca += (commissionFee * (retIca/1000));
           }
           totalPrice += item.price;
         }
@@ -124,23 +137,25 @@ module.exports = {
     }
     const rteIca = (totalCc * 0.19);
     let rteTc = (totalCc * 0.015) + (rteIca * 0.15) + (totalCc * 0.00414);
-
+    let rteTcComission = (totalTcComission * 0.015) + (totalTcComission*0.15) + (totalTcComission * 0.00414);
     const vrBase = (commissionFeeOrdersFailed / 1.19);
-    const totalDiscountOrders = commissionFeeOrdersFailed + (totalTcComission * 0.015) + ((totalTcComission * 0.19)*0.15) - (vrBase * 0.04) - totalRetIcaCommission;
     return exits.success({
       rteTc,
+      rteTcComission,
       totalPrice,
-      totalRetIca,
+      totalRetIca: totalRetIca - totalRetIcaCommission,
       totalCommissionIva: totalCommissionFee,
-      totalCommission: totalCommissionFee/1.19,
+      totalCommission: (totalCommissionFee/1.19) - vrBase,
       ordersCancel,
       ordersReturn,
       ordersFailed,
+      ordersDelivered,
       fleteTotal,
       ordersFailedComission,
       ordersReturnComission,
       ordersCommission,
-      totalDiscountOrders
+      resultOrdersDelivered: ordersDelv,
+      totalDiscountOrders: commissionFeeOrdersFailed
     });
   }
 };

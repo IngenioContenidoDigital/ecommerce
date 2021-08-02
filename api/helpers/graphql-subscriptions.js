@@ -72,6 +72,7 @@ module.exports = {
       }});
 
       await sails.helpers.subscription({ subscription : WOOCOMMERCE_PRODUCTS, callback : async (response)=>{
+       console.log("response", response);
         if (response && response.data && response.data.WoocommerceProducts) {
           let result = response.data.WoocommerceProducts;
           let channel = await Channel.findOne({name: result.channel});

@@ -522,19 +522,19 @@
 <script>
   let imgurl = <%- JSON.stringify(imgurl) %>;
   let user = <%- JSON.stringify(session.user) %>;
-  var start = moment().startOf('month');
-  var end = moment().endOf('month');
-  var ctx1 = document.getElementById('pie-chart-und');
-  var ctx2 = document.getElementById('pie-chart-country');
-  var ctx = document.getElementById('big-line-chart');
-  var chartColors = {
+  let start = moment().startOf('month');
+  let end = moment().endOf('month');
+  let ctx1 = document.getElementById('pie-chart-und');
+  let ctx2 = document.getElementById('pie-chart-country');
+  let ctx = document.getElementById('big-line-chart');
+  let chartColors = {
     default: {
       primary: '#00D1B2',
       info: '#209CEE',
       danger: '#FF3860'
     }
   };
-  var myChartUnd = new Chart(ctx1, {
+  let myChartUnd = new Chart(ctx1, {
     type: 'pie',
     data: {
       datasets: [
@@ -559,7 +559,7 @@
     options: {
     }
   });
-  var myChartPrice = new Chart(ctx2, {
+  let myChartPrice = new Chart(ctx2, {
       type: 'pie',
       data: {
         datasets: [
@@ -584,8 +584,24 @@
       options: {
       }
     });
-  var myChartLine = new Chart(ctx, {
+  let myChartLine = new Chart(ctx, {
     type: 'bar',
+    plugins:[{
+      afterDraw: chart => {
+        let ctx = chart.chart.ctx;
+        ctx.save();
+        ctx.font = "bold 14px Arial";
+        ctx.fillStyle = "gray";
+        let y = 190;
+        
+        ctx.textAlign = 'left';        
+        ctx.fillText('#', 5, y);
+        
+        ctx.textAlign = 'right';
+        ctx.fillText('$', chart.chart.width - 10, y);
+        ctx.restore();
+      }
+    }],
     data: {
       labels: [],
       datasets: [{
@@ -610,7 +626,22 @@
       maintainAspectRatio: false,
       responsive: true,
       title: {display: false},
-      tooltips: {mode: 'index', intersect: false},
+      tooltips: {
+        mode: 'index',
+        intersect: false,
+        callbacks: {
+          label: function(t, d) {
+            let xLabel = d.datasets[t.datasetIndex].label;
+            if (xLabel === 'Valor de las Ventas') {
+              let currency = user.rights.name === 'admin' || user.rights.name === 'superadmin' ? 'USD' : ''
+              let yLabel = t.yLabel >= 1000 ? '$' + t.yLabel.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '$' + t.yLabel;
+              return `${xLabel}: ${yLabel} ${currency}`;
+            } else {
+              return `${xLabel}: ${t.yLabel}`;
+            }
+          }
+        }
+      },
       hover: {mode: 'nearest', intersect: true},
       scales: {
         xAxes: [{display: true, stacked: true, scaleLabel: {display: false, labelString: 'time'}}],
@@ -619,15 +650,24 @@
           id: 'left-axis',
           display: true,
           position: 'left',
-          scaleLabel: {display: true, labelString: '#'}
+          scaleLabel: {display: true, labelString: ''}
         },{
           type: 'linear',
           id: 'right-axis',
           display: true,
           position: 'right',
           stacked:false,
-          scaleLabel: {display: true, labelString: '$'},
-          gridLines: {drawOnChartArea: false}
+          scaleLabel: {display: true, labelString: ''},
+          gridLines: {drawOnChartArea: false},
+          ticks: {
+            callback: function(value, index, values) {
+              if (parseInt(value) >= 1000) {
+                return '$' + value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+              } else {
+                return '$' + value;
+              }
+            }
+          }
         }]
       }
     }
@@ -716,10 +756,12 @@
   function showInfoOrders(data) {
     let dataCh = getChannels(data.channels);
     let dataCit = getCities(data.cities);
-    var totalSales = document.querySelector('#totalSales');
-    var totalProducts = document.querySelector('#totalProducts');
-    var totalOrders = document.querySelector('#totalOrders');
-    totalSales.textContent = '$' + Math.round(data.totalSales).toLocaleString('es-CO');
+    const totalSales = document.querySelector('#totalSales');
+    const totalProducts = document.querySelector('#totalProducts');
+    const totalOrders = document.querySelector('#totalOrders');
+    const rights = '<%- session.user.rights.name %>';
+    const codeCurrency = rights === 'admin' || rights === 'superadmin' ? 'USD' : '';
+    totalSales.textContent = `$ ${Math.round(data.totalSales).toLocaleString('es-CO')} ${codeCurrency}`;
     totalProducts.textContent = data.totalProducts;
     totalOrders.textContent = data.totalOrders;
     
@@ -750,8 +792,9 @@
     var averageHoursLogist = document.querySelector('#averageHoursLogist');
     var averageHoursClient = document.querySelector('#averageHoursClient');
     var averageHoursCellar = document.querySelector('#averageHoursCellar');
-    
-    totalShippingCost.textContent = '$' + Math.round(data.totalShippingCost).toLocaleString('es-CO');
+    const rights = '<%- session.user.rights.name %>';
+    const codeCurrency = rights === 'admin' || rights === 'superadmin' ? 'USD' : '';
+    totalShippingCost.textContent = `$ ${Math.round(data.totalShippingCost).toLocaleString('es-CO')} ${codeCurrency}`;
     totalOrdersReturned.textContent = data.totalOrdersReturned;
     totalOrdersCancel.textContent = data.totalOrdersCancel;
     averageHoursLogist.textContent = data.averageHoursLogist + ' hrs';

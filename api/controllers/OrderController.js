@@ -310,38 +310,38 @@ module.exports = {
     for(let o of orders){
       let track = '';
       let oitems = await OrderItem.find({order:o.id});
+      const currency = await Currency.findOne({id: o.seller.currency});
       const documentType = oitems[0].shippingType;
       o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
       if(o.tracking!==''){
         if (documentType === 'Cross docking') {
-          track = `<a href="#" class="button trackingCrossDocking" tracking=${o.tracking}><span class="icon" tracking=${o.tracking}><i class="bx bx-printer" tracking=${o.tracking}></i></span></a>`;
+          track = `<a href="/shipmentcrossdocking/${o.tracking}" target="_blank" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>`;
         } else {
           track ='<a href="/guia/'+o.tracking+'" target="_blank" class="button"><span class="icon"><i class="bx bx-printer"></i></span></a>';
         }
       }
-      const color = o.manifest ? 'has-text-success' : 'has-text-danger';
-      let manifested =
-      `<div class="icon-text">
-        <span class="icon ${color}">
-          <i class='bx bxs-circle bx-xs'></i>
-        </span>
-      </div>`;
       row = [
+        `<td class="align-middle><div class="field">
+          <input class="is-checkradio is-small is-info" id="checkboxselect${o.id}" data-product="${o.id}" type="checkbox" name="checkboxselect">
+          <label for="checkboxselect${o.id}"></label>
+        </div></td>`,
         '<td scope="row" class="align-middle">'+o.reference+'</td>',
         '<td scope="row" class="align-middle">'+o.channel+'</td>',
         '<td scope="row" class="align-middle">'+o.paymentId ? o.paymentId : ''+'</td>',
-        `<td class="align-middle"><ul>` + manifested + `</ul></td>`,
+        `<td class="align-middle"><ul>${o.manifest}</ul></td>`,
         '<td class="align-middle is-uppercase">'+o.paymentMethod+'</td>',
         '<td class="align-middle">'+o.customer.fullName+'</td>',
         '<td class="align-middle is-capitalized"><p class="container has-text-centered" style="background-color:'+o.currentstatus.color.code+'"><span class="is-size-7 has-text-black has-background-white">'+o.currentstatus.name+'</span></p></td>',
-        '<td class="align-middle is-capitalized has-text-right">$&nbsp;'+Math.round(o.totalOrder).toLocaleString('es-CO')+'</td>',
+        '<td class="align-middle is-capitalized has-text-right">$&nbsp;'+Math.round(o.totalOrder).toLocaleString('es-CO')+ ` ${currency.isocode}` +'</td>',
         '<td class="align-middle">'+moment(o.createdAt).locale('es').format('DD MMMM YYYY HH:mm:ss')+'</td>',
         '<td class="align-middle"><span>'+o.seller.name+'</span></td>',
         '<td class="align-middle"><a href="/order/edit/'+o.id+'" target="_blank" class="button"><span class="icon"><i class="bx bx-duplicate"></i></span></a>'+track+'</td>',
       ];
-      if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(9,1);}
+
+      if(rights.name!=='superadmin' && rights.name!=='admin'){row.splice(10,1);}
       ordersdata.push(row);
     }
+
     return res.send(ordersdata);
   },
   ordermgt: async (req, res) =>{
@@ -593,28 +593,25 @@ module.exports = {
     }
   },
   manifest: async function(req, res){
+    const moment = require('moment');
     const seller = req.session.user.seller;
     let listOrders = [];
     let orders = await Order.find({where: {seller: seller, channel: 'dafiti', manifest: {'!=': ''}}});
     for(let order of orders){
-      if(!listOrders.includes(order.manifest) && order.manifest){
-        listOrders.push(order.manifest);
+      if(!listOrders.some(e => e.manifest === order.manifest) && order.manifest){
+        listOrders.push({manifest: order.manifest, date: order.dateManifest});
       }
     }
-    res.view('pages/orders/manifest',{layout:'layouts/admin', listOrders});
+    res.view('pages/orders/manifest',{layout:'layouts/admin', listOrders, moment});
   },
   generatemanifest: async (req, res) =>{
     const jsonxml = require('jsontoxml');
-    let numbers = req.body.numbers;
+    const moment = require('moment');
     const seller = req.session.user.seller;
-    const result = [];
+    const result = req.body.ordersSelected;
     let listItems = [];
-    numbers = numbers.split(',');
-    numbers.forEach(n => {
-      result.push(parseInt(n));
-    });
     try {
-      let orders = await Order.find({where: {seller: seller, channel: 'dafiti', reference: result}});
+      let orders = await Order.find({where: {id: result, seller: seller, channel: 'dafiti'}});
       for (const order of orders) {
         if (!order.manifest) {
           const orderItems = await OrderItem.find({order:order.id});
@@ -638,9 +635,9 @@ module.exports = {
         await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml).then(async (resData)=>{
           resData = JSON.parse(resData);
           if(resData.SuccessResponse.Body.ManifestCode){
-            const manifest = resData.SuccessResponse.Body.ManifestCode;
+            let manifest = resData.SuccessResponse.Body.ManifestCode;
             for (const order of orders) {
-              await Order.updateOne({id:order.id}).set({manifest:manifest});
+              await Order.updateOne({id:order.id}).set({manifest:manifest, dateManifest: moment().valueOf()});
             }
             return res.send({manifest, error: null});
           }else{

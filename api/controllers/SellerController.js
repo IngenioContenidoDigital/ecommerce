@@ -220,6 +220,33 @@ module.exports = {
       return res.redirect('/sellers/edit/'+id+'?error='+error);
     }
   },
+  settaxes: async (req, res)=>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let id = req.param('seller');
+    try{
+      await Seller.updateOne({id: id}).set({
+        retIca: req.body.retIca ? req.body.retIca : 0,
+        retFte: req.body.retFte ? req.body.retFte : 0
+      });
+    }catch(err){
+      error=err;
+      if(err.code==='badRequest'){
+        await Seller.updateOne({id:id}).set({
+          retIca: req.body.retIca ? req.body.retIca : 0,
+          retFte: req.body.retFte ? req.body.retFte : 0
+        });
+      }
+    }
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/sellers/edit/'+id+'?success=Se Actualizó Correctamente.');
+    }else{
+      return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
   createcommissiondiscount:async (req, res)=>{
     const moment = require('moment');
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
