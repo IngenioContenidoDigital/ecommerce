@@ -550,7 +550,7 @@ module.exports = {
       for (let i = number; i >= 0; i--) {
         let month = moment().subtract(i+1, 'months').locale('es').format('MMMM YYYY');
         let available = moment().subtract(i, 'months').locale('es').format('MMMM YYYY');
-        if (i === 0 && currentDay < 20) {
+        if (i === 0 && currentDay < 5) {
           availableOptions = true;
         }
         months.push({month, available, availableOptions});

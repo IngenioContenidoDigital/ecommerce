@@ -5,6 +5,10 @@ module.exports = {
     seller:{
       type: 'ref',
       required:true
+    },
+    month:{
+      type: 'string',
+      required:true
     }
   },
   exits: {
@@ -16,16 +20,14 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    const moment = require('moment');
     try {
-      let currentDay =  moment().format('DD');
-      if (currentDay == 5) {
-        let month = moment().subtract(1, 'months').locale('es').format('MMMM YYYY');
-        let state = await sails.helpers.orderState('Aceptado');
-        const card = await Token.findOne({user: inputs.seller.id, default: true});
-        const invoice = await Invoice.findOne({seller: inputs.seller.id, state: state, invoice: `CR-${month}`});
-        if (card && !invoice) {
-          let data = await sails.helpers.reportSeller(inputs.seller.id, month);
+      let invoice = null;
+      let state = await sails.helpers.orderState('Aceptado');
+      const card = await Token.findOne({user: inputs.seller.id, default: true});
+      invoice = await Invoice.findOne({seller: inputs.seller.id, state: state, invoice: `CR-${inputs.month}`});
+      if (card) {
+        if (!invoice) {
+          let data = await sails.helpers.reportSeller(inputs.seller.id, inputs.month);
           paymentInfo = {
             token_card: card.token,
             customer_id: card.customerId,
@@ -34,21 +36,21 @@ module.exports = {
             name: card.name,
             last_name: ' ',
             email: inputs.seller.email,
-            bill: `CR-${month}`,
-            description: `Cobro factura ${month}`,
+            bill: `CR-${inputs.month}`,
+            description: `Cobro factura ${inputs.month}`,
             value: data.totalBalance,
             tax: ((data.totalBalance/1.19)*0.19).toString(),
             tax_base: (data.totalBalance/1.19).toString(),
             currency: 'COP',
             dues: '1',
             ip:require('ip').address(),
-            url_confirmation: 'http://localhost:1337/confirmationinvoice',
+            url_confirmation: 'https://1ecommerce.app/confirmationinvoice',
             method_confirmation: 'POST',
           };
           payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
           if(payment.success){
             let state = await sails.helpers.orderState(payment.data.estado);
-            await Invoice.create({
+            const resultInvoice = await Invoice.create({
               reference: payment.data.ref_payco,
               invoice: payment.data.factura,
               state: state,
@@ -57,12 +59,18 @@ module.exports = {
               tax: payment.data.iva,
               seller: inputs.seller.id
             }).fetch();
+            return exits.success({invoice: resultInvoice, error: null});
+          } else {
+            return exits.success({invoice: null, error: payment.data.description});
           }
+        } else {
+          return exits.success({invoice, error: null});
         }
-        return exits.success(true);
+      } else {
+        return exits.success({invoice: null, error: 'No cuenta con Tarjeta para hacer el cobro'});
       }
     } catch (error) {
-      return exits.error(error.menssage);
+      return exits.success({invoice: null, error: error.menssage});
     }
   }
 };

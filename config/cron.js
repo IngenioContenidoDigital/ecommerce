@@ -264,20 +264,20 @@ module.exports.cron = {
       });
     },
     timezone: 'America/Bogota'
-  },
-  collectInvoices: {
-    schedule: '00 00 03 05 * *',
-    onTick: async () => {
-      try {
-        console.log('Iniciando cobro de factura mensual');
-        let sellers = await Seller.find({});
-        for(let i=0; i<sellers.length; i++){
-          await sails.helpers.collectInvoice(sellers[i]);
-        }
-      } catch (err) {
-        console.log(err);
-      }
-    },
-    timezone: 'America/Bogota'
-  },
+  }
+  // collectInvoices: {
+  //   schedule: '00 00 03 05 * *',
+  //   onTick: async () => {
+  //     try {
+  //       console.log('Iniciando cobro de factura mensual');
+  //       let sellers = await Seller.find({});
+  //       for(let i=0; i<sellers.length; i++){
+  //         await sails.helpers.collectInvoice(sellers[i]);
+  //       }
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   },
+  //   timezone: 'America/Bogota'
+  // },
 };
