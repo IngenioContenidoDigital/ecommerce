@@ -124,9 +124,9 @@ module.exports = {
     });
 
     let numberDays = moment(req.param('dateEnd'), 'YYYY/MM/DD').diff(moment(req.param('dateStart'), 'YYYY/MM/DD'), 'days');
-    for (let i = numberDays; i >= 0; i--) {
-      const date1 = moment(req.param('dateEnd')).subtract(i+1, 'days').format('YYYY/MM/DD');
-      const date2 = moment(req.param('dateEnd')).subtract(i, 'days').format('YYYY/MM/DD');
+    for (let i = 0; i < numberDays; i++) {
+      const date1 = moment(req.param('dateStart')).add(i, 'days').format('YYYY/MM/DD');
+      const date2 = moment(req.param('dateStart')).add(i+1, 'days').format('YYYY/MM/DD');
       const day = date1;
       const dateStart = new Date(date1).valueOf();
       const dateEnd = new Date(date2).valueOf();
@@ -228,7 +228,7 @@ module.exports = {
         item.seller = product.seller.name;
         item.dni = product.seller.dni;
         item.product = product.name;
-        item.price = !sellerId ? (item.price*order.conversionRate).toFixed(2) + ' USD' : item.price;
+        item.price = !sellerId ? (item.price*order.conversionRate).toFixed(2) : item.price;
         item.color = product.mainColor ? product.mainColor.name : '';
         item.size = productVariation ? productVariation.variation.col : '';
         item.customer = order.customer.fullName;
@@ -239,7 +239,7 @@ module.exports = {
         item.channelref = order.channelref;
         item.orderref = order.reference;
         item.tracking = order.tracking;
-        item.fleteTotal = !sellerId ? (order.fleteTotal*order.conversionRate).toFixed(2) + ' USD' : order.fleteTotal;
+        item.fleteTotal = !sellerId ? (order.fleteTotal*order.conversionRate).toFixed(2) : order.fleteTotal;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
         ordersItem.push(item);

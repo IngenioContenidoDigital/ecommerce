@@ -31,14 +31,14 @@ module.exports = {
       totalOrders  =  await Order.count({
         seller: inputs.seller,
         createdAt: {
-          '>=': inputs.date,
+          '>': inputs.date,
           '<': inputs.dateEnd
         }
       });
       totalPrice = await Order.sum('totalOrder').where({
         seller: inputs.seller,
         createdAt: {
-          '>=': inputs.date,
+          '>': inputs.date,
           '<': inputs.dateEnd
         }
       });
@@ -46,20 +46,20 @@ module.exports = {
       const orders = await Order.find({
         conversionRate: { '!=' : 0 },
         createdAt: {
-          '>=': inputs.date,
+          '>': inputs.date,
           '<': inputs.dateEnd
         }
       });
       conversionRate = orders[0] ? orders[0].conversionRate : 0;
       totalOrders  =  await Order.count({
         createdAt: {
-          '>=': inputs.date,
+          '>': inputs.date,
           '<': inputs.dateEnd
         }
       });
       totalPrice = await Order.sum('totalOrder').where({
         createdAt: {
-          '>=': inputs.date,
+          '>': inputs.date,
           '<': inputs.dateEnd
         }
       });
