@@ -57,7 +57,7 @@ module.exports = {
         integration: inputs.integration,
         createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
       }
-    }).populate('currentstatus');
+    }).populate('currentstatus').populate('customer');
     let packed= await OrderState.find({
       where:{name:['fallido','retornado']},
       select:['id']
@@ -155,7 +155,8 @@ module.exports = {
       ordersReturnComission,
       ordersCommission,
       resultOrdersDelivered: ordersDelv,
-      totalDiscountOrders: commissionFeeOrdersFailed
+      totalDiscountOrders: commissionFeeOrdersFailed,
+      orders
     });
   }
 };
