@@ -361,6 +361,21 @@ module.exports = {
       return res.notFound(err);
     }
   },
+  generateinvoice:async (req, res) =>{
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
+      throw 'forbidden';
+    }
+    let sellerId = req.param('seller');
+    let month = req.param('month');
+    let seller = await Seller.findOne({id: sellerId});
+    const result = await sails.helpers.collectInvoice(seller, month);
+    if (result.invoice) {
+      return res.send({invoice: result.invoice, error: null});
+    } else {
+      return res.send({invoice: result.invoice, error: result.error});
+    }
+  },
   showreport: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
