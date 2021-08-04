@@ -50,7 +50,7 @@ module.exports = {
     let ordersDelivered = [];
     let orders = [];
     for (const integration of integrations) {
-      const sales = await sails.helpers.salesPerChannel(seller.id, integration.id, dateStart, dateEnd, dateStartCommission, dateEndCommission);
+      const sales = await sails.helpers.salesPerChannel(seller.id, integration, dateStart, dateEnd, dateStartCommission, dateEndCommission);
       if (sales.totalPrice > 0) {
         salesPerChannel.push({channel: integration.channel.name, sales});
       }

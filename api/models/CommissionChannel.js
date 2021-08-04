@@ -9,6 +9,7 @@
   attributes: {
     value:{type:'number',required:true},
     channel:{model:'channel',required:true},
-    seller:{model:'seller',required:true}
+    seller:{model:'seller',required:true},
+    collect:{type:'boolean', defaultsTo:false},
   }
 };
