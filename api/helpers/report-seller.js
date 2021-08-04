@@ -48,8 +48,9 @@ module.exports = {
     const ordersFailedComission = {total: 0, price:0};
     let ordersCommission = [];
     let ordersDelivered = [];
+    let orders = [];
     for (const integration of integrations) {
-      const sales = await sails.helpers.salesPerChannel(seller.id, integration.id, dateStart, dateEnd, dateStartCommission, dateEndCommission);
+      const sales = await sails.helpers.salesPerChannel(seller.id, integration, dateStart, dateEnd, dateStartCommission, dateEndCommission);
       if (sales.totalPrice > 0) {
         salesPerChannel.push({channel: integration.channel.name, sales});
       }
@@ -114,6 +115,7 @@ module.exports = {
       commissionFeeOrdersFailed += sale.sales.totalDiscountOrders;
       ordersCommission = [...ordersCommission, ...sale.sales.ordersCommission];
       ordersDelivered = [...ordersDelivered, ...sale.sales.resultOrdersDelivered];
+      orders = [...orders, ...sale.sales.orders];
     }
     let totalOtherConcepts = totalSku + fleteTotal;
     let resultRetFte = totalSku !== 0 && totalCommission === 0 ? totalRetFte + ((totalOtherConcepts/1.19)*retFte) : totalSku !== 0 ? totalRetFte + (totalOtherConcepts/1.19)*retFte : totalRetFte;
@@ -141,7 +143,8 @@ module.exports = {
       ordersCommission,
       ordersDelivered,
       salesPerChannel,
-      commissionFeeOrdersFailed
+      commissionFeeOrdersFailed,
+      orders
     });
   }
 };

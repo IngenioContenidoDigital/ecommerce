@@ -21,14 +21,17 @@
     <div class="box">
       <div id="loading-block" class="notification is-hidden">
         <i class="fas fa-sync fa-spin"></i>
-          Estamos generando tu informe...
+          Estamos procesando tu solicitud...
           <progress class="progress is-small is-primary" max="100">15%</progress>
+      </div>
+      <div class="notification is-danger is-light is-hidden" id="error">
       </div>
       <table id="reportTable" class="table is-striped is-size-6 is-fullwidth">
         <thead>
           <tr>
             <th>Mes</th>
             <th>Fecha Disponibilidad</th>
+            <th></th>
             <th></th>
             <th></th>
             <th></th>
@@ -61,6 +64,14 @@
                     <i class='bx bxs-file-doc bx-sm'></i>
                   </span>
                   <span>Detalle Excel</span>
+                </button>
+              </td>
+              <td>
+                <button id="generateInvoice" class="button is-rounded is-small is-info" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                  <span class="icon is-small">
+                    <i class='bx bxs-file bx-sm'></i>
+                  </span>
+                  <span>Generar Factura</span>
                 </button>
               </td>
             </tr>
@@ -108,6 +119,30 @@
       let loadingBlock = document.querySelector('#loading-block');
       if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
       window.location.href = "/showreport/" + seller + '/?month=' + month;
+    }
+  });
+
+  live('#generateInvoice','click', function(){
+    if (!this.disabled) {
+      let month = this.getAttribute('monthavailable');
+      let loadingBlock = document.querySelector('#loading-block');
+      if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+      io.socket.post('/generateinvoice', {seller, month}, resData =>{
+        if (resData.invoice) {
+          // saveAs(new Blob([resData],{type:"application/octet-stream"}), `Factura ${name}.pdf`);
+          addClass(loadingBlock,'is-hidden');
+        } else {
+          const divError = document.getElementById('error');
+          divError.textContent = `Error - ${resData.error}`;
+          removeClass(divError, 'is-hidden');
+          addClass(loadingBlock,'is-hidden');
+          setTimeout(function() {
+            if(divError){
+              addClass(divError, 'is-hidden');
+            }
+          }, 4000);
+        }
+      });
     }
   });
 </script>

@@ -49,6 +49,7 @@ module.exports.policies = {
     '*': 'isLoggedIn'
   },
   SellerController:{
+    'confirmationinvoice':true,
     '*': 'isLoggedIn'
   },
   ConversationController:{

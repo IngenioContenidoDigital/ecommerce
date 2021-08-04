@@ -16,6 +16,7 @@ module.exports = {
     mask:{type:'string'},
     frch:{type:'string'},
     dues:{type:'string'},
+    default:{type:'boolean'},
     user:{
       model:'user',
       required:true,

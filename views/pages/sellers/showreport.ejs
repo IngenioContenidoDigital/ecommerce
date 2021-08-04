@@ -49,18 +49,21 @@
     <div class="box">
       <h7 class="has-text-weight-bold title is-7">Reembolsos (CAN)</h7>
       <hr>
-      <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Ordenes Mes Actual:&nbsp;</span></p>
+      <p class="container is-capitalized">
+        <span class="is-capitalized has-text-weight-bold">Ordenes Mes Actual:&nbsp;</span>
+        <span class="icon download-right is-hidden" id="downloadCurrentOrders"><i class='bx bx-loader bx-spin bx-sm'></i></span>
+      </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturn.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Canceladas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersCancel.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersCancel.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailed.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right"> $<%= Math.round(data.ordersFailed.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturn.total %>&nbsp;</p></td><td><a class="has-text-right totalDownload" status="retornado">$<%= Math.round(data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Canceladas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersCancel.total %>&nbsp;</p></td><td><a class="has-text-right totalDownload" status="cancelado">$<%= Math.round(data.ordersCancel.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailed.total %>&nbsp;</p></td><td><a class="has-text-right totalDownload" status="fallido"> $<%= Math.round(data.ordersFailed.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total %>&nbsp;</p></td><td><a class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
         </table>
       </p>
       <p class="container is-capitalized">
         <span class="is-capitalized has-text-weight-bold">Ordenes Entregadas:&nbsp;</span>
-        <span class="icon download-right" id="downloadDelivered"><i class='bx bxs-cloud-download bx-sm'></i></span>
+        <span class="icon download-right is-hidden" id="downloadDelivered"><i class='bx bx-loader bx-spin bx-sm'></i></span>
       </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
@@ -69,20 +72,20 @@
           <% data.salesPerChannel.forEach((sale) =>{ %>
             <% total += sale.sales.ordersDelivered.total %>
             <% price += sale.sales.ordersDelivered.price %>
-            <tr><td><span class="is-size-7">Ordenes Entregadas <%= sale.channel%></span></td><td><p class="has-text-dark has-text-right"><%= sale.sales.ordersDelivered.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(sale.sales.ordersDelivered.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+            <tr><td><span class="is-size-7">Ordenes Entregadas <%= sale.channel%></span></td><td><p class="has-text-dark has-text-right"><%= sale.sales.ordersDelivered.total %>&nbsp;</p></td><td><a class="has-text-right totalDownloadDelivered" channel="<%= sale.channel%>">$<%= Math.round(sale.sales.ordersDelivered.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
           <%})%>
-          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= total %>&nbsp;</p></td><td><a class="has-text-dark has-text-right">$<%= Math.round(price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
         </table>
       </p>
       <p class="container is-capitalized">
         <span class="is-capitalized has-text-weight-bold">Ordenes Mes Anterior:&nbsp;</span>
-        <span class="icon download-right" id="downloadOrders"><i class='bx bxs-cloud-download bx-sm'></i></span>
+        <span class="icon download-right is-hidden" id="downloadOrders"><i class='bx bx-loader bx-spin bx-sm'></i></span>
       </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturnComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailedComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right"> $<%= Math.round(data.ordersFailedComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailedComission.total + data.ordersReturnComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailedComission.price + data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturnComission.total %>&nbsp;</p></td><td><a class="has-text-right totalDownloadCommission" status="retornado">$<%= Math.round(data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailedComission.total %>&nbsp;</p></td><td><a class="has-text-right totalDownloadCommission" status="fallido"> $<%= Math.round(data.ordersFailedComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailedComission.total + data.ordersReturnComission.total %>&nbsp;</p></td><td><a class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailedComission.price + data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
         </table>
       </p>
       <p class="container is-capitalized">
@@ -136,37 +139,52 @@
   </div>
 </div>
 <script>
-  live('#downloadOrders', 'click', function(e){
+  live('.totalDownload', 'click', function(e){
     e.preventDefault();
-    const orders = <%- JSON.stringify(data.ordersCommission) %>;
+    const status = e.target.getAttribute('status');
+    const load = document.querySelector('#downloadCurrentOrders')
+    let orders = <%- JSON.stringify(data.orders) %>;
+    orders = orders.filter(order => order.currentstatus.name === status)
     if (orders.length > 0) {
-      removeClass(e.target,'bxs-cloud-download');
-      addClass(e.target, 'bx-loader');
-      addClass(e.target, 'bx-spin');
+      removeClass(load,'is-hidden');
       io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
-          addClass(e.target,'bxs-cloud-download');
-          removeClass(e.target, 'bx-loader');
-          removeClass(e.target, 'bx-spin');
-          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes.xlsx`);
+          addClass(load,'is-hidden');
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes ${status}.xlsx`);
         }
       });
     }
   });
 
-  live('#downloadDelivered', 'click', function(e){
+  live('.totalDownloadCommission', 'click', function(e){
     e.preventDefault();
-    const orders = <%- JSON.stringify(data.ordersDelivered) %>;
+    const status = e.target.getAttribute('status');
+    let orders = <%- JSON.stringify(data.ordersCommission) %>;
+    const load = document.querySelector('#downloadOrders')
+    orders = orders.filter(order => order.currentstatus.name === status)
     if (orders.length > 0) {
-      removeClass(e.target,'bxs-cloud-download');
-      addClass(e.target, 'bx-loader');
-      addClass(e.target, 'bx-spin');
+      removeClass(load,'is-hidden');
       io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
-          addClass(e.target,'bxs-cloud-download');
-          removeClass(e.target, 'bx-loader');
-          removeClass(e.target, 'bx-spin');
-          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes Entregadas.xlsx`);
+          addClass(load,'is-hidden');
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes ${status}.xlsx`);
+        }
+      });
+    }
+  });
+
+  live('.totalDownloadDelivered', 'click', function(e){
+    e.preventDefault();
+    const channel = e.target.getAttribute('channel');
+    const load = document.querySelector('#downloadDelivered')
+    let orders = <%- JSON.stringify(data.ordersDelivered) %>;
+    orders = orders.filter(order => order.channel === channel)
+    if (orders.length > 0) {
+      removeClass(load,'is-hidden');
+      io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
+        if(jwRes.statusCode == 200) {
+          addClass(load,'is-hidden');
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes Entregadas ${channel}.xlsx`);
         }
       });
     }
