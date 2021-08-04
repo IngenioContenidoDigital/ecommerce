@@ -753,6 +753,7 @@
                   <tr>
                     <th><small>Canal</small></th>
                     <th><small>Comisión</small></th>
+                    <th><small>Recaudo</small></th>
                     <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
                       <th><small>Opciones</small></th>
                     <% } %>
@@ -765,6 +766,21 @@
                         <td><img src="<%=imgurl%>/images/channels/<%= commission.channel.logo %>" width="100px"/></td>
                         <td>
                           <%= commission.value %>
+                        </td>
+                        <td>
+                          <% if(commission.collect){%>
+                            <div class="icon-text">
+                              <span class="icon has-text-success">
+                                <i class='bx bxs-check-circle bx-sm'></i>
+                              </span>
+                            </div>
+                          <%}else{%>
+                            <div class="icon-text">
+                              <span class="icon has-text-danger">
+                                <i class='bx bxs-x-circle bx-sm'></i>
+                              </span>
+                            </div>
+                          <%}%>
                         </td>
                         <%if(rights.name=='superadmin' || rights.permissions.includes('commission')){%>
                           <td>
@@ -834,13 +850,26 @@
                           <div id="img-channels"></div>
                         </div>
                         <br/>
-                        <div class="field">
-                          <label class="label is-size-7">Comisión por Venta</label>
-                          <div class="control has-icons-left">
-                            <input class="input is-size-7" id="commissionValue" type="number" step="any" name="commission" placeholder="Comisión por venta"/>
-                            <span class="icon-input-left is-small is-left">
-                              <i class="bx bxs-offer"></i>
-                            </span>
+                        <div class="columns">
+                          <div class="column">
+                            <div class="field">
+                              <label class="label is-size-7">Comisión por Venta</label>
+                              <div class="control has-icons-left">
+                                <input class="input is-size-7" id="commissionValue" type="number" step="any" name="commission" placeholder="Comisión por venta"/>
+                                <span class="icon-input-left is-small is-left">
+                                  <i class="bx bxs-offer"></i>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="column">
+                            <div class="field">
+                              <div class="control">
+                                <label class="label is-size-7">Con Recaudo</label>
+                                <input id="collect" type="checkbox" name="collect" class="switch is-success">
+                                <label for="collect"></label>
+                              </div>
+                            </div>
                           </div>
                         </div>
                         <div class="control buttons is-right">
@@ -929,6 +958,7 @@
             const channel = document.querySelector('input[name="channel"]');
             const inputIdComm = document.querySelector('input[name="idcommission"]');
             const inputCommission = document.querySelector('#commissionValue');
+            const inputCheck = document.querySelector('#collect');
             const images = document.querySelectorAll('.menu-channel');
             const btn = document.querySelector('#btnCommission');
             const chan = e.target.id;
@@ -939,11 +969,13 @@
             });
             addClass(e.target,'img-multiple');
             if (!commission) {
+              inputCheck.checked = false;
               inputCommission.value = '';
               btn.innerHTML  = `<i class="bx bx-plus-circle"></i>&nbsp;Agregar Comisión`;
             } else {
               inputIdComm.value = commission.id;
               inputCommission.value = commission.value;
+              inputCheck.checked = commission.collect;
               btn.innerHTML  = `<i class='bx bx-edit'></i>&nbsp;Actualizar Comisión`;
             }
           });

@@ -300,13 +300,15 @@ module.exports = {
     try{
       if (req.body.idcommission) {
         await CommissionChannel.updateOne({id: req.body.idcommission}).set({
-          value: req.body.commission
+          value: req.body.commission,
+          collect: (req.body.collect ==='on') ? true : false
         });
       } else {
         await CommissionChannel.create({
           value: req.body.commission,
           channel: req.body.channel,
-          seller: id
+          seller: id,
+          collect: (req.body.collect ==='on') ? true : false
         });
       }
     }catch(err){

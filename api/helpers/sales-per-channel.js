@@ -7,7 +7,7 @@ module.exports = {
       required: true
     },
     integration: {
-      type:'string',
+      type:'ref',
       required: true
     },
     dateStart: {
@@ -51,13 +51,14 @@ module.exports = {
     const ordersReturnComission = {total: 0, price:0};
     const ordersFailedComission = {total: 0, price:0};
     const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
+    let commissionChannel = await CommissionChannel.findOne({seller: inputs.sellerId, channel: inputs.integration.channel.id });
     let orders = await Order.find({
       where: {
         seller: inputs.sellerId,
-        integration: inputs.integration,
+        integration: inputs.integration.id,
         createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
       }
-    }).populate('currentstatus');
+    }).populate('currentstatus').populate('customer');
     let packed= await OrderState.find({
       where:{name:['fallido','retornado']},
       select:['id']
@@ -68,7 +69,7 @@ module.exports = {
       where: {
         seller: inputs.sellerId,
         currentstatus: statesIds,
-        integration: inputs.integration,
+        integration: inputs.integration.id,
         createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndCommission },
         updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
       }
@@ -77,7 +78,7 @@ module.exports = {
       where: {
         seller: inputs.sellerId,
         currentstatus: status.id,
-        integration: inputs.integration,
+        integration: inputs.integration.id,
         updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
       }
     }).populate('currentstatus').populate('customer');
@@ -91,7 +92,7 @@ module.exports = {
         const salesCommission = item.commission || 0;
         const commissionFee = item.price * (salesCommission/100);
         commissionFeeOrdersFailed += commissionFee * 1.19;
-        if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
+        if (order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect) {
           totalTcComission += item.price / 1.19;
         }
         if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
@@ -116,7 +117,7 @@ module.exports = {
           const salesCommission = item.commission || 0;
           let commissionFee = item.price * (salesCommission/100);
           totalCommissionFee += commissionFee * 1.19;
-          if (order.paymentMethod === 'PayuCcPayment' && order.channel === 'dafiti') {
+          if (order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect) {
             totalCc += item.price / 1.19;
           }
           if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
@@ -155,7 +156,8 @@ module.exports = {
       ordersReturnComission,
       ordersCommission,
       resultOrdersDelivered: ordersDelv,
-      totalDiscountOrders: commissionFeeOrdersFailed
+      totalDiscountOrders: commissionFeeOrdersFailed,
+      orders
     });
   }
 };
