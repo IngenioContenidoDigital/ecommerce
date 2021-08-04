@@ -237,14 +237,14 @@ module.exports = {
                   <body>
                     <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800"
                     style="
-                      width: 922px; 
-                      height: 800px;
+                      width: 908px;
+                      height: 900px;
                       border: 0;
-                      -ms-transform: scale(0.68);
-                      -moz-transform: scale(0.68);
-                      -o-transform: scale(0.68);
-                      -webkit-transform: scale(0.68);
-                      transform: scale(0.68);
+                      -ms-transform: scale(0.6);
+                      -moz-transform: scale(0.6);
+                      -o-transform: scale(0.6);
+                      -webkit-transform: scale(0.6);
+                      transform: scale(0.6);
                       -ms-transform-origin: 0 0;
                       -moz-transform-origin: 0 0;
                       -o-transform-origin: 0 0;
@@ -334,16 +334,16 @@ module.exports = {
           <title>Template Report</title>
         </head>
         <body>
-          <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800" 
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" 
           style="
-            width: 922px; 
-            height: 800px;
+            width: 908px;
+            height: 900px;
             border: 0;
-            -ms-transform: scale(0.68);
-            -moz-transform: scale(0.68);
-            -o-transform: scale(0.68);
-            -webkit-transform: scale(0.68);
-            transform: scale(0.68);
+            -ms-transform: scale(0.6);
+            -moz-transform: scale(0.6);
+            -o-transform: scale(0.6);
+            -webkit-transform: scale(0.6);
+            transform: scale(0.6);
             -ms-transform-origin: 0 0;
             -moz-transform-origin: 0 0;
             -o-transform-origin: 0 0;
@@ -377,16 +377,16 @@ module.exports = {
           <title>Template Report</title>
         </head>
         <body>
-          <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}" width="922"; height="800"
+          <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}"
           style="
-            width: 922px; 
-            height: 800px;
+            width: 908px;
+            height: 900px;
             border: 0;
-            -ms-transform: scale(0.7);
-            -moz-transform: scale(0.7);
-            -o-transform: scale(0.7);
-            -webkit-transform: scale(0.7);
-            transform: scale(0.7);
+            -ms-transform: scale(0.6);
+            -moz-transform: scale(0.6);
+            -o-transform: scale(0.6);
+            -webkit-transform: scale(0.6);
+            transform: scale(0.6);
             -ms-transform-origin: 0 0;
             -moz-transform-origin: 0 0;
             -o-transform-origin: 0 0;

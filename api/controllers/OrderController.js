@@ -529,12 +529,13 @@ module.exports = {
     worksheet.columns = [
       { header: 'Id', key: 'id', width: 26 },
       { header: 'Cliente', key: 'customer', width: 35 },
+      { header: 'Número de identificación', key: 'documentcustomer', width: 35 },
       { header: 'Email cliente', key: 'emailcustomer', width: 35 },
       { header: 'Fecha de creación', key: 'createdAt', width: 20 },
       { header: 'Estado', key: 'currentstatus', width: 12 },
       { header: 'Marca', key: 'manufacturer', width: 22 },
       { header: 'Producto', key: 'product', width: 56 },
-      { header: 'Referencia', key: 'externalReference', width: 22 },
+      { header: 'Referencia Producto', key: 'reference', width: 22 },
       { header: 'Color', key: 'color', width: 15 },
       { header: 'Talla', key: 'size', width: 15 },
       { header: 'Precio', key: 'price', width: 12 },
@@ -559,9 +560,11 @@ module.exports = {
         item.id = order.id;
         item.customer = order.customer.fullName;
         item.emailcustomer = order.customer.emailAddress;
+        item.documentcustomer = order.customer.dni;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.currentstatus = order.currentstatus.name;
         item.manufacturer = product.manufacturer.name;
+        item.reference = product.reference;
         item.product = product.name;
         item.color = product.mainColor.name;
         item.size = productVariation ? productVariation.variation.col : '';
