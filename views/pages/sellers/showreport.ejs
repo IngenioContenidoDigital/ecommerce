@@ -55,10 +55,10 @@
       </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturn.total %>&nbsp;</p></td><td><a class="has-text-right totalDownload" status="retornado">$<%= Math.round(data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Canceladas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersCancel.total %>&nbsp;</p></td><td><a class="has-text-right totalDownload" status="cancelado">$<%= Math.round(data.ordersCancel.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailed.total %>&nbsp;</p></td><td><a class="has-text-right totalDownload" status="fallido"> $<%= Math.round(data.ordersFailed.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total %>&nbsp;</p></td><td><a class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturn.total %>&nbsp;</p></td><td class="has-text-right"><a class="totalDownload" status="retornado">$<%= Math.round(data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Canceladas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersCancel.total %>&nbsp;</p></td><td class="has-text-right"><a class="totalDownload" status="cancelado">$<%= Math.round(data.ordersCancel.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailed.total %>&nbsp;</p></td><td class="has-text-right"><a class="totalDownload" status="fallido"> $<%= Math.round(data.ordersFailed.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailed.total + data.ordersCancel.total + data.ordersReturn.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailed.price + data.ordersCancel.price + data.ordersReturn.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
       </p>
       <p class="container is-capitalized">
@@ -72,9 +72,9 @@
           <% data.salesPerChannel.forEach((sale) =>{ %>
             <% total += sale.sales.ordersDelivered.total %>
             <% price += sale.sales.ordersDelivered.price %>
-            <tr><td><span class="is-size-7">Ordenes Entregadas <%= sale.channel%></span></td><td><p class="has-text-dark has-text-right"><%= sale.sales.ordersDelivered.total %>&nbsp;</p></td><td><a class="has-text-right totalDownloadDelivered" channel="<%= sale.channel%>">$<%= Math.round(sale.sales.ordersDelivered.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+            <tr><td><span class="is-size-7">Ordenes Entregadas <%= sale.channel%></span></td><td><p class="has-text-dark has-text-right"><%= sale.sales.ordersDelivered.total %>&nbsp;</p></td><td class="has-text-right"><a class="totalDownloadDelivered" channel="<%= sale.channel%>">$<%= Math.round(sale.sales.ordersDelivered.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
           <%})%>
-          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= total %>&nbsp;</p></td><td><a class="has-text-dark has-text-right">$<%= Math.round(price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
       </p>
       <p class="container is-capitalized">
@@ -83,9 +83,9 @@
       </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturnComission.total %>&nbsp;</p></td><td><a class="has-text-right totalDownloadCommission" status="retornado">$<%= Math.round(data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
-          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailedComission.total %>&nbsp;</p></td><td><a class="has-text-right totalDownloadCommission" status="fallido"> $<%= Math.round(data.ordersFailedComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
-          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailedComission.total + data.ordersReturnComission.total %>&nbsp;</p></td><td><a class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailedComission.price + data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Devueltas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersReturnComission.total %>&nbsp;</p></td><td class="has-text-right"><a class="totalDownloadCommission" status="retornado">$<%= Math.round(data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="is-size-7">Ordenes Fallidas</span></td><td><p class="has-text-dark has-text-right"><%= data.ordersFailedComission.total %>&nbsp;</p></td><td class="has-text-right"><a class="totalDownloadCommission" status="fallido"> $<%= Math.round(data.ordersFailedComission.price).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
+          <tr><td><span class="has-text-weight-bold is-size-6">Subtotal:</span></td><td><p class="has-text-success has-text-right is-size-6"><%= data.ordersFailedComission.total + data.ordersReturnComission.total %>&nbsp;</p></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.ordersFailedComission.price + data.ordersReturnComission.price).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
       </p>
       <p class="container is-capitalized">
