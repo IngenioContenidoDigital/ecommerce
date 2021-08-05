@@ -1233,49 +1233,49 @@ module.exports = {
         prod.ean13 = req.body.product.ean13 ? req.body.product.ean13.toString() : '';
         prod.upc = req.body.product.upc ? parseInt(req.body.product.upc) : 0;
         prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
-        prod.seller = seller;
 
-        let product = await Product.findOne({ reference: prod.supplierreference, seller: seller })
+        let products = await Product.find({ reference: prod.supplierreference, seller: seller })
           .populate('tax')
           .populate('categories');
         let categories = [];
 
-        if (product) {
-          product.categories.forEach(category => {
-            if (!categories.includes(category.id)) {
-              categories.push(category.id);
-            }
-          });
-          prod.product = product.id;
-          prod.price = parseInt(req.body.product.price * (1 + product.tax.value / 100));
-          let variation = await Variation.find({
-            where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, seller: product.seller, manufacturer: product.manufacturer, category: { 'in': categories } },
-            limit: 1
-          });
-          if(!variation || variation.length == 0){
-            variation = await Variation.create({name:req.body.product.variation.toLowerCase().replace(',','.'),gender: product.gender,seller:product.seller,manufacturer:product.manufacturer,category:product.categories[0].id}).fetch();
-          }
-          variation = variation.length > 0 ? variation[0] : variation;
-          prod.variation = variation.id;
-          ProductVariation.findOrCreate({ product: prod.product, variation: prod.variation }, prod)
-            .exec(async (err, productVariat, wasCreated) => {
-              if (err) { throw err; }
-              if (!wasCreated) {
-                let updateVariation = {
-                  supplierreference: prod.supplierreference,
-                  reference: prod.reference,
-                  ean13: prod.ean13,
-                  upc: prod.upc,
-                  quantity: prod.quantity,
-                  variation: prod.variation,
-                  product: prod.product,
-                  price: prod.price,
-                  seller: prod.seller
-                };
-                await ProductVariation.updateOne({ id: productVariat.id }).set(updateVariation);
+        if (products.length > 0) {
+          for (const product of products) {
+            product.categories.forEach(category => {
+              if (!categories.includes(category.id)) {
+                categories.push(category.id);
               }
             });
-          result['items'].push(prod);
+            prod.product = product.id;
+            const tax = product.tax ? product.tax.value : 0
+            prod.price = parseInt(req.body.product.price * (1 + tax / 100));
+            let variation = await Variation.find({
+              where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, seller: product.seller, manufacturer: product.manufacturer, category: { 'in': categories } },
+              limit: 1
+            });
+            if(!variation || variation.length == 0){
+              variation = await Variation.create({name:req.body.product.variation.toLowerCase().replace(',','.'),gender: product.gender,seller:product.seller,manufacturer:product.manufacturer,category:product.categories[0].id}).fetch();
+            }
+            variation = variation.length > 0 ? variation[0] : variation;
+            prod.variation = variation.id;
+            let pvs = await ProductVariation.find({ product:prod.product,supplierreference:prod.supplierreference}).populate('variation');
+            let pv = pvs.find(pv=> pv.variation.name == variation.name);
+            if (!pv) {
+              await ProductVariation.create(prod).fetch();
+            } else {
+              await ProductVariation.updateOne({ id: pv.id }).set({
+                supplierreference: prod.supplierreference,
+                reference: prod.reference,
+                ean13: prod.ean13,
+                upc: prod.upc,
+                quantity: prod.quantity,
+                variation: prod.variation,
+                product: prod.product,
+                price: prod.price
+              });
+            }
+            result['items'].push(prod);
+          }
         } else {
           throw new Error('Producto principal no localizado');
         }
