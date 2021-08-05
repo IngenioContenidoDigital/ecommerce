@@ -90,10 +90,11 @@
       </p>
       <p class="container is-capitalized">
         <span class="is-capitalized has-text-weight-bold">Reintegro Comisiones:&nbsp;</span>
+        <span class="icon download-right is-hidden" id="downloadOrdersAll"><i class='bx bx-loader bx-spin bx-sm'></i></span>
       </p>
       <p class="container is-capitalized">
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Comisión</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.commissionFeeOrdersFailed).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Comisión</span></td><td class="has-text-right"><a class="totalDownloadCommission" status="all">$<%= Math.round(data.commissionFeeOrdersFailed).toLocaleString('es-CO') %>&nbsp;</a></td></tr>
           <tr><td><span class="has-text-weight-bold is-size-6">Subtotal Mes Ant:</span></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.commissionFeeOrdersFailed).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
       </p>
@@ -160,14 +161,19 @@
     e.preventDefault();
     const status = e.target.getAttribute('status');
     let orders = <%- JSON.stringify(data.ordersCommission) %>;
-    const load = document.querySelector('#downloadOrders')
-    orders = orders.filter(order => order.currentstatus.name === status)
+    let load = null;
+    if (status !== 'all') {
+      orders = orders.filter(order => order.currentstatus.name === status)
+      load = document.querySelector('#downloadOrders')
+    } else {
+      load = document.querySelector('#downloadOrdersAll')
+    }
     if (orders.length > 0) {
       removeClass(load,'is-hidden');
       io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
           addClass(load,'is-hidden');
-          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes ${status}.xlsx`);
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes ${status !== 'all' ? status : 'Comisión'}.xlsx`);
         }
       });
     }
