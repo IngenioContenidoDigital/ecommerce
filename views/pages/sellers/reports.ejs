@@ -34,14 +34,16 @@
             <th></th>
             <th></th>
             <th></th>
-            <th></th>
+            <!-- <%if(rights.name=='superadmin' || rights.name=='admin'){%>
+              <th></th>
+            <%}%> -->
           </tr>
         </thead>
         <tbody>
           <% months.forEach((element) =>{ %>
             <tr>
               <td><%= element.month %></td>
-              <td><%= '20 ' + element.available %></td>
+              <td><%= '5 ' + element.available %></td>
               <td>
                 <button id="seeReport" class="button is-rounded is-small is-link" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
                   <span class="icon is-small">
@@ -66,14 +68,16 @@
                   <span>Detalle Excel</span>
                 </button>
               </td>
-              <td>
-                <button id="generateInvoice" class="button is-rounded is-small is-info" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
-                  <span class="icon is-small">
-                    <i class='bx bxs-file bx-sm'></i>
-                  </span>
-                  <span>Generar Factura</span>
-                </button>
-              </td>
+              <!-- <%if(rights.name=='superadmin' || rights.name=='admin'){%>
+                <td>
+                  <button id="generateInvoice" class="button is-rounded is-small is-info" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                    <span class="icon is-small">
+                      <i class='bx bxs-file bx-sm'></i>
+                    </span>
+                    <span>Generar Factura</span>
+                  </button>
+                </td>
+              <%}%> -->
             </tr>
           <%})%>
         </tbody>

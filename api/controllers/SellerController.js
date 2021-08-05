@@ -585,7 +585,7 @@ module.exports = {
         months.push({month, available, availableOptions});
       }
     }
-    res.view('pages/sellers/reports',{layout:'layouts/admin',months,moment,seller});
+    res.view('pages/sellers/reports',{layout:'layouts/admin',months,moment,seller,rights});
 
   },
   createhash: async (req, res) =>{
