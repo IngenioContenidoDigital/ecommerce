@@ -212,7 +212,7 @@ module.exports = {
         }
         return exits.success(body);
       }else{
-        throw 'Producto sin variaciones';
+        throw new Error ('Producto sin variaciones');
       }
     }catch(err){
       return exits.error(err);
