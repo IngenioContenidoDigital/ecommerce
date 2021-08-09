@@ -34,8 +34,11 @@ module.exports = {
     suppliers:{
       collection:'supplier',
       via:'sellers'
-    }
-
+    },
+    documents:{
+      collection: 'documentseller',
+      via: 'seller'
+    },
   },
 
 };

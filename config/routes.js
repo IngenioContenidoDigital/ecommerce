@@ -106,6 +106,9 @@ module.exports.routes = {
   'PUT /seller/:id' : {controller:'SellerController',action:'sellerstate'},
   'POST /seller/edit/:id' : {controller:'SellerController',action:'editseller'},
   'GET /showreports/:id' : {controller:'SellerController',action:'showreports'},
+  'POST /seller/documents' : {controller:'SellerController',action:'adddocuments'},
+  'DELETE /document/remove/:id' : {controller:'SellerController',action:'removedocument'},
+  'GET /seller/showdocument/:document' : {controller:'SellerController', action:'showdocument'},
   'GET /colors/:action?/:id?' : {controller:'ColorController',action:'showcolors'},
   'POST /color/create' : {controller:'ColorController',action:'createcolor'},
   'POST /color/edit/:id' : {controller:'ColorController',action:'editcolor'},
@@ -224,6 +227,7 @@ module.exports.routes = {
 
   'POST /integration/set/:seller/:channel/:namechannel' : {controller:'SellerController',action:'setintegration'},
   'POST /commission/set/:seller' : {controller:'SellerController',action:'setcommission'},
+  'POST /setaddress/:seller' : {controller:'SellerController',action:'setaddressseller'},
   'POST /settaxes/:seller' : {controller:'SellerController',action:'settaxes'},
   'POST /commissiondiscount/create/:seller' : {controller:'SellerController',action:'createcommissiondiscount'},
   'PUT /removecommissiondiscount' : {controller:'SellerController',action:'removecommissiondiscount'},
