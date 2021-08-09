@@ -204,7 +204,7 @@ module.exports = {
             body.Request.push(data);
           }
         }else{
-          throw 'Producto sin Variaciones';
+          throw new Error ('Producto sin variaciones');
         }
       }catch(err){
         console.log(err);

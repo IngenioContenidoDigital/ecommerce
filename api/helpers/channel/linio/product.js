@@ -164,7 +164,7 @@ module.exports = {
             i++;
           }
         }else{
-          throw 'Producto sin variaciones';
+          throw new Error ('Producto sin variaciones');
         }
       }catch(err){
         console.log(err);
