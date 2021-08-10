@@ -450,23 +450,28 @@ module.exports = {
     let seller = null;
     let object = null;
     let iridio = null;
-    let productsFilter = {active:true};
     let skip = ((page-1)*perPage);
     let limit = (((page-1)*perPage)+perPage);
-    if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost'){
-      seller = await Seller.findOne({domain:req.hostname,active:true});
-      if(seller){productsFilter['seller']=seller.id;}
-    }else{
-      iridio = await Channel.findOne({name:'iridio'});
-      let iridioproducts = await ProductChannel.find({
-        where:{
-          channel:iridio.id,
-          status:true
-        },
-        select:['product','integration']
-      });
-      iridioproducts = iridioproducts.map(i => i.product);
-      productsFilter['id'] = iridioproducts;
+    let now = moment().valueOf();
+    if(!req.session.productsFilter || ((now-req.session.productsFilter.updated)<86400000)){
+      req.session.productsFilter = {};
+      req.session.productsFilter.filter = {active:true};
+      if(req.hostname!=='iridio.co' && req.hostname!=='demo.1ecommerce.app' && req.hostname!=='localhost'){
+        seller = await Seller.findOne({domain:req.hostname,active:true});
+        if(seller){req.session.productsFilter.filter['seller']=seller.id;}
+      }else{
+        iridio = await Channel.findOne({name:'iridio'});
+        let iridioproducts = await ProductChannel.find({
+          where:{
+            channel:iridio.id,
+            status:true
+          },
+          select:['product','integration']
+        });
+        iridioproducts = iridioproducts.map(i => i.product);
+        req.session.productsFilter.filter['id'] = iridioproducts;
+      }
+      req.session.productsFilter.updated = moment().valueOf();
     }
 
     switch(entity){
@@ -476,7 +481,7 @@ module.exports = {
             where:{url:ename,active:true},
             select:['name','url','logo','description','tags']
           }).populate('products',{
-            where:productsFilter,
+            where:req.session.productsFilter.filter,
             select:['id'],
             sort: 'updatedAt DESC'
           });
@@ -488,7 +493,7 @@ module.exports = {
       case 'marca':
         try{
           object = await Manufacturer.findOne({url:ename,active:true}).populate('products',{
-            where:productsFilter,
+            where:req.session.productsFilter.filter,
             select:['id'],
             sort: 'updatedAt DESC'
           });
@@ -500,10 +505,10 @@ module.exports = {
       case 'seller':
         seller = await Seller.findOne({id:ename,active:true});
         if(seller){
-          productsFilter.seller = seller.id;
+          req.session.productsFilter.filter['seller'] = seller.id;
           object = {};
           object.products = await Product.find({
-            where:productsFilter,
+            where:req.session.productsFilter.filter,
             select:['id'],
             sort: 'updatedAt DESC'
           });
