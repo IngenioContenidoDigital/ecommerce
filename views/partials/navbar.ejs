@@ -14,7 +14,10 @@
         <span aria-hidden="true"></span>
       </a>
     </div>
-    <div id="navbarContainer" class="navbar-menu"></div>
+    <div id="navmobile" class="is-hidden"><%- req.session.menu.navbarmobile %></div>
+    <div id="navFull" class="is-hidden"><%- req.session.menu.navbar %></div>
+    <div id="navbarContainer" class="navbar-menu">
+    </div>
     <div class="navbar-end has-text-right">
       <div class="navbar-item has-text-centered">        
         <div class="field has-addons is-inline">
@@ -79,33 +82,48 @@
       }
     });
 
-  live('.menu-item','click', e =>{     
+  live('.menu-item-mobile','click', e =>{     
     let menuopt = e.target;
     let mmenu = document.querySelector('aside');
     
-    let oplists = mmenu.querySelectorAll('.menu-item');
-    for(let op of oplists){removeClass(op,'is-active');}
+    let opitems = mmenu.querySelectorAll('.menu-item');
+    for(let op of opitems){
+      if(op!==menuopt){
+        removeClass(op,'is-active');
+        removeClass(op,'has-background-light');
+      }else{
+        addClass(op,'is-active');
+        addClass(op,'has-background-light');
+      }
+    }
 
-    let clist = menuopt.parentNode.querySelector('ul');
-    if(hasClass(clist,'is-hidden')){
-      removeClass(clist,'is-hidden');
-      addClass(menuopt,'is-active');
+    let clist = menuopt.nextElementSibling;
+    if(hasClass(clist,'menu-list')){
+      if(hasClass(clist,'is-hidden')){
+        removeClass(clist,'is-hidden');
+        addClass(menuopt,'is-active');
+      }else{
+        addClass(clist,'is-hidden');
+        removeClass(menuopt,'is-active');
+      }
     }else{
-      addClass(clist,'is-hidden');
-      removeClass(menuopt,'is-active');
+      window.location.href = menuopt.querySelector('a').getAttribute('href');
     }
   });
-  
+
+  const whichMenu = (screen) =>{
+    if(screen<1024){
+      return document.getElementById('navmobile').innerHTML;
+    }else{
+      return document.getElementById('navFull').innerHTML;
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", (event) => {
-    io.socket.post('/buildmenu',{screen:window.innerWidth,hostname:'<%= req.hostname %>'},resData =>{
-      document.querySelector('#navbarContainer').innerHTML=resData;
-    });
+    document.getElementById('navbarContainer').innerHTML = whichMenu(window.innerWidth);
   });
 
   window.addEventListener('resize',() => {
-    io.socket.post('/buildmenu',{screen:window.innerWidth,hostname:'<%= req.hostname %>'},resData =>{
-      document.querySelector('#navbarContainer').innerHTML=resData;
-    });
+    document.getElementById('navbarContainer').innerHTML = whichMenu(window.innerWidth);
   });
-
 </script>

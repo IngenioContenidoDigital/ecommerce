@@ -15,6 +15,11 @@ module.exports = {
     let brands = null;
     let iridio = null;
 
+    let now = moment().valueOf();
+    if(!req.session.menu || (req.session.menu && !req.session.menu.updated) || (req.session.menu && req.session.menu.updated && (now-req.session.menu.updated)>=259200000)){
+      req.session.menu = await sails.helpers.callMenu(req.hostname);
+    }
+
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
     }else if(req.hostname==='iridio.co' || req.hostname==='demo.1ecommerce.app' || req.hostname==='localhost'){
@@ -1039,23 +1044,6 @@ module.exports = {
       default:
         break;
     }
-  },
-  buildmenu : async (req, res) =>{
-    if (!req.isSocket) {
-      return res.badRequest();
-    }
-    let space = parseInt(req.body.screen);
-    
-    if(!req.session.menu){
-      req.session.menu = await sails.helpers.callMenu(req.body.hostname);
-    }
-    
-    if(space<1024){
-      return res.send(req.session.menu.navbarmobile);
-    }else{
-      return res.send(req.session.menu.navbar);
-    }
-    
   },
   downloadexcel: async function (req, res) {
     const Excel = require('exceljs');
