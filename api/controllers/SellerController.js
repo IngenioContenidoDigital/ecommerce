@@ -32,7 +32,7 @@ module.exports = {
       sellers = await Seller.find();
     }
     if(id){
-      seller = await Seller.findOne({id:id}).populate('mainAddress').populate('currency');
+      seller = await Seller.findOne({id:id}).populate('documents').populate('mainAddress').populate('currency');
       if(seller.mainAddress!==undefined && seller.mainAddress!==null){
         seller.mainAddress = await Address.findOne({id:seller.mainAddress.id})
         .populate('country')
@@ -69,18 +69,6 @@ module.exports = {
     let isActive = (req.body.activo==='on') ? true : false;
     let integrationErp = (req.body.integrationErp==='on') ? true : false;
     try{
-
-      let addData = {
-        name:'Principal '+req.body.name.trim().toLowerCase(),
-        addressline1:req.body.addressline1,
-        addressline2:req.body.addressline2,
-        country:req.body.country,
-        region:req.body.region,
-        city:req.body.city,
-        zipcode:req.body.zipcode,
-        notes:req.body.notes
-      };
-
       let sellerData = {
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
@@ -91,7 +79,6 @@ module.exports = {
         domain:req.body.url ? req.body.url : '',
         active:isActive,
         currency : req.body.currency,
-        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp,
         safestock: req.body.safestock ? req.body.safestock : 0
       }
@@ -102,10 +89,6 @@ module.exports = {
       }catch(err){
         console.log(err);
       }
-
-      let address = await Address.findOrCreate({name:addData.name,addressline1:addData.addressline1},addData);
-
-      if(address){sellerData.mainAddress = address.id;}
 
       let seller = await Seller.findOrCreate({dni:sellerData.dni},sellerData);
       return res.redirect('/sellers/edit/'+seller.id);
@@ -123,33 +106,8 @@ module.exports = {
     let isActive = (req.body.activo==='on') ? true : false;
     let integrationErp = (req.body.integrationErp==='on') ? true : false;
     let id = req.param('id');
-    let seller = await Seller.findOne({id:id});
-    let address = null;
-    if(seller.mainAddress!==null){
-      address = await Address.updateOne({id:seller.mainAddress}).set({
-        addressline1:req.body.addressline1,
-        addressline2:req.body.addressline2,
-        country:req.body.country,
-        region:req.body.region,
-        city:req.body.city,
-        zipcode:req.body.zipcode,
-        notes:req.body.notes
-      });
-    }else{
-      address = await Address.create({
-        name:'Principal '+req.body.name.trim().toLowerCase(),
-        addressline1:req.body.addressline1,
-        addressline2:req.body.addressline2,
-        country:req.body.country,
-        region:req.body.region,
-        city:req.body.city,
-        zipcode:req.body.zipcode,
-        notes:req.body.notes
-      }).fetch();
-    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-
       await Seller.updateOne({id:id}).set({
         name:req.body.name.trim().toLowerCase(),
         dni:req.body.dni,
@@ -159,14 +117,11 @@ module.exports = {
         tagManager: req.body.tagManager,
         domain:req.body.url,
         logo: filename[0].filename,
-        mainAddress:address.id,
         active:isActive,
         currency : req.body.currency,
-        skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
         integrationErp,
         safestock: req.body.safestock ? req.body.safestock : 0
       });
-
     }catch(err){
       error=err;
       if(err.code==='badRequest'){
@@ -178,10 +133,8 @@ module.exports = {
           phone:req.body.phone,
           tagManager: req.body.tagManager,
           domain:req.body.url,
-          mainAddress:address.id,
           active:isActive,
           currency : req.body.currency,
-          skuPrice: req.body.skuPrice ? req.body.skuPrice : 0,
           integrationErp,
           safestock: req.body.safestock ? req.body.safestock : 0
         });
@@ -191,6 +144,101 @@ module.exports = {
       return res.redirect('/sellers/edit/'+id);
     }else{
       return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
+  setaddressseller: async function(req, res){
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
+      throw 'forbidden';
+    }
+    let error=null;
+    let id = req.param('seller');
+    try{
+      let seller = await Seller.findOne({id:id});
+      let address = null;
+      if(seller.mainAddress!==null){
+        address = await Address.updateOne({id:seller.mainAddress}).set({
+          addressline1:req.body.addressline1,
+          addressline2:req.body.addressline2,
+          country:req.body.country,
+          region:req.body.region,
+          city:req.body.city,
+          zipcode:req.body.zipcode,
+          notes:req.body.notes
+        });
+      }else{
+        address = await Address.create({
+          name:'Principal '+seller.name.trim().toLowerCase(),
+          addressline1:req.body.addressline1,
+          addressline2:req.body.addressline2,
+          country:req.body.country,
+          region:req.body.region,
+          city:req.body.city,
+          zipcode:req.body.zipcode,
+          notes:req.body.notes
+        }).fetch();
+      }
+      await Seller.updateOne({id:id}).set({mainAddress: address.id});
+    }catch(err){
+      error=err;
+      if(err.code==='badRequest'){
+        await Seller.updateOne({id:id}).set({mainAddress: address.id});
+      }
+    }
+    if (error===undefined || error===null || error.code==='badRequest'){
+      return res.redirect('/sellers/edit/'+id+'?success=Se Actualizó la dirección correctamente.');
+    }else{
+      return res.redirect('/sellers/edit/'+id+'?error='+error);
+    }
+  },
+  adddocuments: async function (req, res) {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'editseller')) {
+      throw 'forbidden';
+    }
+    let id = req.body.id;
+    let route = 'documents/seller/' + id;
+    let result = null;
+    try {
+      let response = await sails.helpers.fileUpload(req, 'document', 12000000, route);
+      for (let i = 0; i < response.length; i++) {
+        await DocumentSeller.create({file: response[i].filename, name: response[i].original, seller: id }).fetch();
+      }
+      result = await DocumentSeller.find({seller: id});
+    } catch (err) {
+      console.log(err);
+    }
+    res.send(result);
+  },
+  showdocument: async function(req, res){
+    try {
+      let axios = require('axios');
+      let documentId = req.param('document');
+      let doc = await DocumentSeller.findOne({id: documentId});
+      let route = `${sails.config.views.locals.imgurl}/documents/seller/${doc.seller}/${doc.file}`;
+      let response = await axios.get(route, { responseType: 'arraybuffer' });
+      let resultDocument = Buffer.from(response.data, 'utf-8').toString('base64');
+      return res.view('pages/pdf',{layout:'layouts/admin',guia: resultDocument, label:null});
+    } catch (err) {
+      console.log(err);
+      return res.view('pages/pdf',{layout:'layouts/admin',guia: null, label:null}); 
+    }
+  },
+  removedocument: async function (req, res) {
+    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
+    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'editseller')) {
+      throw 'forbidden';
+    }
+    let error = null;
+    try {
+      await DocumentSeller.destroyOne({ id: req.param('id') });
+    } catch (err) {
+      error = err;
+    }
+    if (error !== null) {
+      return res.send(error);
+    } else {
+      return res.send('ok');
     }
   },
   setcommission:async (req, res)=>{

@@ -23,6 +23,8 @@
       <div class="product-tab tabs">
         <ul>
           <li class="is-active"><a option="infobasics" >Información General</a></li>
+          <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="address">Dirección</a></li>
+          <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="documents">Documentos</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="commissions">Comisiones</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="taxes">Impuestos</a></li>
@@ -38,7 +40,6 @@
         <% } %>
           <div class="columns">
             <div class="column">
-              <label class="label is-inline is-size-7" for="name">Nombre del Comercio</label>&nbsp;
               <div class="field is-pulled-right">
                 <% if(action=='edit'){ %>
                   <input id="activo" type="checkbox" <% if(seller.active){ %><%= checked="checked" %><% } %> name="activo" class="switch is-rounded is-outlined">
@@ -48,14 +49,19 @@
                   <label for="activo">Seller: <span id="state"><b style="color:green;">activo</b></span></label>  
                 <% } %>
               </div>
-              <div class="control">
-                <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit'){ %>value="<%= seller.name %>"<% }%>/>
-              </div>
             </div>           
           </div>
           <div class="columns">
             <div class="column">
               <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Nombre del Comercio</label>
+                    <div class="control">
+                      <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" <% if(action=='edit'){ %>value="<%= seller.name %>"<% }%>/>
+                    </div>
+                  </div>
+                </div>
                 <div class="column">
                   <div class="field">
                     <label class="label is-size-7">Identificación</label>
@@ -99,13 +105,15 @@
                   </div>
                 </div>
               </div>
-              <div class="field">
-                <label class="label is-size-7">URL</label>
-                <div class="control">
-                  <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
-                </div>
-              </div>
               <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">URL</label>
+                    <div class="control">
+                      <input class="input is-size-7" type="text" name="url" required="true" placeholder="Nombre del contacto principal" <% if(action=='edit'){ %>value="<%= seller.domain %>"<% }%>/>
+                    </div>
+                  </div>
+                </div>
                 <div class="column">
                   <div class="field">
                     <div class="control">
@@ -125,15 +133,61 @@
                 </div>
               </div>
             </div>
+          </div>
+          <div class="columns">
             <div class="column">
               <div class="field">
-                <label class="label is-size-7">Dirección</label>
-                <div class="control">
-                  <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..." <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.addressline1%>"<%}%>/>
+                <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
+                  <label class="file-label">
+                    <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                    <span class="file-cta">
+                      <span class="file-icon">
+                        <i class="bx bx-upload"></i>
+                      </span>
+                      <span class="file-label">
+                        Logotipo
+                      </span>
+                    </span>
+                    <span class="file-name">
+                      No ha cargado ningún archivo.
+                    </span>
+                  </label>
                 </div>
-                <br>
-                <div class="control">
-                    <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.addressline2%>"<%}%>/>
+              </div>
+            </div>
+            <div class="column"></div>
+            <div class="column"></div>
+          </div>
+          <br>
+          <div class="control buttons is-right">
+            <% if(action=='edit'){ %> 
+              <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Seller</button>
+            <% }else if (action=='create'){ %>
+              <button type="submit" id="save-seller" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
+            <% } %>
+          </div>
+        </form>
+      </div>
+      <div class="is-hidden" id="address">
+        <div class="column">
+          <%if(action==='edit'){%>
+            <form method="POST" action="/setaddress/<%=seller.id%>">
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Dirección (Línea 1)</label>
+                    <div class="control">
+                      <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..." <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.addressline1%>"<%}%>/>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Dirección (Línea 2)</label>
+                    <div class="control">
+                      <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.addressline2%>"<%}%>/>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="columns">
@@ -218,35 +272,145 @@
                   <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."><%if(action=='edit' && seller.mainAddress!==null){%><%-seller.mainAddress.notes%><%}%></textarea>
                 </div>
               </div>
+              <div class="control buttons">
+                <button type="submit" class="button is-primary is-size-7"><i class="bx bxs-pencil"></i>&nbsp;Actualizar Dirección</button>
+              </div>
+            </form>
+          <%}%>
+        </div>
+      </div>
+      <div class="is-hidden" id="documents">
+        <%if(action==='edit'){%>
+          <article class="message is-info is-small">
+            <div class="message-header">
+              <p>Información</p>
+              <button class="delete is-small" aria-label="delete"></button>
+            </div>
+            <div class="message-body">
+              Adjunte tus documentos legales en pdf con los siguientes nombres <strong>RUT, Cámara de comercio, Cédula representante legal.</strong>
+            </div>
+          </article>
+          <div class="columns">
+            <div class="column is-centered">
+              <input type="hidden" name="seller-data" id="seller-data" <%if(action=='edit') {%> value="<%=seller.id%>" <%}else{%> value="" <%}%> />
+              <div class="file is-boxed">
+                <label class="file-label">
+                  <input class="file-input" type="file" name="document" multiple accept="application/pdf" />
+                  <span class="file-cta">
+                    <span class="file-icon">
+                      <i class='bx bxs-cloud-upload bx-sm'></i>
+                    </span>
+                    <span class="file-label">
+                      Escoge tus archivos…
+                    </span>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div class="column is-two-thirds">
+              <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
+              <div class="preview">
+                <%if(action=='edit'){%>
+                  <% seller.documents.forEach((i)=>{ %>
+                    <article class="media" id="article<%=i.id%>">
+                      <div class="media-left">
+                        <figure class="image-answer content-figure image radius-image is-64x64 image-ed">
+                          <span class="document-icon">
+                            <i class='bx bxs-file-pdf'></i>
+                          </span>
+                          <a docId="<%=i.id%>" class="icon-delete delete"></a>
+                        </figure>
+                      </div>
+                      <div class="media-content">
+                        <div class="content">
+                          <p><strong><%= i.name %></strong></p>
+                        </div>
+                        <nav class="level is-mobile">
+                          <div class="level-left">
+                            <a class="level-item" aria-label="retweet">
+                              <a href="/seller/showdocument/<%=i.id%>" target="_blank">
+                                <span class="icon is-small">
+                                  <i class='bx bxs-cloud-download bx-sm' aria-hidden="true"></i>
+                                </span>
+                              </a>
+                            </a>
+                          </div>
+                        </nav>
+                      </div>
+                    </article>
+                  <% })%>
+                <%}%>
+              </div>
             </div>
           </div>
-          <div class="field">
-            <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
-              <label class="file-label">
-                <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
-                <span class="file-cta">
-                  <span class="file-icon">
-                    <i class="bx bx-upload"></i>
-                  </span>
-                  <span class="file-label">
-                    Logotipo
-                  </span>
-                </span>
-                <span class="file-name">
-                  No ha cargado ningún archivo.
-                </span>
-              </label>
-            </div>
-          </div>
-          <br>
-          <div class="control buttons is-right">
-            <% if(action=='edit'){ %> 
-              <button type="submit" class="button is-primary"><i class="bx bxs-pencil"></i>&nbsp;Modificar Seller</button>
-            <% }else if (action=='create'){ %>
-              <button type="submit" id="save-seller" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Crear Seller</button>
-            <% } %>
-          </div>
-        </form>
+        <%}%>
+        <script>
+          let fmanager = document.querySelector('input[name="document"]');
+          fmanager.onchange = sendFiles;
+  
+          function sendFiles(e){
+            e.preventDefault();
+            let data = new FormData();
+            let request = new XMLHttpRequest();
+            data.append('id', document.querySelector('#seller-data').value);
+            for(let i=0; i<this.files.length;i++){
+              data.append('document', this.files[i]);
+            }
+            request.addEventListener('load', function(e) {
+              let container = document.querySelector('.preview');
+              container.innerHTML='';
+              let files = JSON.parse(request.response);
+              if (files && files.length) {
+                for(let j=0; j<files.length; j++){
+                  let file = files[j];
+                  let div = document.createElement('article');
+                  addClass(div,'media');
+                  div.innerHTML =
+                    `<div class="media-left">
+                      <figure class="image-answer content-figure image radius-image is-64x64 image-ed">
+                        <span class="document-icon">
+                          <i class='bx bxs-file-pdf'></i>
+                        </span>
+                        <a target="/document/remove/${file.id}" class="icon-delete delete"></a>
+                      </figure>
+                    </div>
+                    <div class="media-content">
+                      <div class="content">
+                        <p><strong>${file.name}</strong></p>
+                      </div>
+                      <nav class="level is-mobile">
+                        <div class="level-left">
+                          <a href="/seller/showdocument/${file.id}" target="_blank">
+                            <span class="icon is-small">
+                              <i class='bx bxs-cloud-download bx-sm' aria-hidden="true"></i>
+                            </span>
+                          </a>
+                        </div>
+                      </nav>
+                    </div>`
+                  container.appendChild(div);
+                };
+              }
+              addClass(document.querySelector('.progress'),'is-hidden');
+            });
+            request.open('POST', '/seller/documents');
+            request.send(data);
+            removeClass(document.querySelector('.progress'),'is-hidden');
+            fmanager.value='';
+          }
+
+          live('.delete','click',function(e){
+            let docId = this.getAttribute('docId');
+            let art = document.querySelector(`#article${docId}`)
+            io.socket.delete(`/document/remove/${docId}`,function(data, Jwres){
+              console.log(data);
+              if(data === 'ok'){
+                art.remove();
+              }
+            });
+          });
+
+        </script>
       </div>
       <div class="is-hidden" id="integrations">
         <p style="text-align: right;font-size: 15px; margin-right: 5px;">            
@@ -1064,35 +1228,37 @@
         </script>
       </div>
       <div class="is-hidden" id="taxes">
-        <form method="POST" action="/settaxes/<%=seller.id%>">
-          <div class="columns">
-            <div class="column">
-              <div class="field">
-                <label class="label is-size-7">Retención Ica</label>
-                <div class="control has-icons-left">
-                  <input class="input is-size-7" type="number" step="any" min='0' name="retIca" placeholder="Porcentaje de Retención ica" <% if(action=='edit'){ %>value="<%= seller.retIca %>"<% }%>/>
-                  <span class="icon-input-left is-small is-left">
-                    <i class='bx bxs-offer'></i>
-                  </span>
+        <%if(action==='edit'){%>
+          <form method="POST" action="/settaxes/<%=seller.id%>">
+            <div class="columns">
+              <div class="column">
+                <div class="field">
+                  <label class="label is-size-7">Retención Ica</label>
+                  <div class="control has-icons-left">
+                    <input class="input is-size-7" type="number" step="any" min='0' name="retIca" placeholder="Porcentaje de Retención ica" <% if(action=='edit'){ %>value="<%= seller.retIca %>"<% }%>/>
+                    <span class="icon-input-left is-small is-left">
+                      <i class='bx bxs-offer'></i>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="column">
+                <div class="field">
+                  <label class="label is-size-7">Retención en la fuente</label>
+                  <div class="control has-icons-left">
+                    <input class="input is-size-7" type="number" step="any" min='0' name="retFte" placeholder="Porcentaje de Retención en la fuente" <% if(action=='edit'){ %>value="<%= seller.retFte %>"<% }%>/>
+                    <span class="icon-input-left is-small is-left">
+                      <i class='bx bxs-offer'></i>
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="column">
-              <div class="field">
-                <label class="label is-size-7">Retención en la fuente</label>
-                <div class="control has-icons-left">
-                  <input class="input is-size-7" type="number" step="any" min='0' name="retFte" placeholder="Porcentaje de Retención en la fuente" <% if(action=='edit'){ %>value="<%= seller.retFte %>"<% }%>/>
-                  <span class="icon-input-left is-small is-left">
-                    <i class='bx bxs-offer'></i>
-                  </span>
-                </div>
-              </div>
+            <div class="control buttons">
+              <button type="submit" class="button is-primary is-size-7"><i class="bx bxs-pencil"></i>&nbsp;Actualizar</button>
             </div>
-          </div>
-          <div class="control buttons">
-            <button type="submit" class="button is-primary is-size-7"><i class="bx bxs-pencil"></i>&nbsp;Actualizar</button>
-          </div>
-        </form>
+          </form>
+        <%}%>
       </div>
       <div class="is-hidden" id="suscriptions">
         <div class="control buttons is-right">
@@ -1109,93 +1275,95 @@
             <img src="/images/paymentlogos.webp">
           </p>
           <div class="content is-size-7">
-            <form action="/createcreditcard/<%=seller.id%>" method="POST">
-              <div class="field">
-                <div class="control has-icons-right">
-                  <input class="input is-small" type="number" name="card" placeholder="Número de la Tarjeta"/>
-                  <span class="icon is-right">
-                    <i class='bx bx-credit-card-front'></i>
-                  </span>
+            <%if(action==='edit'){%>
+              <form action="/createcreditcard/<%=seller.id%>" method="POST">
+                <div class="field">
+                  <div class="control has-icons-right">
+                    <input class="input is-small" type="number" name="card" placeholder="Número de la Tarjeta"/>
+                    <span class="icon is-right">
+                      <i class='bx bx-credit-card-front'></i>
+                    </span>
+                  </div>
                 </div>
-              </div>
-              <div class="columns is-mobile">
-                <div class="column is-5">
-                  <label class="label is-small" for="month">Fecha vencimiento</label>
-                  <div class="control is-inline-block">
-                    <div class="select is-small">
-                      <select name="month">
-                        <%for(let i=1; i<=12; i++){%>
-                          <%if(i<10){%>
-                            <option value="0<%=i%>">0<%=i%></option>
-                          <%}else{%>
+                <div class="columns is-mobile">
+                  <div class="column is-5">
+                    <label class="label is-small" for="month">Fecha vencimiento</label>
+                    <div class="control is-inline-block">
+                      <div class="select is-small">
+                        <select name="month">
+                          <%for(let i=1; i<=12; i++){%>
+                            <%if(i<10){%>
+                              <option value="0<%=i%>">0<%=i%></option>
+                            <%}else{%>
+                              <option value="<%=i%>"><%=i%></option>
+                            <%}%>
+                          <%}%>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="control is-inline-block">
+                      <div class="select is-small">
+                        <% let year = (new Date()).getFullYear() %>
+                        <select name="year">
+                          <%for(let i=year; i<=year+8; i++){%>
                             <option value="<%=i%>"><%=i%></option>
                           <%}%>
-                        <%}%>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="control is-inline-block">
-                    <div class="select is-small">
-                      <% let year = (new Date()).getFullYear() %>
-                      <select name="year">
-                        <%for(let i=year; i<=year+8; i++){%>
-                          <option value="<%=i%>"><%=i%></option>
-                        <%}%>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div class="column is-4">
-                  <label class="label is-small" for="cvv">Cod. seguridad</label>
-                  <div class="field">
-                    <div class="control">
-                      <input class="input is-small" type="number" name="cvv" placeholder="CVV / CVC"/>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="field">
-                <div class="control has-icons-right">
-                  <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
-                  <span class="icon is-right">
-                    <i class='bx bxs-user-rectangle' ></i>
-                  </span>
-                </div>
-              </div>
-              <div class="columns is-mobile">
-                <div class="column is-two-fifths">
-                  <div class="field">
-                    <div class="control">
-                      <div class="select is-small">
-                        <select name="tid">
-                          <option value="CC">CC</option>
-                          <option value="CE">CE</option>
-                          <option value="NIT">NIT</option>
-                          <option value="PPN">PPN</option>
-                          <option value="SSN">SSN</option>
-                          <option value="LIC">LIC</option>
-                          <option value="DNI">DNI</option>
                         </select>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="column is-three-fifths">
-                  <div class="field">
-                    <div class="control has-icons-right">
-                      <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
-                      <span class="icon is-right">
-                        <i class='bx bx-id-card'></i>
-                      </span>
+                  <div class="column is-4">
+                    <label class="label is-small" for="cvv">Cod. seguridad</label>
+                    <div class="field">
+                      <div class="control">
+                        <input class="input is-small" type="number" name="cvv" placeholder="CVV / CVC"/>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <p style="padding:8px;" class="content has-text-centered">
-                <button id="order" class="button is-size-7 is-primary has-text-weight-bold">Guardar Tarjeta</button>
-                <button id="cancel" class="button is-size-7 is-default has-text-weight-bold">Cancelar</button>
-              </p>
-            </form>
+                <div class="field">
+                  <div class="control has-icons-right">
+                    <input class="input is-small" type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
+                    <span class="icon is-right">
+                      <i class='bx bxs-user-rectangle' ></i>
+                    </span>
+                  </div>
+                </div>
+                <div class="columns is-mobile">
+                  <div class="column is-two-fifths">
+                    <div class="field">
+                      <div class="control">
+                        <div class="select is-small">
+                          <select name="tid">
+                            <option value="CC">CC</option>
+                            <option value="CE">CE</option>
+                            <option value="NIT">NIT</option>
+                            <option value="PPN">PPN</option>
+                            <option value="SSN">SSN</option>
+                            <option value="LIC">LIC</option>
+                            <option value="DNI">DNI</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column is-three-fifths">
+                    <div class="field">
+                      <div class="control has-icons-right">
+                        <input class="input is-small" type="number" name="dni" placeholder="Número de identificación"/>
+                        <span class="icon is-right">
+                          <i class='bx bx-id-card'></i>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p style="padding:8px;" class="content has-text-centered">
+                  <button id="order" class="button is-size-7 is-primary has-text-weight-bold">Guardar Tarjeta</button>
+                  <button id="cancelCard" class="button is-size-7 is-default has-text-weight-bold">Cancelar</button>
+                </p>
+              </form>
+            <%}%>
           </div>
         </div>
         <%if(tokens.length>0){%>
@@ -1218,7 +1386,7 @@
           const formCard = document.querySelector('#formcard')
           removeClass(formCard,'is-hidden');
         });
-        live('#cancel','click',function(e){
+        live('#cancelCard','click',function(e){
           e.preventDefault();
           const formCard = document.querySelector('#formcard')
           addClass(formCard,'is-hidden');
