@@ -36,6 +36,7 @@ module.exports = {
     let seller = await Seller.findOne({ id: inputs.sellerId });
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     let statesIds = [];
+    let ordersCommission = [];
     let totalCommissionFee = 0;
     let totalRetIca = 0;
     let fleteTotal = 0;
@@ -59,21 +60,24 @@ module.exports = {
         createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
       }
     }).populate('currentstatus').populate('customer');
-    let packed= await OrderState.find({
-      where:{name:['fallido','retornado']},
-      select:['id']
-    });
     let status = await OrderState.findOne({name: 'entregado'});
-    for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
-    let ordersCommission = await Order.find({
-      where: {
-        seller: inputs.sellerId,
-        currentstatus: statesIds,
-        integration: inputs.integration.id,
-        createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndCommission },
-        updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
-      }
-    }).populate('currentstatus').populate('customer');
+
+    if (commissionChannel && commissionChannel.collect) {
+      let packed= await OrderState.find({
+        where:{name:['fallido','retornado']},
+        select:['id']
+      });
+      for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
+      ordersCommission = await Order.find({
+        where: {
+          seller: inputs.sellerId,
+          currentstatus: statesIds,
+          integration: inputs.integration.id,
+          createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndCommission },
+          updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
+        }
+      }).populate('currentstatus').populate('customer');
+    }
     let ordersDelv = await Order.find({
       where: {
         seller: inputs.sellerId,
@@ -92,7 +96,7 @@ module.exports = {
         const salesCommission = item.commission || 0;
         const commissionFee = item.price * (salesCommission/100);
         commissionFeeOrdersFailed += commissionFee * 1.19;
-        if (order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect) {
+        if (order.paymentMethod === 'PayuCcPayment') {
           totalTcComission += item.price / 1.19;
         }
         if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {

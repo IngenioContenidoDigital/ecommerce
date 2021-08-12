@@ -284,23 +284,27 @@ module.exports.cron = {
     schedule: '01 05 */5 * * *',
     onTick: async () => {
       console.log('Iniciando refrescar token meli');
-      let sellers = await Seller.find({active: true});
-      for (const seller of sellers) {
-        let integrations = await Integrations.find({seller: seller.id, useridml: {'!=': ''}}).populate('channel');
-        for (const integration of integrations) {
-          let params = {
-            'grant_type':'refresh_token',
-            'client_id':integration.user,
-            'client_secret':integration.key,
-            'refresh_token':integration.url,
-          };
-          let response = await sails.helpers.channel.mercadolibre.request('oauth/token',integration.channel.endpoint,'auth',params,'POST').catch((err) =>{
-            console.log(`Error al refrescar token ${integration.name}: ${err.message}`);
-          });
-          if(response){
-            await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token']});
+      try {
+        let sellers = await Seller.find({active: true});
+        for (const seller of sellers) {
+          let integrations = await Integrations.find({seller: seller.id, useridml: {'!=': ''}}).populate('channel');
+          for (const integration of integrations) {
+            let params = {
+              'grant_type':'refresh_token',
+              'client_id':integration.user,
+              'client_secret':integration.key,
+              'refresh_token':integration.url,
+            };
+            let response = await sails.helpers.channel.mercadolibre.request('oauth/token',integration.channel.endpoint,'auth',params,'POST').catch((err) =>{
+              console.log(`Error al refrescar token ${integration.name}: ${err.message}`);
+            });
+            if(response){
+              await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token']});
+            }
           }
         }
+      } catch (error) {
+        console.log(error.message);
       }
     },
     timezone: 'America/Bogota'
