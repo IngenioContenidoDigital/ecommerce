@@ -9,21 +9,38 @@
  * For more information on the Sails logger, check out:
  * https://sailsjs.com/docs/concepts/logging
  */
+const winston = require('winston');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, printf } = format;
 
-module.exports.log = {
+const myFormat = printf(({ level, message, label, timestamp }) => {
+  return `${timestamp} [${label}] ${level}: ${message}`;
+});
 
-  /***************************************************************************
-  *                                                                          *
-  * Valid `level` configs: i.e. the minimum log level to capture with        *
-  * sails.log.*()                                                            *
-  *                                                                          *
-  * The order of precedence for log levels from lowest to highest is:        *
-  * silly, verbose, info, debug, warn, error                                 *
-  *                                                                          *
-  * You may also set the level to "silent" to suppress all logs.             *
-  *                                                                          *
-  ***************************************************************************/
+ const logger = winston.createLogger({
+   level: 'error',
+   format: combine(
+    label({ label: '1ECOMMERCE' }),
+    timestamp(),
+    myFormat
+    ),
+   transports: [
+     new winston.transports.File({ filename: 'error.log', level: 'error'})
+   ],
+ });
+ 
+ //
+ // If we're not in production then log to the `console` with the format:
+ // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
+ //
+ if (process.env.NODE_ENV !== 'production') {
+   logger.add(new winston.transports.Console({
+     format: winston.format.simple(),
+   }));
+ }
 
-  // level: 'info'
-
+ module.exports.log = {
+  level: 'error',
+  custom: logger,
+  inspect: false 
 };
