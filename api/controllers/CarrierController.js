@@ -238,7 +238,7 @@ module.exports = {
                     <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800"
                     style="
                       width: 908px;
-                      height: 900px;
+                      height: 800px;
                       border: 0;
                       -ms-transform: scale(0.6);
                       -moz-transform: scale(0.6);
@@ -253,7 +253,7 @@ module.exports = {
                     " />
                   </body>
                 </html>`;
-                const options = {format: 'Letter', timeout: '200000'};
+                const options = {paginationOffset: 1, format: 'Letter', timeout: '200000'};
                 const createPDF = (html, options) => new Promise(((resolve, reject) => {
                   htmlPdf.create(html, options).toBuffer((err, buffer) => {
                     if (err !== null) {reject(err);}
@@ -337,7 +337,7 @@ module.exports = {
           <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" 
           style="
             width: 908px;
-            height: 900px;
+            height: 800px;
             border: 0;
             -ms-transform: scale(0.6);
             -moz-transform: scale(0.6);
@@ -352,7 +352,7 @@ module.exports = {
           " />
         </body>
       </html>`;
-      const options = {format: 'Letter', timeout: '200000'};
+      const options = {paginationOffset: 1, format: 'Letter', timeout: '200000'};
       htmlPdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {return console.log(err);}
         guia = Buffer.from(new Uint8Array(buffer)).toString('base64');
@@ -380,7 +380,7 @@ module.exports = {
           <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}"
           style="
             width: 908px;
-            height: 900px;
+            height: 800px;
             border: 0;
             -ms-transform: scale(0.6);
             -moz-transform: scale(0.6);
@@ -395,7 +395,7 @@ module.exports = {
           " />
         </body>
       </html>`;
-      const options = {format: 'Letter', timeout: '200000'};
+      const options = {paginationOffset: 1, format: 'Letter', timeout: '200000'};
       htmlPdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {return console.log(err);}
         resultManifest = Buffer.from(new Uint8Array(buffer)).toString('base64');
