@@ -18,6 +18,7 @@
     "bulma": "^0.8.2",
     "bulma-calendar": "^6.0.9",
     "bulma-pageloader": "^0.3.0",
+    "compression": "^1.7.1",
     "crypto-js": "^4.0.0",
     "csvtojson": "^2.0.10",
     "epayco-node": "0.0.7",

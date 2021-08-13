@@ -54,7 +54,8 @@ module.exports.http = {
     //   var middlewareFn = skipper({ strict: true });
     //   return middlewareFn;
     // })(),
+    compress:require('compression')(),
 
   },
-
+  cache: 1296000000,
 };
