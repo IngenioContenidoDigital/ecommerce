@@ -230,30 +230,38 @@ module.exports = {
               let result = JSON.parse(respo);
               if(result.SuccessResponse){
                 const html = `<html lang="en">
-                  <head>
-                    <meta charset="utf-8">
-                    <title>Template Report</title>
-                  </head>
-                  <body>
-                    <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" width="922"; height="800"
-                    style="
-                      width: 908px;
-                      height: 800px;
+                <head>
+                  <meta charset="utf-8">
+                  <title>Template Report</title>
+                </head>
+                <body>
+                  <div style="
+                    position: relative;
+                    width: 100%;
+                    height: 0;
+                    padding-bottom: 56.25%;
+                  ">
+                    <iframe src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" 
+                      frameborder="0" allowfullscreen 
+                      style="
+                      width: 908px; 
+                      height: 752px;
                       border: 0;
-                      -ms-transform: scale(0.6);
-                      -moz-transform: scale(0.6);
-                      -o-transform: scale(0.6);
-                      -webkit-transform: scale(0.6);
-                      transform: scale(0.6);
+                      -ms-transform: scale(0.97);
+                      -moz-transform: scale(0.97);
+                      -o-transform: scale(0.97);
+                      -webkit-transform: scale(0.97);
+                      transform: scale(0.97);
                       -ms-transform-origin: 0 0;
                       -moz-transform-origin: 0 0;
                       -o-transform-origin: 0 0;
                       -webkit-transform-origin: 0 0;
-                      transform-origin: 0 0;
-                    " />
-                  </body>
+                      transform-origin: 0 0;"
+                    ></iframe>
+                  </div>
+                </body>
                 </html>`;
-                const options = {paginationOffset: 1, format: 'Letter', timeout: '200000'};
+                const options = {format: 'Letter', timeout: '200000'};
                 const createPDF = (html, options) => new Promise(((resolve, reject) => {
                   htmlPdf.create(html, options).toBuffer((err, buffer) => {
                     if (err !== null) {reject(err);}
@@ -329,30 +337,38 @@ module.exports = {
     let result = JSON.parse(response);
     if (result.SuccessResponse) {
       const html = `<html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <title>Template Report</title>
-        </head>
-        <body>
-          <embed src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" 
-          style="
-            width: 908px;
-            height: 800px;
+      <head>
+        <meta charset="utf-8">
+        <title>Template Report</title>
+      </head>
+      <body>
+        <div style="
+          position: relative;
+          width: 100%;
+          height: 0;
+          padding-bottom: 56.25%;
+        ">
+          <iframe src="data:text/html;base64,${result.SuccessResponse.Body.Documents.Document.File}" 
+            frameborder="0" allowfullscreen 
+            style="
+            width: 908px; 
+            height: 752px;
             border: 0;
-            -ms-transform: scale(0.6);
-            -moz-transform: scale(0.6);
-            -o-transform: scale(0.6);
-            -webkit-transform: scale(0.6);
-            transform: scale(0.6);
+            -ms-transform: scale(0.97);
+            -moz-transform: scale(0.97);
+            -o-transform: scale(0.97);
+            -webkit-transform: scale(0.97);
+            transform: scale(0.97);
             -ms-transform-origin: 0 0;
             -moz-transform-origin: 0 0;
             -o-transform-origin: 0 0;
             -webkit-transform-origin: 0 0;
-            transform-origin: 0 0;
-          " />
-        </body>
+            transform-origin: 0 0;"
+          ></iframe>
+        </div>
+      </body>
       </html>`;
-      const options = {paginationOffset: 1, format: 'Letter', timeout: '200000'};
+      const options = {format: 'Letter', timeout: '200000'};
       htmlPdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {return console.log(err);}
         guia = Buffer.from(new Uint8Array(buffer)).toString('base64');
@@ -372,30 +388,38 @@ module.exports = {
     let result = JSON.parse(response);
     if (result.SuccessResponse) {
       const html = `<html lang="en">
-        <head>
-          <meta charset="utf-8">
-          <title>Template Report</title>
-        </head>
-        <body>
-          <embed src="data:text/html;base64,${result.SuccessResponse.Body.File}"
-          style="
-            width: 908px;
-            height: 800px;
+      <head>
+        <meta charset="utf-8">
+        <title>Template Report</title>
+      </head>
+      <body>
+        <div style="
+          position: relative;
+          width: 100%;
+          height: 0;
+          padding-bottom: 56.25%;
+        ">
+          <iframe src="data:text/html;base64,${result.SuccessResponse.Body.File}" 
+            frameborder="0" allowfullscreen 
+            style="
+            width: 908px; 
+            height: 752px;
             border: 0;
-            -ms-transform: scale(0.6);
-            -moz-transform: scale(0.6);
-            -o-transform: scale(0.6);
-            -webkit-transform: scale(0.6);
-            transform: scale(0.6);
+            -ms-transform: scale(0.97);
+            -moz-transform: scale(0.97);
+            -o-transform: scale(0.97);
+            -webkit-transform: scale(0.97);
+            transform: scale(0.97);
             -ms-transform-origin: 0 0;
             -moz-transform-origin: 0 0;
             -o-transform-origin: 0 0;
             -webkit-transform-origin: 0 0;
-            transform-origin: 0 0;
-          " />
-        </body>
+            transform-origin: 0 0;"
+          ></iframe>
+        </div>
+      </body>
       </html>`;
-      const options = {paginationOffset: 1, format: 'Letter', timeout: '200000'};
+      const options = {format: 'Letter', timeout: '200000'};
       htmlPdf.create(html, options).toBuffer((err, buffer) => {
         if (err) {return console.log(err);}
         resultManifest = Buffer.from(new Uint8Array(buffer)).toString('base64');

@@ -34,7 +34,7 @@ module.exports = {
           ACL: 'public-read'
         };
         for(let i=0; i<uploadedFiles.length; i++){
-          let filename = uploadedFiles[i].fd.split('\\').pop();
+          let filename = uploadedFiles[i].fd.split('/').pop();
           let data = await sails.helpers.fileReader(uploadedFiles[i].fd);
           params.Body=data;
           params.Key= inputs.route+'/'+filename;
