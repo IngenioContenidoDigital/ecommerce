@@ -522,7 +522,7 @@ module.exports = {
     }
     let colorFilter = {};
     let gendersFilter = {};
-    let brandsFilter = {active:true};
+    let brandsFilter = {};
     let colorList = [];
     let brandsList = [];
     let gendersList = [];
