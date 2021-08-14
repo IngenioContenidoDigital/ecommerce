@@ -2,7 +2,7 @@
 <nav class="navbar" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <%if(req.hostname==='iridio.co' || req.hostname==='localhost'){%>
-        <a class="navbar-item" href="/"><img src="<%=imgurl%>/iridio.png"></a>
+        <a class="navbar-item" href="/"><img src="<%=cdnurl%>/iridio.png"></a>
       <%}else if(req.hostname==='1ecommerce.app'){%>
         <a class="navbar-item" href="/"><img src="/images/1ecommerce-logo.png"></a>
       <%}else{%>
