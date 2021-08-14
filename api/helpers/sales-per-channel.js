@@ -141,8 +141,9 @@ module.exports = {
       }
     }
     const rteIca = (totalCc * 0.19);
+    const rteIcaCommssion = (totalTcComission * 0.19);
     let rteTc = (totalCc * 0.015) + (rteIca * 0.15) + (totalCc * 0.00414);
-    let rteTcComission = (totalTcComission * 0.015) + (totalTcComission*0.15) + (totalTcComission * 0.00414);
+    let rteTcComission = (totalTcComission * 0.015) + (rteIcaCommssion*0.15) + (totalTcComission * 0.00414);
     const vrBase = (commissionFeeOrdersFailed / 1.19);
     return exits.success({
       rteTc,
