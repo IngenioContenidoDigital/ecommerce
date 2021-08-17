@@ -531,34 +531,40 @@ module.exports = {
     if(object.products.length>0){
       object.products = object.products.slice(skip,limit);
       for(let p in object.products){
-        object.products[p] = await Product.findOne({where:{id:object.products[p].id},select:['name','tax','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory']});
-        object.products[p].price = (await ProductVariation.find({product:object.products[p].id}))[0].price;
-        object.products[p].cover= (await ProductImage.find({product:object.products[p].id,cover:1}))[0];
-        let discounts = await sails.helpers.discount(object.products[p].id);
-        if(iridio && discounts){
-          let integrations = await ProductChannel.find({channel:iridio.id,product:object.products[p].id});
-          integrations = integrations.map(itg => itg.integration);
-          discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
-        }
-        object.products[p].discount = discounts ? discounts[0] : null;
-        object.products[p].seller=await Seller.findOne({
-          where:{id:object.products[p].seller},
-          select:['name','active']
-        });
-        object.products[p].mainColor=await Color.findOne({id:object.products[p].mainColor});
-        object.products[p].mainCategory=await Category.findOne({
-          where:{id:object.products[p].mainCategory},
-          select:['name','url','level']
-        });
-        object.products[p].manufacturer=await Manufacturer.findOne({
-          where:{id:object.products[p].manufacturer},
-          select:['name']
-        });
-        object.products[p].gender = await Gender.findOne({id:object.products[p].gender});
+        try {
+          object.products[p] = await Product.findOne({where:{id:object.products[p].id},select:['name','tax','description','descriptionShort','seller','mainColor','manufacturer','gender','reference','mainCategory']});
+          object.products[p].price = (await ProductVariation.find({product:object.products[p].id}))[0].price;
+          object.products[p].cover= (await ProductImage.find({product:object.products[p].id,cover:1}))[0];
+          let discounts = await sails.helpers.discount(object.products[p].id);
+          if(iridio && discounts){
+            let integrations = await ProductChannel.find({channel:iridio.id,product:object.products[p].id});
+            integrations = integrations.map(itg => itg.integration);
+            discounts = discounts.filter((ad)=>{if(ad.integrations && ad.integrations.length > 0 && integrations.length>0 && ad.integrations.some(ai => integrations.includes(ai.id))){return ad;}});
+          }
+          object.products[p].discount = discounts ? discounts[0] : null;
+          object.products[p].seller=await Seller.findOne({
+            where:{id:object.products[p].seller},
+            select:['name','active']
+          });
+          object.products[p].mainColor=await Color.findOne({id:object.products[p].mainColor});
+          object.products[p].mainCategory=await Category.findOne({
+            where:{id:object.products[p].mainCategory},
+            select:['name','url','level']
+          });
+          object.products[p].manufacturer=await Manufacturer.findOne({
+            where:{id:object.products[p].manufacturer},
+            select:['name']
+          });
+          object.products[p].gender = await Gender.findOne({id:object.products[p].gender});
 
-        if(object.products[p].mainColor && !colorList.includes(object.products[p].mainColor.id)){colorList.push(object.products[p].mainColor.id);}
-        if(object.products[p].manufacturer && !brandsList.includes(object.products[p].manufacturer.id)){brandsList.push(object.products[p].manufacturer.id);}
-        if(object.products[p].gender && !gendersList.includes(object.products[p].gender.id)){gendersList.push(object.products[p].gender.id);}
+          if(object.products[p].mainColor && !colorList.includes(object.products[p].mainColor.id)){colorList.push(object.products[p].mainColor.id);}
+          if(object.products[p].manufacturer && !brandsList.includes(object.products[p].manufacturer.id)){brandsList.push(object.products[p].manufacturer.id);}
+          if(object.products[p].gender && !gendersList.includes(object.products[p].gender.id)){gendersList.push(object.products[p].gender.id);}
+        }catch(err){
+          console.log(err);
+          await Product.updateOne({id:object.products[p].id}).set({active:false});
+          delete object.products[p];
+        }
       }
     }
 
