@@ -564,6 +564,7 @@ module.exports = {
           console.log(err);
           await Product.updateOne({id:object.products[p].id}).set({active:false});
           delete object.products[p];
+          continue;
         }
       }
     }
