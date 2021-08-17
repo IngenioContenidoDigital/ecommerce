@@ -4,6 +4,7 @@ let shopify = require('../graphql/shopify');
 let woocommerce = require('../graphql/woocommerce');
 let vtex = require('../graphql/vtex');
 let prestashop = require('../graphql/prestashop');
+let magento = require('../graphql/magento');
 
 let signRequest = (data, query) => {
   let rootQuery;
@@ -41,15 +42,24 @@ let signRequest = (data, query) => {
         }, 'secret'),
         query: rootQuery
       };
-      case 'prestashop':
-        rootQuery = prestashop[query];
-        return {
-          token: jwt.sign({
-            url: data.apiUrl,
-            apiKey: data.pk,
-          }, 'secret'),
-          query: rootQuery
-        };
+    case 'prestashop':
+      rootQuery = prestashop[query];
+      return {
+        token: jwt.sign({
+          url: data.apiUrl,
+          apiKey: data.pk,
+        }, 'secret'),
+        query: rootQuery
+      };
+    case 'magento':
+      rootQuery = magento[query];
+      return {
+        token: jwt.sign({
+          shopName: data.apiUrl,
+          password: data.pk
+        }, 'secret'),
+        query: rootQuery
+      };
     default:
       break;
   }
@@ -65,7 +75,7 @@ let fetch = async (data) => {
     }).catch((e) => reject(e));
 
     if (response && response.data && response.data.data[Object.keys(response.data.data)[0]] != null) {
-        return resolve(response.data.data[Object.keys(response.data.data)[0]]);
+      return resolve(response.data.data[Object.keys(response.data.data)[0]]);
     }else{
       reject(new Error(`Error en la peticion con el servidor : ${data.apiUrl} obteniendo el recurso ${data.resource}`));
     }

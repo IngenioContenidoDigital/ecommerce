@@ -598,75 +598,116 @@
             let formIntegration = document.querySelector('#form-integration');
             formIntegration.innerHTML = '';
             <%if(action==='edit'){%>
-              let form = 
-              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
-                <div class="container">
-                  <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
-                  <div class="field">
-                    <label class="label">Nombre</label>
-                    <div class="control has-icons-left">
-                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
-                      <span class="icon is-small is-left">
-                        <i class='bx bx-collapse' ></i>
-                      </span>
+              let form = ``;
+              if (nameChannel === 'magento') {
+                form = 
+                `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
+                  <div class="container">
+                    <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
+                    <div class="field">
+                      <label class="label">Nombre</label>
+                      <div class="control has-icons-left">
+                        <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-collapse' ></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">Access Token</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="key" placeholder="Access Token" value="${edit ? integration.key : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-key' ></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">URL Petición</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="url" placeholder="Url de Petición" required value="${edit ? integration.url : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-world'></i>
+                        </span>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="control is-left">
+                      <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
                     </div>
                   </div>
-                  <div class="field">
-                    <label class="label">Consumer key</label>
-                    <div class="control has-icons-left">
-                      <input class="input" type="text" name="key" placeholder="Consumer key" value="${edit ? integration.key : ''}"/>
-                      <span class="icon is-small is-left">
-                        <i class='bx bx-key' ></i>
-                      </span>
+                </form>`
+              } else {
+                form = 
+                `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
+                  <div class="container">
+                    <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
+                    <div class="field">
+                      <label class="label">Nombre</label>
+                      <div class="control has-icons-left">
+                        <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-collapse' ></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">Consumer key</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="key" placeholder="Consumer key" value="${edit ? integration.key : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-key' ></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">Consumer secret</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="secret" placeholder="Consumer secret" required value="${edit ? integration.secret : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-key' ></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">URL Petición</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="url" placeholder="Url de Petición" required value="${edit ? integration.url : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-world'></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">Versión</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="version" placeholder="Versión" value="${edit ? integration.version : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-world'></i>
+                        </span>
+                      </div>
+                    </div>
+                    ${ nameChannel !== 'vtex' ? `<div id="productUpdates" class="field">
+                      <div class="control">
+                        <label class="label">Obtener actualizaciones de productos.</label>
+                        <input id="getProductUpdates" type="checkbox" ${(integration && integration.product_webhook_status) ? 'checked' : ''} name="getProductUpdates" class="switch is-success">
+                        <label for="getProductUpdates"></label>
+                      </div>
+                    </div> ` : ``}
+                    <div id="orderUpdates" class="field">
+                      <div class="control">
+                        <label class="label">Obtener actualizaciones de pedidos.</label>
+                        <input id="getOrderUpdates" type="checkbox" ${(integration && integration.order_webhook_status) ? 'checked' : ''} name="getOrderUpdates" class="switch is-success">
+                        <label for="getOrderUpdates"></label>
+                      </div>
+                    </div> 
+                    <br>
+                    <div class="control is-left">
+                      <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
                     </div>
                   </div>
-                  <div class="field">
-                    <label class="label">Consumer secret</label>
-                    <div class="control has-icons-left">
-                      <input class="input" type="text" name="secret" placeholder="Consumer secret" required value="${edit ? integration.secret : ''}"/>
-                      <span class="icon is-small is-left">
-                        <i class='bx bx-key' ></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <label class="label">URL Petición</label>
-                    <div class="control has-icons-left">
-                      <input class="input" type="text" name="url" placeholder="Url de Petición" required value="${edit ? integration.url : ''}"/>
-                      <span class="icon is-small is-left">
-                        <i class='bx bx-world'></i>
-                      </span>
-                    </div>
-                  </div>
-                  <div class="field">
-                    <label class="label">Versión</label>
-                    <div class="control has-icons-left">
-                      <input class="input" type="text" name="version" placeholder="Versión" value="${edit ? integration.version : ''}"/>
-                      <span class="icon is-small is-left">
-                        <i class='bx bx-world'></i>
-                      </span>
-                    </div>
-                  </div>
-                  ${ nameChannel !== 'vtex' ? `<div id="productUpdates" class="field">
-                    <div class="control">
-                      <label class="label">Obtener actualizaciones de productos.</label>
-                      <input id="getProductUpdates" type="checkbox" ${(integration && integration.product_webhook_status) ? 'checked' : ''} name="getProductUpdates" class="switch is-success">
-                      <label for="getProductUpdates"></label>
-                    </div>
-                  </div> ` : ``}
-                  <div id="orderUpdates" class="field">
-                    <div class="control">
-                      <label class="label">Obtener actualizaciones de pedidos.</label>
-                      <input id="getOrderUpdates" type="checkbox" ${(integration && integration.order_webhook_status) ? 'checked' : ''} name="getOrderUpdates" class="switch is-success">
-                      <label for="getOrderUpdates"></label>
-                    </div>
-                  </div> 
-                  <br>
-                  <div class="control is-left">
-                    <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
-                  </div>
-                </div>
-              </form>`
+                </form>`
+              }
               div.innerHTML = form;
               formIntegration.appendChild(div);
             <%}%>

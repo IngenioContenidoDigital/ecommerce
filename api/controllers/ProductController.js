@@ -19,6 +19,8 @@ const constants = {
   VTEX_CHANNEL: sails.config.custom.VTEX_CHANNEL,
   PRESTASHOP_PAGESIZE: sails.config.custom.PRESTASHOP_PAGESIZE,
   PRESTASHOP_CHANNEL: sails.config.custom.PRESTASHOP_CHANNEL,
+  MAGENTO_PAGESIZE : sails.config.custom.MAGENTO_PAGESIZE,
+  MAGENTO_CHANNEL : sails.config.custom.MAGENTO_CHANNEL,
   TIMEOUT_PRODUCT_TASK: 4000000,
   TIMEOUT_IMAGE_TASK: 8000000,
 };
@@ -1089,7 +1091,8 @@ module.exports = {
         req.body.channel === constants.WOOCOMMERCE_CHANNEL ? constants.WOOCOMMERCE_PAGESIZE :
         req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE :
         req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE :
-        req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE : 0;
+        req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE :
+        req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE : 0;
       let next;
 
       switch (importType) {
@@ -2556,10 +2559,6 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          if(p.reference == "EVWG5H444*"){
-            console.log(p);
-          }
-
           if(p.color && p.color.length > 0 && !p.simple && req.body.channel == constants.WOOCOMMERCE_CHANNEL){
             let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                 req.body.channel,
@@ -2675,7 +2674,9 @@ module.exports = {
             }
           }else{
             try {
-              let product = await Product.findOne({externalId : p.externalId, seller : seller}).catch((e)=>{
+              let product = p.externalId ? await Product.findOne({externalId: p.externalId, seller: seller}).catch((e)=>{
+                throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
+              }) : await Product.findOne({reference: p.reference, seller: seller}).catch((e)=>{
                 throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
               });
               if(product &&  await ProductImage.count({product:product.id}) == 0){
