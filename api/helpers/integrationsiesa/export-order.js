@@ -51,7 +51,7 @@ module.exports = {
               <f431_codigo_barras>${item.productvariation.ean13}</f431_codigo_barras>
               <f431_id_ext1_detalle></f431_id_ext1_detalle>
               <f431_id_ext2_detalle></f431_id_ext2_detalle>
-              <f431_id_motivo>${order.channel === 'dafiti' ? 19 : order.channel === 'linio' ? 20 : order.channel === 'mercadolibre' ? 21 : 13 }</f431_id_motivo>
+              <f431_id_motivo>${item.product.name.includes('tapabocas') ? 17 : order.channel === 'dafiti' ? 19 : order.channel === 'linio' ? 20 : order.channel === 'mercadolibre' ? 21 : 13 }</f431_id_motivo>
               <f431_id_un_movto></f431_id_un_movto>
               <f431_fecha_entrega>${deliveryDate}</f431_fecha_entrega>
               <f431_num_dias_entrega>5</f431_num_dias_entrega>
@@ -59,7 +59,7 @@ module.exports = {
               <f431_cant_pedida_base>${item.quantity}</f431_cant_pedida_base>
               <f431_precio_unitario>${unitPrice}</f431_precio_unitario>
             </Movto_Pedidos_Comercial>`;
-          const tax = address.region.iva ? '' : `
+          const tax = address.region.iva || item.product.name.includes('tapabocas') ? '' : `
             <Impuestos>
               <F430_CONSEC_DOCTO>1</F430_CONSEC_DOCTO>
               <F431_NRO_REGISTRO>${i+1}</F431_NRO_REGISTRO>
