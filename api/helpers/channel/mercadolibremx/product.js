@@ -69,7 +69,7 @@ module.exports = {
         let promotions = null;
         if (inputs.action==='ProductUpdate' || inputs.action==='Update') {
           let pchannel = await ProductChannel.findOne({product:inputs.product,integration:inputs.integration});
-          if(pchannel && pchannel.channelid){
+          if(pchannel && pchannel.channelid && pchannel.status){
             promotions = await sails.helpers.channel.mercadolibremx.request(`seller-promotions/items/${pchannel.channelid}`,integration.channel.endpoint,integration.secret);
           }
         }
