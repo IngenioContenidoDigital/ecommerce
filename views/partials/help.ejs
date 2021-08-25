@@ -1,0 +1,51 @@
+<div style="position:fixed; bottom: 5px; right:5px; max-width: 200px;" class="container">
+    <div class="columns is-mobile is-vcentered">
+        <div class="column is-8">
+            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 1</span></a>
+            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
+            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
+            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
+            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
+        </div>
+        <div class="column is-4">
+            <a class="icon is-large has-text-info is-size-1 is-pulled-right"><i class='bx bxs-help-circle'></i></a>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-helper">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+      <p class="image is-4by3">
+        <img src="https://bulma.io/images/placeholders/1280x960.png" alt="">
+      </p>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+
+<script>
+    live('.icon','click', e =>{
+        let group = e.target.parentNode.parentNode.parentNode.querySelectorAll('.tag');
+        let items = group.length;
+        for(let t of group){
+            if(hasClass(t.parentNode,'is-invisible')){
+                removeClass(t.parentNode,'is-invisible');
+            }else{
+                addClass(t.parentNode,'is-invisible');
+            }
+        }
+    });
+
+    live('.helper','click', e =>{
+        e.preventDefault;
+        let tag = e.target;
+        let modal = document.querySelector('.modal-helper');
+        console.log(modal);
+        if(!hasClass(modal,'is-active')){addClass(modal,'is-active')}
+    });
+
+    live('.modal-close','click', e =>{
+        let modal = document.querySelector('.modal-helper');
+        removeClass(modal,'is-active')
+    });
+</script>
