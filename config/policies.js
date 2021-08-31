@@ -25,6 +25,7 @@ module.exports.policies = {
     /*'showreports': 'isLoggedIn',*/
     'showreport': 'isLoggedIn',
     'reportsadmin': 'isLoggedIn',
+    'generatelink': 'isLoggedIn',
     '*': true
   },
   FrontController:{'*':'isLoggedIn'},
@@ -35,7 +36,11 @@ module.exports.policies = {
   ChannelController:{'*': 'isLoggedIn'},
   CampaignController:{'*': 'isLoggedIn'},
   MessageController:{'*': 'isLoggedIn'},
-  CountriesController:{'*': 'isLoggedIn'},
+  CountriesController:{
+    'countryregions':true,
+    'regioncities':true,
+    '*': 'isLoggedIn'
+  },
   DiscountController:{'*': 'isLoggedIn'},
   ManufacturersController:{'*': 'isLoggedIn'},
   FeaturesController:{'*': 'isLoggedIn'},
@@ -50,6 +55,14 @@ module.exports.policies = {
   },
   SellerController:{
     'confirmationinvoice':true,
+    'registersellerform': true,
+    'registerseller': true,
+    'setaddressseller': true,
+    'adddocuments': true,
+    'removedocument': true,
+    'createcreditcard': true,
+    'collectregister': true,
+    'generateKey': true,
     '*': 'isLoggedIn'
   },
   ConversationController:{

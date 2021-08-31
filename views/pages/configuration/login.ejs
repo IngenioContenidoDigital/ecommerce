@@ -12,7 +12,7 @@
             <input type="hidden" <%if(typeof referer!=='string'){%>value="/"<%}else{%>value="<%=referer%>"<%}%> name="referer" />
             <input type="hidden" name="facebookToken" value="" />
             <input type="hidden" name="facebookName" value="" />
-              <a class="link is-pulled-right" href="/register<%if(typeof referer==='string'){%>?referer=<%=referer%><%}%>">Crear una cuenta</a>
+              <a class="link is-pulled-right" id="createAccount" href="">Crear una cuenta</a>
               <div class="field">
                 <label class="label">Email</label>
                 <div class="control has-icons-left has-icons-right">
@@ -67,6 +67,18 @@
   </div>
 </div>
 <script>
+  if (window.location.host === 'localhost:1337' || window.location.host === '1ecommerce.app') {
+    io.socket.post(`/generatekey`, {text: 'bronze'}, function (resData, jwRes) {
+      if(jwRes.statusCode == 200){
+        if (resData && resData.key) {
+          document.getElementById("createAccount").href = `/registerseller/${resData.key}`;
+        } 
+      }
+    });
+  } else {
+    document.getElementById("createAccount").href = "/register";
+  }
+
   live('#eye','click',e =>{
         let pass = document.querySelector('.pass');
         if(pass.type==='password'){

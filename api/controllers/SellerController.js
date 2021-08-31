@@ -1,4 +1,3 @@
-
 /**
  * SellerController
  *
@@ -93,7 +92,6 @@ module.exports = {
       let seller = await Seller.findOrCreate({dni:sellerData.dni},sellerData);
       return res.redirect('/sellers/edit/'+seller.id);
     }catch(err){
-      console.log(err);
       return res.redirect('/sellers?error='+err.message);
     }
   },
@@ -118,9 +116,9 @@ module.exports = {
         domain:req.body.url,
         logo: filename[0].filename,
         active:isActive,
-        currency : req.body.currency,
         integrationErp,
-        safestock: req.body.safestock ? req.body.safestock : 0
+        safestock: req.body.safestock ? req.body.safestock : 0,
+        currency: req.body.currency
       });
     }catch(err){
       error=err;
@@ -134,9 +132,9 @@ module.exports = {
           tagManager: req.body.tagManager,
           domain:req.body.url,
           active:isActive,
-          currency : req.body.currency,
           integrationErp,
-          safestock: req.body.safestock ? req.body.safestock : 0
+          safestock: req.body.safestock ? req.body.safestock : 0,
+          currency: req.body.currency
         });
       }
     }
@@ -147,12 +145,9 @@ module.exports = {
     }
   },
   setaddressseller: async function(req, res){
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'editseller')){
-      throw 'forbidden';
-    }
     let error=null;
     let id = req.param('seller');
+    let type = req.body.type;
     try{
       let seller = await Seller.findOne({id:id});
       let address = null;
@@ -186,16 +181,12 @@ module.exports = {
       }
     }
     if (error===undefined || error===null || error.code==='badRequest'){
-      return res.redirect('/sellers/edit/'+id+'?success=Se Actualizó la dirección correctamente.');
+      return type && type === 'register' ? res.send('ok') : res.redirect('/sellers/edit/'+id+'?success=Se Actualizó la dirección correctamente.');
     }else{
-      return res.redirect('/sellers/edit/'+id+'?error='+error);
+      return type && type === 'register' ? res.send({error}) : res.redirect('/sellers/edit/'+id+'?error='+error);
     }
   },
   adddocuments: async function (req, res) {
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'editseller')) {
-      throw 'forbidden';
-    }
     let id = req.body.id;
     let route = 'documents/seller/' + id;
     let result = null;
@@ -225,10 +216,6 @@ module.exports = {
     }
   },
   removedocument: async function (req, res) {
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'editseller')) {
-      throw 'forbidden';
-    }
     let error = null;
     try {
       await DocumentSeller.destroyOne({ id: req.param('id') });
@@ -694,11 +681,8 @@ module.exports = {
     return res.redirect('/cms');
   },
   createcreditcard: async (req, res) =>{
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'creditcard')){
-      throw 'forbidden';
-    }
     let id = req.param('seller');
+    let type = req.body.type;
     try {
       const seller = await Seller.findOne({id: id}).populate('mainAddress');
       const city = await City.findOne({id: seller.mainAddress.city});
@@ -712,9 +696,9 @@ module.exports = {
       let token = await sails.helpers.payment.tokenize(creditInfo);
       if (tokens.length > 0) {
         const addDefaultCardCustomer = {
-          franchise : token.card.name,
-          token : token.id,
-          mask : token.card.mask,
+          franchise: token.card.name,
+          token: token.id,
+          mask: token.card.mask,
           customer_id: tokens[0].customerId
         };
         const epayco = await sails.helpers.payment.init('CC');
@@ -759,10 +743,9 @@ module.exports = {
           default: true
         });
       }
-      return res.redirect(`/sellers/edit/${id}?success=Se agrego correctamente la tarjeta`);
+      return type && type === 'register' ? res.send('ok') : res.redirect(`/sellers/edit/${id}?success=Se agrego correctamente la tarjeta`);
     } catch (err) {
-      console.log(err);
-      return res.redirect(`/sellers/edit/${id}?error=${err.message}`);
+      return type && type === 'register' ? res.send({error: err.message}) : res.redirect(`/sellers/edit/${id}?error=${err.message}`);
     }
   },
   confirmationinvoice: async(req, res)=>{
@@ -777,4 +760,164 @@ module.exports = {
     }
     return res.ok();
   },
+  registersellerform: async(req, res)=>{
+    let key = req.param('key');
+    let countries = await Country.find();
+    let currencies = await Currency.find();
+    return res.view('pages/configuration/registerseller',{countries, currencies, key});
+  },
+  registerseller: async(req, res)=>{
+    try{
+      const moment = require('moment');
+      const getMac = require('getmac');
+      let country = await Country.findOne({id:req.body.country});
+      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
+      if (req.body.seller && req.body.user) {
+        await Seller.updateOne({id: req.body.seller}).set({
+          name: req.body.name.trim().toLowerCase(),
+          dni: req.body.dni,
+          contact: req.body.contact,
+          email: req.body.email,
+          phone: req.body.phone,
+          logo: filename[0].filename,
+          currency: req.body.currency,
+          active: false
+        });
+        await User.updateOne({id: req.body.user}).set({
+          emailAddress: req.body.email,
+          password: await sails.helpers.passwords.hashPassword(req.body.password),
+          fullName: req.body.contact,
+          dni: req.body.dni,
+          mobilecountry: country.id,
+          mobile: req.body.phone,
+          active: false
+        });
+        await TermsAndConditions.updateOne({seller: req.body.seller}).set({
+          date: moment().format('YYYY-MM-DD'),
+          hour: moment().format('LTS'),
+          mac: getMac.default(),
+          ip: require('ip').address(),
+          accept: req.body.terms,
+        });
+        return res.send({error: null, seller: req.body.seller, user: req.body.user});
+      } else {
+        let sellerData = {
+          name: req.body.name.trim().toLowerCase(),
+          dni: req.body.dni,
+          contact: req.body.contact,
+          email: req.body.email,
+          phone: req.body.phone,
+          active: false,
+          logo: filename[0].filename,
+          currency: req.body.currency
+        };
+
+        let seller = await Seller.findOrCreate({dni: sellerData.dni}, sellerData);
+        let profile = await Profile.findOne({name:'operaciones'});
+        let user = await User.findOrCreate({emailAddress: req.body.email},{
+          emailAddress: req.body.email,
+          emailStatus: 'confirmed',
+          password: await sails.helpers.passwords.hashPassword(req.body.password),
+          fullName: req.body.contact,
+          dniType: 'NIT',
+          dni: req.body.dni,
+          mobilecountry: country.id,
+          mobile: req.body.phone,
+          mobileStatus: 'confirmed',
+          seller: seller.id,
+          profile: profile.id,
+          active: false
+        });
+        await TermsAndConditions.create({
+          date: moment().format('YYYY-MM-DD'),
+          hour: moment().format('LTS'),
+          mac: getMac.default(),
+          ip: require('ip').address(),
+          accept: req.body.terms,
+          seller: seller.id
+        });
+        return res.send({error: null, seller: seller.id, user: user.id});
+      }
+    }catch(err){
+      return res.status(404).send(err.message);
+    }
+  },
+  collectregister: async(req, res)=>{
+    try {
+      let id = req.param('seller');
+      const key = req.body.key;
+      const seller = await Seller.findOne({id: id}).populate('currency');
+      const user = await User.findOne({seller: id, emailAddress: seller.email});
+      const card = await Token.findOne({user: id, default: true});
+      const resultPlan = await sails.helpers.encryptDecryptKey(key, 'decrypt');
+      if (card) {
+        if (resultPlan) {
+          const priceUSD = resultPlan === 'gold' ? 230 : resultPlan === 'silver' ? 122 : 22;
+          let exchangeRate = await sails.helpers.currencyConverter('USD', seller.currency.isocode);
+          let price = (priceUSD*exchangeRate.result).toFixed(2);
+          paymentInfo = {
+            token_card: card.token,
+            customer_id: card.customerId,
+            doc_type: card.docType,
+            doc_number: card.docNumber,
+            name: card.name,
+            last_name: ' ',
+            email: seller.email,
+            bill: `CR-Register`,
+            description: `Cobro por registro de cuenta`,
+            value: price,
+            tax: ((price/1.19)*0.19).toString(),
+            tax_base: (price/1.19).toString(),
+            currency: 'COP',
+            dues: '1',
+            ip:require('ip').address(),
+            url_confirmation: 'https://1ecommerce.app/confirmationinvoice',
+            method_confirmation: 'POST',
+          };
+          let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
+          if(payment.success && payment.data.estado === 'Aceptada'){
+            await User.updateOne({id: user.id}).set({active: true});
+            await Seller.updateOne({id: seller.id}).set({active: true});
+            let state = await sails.helpers.orderState(payment.data.estado);
+            await Invoice.create({
+              reference: payment.data.ref_payco,
+              invoice: payment.data.factura,
+              state: state,
+              paymentMethod: payment.data.franquicia,
+              total: payment.data.valor,
+              tax: payment.data.iva,
+              seller: seller.id
+            }).fetch();
+            req.session.user = user;
+            req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+            return res.send({});
+          } else {
+            await User.updateOne({id: user.id}).set({active: false});
+            await Seller.updateOne({id: seller.id}).set({active: false});
+            return res.send({error: payment.status ? payment.data.respuesta : payment.data.description});
+          }
+        } else {
+          return res.send({error: 'No existe una clasificación para el cliente'});
+        }
+      } else {
+        return res.send({error: 'No cuenta con Tarjeta para hacer el cobro'});
+      }
+    } catch (error) {
+      return res.send({error: error.menssage});
+    }
+  },
+  generateKey: async(req, res)=>{
+    let error = null;
+    let key = '';
+    try {
+      key = await sails.helpers.encryptDecryptKey(req.body.text, 'encrypt');
+    } catch (err) {
+      error = err;
+    }
+    if (error !== null) {
+      return res.send({error, key});
+    } else {
+      return res.send({error, key});
+    }
+  }
 };

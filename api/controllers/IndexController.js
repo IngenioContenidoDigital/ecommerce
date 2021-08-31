@@ -19,7 +19,7 @@ module.exports = {
     if(!req.session.menu || (req.session.menu && !req.session.menu.updated) || (req.session.menu && req.session.menu.updated && (now-req.session.menu.updated)>=259200000)){
       req.session.menu = await sails.helpers.callMenu(req.hostname);
     }
-
+    
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
     }else if(req.hostname==='iridio.co' || req.hostname==='demo.1ecommerce.app' || req.hostname==='localhost'){
@@ -1079,5 +1079,8 @@ module.exports = {
     }
     const buffer = await workbook.xlsx.writeBuffer();
     return res.send(buffer);
+  },
+  generatelink: async function (req, res) {
+    res.view('pages/configuration/generatelink', {layout:'layouts/admin'});
   }
 };

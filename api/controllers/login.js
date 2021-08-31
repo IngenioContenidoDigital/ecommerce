@@ -70,7 +70,7 @@ and exposed as \`req.me\`.)`
     // (note that we lowercase it to ensure the lookup is always case-insensitive,
     // regardless of which database we're using)
     let userRecord = null;
-    userRecord = await User.findOne({emailAddress: inputs.emailAddress.toLowerCase().trim(),});
+    userRecord = await User.findOne({emailAddress: inputs.emailAddress.toLowerCase().trim()});
     if(!userRecord){
       if(inputs.facebookToken!=='' || inputs.facebookToken!==null || inputs.facebookToken!==undefined){
         return exits.success('/register?mail='+inputs.emailAddress.toLowerCase().trim()+'&name='+inputs.facebookName+'&facebook=true');
@@ -84,6 +84,9 @@ and exposed as \`req.me\`.)`
       }catch(err){
         return exits.badCombo({error:err.code+' La Contraseña es incorrecta'});
       }
+    }
+    if (userRecord && !userRecord.active) {
+      return exits.badCombo({error: 'El Usuario esta inactivo'});
     }
     if (inputs.rememberMe) {
       if (this.req.isSocket) {

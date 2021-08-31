@@ -110,7 +110,7 @@
     live('.dropdown, .button, .button > span','click', e=>{
         let elm = e.target;
         let parent = elm.closest('.dropdown');
-        if(hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
+        if(parent && hasClass(parent.querySelector('.dropdown-menu'),'is-invisible')){
           removeClass(parent.querySelector('.dropdown-menu'),'is-invisible');
         }
         if(e.target.tagName==='I'){elm = e.target.parentNode.parentNode}
@@ -119,7 +119,7 @@
         if(!hasClass(node,'is-active')){
             let id = elm.getAttribute('product');
             let content = elm.parentNode.parentNode.querySelector('.dropdown-content')
-            if(content.children.length<1){
+            if(content && content.children.length<1){
                 io.socket.get('/findproductvariations/'+id,resData=>{
                     let o = document.createElement('a');
                     addClass(o,'dropdown-item');

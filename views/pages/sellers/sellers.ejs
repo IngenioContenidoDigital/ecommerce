@@ -49,7 +49,7 @@
                   <label for="activo">Seller: <span id="state"><b style="color:green;">activo</b></span></label>  
                 <% } %>
               </div>
-            </div>           
+            </div>
           </div>
           <div class="columns">
             <div class="column">
@@ -137,6 +137,7 @@
           <div class="columns">
             <div class="column">
               <div class="field">
+                <label class="label is-size-7">Logotipo</label>
                 <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
                   <label class="file-label">
                     <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
@@ -155,7 +156,21 @@
                 </div>
               </div>
             </div>
-            <div class="column"></div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-size-7">Moneda</label>
+                <div class="control">
+                  <div class="select is-fullwidth is-size-7">
+                    <select required class="select is-capitalized" name="currency">
+                      <option value="0">Elegir Moneda</option>
+                      <% currencies.forEach((currency) =>{ %>
+                        <option class="is-capitalized" <%=(seller && seller.currency && seller.currency.id == currency.id) ? 'selected="selected"' : '' %> value="<%=currency.id%>"><%=currency.name%></option>
+                      <%})%>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div class="column"></div>
           </div>
           <br>
@@ -242,34 +257,21 @@
                 </div>
               </div>
               <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Código Postal</label>
-                      <div class="control">
-                        <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección" <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.zipcode%>"<%}%>/>
-                      </div>
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Código Postal</label>
+                    <div class="control">
+                      <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección" <%if(action=='edit' && seller.mainAddress!==null){%>value="<%=seller.mainAddress.zipcode%>"<%}%>/>
                     </div>
                   </div>
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Moneda</label>
-                      <div class="control">
-                        <div class="select is-fullwidth is-size-7">
-                          <select required class="select is-capitalized" name="currency">
-                            <option value="0">Elegir Moneda</option>
-                            <% currencies.forEach((currency) =>{ %>
-                              <option class="is-capitalized" <%=(seller && seller.currency && seller.currency.id == currency.id) ? 'selected="selected"' : '' %> value="<%=currency.id%>"><%=currency.name%></option>
-                            <%})%>
-                          </select>
-                        </div>
-                      </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
+                    <div class="control">
+                      <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."><%if(action=='edit' && seller.mainAddress!==null){%><%-seller.mainAddress.notes%><%}%></textarea>
                     </div>
                   </div>
-              </div>
-              <div class="field">
-                <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
-                <div class="control">
-                  <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."><%if(action=='edit' && seller.mainAddress!==null){%><%-seller.mainAddress.notes%><%}%></textarea>
                 </div>
               </div>
               <div class="control buttons">
@@ -403,7 +405,6 @@
             let docId = this.getAttribute('docId');
             let art = document.querySelector(`#article${docId}`)
             io.socket.delete(`/document/remove/${docId}`,function(data, Jwres){
-              console.log(data);
               if(data === 'ok'){
                 art.remove();
               }
