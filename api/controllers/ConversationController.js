@@ -295,7 +295,6 @@ module.exports = {
       }
       return res.send(response);
     } catch (err) {
-      console.log(err);
       return res.status(404).send(err.message);
     }
   }

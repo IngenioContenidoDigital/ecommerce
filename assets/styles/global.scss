@@ -639,3 +639,21 @@ article > .content:hover{cursor:pointer;}
     width: 58px;
     margin: 0px 16px -14px 0px;
 }
+
+.step-title {
+    font-size: 15px !important;
+}
+
+.container-card {
+    margin: auto;
+}
+
+.container-link {
+    margin: 15px;
+}
+
+@media screen and (min-width: 769px){
+    .modal-terms {
+        width: 950px !important;
+    }
+}

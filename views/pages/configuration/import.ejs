@@ -373,14 +373,13 @@
 		addDivReport();
 		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
 		io.socket.post('/import',{importType, discount, asColor, channel, apiUrl, pk, sk, version, seller}, (resData, jwRes) =>{
-			console.log("resdata", resData);
 			if(jwRes.statusCode==200){
 				removeClass(box,'is-hidden');
 				document.querySelector('.loading').innerHTML='';
 				
 				if(resData.error){
 					document.querySelector('#error-from-cms').innerHTML = resData.error;
-					return removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+					removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
 				}
 
 				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)

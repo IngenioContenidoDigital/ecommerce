@@ -274,6 +274,12 @@ module.exports.routes = {
   'POST /message/create' : {controller:'MessageController',action:'createmessage'},
   'POST /message/edit/:id' : {controller:'MessageController',action:'editmessage'},
 
+  'GET /registerseller/:key' : {controller:'SellerController',action:'registersellerform'},
+  'POST /registerseller' : {controller:'SellerController',action:'registerseller'},
+  'POST /collectregister/:seller' : {controller:'SellerController',action:'collectregister'},
+  'POST /generatekey' : {controller:'SellerController',action:'generateKey'},
+  'GET /generatelink' : {controller:'IndexController', action:'generatelink'}
+
   /* ----- FIN ADMIN ROUTES  -----*/
 
   /***************************************************************************
