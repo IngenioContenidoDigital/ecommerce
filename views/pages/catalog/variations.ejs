@@ -174,24 +174,25 @@
         const notif = document.querySelector('#notification')
         brand.querySelector('select').innerHTML='<option value="">-- Elegir Marca --</option>';
         addClass(brand,'is-hidden');
-
-        io.socket.get('/find/brand/'+seller,resdata =>{
-          if(resdata.length>0){
-            for(let b of resdata){
-              let option = document.createElement('option');
-              option.value = b.id;
-              option.innerHTML = b.name
-              brand.querySelector('select').appendChild(option);
+        if (seller) {
+          io.socket.get('/find/brand/'+seller,resdata =>{
+            if(resdata.length>0){
+              for(let b of resdata){
+                let option = document.createElement('option');
+                option.value = b.id;
+                option.innerHTML = b.name
+                brand.querySelector('select').appendChild(option);
+              }
+              removeClass(brand,'is-hidden');
+            } else {
+              notif.innerHTML = 'El Seller debe tener una marca asociada para continuar';
+              removeClass(notif, 'is-hidden');
+              setTimeout(function() {
+                addClass(notif,'is-hidden');
+              }, 5000);
             }
-            removeClass(brand,'is-hidden');
-          } else {
-            notif.innerHTML = 'Debes crear una marca para el seller para continuar';
-            removeClass(notif, 'is-hidden');
-            setTimeout(function() {
-              addClass(notif,'is-hidden');
-            }, 5000);
-          }
-        });
+          });
+        }
       });
     </script>
 <%}else{%>
