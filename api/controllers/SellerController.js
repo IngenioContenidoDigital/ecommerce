@@ -852,9 +852,9 @@ module.exports = {
       const resultPlan = await sails.helpers.encryptDecryptKey(key, 'decrypt');
       if (card) {
         if (resultPlan) {
-          const priceUSD = resultPlan === 'gold' ? 230 : resultPlan === 'silver' ? 122 : 22;
-          let exchangeRate = await sails.helpers.currencyConverter('USD', seller.currency.isocode);
-          let price = (priceUSD*exchangeRate.result).toFixed(2);
+          const priceUSD = resultPlan === 'gold' ? 849900 : resultPlan === 'silver' ? 449900 : 79900;
+          //let exchangeRate = await sails.helpers.currencyConverter('USD', seller.currency.isocode);
+          let price = priceUSD.toFixed(2); //(priceUSD*exchangeRate.result).toFixed(2);
           paymentInfo = {
             token_card: card.token,
             customer_id: card.customerId,
