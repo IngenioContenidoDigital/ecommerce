@@ -12,9 +12,9 @@
             <div class="select is-fullwidth is-size-7">
               <select required class="select is-capitalized" name="plan">
                 <option value="">-- Elegir --</option>
-                <option value="bronze">Bronce</option>
-                <option value="silver">Plata</option>
-                <option value="gold">Oro</option>
+                <% plans.forEach((plan) =>{ %>
+                  <option class="is-capitalized" value="<%=plan.id%>"><%= plan.name %></option>
+                <%})%>
               </select>
             </div>
           </div>

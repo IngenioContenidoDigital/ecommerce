@@ -197,7 +197,7 @@ module.exports.routes = {
   'POST /generatemanifest': {controller:'OrderController', action:'generatemanifest'},
   'GET /respuesta' : {controller: 'OrderController', action: 'response'},
   'POST /confirmacion' : {controller:'OrderController', action:'confirmation', csrf:false},
-  'POST /confirmationinvoice' : {controller:'SellerController', action:'confirmationinvoice', csrf:false},
+  'POST /confirmationinvoice/:action' : {controller:'SellerController', action:'confirmationinvoice', csrf:false},
   'POST /verifyorder' : {controller:'OrderController', action:'verifyorder'},
   'POST /guideprocess/:id' : {controller:'OrderController', action:'guideprocess'},
   'GET /discounts/:action?/:id?' : {controller:'DiscountController',action:'discounts'},
@@ -278,7 +278,11 @@ module.exports.routes = {
   'POST /registerseller' : {controller:'SellerController',action:'registerseller'},
   'POST /collectregister/:seller' : {controller:'SellerController',action:'collectregister'},
   'POST /generatekey' : {controller:'SellerController',action:'generateKey'},
-  'GET /generatelink' : {controller:'IndexController', action:'generatelink'}
+  'GET /generatelink' : {controller:'IndexController', action:'generatelink'},
+
+  'GET /plans/:action?/:id?' : {controller:'PlanController',action:'showplans'},
+  'POST /plan/create' : {controller:'PlanController',action:'createplan'},
+  'POST /plan/edit/:id' : {controller:'PlanController',action:'editplan'}
 
   /* ----- FIN ADMIN ROUTES  -----*/
 

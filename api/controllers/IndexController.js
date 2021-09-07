@@ -1153,6 +1153,7 @@ module.exports = {
     return res.send(buffer);
   },
   generatelink: async function (req, res) {
-    res.view('pages/configuration/generatelink', {layout:'layouts/admin'});
+    const plans = await Plan.find({});
+    res.view('pages/configuration/generatelink', {layout:'layouts/admin', plans});
   }
 };

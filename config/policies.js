@@ -34,6 +34,7 @@ module.exports.policies = {
   CategoryController:{'*': 'isLoggedIn'},
   ColorController:{'*': 'isLoggedIn'},
   ChannelController:{'*': 'isLoggedIn'},
+  PlanController:{'*': 'isLoggedIn'},
   CampaignController:{'*': 'isLoggedIn'},
   MessageController:{'*': 'isLoggedIn'},
   CountriesController:{
