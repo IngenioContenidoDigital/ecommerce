@@ -708,6 +708,12 @@ module.exports = {
       { header: 'Vendedor', key: 'seller', width: 35 },
       { header: 'Estado', key: 'currentstatus', width: 12 },
       { header: 'Precio', key: 'price', width: 12 },
+      { header: 'Comisión', key: 'commission', width: 20 },
+      { header: 'IVA Comision', key: 'commissioniva', width: 20 },
+      { header: 'ReteFTE', key: 'retefte', width: 12 },
+      { header: 'ReteICA', key: 'reteica', width: 12 },
+      { header: 'ReteIVA', key: 'reteiva', width: 12 },
+      { header: 'Valor a Pagar', key: 'total', width: 15 },
       { header: 'Producto', key: 'product', width: 46 },
       { header: 'Color', key: 'color', width: 15 },
       { header: 'Talla', key: 'size', width: 15 },
@@ -720,21 +726,35 @@ module.exports = {
       { header: 'Referencia del pedido', key: 'orderref', width: 15 },
       { header: 'Número de rastreo', key: 'tracking', width: 20 },
       { header: 'Flete Total', key: 'fleteTotal', width: 20 },
-      { header: 'Comisión', key: 'commission', width: 20 },
       { header: 'Fecha de creación', key: 'createdAt', width: 20 },
       { header: 'Fecha de actualización', key: 'updatedAt', width: 22 },
     ];
     worksheet.getRow(1).font = { bold: true };
 
+    let seller = await Seller.findOne({ id: orders[0].seller });
+    let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
+    const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
+    const retFte = seller.retFte && seller.retFte > 0 ? seller.retFte/100 : 0.04;
+
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
+      let integrat = await Integrations.findOne({id: order.integration});
+      let commissionChannel = await CommissionChannel.findOne({seller: order.seller, channel: integrat.channel});
       for (const item of items) {
+        const salesCommission = item.commission || 0;
+        const commissionFee = item.price * (salesCommission/100);
+        const totalRetIca = address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0) ? (commissionFee * (retIca/1000)) : 0;
+        let totalCc = order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect ? item.price / 1.19 : 0;
+        let rteTc = (totalCc * 0.015) + ((totalCc * 0.19) * 0.15) + (totalCc * 0.00414);
+        const commissioniva = commissionFee * 0.19;
+        const retefte = (commissionFee/1.19) * retFte;
         let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
         let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
         item.id = order.id;
         item.seller = product.seller.name;
         item.dni = product.seller.dni;
         item.product = product.name;
+        item.price = item.price;
         item.color = product.mainColor ? product.mainColor.name : '';
         item.size = productVariation ? productVariation.variation.col : '';
         item.customer = order.customer.fullName;
@@ -748,6 +768,12 @@ module.exports = {
         item.fleteTotal = order.fleteTotal;
         item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
         item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
+        item.commission = commissionFee.toFixed(2);
+        item.commissioniva = commissioniva.toFixed(2);
+        item.retefte = retefte.toFixed(2);
+        item.reteica = totalRetIca.toFixed(2);
+        item.reteiva = rteTc.toFixed(2);
+        item.total = commissionChannel && commissionChannel.collect ? (item.price - (commissionFee + commissioniva) + retefte + totalRetIca - rteTc).toFixed(2) : 0;
         ordersItem.push(item);
       }
     }

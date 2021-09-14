@@ -28,6 +28,9 @@ module.exports = {
     currency:{
       model:'currency'
     },
+    plan:{
+      model:'plan'
+    },
     mainAddress:{
       model:'address'
     },

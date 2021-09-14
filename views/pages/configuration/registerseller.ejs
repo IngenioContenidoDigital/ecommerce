@@ -1,0 +1,1075 @@
+<link href='https://cdn.jsdelivr.net/npm/bulma-steps@2.2.1/dist/css/bulma-steps.min.css' rel='stylesheet'>
+<script src="https://cdn.jsdelivr.net/npm/bulma-steps@2.2.1/dist/js/bulma-steps.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<div class="columns is-centered is-gapless">
+  <div class="column is-8">
+    <div class="container">
+      <br><br>
+      <div class="notification is-danger is-light is-hidden" id="error"></div>
+      <div class="box">
+        <div class="steps" id="stepsDemo">
+          <div class="step-item is-info is-active" id="infobasics">
+            <div class="step-marker">
+              <span class="icon">
+                <i class='bx bx-user' ></i>
+              </span>
+            </div>
+            <div class="step-details">
+              <p class="step-title">Información Básica</p>
+            </div>
+          </div>
+          <div class="step-item is-info" id="address">
+            <div class="step-marker">
+              <span class="icon">
+                <i class='bx bxs-map'></i>
+              </span>
+            </div>
+            <div class="step-details">
+              <p class="step-title">Dirección</p>
+            </div>
+          </div>
+          <div class="step-item is-info" id="documents">
+            <div class="step-marker">
+              <span class="icon">
+                <i class='bx bxs-file-doc'></i>
+              </span>
+            </div>
+            <div class="step-details">
+              <p class="step-title">Documentos</p>
+            </div>
+          </div>
+          <div class="step-item is-info" id="suscriptions">
+            <div class="step-marker">
+              <span class="icon">
+                <i class='bx bxs-credit-card'></i>
+              </span>
+            </div>
+            <div class="step-details">
+              <p class="step-title">Método de pago</p>
+            </div>
+          </div>
+          <div class="step-item is-info" id="finish">
+            <div class="step-marker">
+              <span class="icon">
+                <i class='bx bxs-check-shield'></i>
+              </span>
+            </div>
+            <div class="step-details">
+              <p class="step-title">Finalizar</p>
+            </div>
+          </div>
+          <div class="steps-content">
+            <div class="step-content has-text-centered is-active" id="contentinfo">
+              <br>
+              <form action="/registerseller" method="post" id='form-seller' enctype="multipart/form-data">
+                <div class="columns">
+                  <div class="column">
+                    <div class="columns">
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Nombre del Comercio</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Identificación</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" />
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Nombre del Contacto</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="contact" required="true" placeholder="Nombre del contacto principal"/>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="columns">
+                      <div class="column">
+                        <div class="field">
+                          <label class="label is-size-7">Email de Contacto</label>
+                          <div class="control">
+                            <input class="input is-size-7" type="text" name="email" required="true" placeholder="Email del contacto principal"/>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <label class="label is-size-7">Contraseña</label>
+                        <div class="field has-addons">
+                          <p class="control has-icons-left is-expanded">
+                            <input class="input pass is-size-7" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
+                            <span class="icon is-size-7 is-left">
+                              <i class='bx bxs-lock-alt'></i>
+                            </span>
+                          </p>
+                          <p class="control" id="ojo">
+                            <a class="button is-size-7" id="eye">
+                              <i class='bx bx-low-vision'></i>
+                            </a>
+                          </p>
+                        </div>
+                      </div>
+                      <div class="column">
+                        <label class="label is-size-7">Número Celular</label>
+                        <div class="field has-addons">
+                          <p class="control">
+                          <span class="select is-size-7">
+                            <select required name="country">
+                            <% countries.forEach((country) =>{ %>
+                              <% if(country.active){ %>
+                              <option class="is-uppercase" value="<%=country.id%>">+<%=country.prefix%></option>
+                              <%}%>
+                            <% })%>
+                            </select>
+                          </span>
+                          </p>
+                          <p class="control has-icons-left is-expanded">
+                            <input class="input is-size-7" required name="phone" type="number" placeholder="Número Móvil">
+                            <span class="icon is-small is-left is-size-7">
+                              <i class='bx bx-mobile'></i>
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">Logotipo</label>
+                      <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
+                        <label class="file-label">
+                          <input class="file-input" required accept="image/*" type="file" id="logo" name="logo" />
+                          <span class="file-cta">
+                            <span class="file-icon">
+                              <i class="bx bx-upload"></i>
+                            </span>
+                            <span class="file-label">
+                              Logotipo
+                            </span>
+                          </span>
+                          <span class="file-name">
+                            No ha cargado ningún archivo.
+                          </span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">Moneda</label>
+                      <div class="control">
+                        <div class="select is-fullwidth is-size-7">
+                          <select required class="select is-capitalized" name="currency">
+                            <option value="">Elegir Moneda</option>
+                            <% currencies.forEach((currency) =>{ %>
+                              <option class="is-capitalized" value="<%=currency.id%>"><%=currency.name%></option>
+                            <%})%>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns is-mobile">
+                  <div class="column is-three-fifths is-offset-one-fifth">
+                    <div class="field">
+                      <input class="is-checkradio is-small is-info" required id="checkboxterms" type="checkbox" name="checkboxterms">
+                      <label for="checkboxterms"><strong>Acepto los <a href="#" id="accept-terms">Términos y Condiciones</a></strong></label>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="step-content has-text-centered" id="contentaddress">
+              <br>
+              <form method="POST" action="/setaddress" id="form-address">
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">Dirección (Línea 1)</label>
+                      <div class="control">
+                        <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..." />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">Dirección (Línea 2)</label>
+                      <div class="control">
+                        <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">País</label>
+                      <div class="control">
+                        <div class="select is-fullwidth is-size-7">
+                          <select required class="select is-capitalized" name="country">
+                            <option value="">-- Elegir País --</option>
+                            <% countries.forEach((country) =>{ %>
+                              <option class="is-capitalized" value="<%=country.id%>"><%=country.name%></option>
+                            <%})%>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field is-hidden" id="estados">
+                      <label class="label is-size-7">Estado</label>
+                      <div class="select control is-size-7 is-fullwidth">
+                        <select class="is-capitalized" name="region" required >
+                          <option value="">-- Elegir Región --</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field is-hidden" id="ciudades">
+                      <label class="label is-size-7">Ciudad</label>
+                      <div class="control select is-size-7 is-fullwidth">
+                        <select class="is-capitalized" name="city" required>
+                          <option value="">-- Elegir Ciudad --</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">Código Postal</label>
+                      <div class="control">
+                        <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="column">
+                    <div class="field">
+                      <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
+                      <div class="control">
+                        <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="step-content has-text-centered" id="contentdocuments">
+              <article class="message is-info is-small">
+                <div class="message-header">
+                  <p>Información</p>
+                </div>
+                <div class="message-body">
+                  Adjunte tus documentos legales en pdf con los siguientes nombres <strong>RUT, Cámara de comercio, Cédula representante legal.</strong>
+                </div>
+              </article>
+              <div class="columns">
+                <div class="column is-centered">
+                  <input type="hidden" name="seller-data" id="seller-data"/>
+                  <div class="file is-boxed">
+                    <label class="file-label">
+                      <input class="file-input" type="file" name="document" multiple accept="application/pdf" />
+                      <span class="file-cta">
+                        <span class="file-icon">
+                          <i class='bx bxs-cloud-upload bx-sm'></i>
+                        </span>
+                        <span class="file-label">
+                          Escoge tus archivos…
+                        </span>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                <div class="column is-two-thirds">
+                  <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
+                  <div class="preview">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="step-content has-text-centered" id="contentsuscriptions">
+              <article class="message is-warning is-small">
+                <div class="message-header">
+                  <p>Información</p>
+                </div>
+                <div class="message-body">
+                  Al momento de guardar tu método de pago <strong>se descontará una tarifa por el registro de tu cuenta.</strong>
+                </div>
+              </article>
+              <form method="POST" action="/createcreditcard" id="form-suscription">
+                <div class="is-mediumwidth container-card">
+                  <p class="has-text-centered">
+                    <img src="/images/paymentlogos.webp">
+                  </p>
+                  <div class="content is-size-7">
+                    <form action="/createcreditcard" method="POST">
+                      <div class="field">
+                        <div class="control has-icons-right">
+                          <input class="input is-small" required type="number" name="card" placeholder="Número de la Tarjeta"/>
+                          <span class="icon is-right">
+                            <i class='bx bx-credit-card-front'></i>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="columns is-mobile">
+                        <div class="column is-5">
+                          <label class="label is-small" for="month">Fecha vencimiento</label>
+                          <div class="control is-inline-block">
+                            <div class="select is-small">
+                              <select name="month" required>
+                                <%for(let i=1; i<=12; i++){%>
+                                  <%if(i<10){%>
+                                    <option value="0<%=i%>">0<%=i%></option>
+                                  <%}else{%>
+                                    <option value="<%=i%>"><%=i%></option>
+                                  <%}%>
+                                <%}%>
+                              </select>
+                            </div>
+                          </div>
+                          <div class="control is-inline-block">
+                            <div class="select is-small">
+                              <% let year = (new Date()).getFullYear() %>
+                              <select name="year" required>
+                                <%for(let i=year; i<=year+8; i++){%>
+                                  <option value="<%=i%>"><%=i%></option>
+                                <%}%>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="column is-4">
+                          <label class="label is-small" for="cvv">Cod. seguridad</label>
+                          <div class="field">
+                            <div class="control">
+                              <input class="input is-small" required type="number" name="cvv" placeholder="CVV / CVC"/>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="field">
+                        <div class="control has-icons-right">
+                          <input class="input is-small" required type="text" name="cardname" placeholder="Nombre cómo aparece en la tarjeta"/>
+                          <span class="icon is-right">
+                            <i class='bx bxs-user-rectangle' ></i>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="columns is-mobile">
+                        <div class="column is-two-fifths">
+                          <div class="field">
+                            <div class="control">
+                              <div class="select is-small">
+                                <select name="tid" required>
+                                  <option value="CC">CC</option>
+                                  <option value="CE">CE</option>
+                                  <option value="NIT">NIT</option>
+                                  <option value="PPN">PPN</option>
+                                  <option value="SSN">SSN</option>
+                                  <option value="LIC">LIC</option>
+                                  <option value="DNI">DNI</option>
+                                </select>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="column is-three-fifths">
+                          <div class="field">
+                            <div class="control has-icons-right">
+                              <input class="input is-small" required type="number" name="dni" placeholder="Número de identificación"/>
+                              <span class="icon is-right">
+                                <i class='bx bx-id-card'></i>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="step-content has-text-centered" id="contentfinish">
+              <article class="message is-info" id="msg-process">
+                <div class="message-body">
+                  Procesando tu pago...
+                </div>
+              </article>
+              <article class="message is-success is-hidden" id="msg-success">
+                <div class="message-body">
+                  ¡Tu cuenta se ha creado correctamente!
+                </div>
+              </article>
+            </div>
+          </div>
+          <div class="steps-actions">
+            <div class="steps-action">
+              <a href="#" id="btn-back" data-nav="previous" class="button is-primary is-small">Atrás</a>
+            </div>
+            <div class="steps-action">
+              <a href="#" id="btn-next" data-nav="next" class="button is-primary is-small">Siguiente</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="modal-terms"  class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card modal-terms">
+          <section class="modal-card-body">
+            <div class="content" id="content"></div>
+          </section>
+        </div>
+        <button class="modal-close is-large" aria-label="close"></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  bulmaSteps.attach();
+  let sellerId = '';
+  let userId = '';
+  let fmanager = document.querySelector('input[name="document"]');
+  fmanager.onchange = createDocuments;
+  const fileInput = document.querySelector('#file-loader input[type=file]');
+  fileInput.onchange = () => {
+    if (fileInput.files.length > 0) {
+      const fileName = document.querySelector('#file-loader .file-name');
+      fileName.textContent = fileInput.files[0].name;
+    }
+  };
+
+  live('#eye','click',e =>{
+    let pass = document.querySelector('.pass');
+    if(pass.type==='password'){
+      pass.type='text';
+      addClass(document.querySelector('#ojo > .button'),'is-danger');
+    }else{
+      pass.type='password';
+      removeClass(document.querySelector('#ojo > .button'),'is-danger');
+    }
+  });
+
+  live('select[name="country"]','change',e =>{
+    let country = e.target.value;
+    
+    let regions = document.querySelector('#estados')
+    regions.querySelector('select').innerHTML='<option value="">-- Elegir Región --</option>';
+    addClass(regions,'is-hidden');
+    
+    let cities = document.querySelector('#ciudades')
+    cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+    addClass(cities,'is-hidden');
+    
+    io.socket.get('/find/regions/'+country,resdata =>{
+      if(resdata.regions.length>0){
+        for(let s of resdata.regions){
+          let option = document.createElement('option');
+          option.value = s.id;
+          option.innerHTML = s.name
+          regions.querySelector('select').appendChild(option);
+        }
+        removeClass(regions,'is-hidden');
+      }
+    });
+  });
+
+  live('select[name="region"]','change',e =>{
+    let region = e.target.value;
+    let cities = document.querySelector('#ciudades')
+    cities.querySelector('select').innerHTML='<option value="">-- Elegir Ciudad --</option>';
+    addClass(cities,'is-hidden');
+    io.socket.get('/find/cities/'+region,resdata =>{
+      if(resdata.cities.length>0){
+        for(let s of resdata.cities){
+          let option = document.createElement('option');
+          option.value = s.id;
+          option.innerHTML = s.name
+          cities.querySelector('select').appendChild(option);
+        }
+        removeClass(cities,'is-hidden');
+      }
+    });
+  });
+
+  live('#btn-next','click',function(e){
+    e.preventDefault();
+    const stepNext = document.querySelector('.step-item.is-info.is-active');
+    const stepId = stepNext.getAttribute('data-step-id') - 1
+    if (stepId === 0) {
+      createSeller(stepNext);
+    } else if(stepId === 1) {
+      createAddress(stepNext);
+    } else if(stepId === 2) {
+      let numChildren = document.querySelector('.preview').children.length;
+      if (numChildren < 3) {
+        showError('Debe subir los documentos requeridos', stepNext, document.querySelector('#documents'), document.querySelector('#contentsuscriptions'), document.querySelector('#contentdocuments'));
+      }
+    } else if (stepId === 3) {
+      let form = document.querySelector('#form-suscription');
+      let validate = validateForm(form);
+      if (validate && sellerId) {
+        createCreditCard(stepNext, form);
+        setTimeout(() => {
+          collectRegister(stepNext);
+        }, 5000);
+      } else {
+        showError('Complete los campos requeridos', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+        document.querySelector('#btn-next').removeAttribute('disabled');
+      }
+    }
+  });
+
+  live('.delete','click',function(e){
+    let docId = this.getAttribute('docId');
+    let art = document.querySelector(`#article${docId}`)
+    io.socket.delete(`/document/remove/${docId}`,function(data, Jwres){
+      if(data === 'ok'){
+        art.remove();
+      }
+    });
+  });
+
+  live('#accept-terms','click',function(e){
+    e.preventDefault();
+    let form = document.querySelector('#form-seller');
+    let modal = document.querySelector('#modal-terms');
+    let section = document.querySelector('#content');
+    let currency = form.querySelector('select[name="currency"]').value
+    const currencies = <%- JSON.stringify(currencies) %>;
+    currency = currencies.find(c => c.id === currency);
+    if (currency && currency.isocode === 'MXN') {
+      showTermsAndConditionsMX(section);
+    } else {
+      showTermsAndConditionsCO(section);
+    }
+    addClass(modal,'is-active');
+  });
+
+  live('.modal-background, .delete, .modal-close','click',e=>{
+    let modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+      removeClass(modal,'is-active');
+    });
+  });
+
+  live('.is-checkradio','click', e=>{
+    let element = e.target;
+    if (hasClass(element,'has-background-color')) {
+      removeClass(element,'has-background-color');
+    } else {
+      addClass(element,'has-background-color');
+    }
+  });
+
+  function createSeller(stepNext) {
+    let form = document.querySelector('#form-seller');
+    let validate = validateForm(form);
+    const terms = form.querySelector('input[name="checkboxterms"]').checked;
+    if(validate){
+      if (terms) {
+        let request = new XMLHttpRequest();
+        let data = new FormData(form);
+        data.append('seller', sellerId);
+        data.append('user', userId);
+        data.append('terms', terms);
+        request.addEventListener('load', function(e) {
+          if (request.status == 200) {
+            const resData = JSON.parse(request.response);
+            if (resData && resData.error) {
+              showError(resData.error, stepNext, document.querySelector('#infobasics'), document.querySelector('#contentaddress'), document.querySelector('#contentinfo'));
+              document.querySelector('#btn-back').setAttribute('disabled', 'disabled');
+            } else {
+              sellerId = resData.seller;
+              userId = resData.user;
+            }
+          } else {
+            showError(resData.data.message, stepNext, document.querySelector('#infobasics'), document.querySelector('#contentaddress'), document.querySelector('#contentinfo'));
+            document.querySelector('#btn-back').setAttribute('disabled', 'disabled');
+          }
+        });
+        request.open('POST', form.action, true);
+        request.send(data);
+      } else {
+        showError('Acepte los Términos y Condiciones', stepNext, document.querySelector('#infobasics'), document.querySelector('#contentaddress'), document.querySelector('#contentinfo'));
+        document.querySelector('#btn-back').setAttribute('disabled', 'disabled');
+      }
+    } else {
+      showError('Complete los campos requeridos', stepNext, document.querySelector('#infobasics'), document.querySelector('#contentaddress'), document.querySelector('#contentinfo'));
+      document.querySelector('#btn-back').setAttribute('disabled', 'disabled');
+    }
+  }
+
+  function createAddress(stepNext) {
+    let form = document.querySelector('#form-address');
+    let validate = validateForm(form);
+    if (validate && sellerId) {
+      io.socket.post(`${form.action}/${sellerId}`, {
+        type: 'register',
+        addressline1: form.querySelector('input[name="addressline1"]').value,
+        addressline2: form.querySelector('input[name="addressline2"]').value,
+        country: form.querySelector('select[name="country"]').value,
+        region: form.querySelector('select[name="region"]').value,
+        city: form.querySelector('select[name="city"]').value,
+        zipcode: form.querySelector('input[name="zipcode"]').value,
+        notes: form.querySelector('textarea[name="notes"]').value
+      }, function (resData, jwRes) {
+        if(jwRes.statusCode == 200){
+          if (resData && resData.error) {
+            showError(resData.error, stepNext, document.querySelector('#address'), document.querySelector('#contentdocuments'), document.querySelector('#contentaddress'));
+          }
+        } else {
+          showError('Error al guardar la dirección', stepNext, document.querySelector('#address'), document.querySelector('#contentdocuments'), document.querySelector('#contentaddress'));
+        };
+      });
+    } else {
+      showError('Complete los campos requeridos', stepNext, document.querySelector('#address'), document.querySelector('#contentdocuments'), document.querySelector('#contentaddress'));
+    }
+  }
+
+  function createDocuments(e) {
+    e.preventDefault();
+    const stepNext = document.querySelector('.step-item.is-info.is-active')
+    let data = new FormData();
+    let request = new XMLHttpRequest();
+    data.append('id', sellerId);
+    for(let i=0; i < this.files.length;i++){
+      data.append('document', this.files[i]);
+    }
+    request.addEventListener('load', function(e) {
+      let container = document.querySelector('.preview');
+      container.innerHTML='';
+
+      if (request.status == 200) {
+        let files = JSON.parse(request.response);
+        if (files && files.length) {
+          for(let j = 0; j < files.length; j++){
+            let file = files[j];
+            let div = document.createElement('article');
+            addClass(div,'media');
+            div.innerHTML =
+              `<div class="media-left">
+                <figure class="image-answer content-figure image radius-image is-64x64 image-ed">
+                  <span class="document-icon">
+                    <i class='bx bxs-file-pdf'></i>
+                  </span>
+                  <a target="/document/remove/${file.id}" class="icon-delete delete"></a>
+                </figure>
+              </div>
+              <div class="media-content">
+                <div class="content">
+                  <p><strong>${file.name}</strong></p>
+                </div>
+              </div>`
+            container.appendChild(div);
+          };
+        }
+        addClass(document.querySelector('.progress'),'is-hidden');
+      } else {
+        addClass(document.querySelector('.progress'),'is-hidden');
+        showError('Error al subir los documentos', stepNext, document.querySelector('#documents'), document.querySelector('#contentsuscriptions'), document.querySelector('#contentdocuments'));
+      }
+    });
+    request.open('POST', '/seller/documents');
+    request.send(data);
+    removeClass(document.querySelector('.progress'),'is-hidden');
+    fmanager.value='';
+  }
+
+  function createCreditCard(stepNext, form) {
+    io.socket.post(`${form.action}/${sellerId}`, {
+      type: 'register',
+      card: form.querySelector('input[name="card"]').value,
+      month: form.querySelector('select[name="month"]').value,
+      year: form.querySelector('select[name="year"]').value,
+      cvv: form.querySelector('input[name="cvv"]').value,
+      cardname: form.querySelector('input[name="cardname"]').value,
+      tid: form.querySelector('select[name="tid"]').value,
+      dni: form.querySelector('input[name="dni"]').value,
+    }, function (resData, jwRes) {
+      if(jwRes.statusCode == 200){
+        if (resData && resData.error) {
+          showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+          document.querySelector('#btn-next').removeAttribute('disabled');
+        }
+      } else {
+        showError('Error al guardar la tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+        document.querySelector('#btn-next').removeAttribute('disabled');
+      };
+    });
+  }
+
+  function collectRegister(stepNext) {
+    const resultKey = '<%-key%>';
+    io.socket.post(`/collectregister/${sellerId}`, {key: resultKey}, function (resData, jwRes) {
+      if(jwRes.statusCode == 200){
+        if (resData && resData.error) {
+          showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+          document.querySelector('#btn-next').removeAttribute('disabled');
+        } else {
+          addClass(document.querySelector('#msg-process'), 'is-hidden');
+          removeClass(document.querySelector('#msg-success'), 'is-hidden');
+          setTimeout(() => {
+            window.location = '/inicio'
+          }, 1000);
+        }
+      } else {
+        showError('Error al hacer el cobro, Ingrese otra Tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+        document.querySelector('#btn-next').removeAttribute('disabled');
+      };
+    });
+  }
+
+  function showError(message, stepNext, stepBack, contentNext, contentBack){
+    removeClass(stepNext, 'is-active');
+    removeClass(stepBack, 'is-completed');
+    addClass(stepBack, 'is-active');
+    removeClass(contentNext, 'is-active');
+    addClass(contentBack, 'is-active');
+    document.querySelector('#error').innerHTML = message;
+    removeClass(document.querySelector('#error'), 'is-hidden');
+    setTimeout(function() {
+      addClass(document.querySelector('#error'),'is-hidden');
+    }, 5000);
+  }
+
+  function showTermsAndConditionsCO(section) {
+    section.innerHTML = marked(`## **TÉRMINOS Y CONDICIONES SERVICIO DECENTRALIZADOR DE CANALES 1ECOMMERCE SAS.**
+
+Los presentes términos y condiciones aplican al Servicio de centralizador u optimizador de canales que 1Ecommerce SAS (en adelante “1Ecommerce”) pone a disposición y presta a productores y comercializadores de productos (en adelante, cada uno un “Vendedor”).
+
+ 1. **DECLARACIONES**
+ 
+**PRIMERA**: El **VENDEDOR** declara conocer y aceptar los términos del presente instrumento y así mismo declara conocer y entender todos los términos que componen las políticas de uso de la plataforma 1ECOMMERCE así como las de los aliados que se incorporen a la misma.
+
+**SEGUNDA:** Las partes declaran y reconocen que **1ECOMMERCE** se reserva el derecho de modificar cualquiera de los términos y condiciones de los presentes términos, así como cualquiera de las políticas y lineamientos de la plataforma en cualquier momento y a su entera discreción. Las modificaciones efectuadas se notificarán al **VENDEDOR** mediante notificaciones electrónica con no menos de quince (15) días calendario a que las mismas entren en vigencia. El **VENDEDOR** dispondrá de igual término contado a partir de la notificación de las modificaciones para informar si existe disenso con las mismas. Si se venciese dicho término sin manifestación alguna por parte del **VENDEDOR** se entenderá que han sido aceptadas.
+
+**TERCERA:** El **VENDEDOR** declara contar con la totalidad de las facultades legales para la suscripción de este documento. Así mismo manifiesta contar con la idoneidad y capacidad para el desarrollo del objeto de este contrato.
+
+2.  **DEFINICIONES**
+
+- **1ECOMMERCE:** Se trata de una plataforma centralizadora de operación de comercio electrónico, que facilita conexiones a diferentes canales de venta a través de tecnología para aumentar la exposición de los productos y mejorar las probabilidades de venta y centralizando las diferentes verticales del negocio en el mismo panel de administración. Esta plataforma administrativa es operada por los vendedores.
+- **MARKETPLACES Y CANALES ONLINE ALIADOS:** Se trata de canales de venta aliados a 1Ecommerce con los cuales se cuenta con una conexión para publicar los productos de los vendedores. Estos canales son autónomos y sirven como medio de visibilidad y venta de productos para el vendedor.
+- **PRODUCTO:** Se entiende por producto cualquier bien producido, distribuido o comercializado por el Vendedor a través de los marketplaces aliados a 1Ecommerce.
+- **VENDEDOR:** Se trata del productor, importador, mayorista o comercializador que cuenta con contrato de prestación de servicios firmado con 1ECOMMERCE y comercializa sus productos a través de los marketplaces aliados.
+- **CUENTA BANCARIA RECAUDADORA:** Es la cuenta centralizadora de recaudos, propiedad de **1ECOMMERCE** o de aliados comerciales, que concilia con los múltiples canales de venta, con el fin de conciliar una única vez con el vendedor.
+
+3.	**CLAUSULAS**
+
+**CLÁUSULA PRIMERA. - OBJETO:** El objeto de los presentes términos consistirá en que el **VENDEDOR,** en uso de la plataforma 1ECOMMERCE a la cual accederá en virtud de la autorización que impartirá **1ECOMMERCE** con ocasión a este instrumento, efectúe la comercialización de diferentes productos en uso de dicha plataforma y de los marketplaces y canales virtuales aliados que se incorporen al sistema, para tal efecto **1ECOMMERCE** facilitará todas las herramientas que se requieran para el correcto uso y funcionamiento de la plataforma.
+
+- **CATÁLOGO DE PRODUCTOS** Todos los productos del vendedor podrán ser cargados para centralizar su operación, así como las variaciones de los productos en talla, colores y otras, con su respectivo inventario y contenido de producto, disponible para publicación en marketplaces y canales aliados.
+- **LOGÍSTICA Y FACTURACIÓN:** Generación y seguimiento de guías de envío a través de transportadoras aliadas, así como la facturación de los productos conectada a sistema de facturación del vendedor, en caso de que el software del vendedor ofrezca la posibilidad técnica.
+- **MARKETPLACES Y CANALES ALIADOS:** Conexión para distribución de contenido de productos y publicación en canales aliados.
+- **PEDIDOS:** Los pedidos mediante los diferentes canales serán centralizados para gestión de los mismos.
+- **INFORMES:** La información de las ventas será centralizada a través de una pantalla de reportes.
+- **RECAUDOS:** Los recursos provenientes de las ventas del comercio serán centralizadas para conciliación única.
+
+**CLÁUSULA SEGUNDA. TÉRMINOS CANALES ALIADOS**:** El VENDEDOR** se compromete a respetar los términos y condiciones de cada uno de los marketplaces y canales aliados a la plataforma y así mismo manifiesta que conoce que dichos términos y condiciones son establecidos y manejados por estos y será su deber revisar los canales que para ello se dispongan en los cuales puedan publicar si se ha efectuado alguna modificación.
+
+Es facultad de los marketplaces y canales aliados publicar sus términos en los canales que estime, por esto, la documentación vigente, reglamentos, contratos y términos serán publicados y actualizados directamente en dichos canales, en su pluralidad en sus respectivas páginas web directamente.
+
+El **VENDEDOR** acepta extender los términos y nivel de servicio de los marketplaces y canales aliados al presente acuerdo; haciendo de estos parte integral del mismo y siendo responsabilidad del **VENDEDOR** cumplirlos en su totalidad.  El **VENDEDOR** declara que es el único responsable en caso de presentarse reclamos por algún incumplimiento a los términos y condiciones dispuestos por los marketplaces y canales aliados, en tanto es él quien los opera o usa directamente, así mismo declara expresamente que **1ECOMMERCE** no posee responsabilidad solidaria ni de ninguna clase frente a la eventual responsabilidad que derive de un incumplimiento a los términos y condiciones de los marketplaces y canales aliados.
+
+**CLÁUSULA TERCERA. DERECHOS Y REPRESENTACIÓN DEL VENDEDOR**: **El VENDEDOR** para la efectiva ejecución del objeto de este contrato deberá atender las siguientes disposiciones:
+- El Comercio debe suministrar una carta en papel membrete de su compañía  autorizando a **1ECOMMERCE** cómo sus representantes y gestores del canal de marketplace en cada uno de los canales aliados. 1ECOMMERCE se reserva el derecho de subcontratar o crear alianzas para facilitar la gestión de los canales de venta.
+- 1Ecommerce, a través de 1 delegado, se reportará directamente con el contacto designado por el **VENDEDOR** mientras se encuentre prestando los servicios objeto de los presentes términos.
+- Cuando 1Ecommerce genere una transacción en función del desarrollo de sus actividades, se acordará con el **VENDEDOR** un valor y las condiciones de la ejecución de la misma a través de un correo electrónico.
+- Es responsabilidad del **VENDEDOR** facilitar a 1ECommerce el acceso y la cooperación pudiere requerir en forma razonable y necesaria para prestar adecuadamente los servcios objeto de los presentes términos.
+
+**CLÁUSULA CUARTA. CUENTAS EN CANALES ALIADOS:**
+El **VENDEDOR** puede escoger la cuenta a utilizar para vender en los diferentes canales entre dos posibilidades:
+
+1.  **CUENTA PROPIA EXISTENTE:** En caso de preferirlo por cualquier motivo, el vendedor puede operar bajo la cuenta propia existente en los marketplaces. En este caso, el vendedor se obliga a entregar los accesos y claves necesarias a **1ECOMMERCE** para el correcto desarrollo de las conexiones con 1Ecommerce.
+2.  **CUENTA PROPIA NUEVA:** En caso de no tener cuenta creada en los marketplaces, el vendedor debe suministrar todos los datos necesarios para la creación de las mismas a través de los documentos requeridos por 1Ecommerce. 1Ecommerce se encargará de gestionar la creación de las cuentas pero no se garantiza en ningún momento su apertura la cual depende plenamente de cada uno de los marketplaces. (sujeto a evaluación del Marketplace)
+	-	El incumplimiento por cualquier causa en el despacho efectivo de los productos ofrecidos en cualquiera de los canales aliados que hayan sido ofrecidos a través de 1Ecommerce o cualquier otro tipo de penalización del canal de venta aliado, 1ECOMMERCE trasladará dicha penalización al VENDEDOR sumando una tasa administrativa del 5% del valor del pedido + IVA.
+
+**CLÁUSULA QUINTA .HONORARIOS.**
+Las partes acuerdan que **EL VENDEDOR** pagará a 1ECOMMERCE, por la prestación de sus servicios, un valor fijo + IVA por concepto de comisión por la operación y el servicio prestado.
+
+**CLÁUSULA SEXTA.TERMINACIÓN Y NO PERMANENCIA**
+- El presente acuerdo no tiene cláusulas de permanencia.
+- Las partes pueden terminar unilateralmente el presente acuerdo en cualquier momento con notificación escrita con 30 días de anticipación a la fecha de terminación requerida.
+
+**CLÁUSULA SÉPTIMA - ACLARACIONES:**
+
+El **VENDEDOR** declara entender y aceptar que **1ECOMMERCE** opera en el presente acuerdo como un proveedor tecnológico para facilitar su operación de comercio electrónico a través de diferentes canales de venta aliados. En ningún caso **1ECOMMERCE** es propietario de sus productos ni es responsable por cualquier indisponibilidad del servicio por parte de los marketplaces y canales aliados, fallas tecnológicas y cualquier situación que imposibilite la comercialización a través de dicho canal. Así mismo, el **VENDEDOR** acepta que **1ECOMMERCE** no es responsable por el cumplimiento de los términos de sus marketplaces y canales aliados y que los mismos son responsabilidad del **VENDEDOR**.
+
+**CLÁUSULA OCTAVA. IMPUESTOS**: De acuerdo con el decreto reglamentario nacional 1625 de 2016 y el decreto reglamentario de Bogotá 472 de 2020, todas las entidades emisoras de tarjetas débito y/o crédito deben practicar en todos los casos, retención en la fuente a título de renta, IVA e ICA sobre los pagos que se realicen por estos medios (tarjetas débito y crédito). Por eso, cada valor que el **VENDEDOR** reciba de un comprador y que se haya realizado por estos medios de pago, el banco procesador practicará las correspondientes retenciones.
+
+**CLÁUSULA NOVENA. FACULTADES Y RELACIÓN ENTRE LAS PARTES**: En la prestación de los SERVICIOS en virtud de los presentes términos, 1ECOMMERCE no actuará como ni se constituirá en un agente o trabajador del Vendedor, ni actuará como tal, limitando sus acciones a los SERVICIOS. En consecuencia, 1Ecommerce podrá prestar servicios libremente a otras empresas, instituciones o personas, con la única limitación de que tales servicios no sean incompatibles con los términos y condiciones de los presentes términos ni afecten la prestación y calidad de los servicios contratados por el **VENDEDOR**. Sin perjuicio de lo anterior. 1ECommerce no podrá asumir, crear o incurrir en responsabilidades u obligaciones en nombre del **VENDEDOR** (y reconoce no estar facultado para hacerlo) salvo autorización expresa y por escrito del **VENDEDOR**.
+
+**CLÁUSULA DÉCIMA - PROPIEDAD INTELECTUAL**: El **VENDEDOR** reconoce que cualquier implementación, mejora, modificación, actualización, cambio, así como las integraciones con servicios externos propios o de terceros desarrolladas por el 1ECOMMERCE en la aplicación sobre el el cual se gestionan los servicios objeto de los presentes términos son y serán de uso exclusivo y no pueden ser copiadas o reproducidas total o parcialmente o compartidas sin autorización escrita por parte de 1Ecommerce, y que dichas mejoras se encuentran protegidas bajo la legislación de derechos de autor y propiedad intelectual de la República de Colombia.
+
+Las Partes anticipan que 1ECOMMERCE podrá realizar trabajos protegidos por el derecho de autor, nuevas creaciones u otra propiedad industrial o intelectual durante la prestación de los Servicios aquí pactados y convienen sobre este particular que el VENDEDOR tendrá la responsabilidad especial de proteger los intereses de 1ECOMMERCE.
+
+**CLÁUSULA DÉCIMA PRIMERA. PROTECCIÓN DE DATOS**: El VENDEDOR acepta que 1Ecommerce procese datos personales durante la vigencia del presente Contrato para efectos de la administración y gestión del VENDEDOR y para asegurar el cumplimiento de todas las leyes, normas y procedimientos aplicables. El VENDEDOR acepta que 1ECOMMERCE ponga tales datos a disposición de personas distintas al VENDEDOR cuando éste lo estime necesario o en el mejor interés del VENDEDOR, incluyendo, pero sin limitación a toda persona que proporcione productos y/o servicios 1ECOMMERCE, cualquier autoridad regulatoria, cualquier comprador eventual de 1ECOMMERCE o de sus negocios, o que bien lo exija la ley, y autoriza a 1ECOMMERCE a transferir tales datos.
+
+1ECOMMERCE se obliga a cumplir en todo momento con cualquier política o procedimiento en materia de protección de datos que dicte el VENDEDOR, como asimismo con las disposiciones de las normas correspondientes a protección de datos, en relación con el procesamiento de los datos personales de terceros en tanto se encuentre prestando los Servicios.
+
+**CLÁUSULA DÉCIMA SEGUNDA - RESPONSABILIDAD:**  En la medida en que lo permita la legislación aplicable, bajo ninguna circunstancia, alguna de las Partes será responsable hacia la otra por daños especiales, consecuenciales o indirectos, incluyendo, entre otros, daños por pérdida de plusvalía comercial o utilidades comerciales, ahorros proyectados, lucro cesante, detención de obras o daños por oportunidades perdidas, ya sea que se reclame conforme a responsabilidad extracontractual, contractual u otra.
+
+1ECOMMERCE no se hará responsable ante el **VENDEDOR** respecto de demoras, pérdidas, daños, costos, gastos y otros reclamos compensatorios que emanen de informaciones o instrucciones que le entregue el VENDEDOR que, excepto en el caso de error manifiesto, sean incompletas, incorrectas, inexactas o que emanen de su retraso en llegar o del hecho que no lleguen.
+
+**CLÁUSULA DÉCIMA TERCERA. LEGISLACIÓN APLICABLE**: Estos términos se rigen e interpretan de acuerdo con las leyes de la República de Colombia, cuyos jueces tendrán jurisdicción exclusiva respecto de todos los asuntos que pudieren surgir. Para todos los efectos legales a que hubiere lugar, las Partes contratantes establecen su domicilio legal en la ciudad de Bogotá, D.C., Colombia, siendo competentes las autoridades judiciales con asiento en la misma.
+
+**CLÁUSULA DÉCIMA CUARTA. NOTIFICACIONES:** Para todos los efectos referentes a este contrato las partes, recibirán notificaciones en las direcciones que declaran a continuación y así mismo se comprometen a informar cualquier cambio en ellas:
+
+**1ECOMMERCE: En la Cra 10 #97ª 13 oficina 202 Torre B de la ciudad de Bogotá. Y correo luis.quinones@1ecommerce.io**
+
+**CLÁUSULA DÉCIMA QUINTA.**
+Los presentes Términos y Condiciones obligan a las partes en la totalidad de su contenido y se tendrán por aceptados al momento de dar “click” en el botón de aceptación de la página web y/o mediante el “sign up” del Vendedor. Sin perjuicio que 1Ecommerce requiera la firma y envío mediante correo electrónico. Adicionalmente, el Vendedor deberá reunir los requisitos y documentación mínimos requeridos por 1Ecommerce. 1Ecommerce se reserva el derecho de no dar inicio a la relación comercial, en caso que a su criterio considere que el Vendedor no ha cumplido con este requisito.
+
+## **ACUERDO MUTUO DE CONFIDENCIALIDAD**
+**PRIMERO: OBJETO.** 1Ecommerce SAS y EL VENDEDOR desean asegurar el carácter confidencial de secretos comerciales, información y otros materiales y/o antecedentes que una de las partes ha dado o dará a conocer a la otra durante su actuación conjunta en el marco de una negociación de financiación entre las partes.
+
+**SEGUNDO: NATURALEZA DEL VÍNCULO.** El presente instrumento tiene como único objeto proteger la información confidencial que las partes compartan en el marco del Negocio, por lo que no constituye un joint venture, asociación, representación, ni otro contrato o negocio comercial y/o civil o cualquier otro acuerdo sobre actividades comerciales y/o civiles conjuntas, las que, de materializarse, deberán constar por escrito, en un documento separado y debidamente suscrito por representantes autorizados de las partes. El presente Contrato no crea ninguna obligación para las partes en el sentido de celebrar un contrato o acuerdo posterior, ni ninguna otra obligación adicional a las expresamente señaladas en este instrumento. El Contrato tampoco obliga por sí mismo a la entrega de Información Confidencial.
+
+**TERCERO: INFORMACION CONFIDENCIAL.** Para efectos de este instrumento se entenderá por "Información Confidencial", aunque no se limita, a guías  técnicas y los datos o know-how de carácter técnico del negocio de 1Ecommerce, incluyendo, entre otras cosas, lo vinculado con hardware, software, pantallas, especificaciones, diseños, planes, planos, datos, prototipos, descubrimientos, investigación, desarrollo, procesos, procedimientos, propiedad intelectual, investigación de mercado, técnicas y planes de marketing, planes y estrategias comerciales, nombres de clientes y otra información vinculada  con clientes, listas de precios, políticas de precios e información financiera u otros negocios y/o información y materiales de carácter técnico, comunicados en forma verbal, demostrativa, escrita, electrónica, gráfica o  legible  con  máquinas, o por cualquier otro medio, así como todos los análisis, recopilaciones, estudios o documentos y, en general, cualquier otra información, general o particular, cuya revelación pudiera ser perjudicial para los  intereses de la parte que entregue la información y que, durante el desarrollo del Negocio, sea proporcionada por una parte a la otra, o a sus personas relacionadas, o a la cual cada parte tenga acceso o elabore en  relación con el Negocio, aunque la Información Confidencial no hubiere sido marcada como reservada.  También se considerará Información Confidencial toda información a la cual una de las partes  tuviere  acceso, de cualquier forma, en las instalaciones y procesos productivos de la otra parte.
+
+**CUARTO: EXCEPCIONES. 4.1.** Sin perjuicio de cualquier indicación contenida en el presente documento, ninguna de las partes estará  obligada a mantener bajo reserva la Información Confidencial de la otra, cuando: (i) Sea o llegue a ser de conocimiento público general, no habiendo existido un acto contrario a la ley o al presente Contrato por  parte de quien recibe la información; (ii) La haya obtenido legalmente de un tercero  que  no estuviere  obligado  a  mantener esa información en forma confidencial; (iii) Al momento en que la parte receptora reciba la Información Confidencial, ésta fuere conocida previamente por ella sin que existieran obligaciones de confidencialidad al respecto, lo que deberá acreditar documentalmente; (iv) Sea desarrollada independientemente por una de las partes, sin referencia a la Información Confidencial o sin usar la misma, lo cual deberá ser demostrado fehacientemente; y, (v) En un convenio escrito, la parte que la revela haya aceptado que se dé a conocer esa información confidencial.
+
+**4.2.** En el evento de que cualquiera de las partes o sus representantes reciban información que se encuentre obligada a revelar por imposición legal, en cualquier circunstancia administrativa o judicial, deberá dar aviso sin tardanza de esta situación a la otra parte, a fin de que esta última pueda adoptar las medidas de protección que estime convenientes y/o renunciar a la obligación de no dar a conocer la información.
+
+**QUINTO: PROTECCION DE LA INFORMACION CONFIDENCIAL. 5.1.** Cada una de las partes se compromete a no dar a conocer y a proteger la Información Confidencial de la otra parte y a usarla exclusivamente para los fines que la parte reveladora de la Información Confidencial tuvo  en consideración al momento de entregar dicha información, y únicamente en relación con el desarrollo del Negocio. Las partes se comprometen a proteger la Información Confidencial que reciban y a no usarla en perjuicio de la otra parte, evitando que se dé a conocer a personas que no sean sus directores, funcionarios y trabajadores que necesariamente deban tener acceso a ella. Además, se compromete a dar aviso por escrito a la otra parte, sin tardanza, en caso de enterarse de cualquier apropiación indebida, divulgación o uso no autorizados de la Información Confidencial recibida, y a adoptar medidas razonables para restringir o reducir la apropiación, divulgación o uso indebidos de la referida información.
+
+**5.2.** Las partes realizarán, a lo menos, los mismos esfuerzos que realizan para proteger su propia información confidencial, los cuales no serán de un nivel inferior a la clase de esfuerzos que se realizarían para un negocio razonable en relación con la protección de su propia información altamente confidencial y con el secreto comercial.
+
+**5.3.** Cada una de las partes hará únicamente el número de copias tangibles de la Información Confidencial que sea necesaria para utilizarse de acuerdo con los términos de este contrato, y en cada una de ellas se incluirán las mismas indicaciones sobre la propiedad que se indicarán en los originales.
+
+**5.4.** Salvo frente a eventos de caso fortuito o fuerza mayor debidamente acreditado, la parte receptora de la Información Confidencial responderá directamente frente a la parte informante de la misma, por la divulgación o por el uso ilegal o ilegítimo que de la Información Confidencial puedan hacer las personas y/o entidades que hayan tenido acceso a ella.
+
+**5.5.** En caso de que se termine la relación entre las partes o previa solicitud escrita de cualquiera de ellas, se deberá restituir a la parte Reveladora, o bien destruir, toda la Información Confidencial de la parte Reveladora que se encuentre en su poder, en la forma que fuere (incluyendo todas las copias, reproducciones, extractos y obras derivadas). En caso que la parte Reveladora optare por la destrucción de la Información Confidencial, la parte Receptora deberá certificar por escrito a la parte requirente el hecho de haberse destruido la misma, certificación que deberá ser suscrita por representantes autorizados de la parte Reveladora.
+
+**5.6.** Las partes reconocen que, de producirse alguna  infracción a este contrato, la parte diligente tendrá el  derecho a solicitar medidas precautorias, el cumplimiento forzoso y cualquier otro recurso que en derecho proceda con el objeto de impedir la divulgación no autorizada y/o lograr la devolución o la destrucción de la Información Confidencial. Si fuere necesario deducir alguna acción judicial para hacer cumplir este contrato, la parte favorecida en dicha acción recuperará de la otra los honorarios, costos y gastos razonables y necesarios  en materia de abogados y/o gastos procesales.
+
+**5.7.** Las partes reconocen y acuerdan que los términos y condiciones de este contrato son razonables y necesarios para la protección de los legítimos intereses de cada una de ellas, así como para prevenir perjuicios o pérdidas como consecuencia de cualquier acción u omisión que importe un incumplimiento de este contrato.
+
+**SEXTO: PROPIEDAD INTELECTUAL. 6.1.** Las partes dejan constancia y reconocen que los elementos preexistentes de información y de software  y todos los documentos asociados a los mismos que a la fecha del presente instrumento sean de propiedad de la otra parte, son y seguirán perteneciendo a cada una de ellas, según corresponda. Se entenderá como elementos preexistentes a los conceptos, conocimientos, know-how o técnicas relativas al procesamiento de datos y tecnologías de la información, a todo material original escrito o legible por máquina, incluyendo programas, medios magnéticos, listados, manuales y otra documentación de programación. En  consecuencia, las partes no conceden u otorgan derecho o título alguno a la otra parte sobre los elementos preexistentes de información y de software y todos los documentos asociados a los  mismos que son de su respectiva propiedad o de terceros al momento de iniciar el desarrollo del proyecto objeto de este contrato.
+
+**6.2.** Las partes dejan expresa constancia que los  entregables y todo estudio, informe y elemento del  intelecto, sean invenciones, descubrimientos, mejoras, especificaciones, códigos fuente, código objeto, programas, documentación, diseños, métodos, sistemas, software, secreto industrial y, en general, cualquier material que pueda protegerse bajo las leyes, especialmente aquellas de propiedad intelectual e industrial, que se originen o resulten como producto específico y directo de los servicios objeto del Contrato y que no correspondan a elementos preexistentes según el párrafo primero de la presente cláusula, serán de propiedad de las partes, según corresponda, no pudiendo la otra parte utilizar de modo alguno con terceros ninguna documentación que se le proporcione o que se genere para el Negocio, así como tampoco el prototipo del sistema, los programas fuentes y objetos generados, y las bases de prueba para el desarrollo que se utilicen en cada servicio, sin la autorización expresa y por escrito de la otra parte.
+
+**6.3.** Cada una de las partes será el exclusivo titular, en la medida que lo permita la legislación aplicable, de todas las copias, reproducciones, extractos u obras derivadas de la Información Confidencial de su  propiedad.
+
+**6.4.** Las partes contratantes elevan a la calidad de esencial las condiciones estipuladas precedentemente, quedando desde ya facultada la parte cumplidora a solicitar las indemnizaciones procedentes en caso de incumplimiento de la otra parte.
+
+**SÉPTIMO: PUBLICIDAD.** Las partes acuerdan no emitir ni publicar artículos, avisos, publicidad ni otro tipo de información en relación con este contrato, o el contenido de este documento, salvo en la medida en que así lo exija la ley.
+
+**OCTAVO: INEXISTENCIA DE LICENCIAS.** La revelación de Información Confidencial a la parte receptora no implica el otorgamiento expreso o tácito de licencia alguna vinculada con marcas registradas, patentes, derechos de autor u otro tipo de propiedad  intelectual o industrial. Ninguna parte de la Información Confidencial que pueda darse a conocer constituirá declaración, garantía, seguro o incentivo de cualquier tipo, incluyendo, entre otras, declaraciones, garantías, seguros o estímulos vinculados con la no-violación de marcas registradas, patentes, derechos de autor u  otro tipo de propiedad intelectual o con otros derechos de una de las partes o de terceros. Tampoco implica el otorgamiento de licencia alguna o derecho para utilizar Información Confidencial para su propio beneficio o beneficio de cualquier otra persona natural o jurídica, y en ese sentido, las partes se comprometen expresamente a no utilizarla de ese modo. Ninguna disposición contenida en este Contrato podrá interpretarse como cesión u otorgamiento de derechos, licencia o similares, sobre cualquier invento, descubrimiento o mejora realizada, concebida o adquirida antes, durante o después de la fecha del Contrato.
+
+**NOVENO: DURACIÓN.** El presente contrato permanecerá en vigor por un periodo de 2 años. Las obligaciones contenidas en éste respecto a la confidencialidad prevalecerán sobre cualquier terminación de este contrato por un periodo de 2 años. En caso de incumplimiento al presente contrato, el mismo se podrá dar por vencido de manera anticipada por la parte que sufrió la revelación de su información, bastando únicamente la comunicación escrita que para tal efecto emita la parte afectada a su contraparte, expresando las causas o razones que dieron origen a dicha terminación.
+
+**DÉCIMO: RESPONSABILIDAD.** La parte Receptora será responsable por cualquier incumplimiento de este Contrato por parte suya, de sus empleados, asesores o subcontratistas y deberá indemnizar a la parte Reveladora a título de pena por una suma equivalente a DIEZ SALARIOS MÍNIMOS MENSUALES LEGALES VIGENTES (SMMLV).  Lo anterior, sin perjuicio de las acciones civiles, comerciales o penales a que haya lugar y de las correspondientes indemnizaciones por los perjuicios que se causen, derivados de dicho incumplimiento. Las partes tendrán la debida diligencia para que sus actuaciones, no se tipifiquen en una conducta descrita en la Ley 1273 de 2009 y las normas que la modifiquen, adicionen o reglamenten. La parte Reveladora podrá utilizar todas las acciones civiles y penales, para resarcir daños y perjuicios que se puedan ocasionar por el mal manejo de datos personales e Información Confidencial.
+
+**DÉCIMO PRIMERO: ACUERDO ÍNTEGRO** Este Contrato contiene la totalidad del acuerdo entre las partes sobre el asunto objeto del mismo y sustituye  todos los entendimientos y declaraciones anteriores que puedan existir entre los comparecientes, tanto verbales como escritos, referentes al presente documento, respecto de los cuales se dan el más amplio, completo y recíproco finiquito. Su modificación sólo será eficaz mediante escrito firmado por los representantes legales de cada una de las partes.
+
+**DÉCIMO SEGUNDO: INEFICACIA.** Si una disposición de este contrato es declarada ineficaz o no es posible exigir su cumplimiento de acuerdo con la ley vigente, esa disposición deberá hacerse valer en la medida de lo posible, o será sustituida de común acuerdo por las partes, y las demás disposiciones de este instrumento seguirán plenamente vigentes.
+
+**DÉCIMO TERCERO: JURISDICCIÓN Y LEY APLICABLE.** El presente contrato estará regido por la legislación de la República de Colombia y se interpretará y exigirá su cumplimiento de acuerdo con dicha legislación. Los conflictos que resultaren entre las partes serán solucionados por los Jueces de la República de Colombia.
+
+**DÉCIMO CUARTO: DOMICILIO Y NOTIFICACIONES.** Para todos los efectos legales, las partes fijan su domicilio en la ciudad de Medellín. Cualquier cambio que una parte realice al domicilio señalado en este contrato deberá ser comunicado por escrito a la otra. En caso contrario, se entenderá como domicilio de cada parte el señalado en el presente Contrato.
+
+Para la realización de las comunicaciones que fueren precisas para el cumplimiento del presente contrato, ambas partes señalan los respectivos domicilios indicados en este instrumento. Alternativamente, las comunicaciones podrán ser dirigidas a los correos electrónicos ricardo.armenta@1ecommerce.io, en el caso de 1ECOMMERCE y de en el caso de EL VENDEDOR.
+
+**DÉCIMO QUINTO: PROTECCIÓN DE DATOS E INFORMACIÓN PERSONAL.** Mediante la celebración del Contrato, la parte Receptora asume la obligación constitucional, legal y jurisprudencial de proteger los datos personales a los que acceda con ocasión del Negocio. Por tanto, deberá adoptar las medidas que le permitan dar cumplimiento a lo dispuesto por las Leyes 1581 de 2012 y 1266 de 2008, ésta última en lo que le sea aplicable, y cualquier otra ley o norma que las modifique o sustituya. Consecuencia de esta obligación legal, entre otras, deberá adoptar las medidas de seguridad de tipo lógico, administrativo y físico, acorde a la criticidad de la información personal a la que accede, para garantizar que este tipo de información no será usada, comercializada, cedida, transferida y/o no será sometida a cualquier otro tratamiento contrario a la finalidad comprendida en lo dispuesto en el objeto del presente Contrato.
+
+**PARÁGRAFO PRIMERO:** La parte Receptora indemnizará los perjuicios que llegue a causar a la parte Reveladora como resultado del incumplimiento de las leyes 1581 de 2012 y 1266 de 2008, y demás normas aplicables al tratamiento de la información personal, así como por las sanciones que llegaren a imponerse por violación de la misma. En estos casos autoriza de manera expresa a la parte Reveladora, a través de la firma del Contrato, a deducir de las sumas de dinero que la parte Reveladora le adeude en el momento en que se notifique la decisión desfavorable por la entidad competente, el valor de las multas impuestas, sin perjuicio de que llegaren a demostrarse daños por cuantía superior a la multa impuesta. La parte Reveladora informa la parte Receptora que en Colombia configura delito el tratamiento no autorizado de datos personales, según lo dispuesto en la ley 1273 de 2009. Por lo anterior, la parte Receptora reconoce el derecho que tiene la parte Reveladora de auditar el cumplimiento de las normas citadas en los términos previstos en este Contrato.
+
+**PARÁGRAFO SEGUNDO:** Es obligación de la parte Receptora informar a la parte Reveladora cualquier sospecha de pérdida, fuga o ataque contra la información personal a la que ha accedido y/o trata con ocasión del Negocio, aviso que deberá dar una vez tenga conocimiento de tales eventualidades. La pérdida, fuga y/o ataque contra la información personal implica así mismo la obligación de la parte Receptora de gestionar el incidente de seguridad conforme los lineamientos en la materia señalados en las normas ISO 27001/27002.
+
+**PARÁGRAFO TERCERO:** El incumplimiento de las obligaciones derivadas de esta cláusula se considera como un incumplimiento grave por los riesgos legales que conlleva el indebido tratamiento de datos personales, y en consecuencia será considerada justa causa para la terminación del contrato, y dará lugar al cobro de la cláusula penal pactada, sin necesidad de ningún requerimiento, a los cuales se renuncia desde ahora.
+
+**DÉCIMO SEXTO: PROHIBICIÓN DE CESIÓN.** Teniendo en cuenta el valor de la información intercambiada, las partes no podrán ceder los términos establecidos salvo previa autorización por escrito de la otra.
+
+Los presentes Términos y Condiciones obligan a las partes en la totalidad de su contenido y se tendrán por aceptados al momento de dar “click” en el botón de aceptación de la página web y/o mediante el “sign up” del Vendedor. Sin perjuicio que 1Ecommerce requiera la firma y envío mediante correo electrónico.`);
+  }
+
+  function showTermsAndConditionsMX(section) {
+    section.innerHTML = marked(`## **TÉRMINOS Y CONDICIONES DEL SERVICIO DE CENTRALIZADOR DE CANALES 1ECOM  S. DE  R. L  .DE  CV.**
+
+Los presentes términos y condiciones aplican al Servicio de centralizador u optimizador de canales que 1ECOM S. DE R.L. DE CV (en adelante “1ECOM”) pone a disposición y presta a productores y comercializadores de productos (en adelante, cada uno un “Vendedor”).
+
+1. **DECLARACIONES:**
+
+I. Declara **“1ECOM”:**
+
+- Que es una sociedad debidamente constituida de acuerdo a las leyes mexicanas según consta  mediante escritura pública no. 55,593 de fecha 09 de septiembre de 2020 otorgada ante la fe del Lic.  Jorge Humberto Carpio Mendoza, Notario Público número 95 de la Ciudad de León, Guanajuato, e  inscrita  en  el  registro  público  de  la  propiedad  bajo  el  folio  mercantil  electrónico  no.  N-2020066402.  Así  mismo, que está legalmente representada para los fines de estos términos  por el C. Guillermo  Plascencia Pérez, quien acredita su personalidad con el mismo instrumento notarial en el que consta  su existencia, la cual bajo protesta de decir verdad no le ha sido modificada, ni revocada en forma  alguna  a  la  fecha  aceptación de los presentes TyC.
+- Que  tiene  establecido  su  domicilio  en calle Bruma  número  102  interior  101  oficina  A,  Colonia  Jardines  del  Moral,  en  la  ciudad  de  León,  Guanajuato.
+- Que  está  de acuerdo  en  prestar  los  servicios  en  las  condiciones  contenidas  en  las  cláusulas  de  estos términos.
+- Que  su  registro  federal  de  contribuyentes es: **ECO200909J62**.
+
+II. Declaran **“LAS  PARTES”:**
+	
+**PRIMERA.**  **“LAS**  **PARTES”**  declaran  y  reconocen  que **“1ECOM”** se  reserva  el  derecho  de  modificar  cualquiera  de  los  términos  y  condiciones,  así  como  cualquiera  de  las  políticas  y  lineamientos  de  la plataforma en cualquier momento y a su entera discreción. Las modificaciones efectuadas se notificarán al **“VENDEDOR”** mediante notificaciones realizadas al correo electrónico previsto en el registro posterior a estos TyC con no  menos de quince (15) días calendario a que las mismas entren en vigencia. El **“VENDEDOR”** dispondrá de  igual término contado a partir de la notificación de las modificaciones para informar si existe disenso con las  mismas, debiendo notificarlas a **“1ECOM”** mediante el correo electrónico señalado en el registro. Si se  venciese dicho término sin manifestación alguna por parte del **“VENDEDOR”** se entenderá que han sido  aceptadas.
+
+**SEGUNDA.** Que están de acuerdo en celebrar  los presentes términos  y sujetarse a cada una de las  obligaciones  señaladas  en  las  CLÁUSULAS  de  estos términos.
+
+2. **DEFINICIONES:**
+- **1ECOMMMERCE:** Se trata de una plataforma centralizadora de operación de comercio electrónico,  que facilita conexiones  a diferentes  canales  de  venta a través de tecnología para aumentar la  exposición de los productos y mejorar las probabilidades de venta y centralizando las diferentes  verticales  del  negocio  en  el  mismo  panel  de  administración.  Esta  plataforma  administrativa  es  operada  por  el **“VENDEDOR”**.
+- **MARKETPLACES  Y  CANALES  ONLINE  ALIADOS:** Se  trata  de  canales  de  venta  aliados  a **1ECOMMMERCE** con  los  cuales  se  cuenta  con  una  conexión  para  publicar  los  productos  del **“VENDEDOR”**. Estos  canales  son  autónomos  y  sirven  como  medio  de  visibilidad  y  venta  de  productos  para  el **“VENDEDOR”**.
+- **PRODUCTO:** Se  entiende  por  producto  cualquier  bien  producido,  distribuido  o  comercializado  por  el **“VENDEDOR”** a  través  de  los **MARKETPLACES Y  CANALES ONLINE  ALIADOS** a **“1ECOM”**.
+- **“VENDEDOR”:** Se trata del productor, importador, mayorista o comercializador que cuenta con **CONTRATO** de prestación de servicios firmado con **“1ECOM”** y comercializa sus productos a través  de  los **MARKETPLACES  Y  CANALES  ONLINE  ALIADOS** mediante  la  plataforma  de **1ECOMMERCE**.
+
+3. **CLÁUSULAS**
+
+**CLÁUSULA PRIMERA. OBJETO:**  El objeto de los presentes términos consistirá en que el **“VENDEDOR”** efectúe la comercialización de diferentes productos, mediante el uso de la plataforma **1ECOMMMERCE,** a la  cual accederá en virtud de la autorización otorgada por **“1ECOM”** por virtud de estos términos. Para el  funcionamiento  de  la  plataforma **1ECOMMMERCE** el **“VENDEDOR”** también  podrá  hacer  uso  de  los **MARKETPLACES Y CANALES ONLINE  ALIADOS** que  se  incorporen  al  sistema,  para  efecto  el  efecto  previsto  en  este  párrafo, **“1ECOM”** facilitará  todas  las  herramientas  que  se  requieran  para  el  correcto  uso  y  funcionamiento de  la  plataforma.
+
+Para  el  cumplimiento  del  objeto  de  estos términos  se  acuerda  por **“LAS  PARTES”** lo  siguiente:
+**A. CATÁLOGO DE PRODUCTOS. -** Todos los productos del “**VENDEDOR”** podrán ser cargados para  centralizar su operación, así como las variaciones de los productos en talla, colores y otras, con su  respectivo  inventario  y  contenido  de  producto,  disponible  para  publicación  en **los  MARKETPLACES  Y  CANALES ONLINE ALIADOS,** siempre y cuando cumplan con los requisitos preestablecidos por los  mismos **MARKETPLACES Y CANALES ONLINE ALIADOS**, en este sentido no se podrá publicitar  ningún  producto  que  incumpla  con  los  requisitos  señalados.
+**B. LOGÍSTICA Y FACTURACIÓN. -** El **“VENDEDOR”** podrá realizar la generación y seguimiento de  guías de envío a través de transportadoras aliadas a **“1ECOM”**, en caso de que el software del **“VENDEDOR”** ofrezca  la  posibilidad  técnica.
+**C. MARKETPLACES Y  CANALES  ONLINE  ALIADOS:** El **“VENDEDOR”** podrá  realizar  la  conexión  para  distribución  de  contenido  de  productos  y  publicación  en  canales  aliados.
+**D. PEDIDOS:** Dentro  de  la  plataforma **1ECOMMMERCE**,  los  pedidos  mediante  los  diferentes  canales  serán centralizados  para  gestión  de  los  mismos.
+**E. INFORMES:** La  información  de  las  ventas  será  centralizada  a  través  de  una  pantalla  de  reportes  en la  plataforma **1ECOMMMERCE**.
+
+**CLÁUSULA SEGUNDA. TÉRMINOS CANALES ALIADOS:**  El **“VENDEDOR”** se compromete a respetar los  términos  y  condiciones  de  cada  uno  de  los **MARKETPLACES Y  CANALES  ONLINE  ALIADOS** a  la  plataforma  y  así  mismo  manifiesta  que  conoce  que  dichos  términos  y  condiciones  son  establecidos  y  manejados  por estos  y  será  su  deber  revisar  los  canales  que  para  ello  se  dispongan  en  los  cuales  puedan  publicar  si  se  ha  efectuado  alguna  modificación.
+
+El **“VENDEDOR”** acepta extender los términos y nivel de servicio de los **MARKETPLACES Y CANALES  ONLINE  ALIADOS** a los presentes términos;  haciendo  de  estos,  parte  integral  del  mismo  y  siendo responsabilidad del “**VENDEDOR”** cumplirlos en su totalidad. El **“VENDEDOR”** declara que es el único  responsable  en  caso  de  presentarse  reclamos  por  algún  incumplimiento  a  los  términos  y  condiciones  dispuestos  por  los **MARKETPLACES  Y  CANALES  ONLINE  ALIADOS**,  en tanto  es  él  quien  los  opera  o  usa  directamente,  así mismo declara expresamente que **“1ECOM”** no posee responsabilidad solidaria ni de ninguna clase frente  a  la  eventual  responsabilidad  que  derive  de  un  incumplimiento  a  los  términos  y  condiciones  de  los **MARKETPLACES Y  CANALES  ONLINE  ALIADOS**.
+
+**CLÁUSULA  TERCERA.  DERECHOS  Y  REPRESENTACIÓN  DEL  “VENDEDOR”:  El “VENDEDOR”** para  la efectiva  ejecución  del  objeto  de  este **CONTRATO** deberá  atender las  siguientes  disposiciones:
+
+**A.** El **“VENDEDOR”** debe suministrar una carta en papel membrete a su nombre autorizando, en cada  uno  de  los **MARKETPLACES  Y  CANALES  ONLINE  ALIADOS**,  a **“1ECOM”** así  como  a  sus  representantes y gestores del canal de los **MARKETPLACES Y CANALES ONLINE ALIADOS** para  el manejo del mismo o de la información necesaria para el funcionamiento de la plataforma de **1ECOMMMERCE. “1ECOM”** se reserva el derecho de crear alianzas para facilitar la gestión de los  canales  de  venta.
+
+**B. “1ECOM”**,  a  través  de  un  delegado,  se  reportará  directamente  con  el  contacto  designado  por  el **“VENDEDOR”** mientras  se  encuentre  prestando  los  servicios  objeto  del presente **CONTRATO**.
+
+**C.** Cuando **“1ECOM”** genere una transacción en función del desarrollo de sus actividades, se acordará  con el **“VENDEDOR”** la contraprestación en pesos mexicanos y las condiciones de la ejecución de la  misma a  través  del  correo electrónico  que  como  medio  de  notificación  estableció el **“VENDEDOR”**.
+
+**D.** Es responsabilidad del **“VENDEDOR”** facilitar a **“1ECOM”** o a sus representantes el acceso y la  cooperación que pudiere requerir en forma razonable y necesaria para prestar adecuadamente los  servcios  objeto  del  presente **CONTRATO**.
+
+**CLÁUSULA CUARTA. CUENTAS EN CANALES ALIADOS:**  El **“VENDEDOR”** puede escoger la cuenta a  utilizar  para  vender  en  los  diferentes  canales  entre  dos  posibilidades:
+
+1.  **CUENTA PROPIA EXISTENTE:** En caso de preferirlo por cualquier motivo, el vendedor puede operar bajo la cuenta propia existente en los marketplaces. En este caso, el vendedor se obliga a entregar los accesos y claves necesarias a **1ECOMMERCE** para el correcto desarrollo de las conexiones con 1Ecommerce.
+2.  **CUENTA PROPIA NUEVA:** En caso de no tener cuenta creada en los marketplaces, el vendedor debe suministrar todos los datos necesarios para la creación de las mismas a través de los documentos requeridos por 1Ecommerce. 1Ecommerce se encargará de gestionar la creación de las cuentas pero no se garantiza en ningún momento su apertura la cual depende plenamente de cada uno de los marketplaces. (sujeto a evaluación del Marketplace)
+
+3. El incumplimiento por cualquier causa en el despacho efectivo de los productos ofrecidos en cualquiera de los canales aliados que hayan sido ofrecidos a través de 1Ecommerce o cualquier otro tipo de penalización del canal de venta aliado, 1ECOMMERCE trasladará dicha penalización al VENDEDOR sumando una tasa administrativa del 5% del valor del pedido + IVA.
+
+**CLÁUSULA QUINTA. HONORARIOS:**
+
+Las partes acuerdan que EL VENDEDOR pagará a 1ECOMMERCE, por la prestación de sus servicios, un valor fijo + IVA por concepto de comisión por la operación y el servicio prestado.
+
+**CLÁUSULA SEXTA. VIGENCIA:**  Los presentes términos tendrán una vigencia de un año contado a partir de su aceptación, sin embargo, los presentes términos podrán darse por terminados anticipadamente a voluntad de cualquiera de **“LAS PARTES”,** previo aviso que dé al otro con 30 (treinta) días de anticipación, dicho aviso se podrá realizar por los medios de notificación previstos en el registro. El plazo anterior tiene el propósito de que durante ese lapso haya posibilidad de concluir los procesos y pagos pendientes entre ambos.
+
+**CLÁUSULA SÉPTIMA. ACLARACIONES:**  El **“VENDEDOR”** declara entender y aceptar que la prestación de  servicios  objeto  de  estos términos  consiste  que **“1ECOM”** opera  como  un  proveedor  tecnológico  para  facilitar  su  operación  de  comercio  electrónico  a  través  de  diferentes  canales  de  venta  aliados.  En  ningún  caso **“1ECOM”** es propietario de sus productos ni es responsable por cualquier indisponibilidad del servicio por parte de los **MARKETPLACES Y CANALES ONLINE ALIADOS**, fallas tecnológicas y cualquier situación que imposibilite  la comercialización a través de dicho canal. Así mismo, el **“VENDEDOR”** acepta que **“1ECOM”** no es  responsable por el cumplimiento de los términos de los **MARKETPLACES Y CANALES ONLINE ALIADOS** y  que  los  mismos  son  responsabilidad  del **“VENDEDOR”**.
+
+**CLÁUSULA  OCTAVA.  IMPUESTOS:  “LAS  PARTES”** manifiestan  que  cada  uno  será  responsable  del  cumplimiento de las obligaciones fiscales derivadas de la aplicación de estos términos  y que en el supuesto  de que el **“VENDEDOR”** incumpla con tales obligaciones libera de toda responsabilidad solidaria o subsidiaria  a **“1ECOM”.**
+
+Así mismo, **“LAS PARTES”** manifiestan que el presentes términos  no implican la aplicación del artículo 113  A de la Ley del Impuesto sobre la Renta ni la aplicación del artículo 18 B de la Ley del Impuesto al Valor  Agregado, toda vez que la presente prestación de servicios no implica que **“1ECOM”** se constituya como  intermediario entre los oferentes de bienes o servicios y los demandantes de los mismos sino únicamente  implica que mediante el uso de la plataforma **1ECOMMMERCE** se facilite las conexiones a diferentes canales  de venta a través de tecnología para aumentar la exposición de los productos y mejorar las probabilidades de  venta.
+
+**CLÁUSULA  NOVENA.  FACULTADES  Y  RELACIÓN  ENTRE  “LAS  PARTES”:  “LAS  PARTES”** acuerdan  que, en los presentes términos, **“1ECOM”** tendrá la calidad de contratista independiente, y no actuará como ni se  constituirá  en  un  agente  o  trabajador  del **“VENDEDOR”**.  En  consecuencia, **“1ECOM”** podrá  prestar  servicios  libremente a otras empresas, instituciones o personas, con la única limitación de que tales servicios no sean  incompatibles  con  los  términos  y  condiciones  de los presentes términos ni  afecten  la  prestación  y  calidad  de  los  servicios contratados por el **“VENDEDOR”**. Sin perjuicio de lo anterior, **“1ECOM”** no podrá asumir, crear o  incurrir en responsabilidades u obligaciones en nombre del **“VENDEDOR”** salvo autorización expresa y por  escrito del **“VENDEDOR”**, por consiguiente, **“1ECOM”** no podrá representar o atribuirse estar facultado para  actuar  o  representar,  como  agente,  socio  o  apoderado,  ni  obligar  o  comprometer  al **“VENDEDOR”** al  cumplimiento de cualquier obligación, limitando el alcance de sus actuaciones a los deberes que conlleva la  prestación de los servicios que se encuentren expresamente establecidos en el presente **CONTRATO**, salvo  que así se disponga expresamente. Nada de lo aquí expresado podrá interpretarse al efecto de crear una  relación  laboral,  de  sociedad,  de  fideicomiso  u  otra  asociación  de  la  especie  que  fuere.  Lo  anterior,  sin  perjuicio  de  la  posibilidad  que **“1ECOM”** actúe  en  nombre  y  representación  del **“VENDEDOR”** en  aquellas  materias  para  las  cuales  el **“VENDEDOR”**  le  hubiere  conferido  un  poder  especial.  Se  deja  constancia  que  cualquier  poder(es)  que el **“VENDEDOR”** otorgue a **“1ECOM”**, se entenderá(n) otorgados dentro del contexto de los presentes términos,  y  no  podrán  prolongarse  más  allá  del  plazo  de  vigencia  de  estos términos.
+
+**CLÁUSULA DÉCIMA. PROPIEDAD INTELECTUAL:**  El **“VENDEDOR”** acepta y reconoce que la plataforma **1ECOMMMERCE** es de propiedad o licenciamiento de **“1ECOM”** por lo que el desarrollo de la plataforma,  recursos tecnológicos y demás elementos que integren la plataforma no pueden ser copiadas o reproducidas  total  o  parcialmente  o compartidas  sin autorización  escrita  por  parte  de **“1ECOM”**.
+
+**CLÁUSULA DÉCIMA PRIMERA.  PROTECCIÓN  DE  DATOS**:  El **“VENDEDOR”** acepta  que **“1ECOM”** procese datos personales durante la vigencia de los presentes términos para efectos de la administración y gestión del **“VENDEDOR”** y para asegurar el cumplimiento de todas las leyes, normas y procedimientos aplicables. El **“VENDEDOR”** acepta que **“1ECOM”** ponga tales datos a disposición de personas distintas al **“VENDEDOR”** cuando  éste  lo estime  necesario  o  en  el  mejor  interés  del **“VENDEDOR”**,  incluyendo,  pero  sin  limitación a  toda  persona  que  proporcione  productos  y/o  servicios,  cualquier  autoridad  regulatoria,  cualquier  comprador  eventual  de **“1ECOM”** o  de  sus  negocios, o  que  bien  lo  exija  la  ley,  y  autoriza  a **“1ECOM”** a  transferir  tales  datos. **“1ECOM”**  se  obliga  a  cumplir  en  todo  momento  con  cualquier  política  o  procedimiento  en  materia  de  protección  de datos que dicte el **“VENDEDOR”**, como asimismo con las disposiciones de las normas correspondientes a  protección  de  datos,  en  relación  con  el  procesamiento  de  los  datos  personales  de  terceros  en  tanto  se  encuentre  prestando  los  servicios.
+
+**CLÁUSULA  DÉCIMA  SEGUNDA.  RESPONSABILIDAD:**  En  la medida  en  que lo  permita  la  legislación  aplicable, bajo ninguna circunstancia, alguna de **“LAS PARTES”** será responsable hacia la otra por daños o  perjuicios, incluyendo, entre otros, daños por pérdida de plusvalía comercial o utilidades comerciales, ahorros  proyectados,  lucro  cesante,  detención  de  obras  o  daños  por  oportunidades  perdidas.
+
+**CLÁUSULA DÉCIMA TERCERA. CAUSAS DE RESCISIÓN:** Queda expresamente convenido que la falta de  cumplimiento  a  cualquiera  de  las  obligaciones  convenidas  en  los presentes términos,  será  motivo  de  rescisión  de los presentes términos, y generará el pago de los daños y perjuicios que el incumplimiento cause a la  contraparte  cumplida.
+
+**CLÁUSULA DÉCIMA CUARTA. VICIOS DE LA VOLUNTAD: “LAS PARTES”** manifiestan que a la aceptación de los presentes términos no  ha  habido  error,  dolo,  violencia,  mala  fe  o  cualquier  otro  vicio  del  consentimiento  que  lo  pudiera  invalidar.
+
+**CLÁUSULA DÉCIMA QUINTA. NOTIFICACIONES:** Para todos los efectos referentes a estos términos  **“LAS PARTES”**, están de acuerdo en que las notificaciones sean realizadas a los medios de contacto que se  establecen a  continuación:
+
+**“1ECOM”: En la Calle Bruma 102 Interior 101 Oficina A, Colonia Jardines del Moral, León Guanajuato,  México.  Y  al correo  electrónico  luis.quinones@1ecommerce.io**
+
+**CLÁUSULA  DÉCIMA  SEXTA.  DIVISIBILIDAD:**  Si  cualquier  parte  de los presentes términos  y  anexos  llegara  a  ser determinada como inválida, nula o inejecutable, la misma deberá ser considerada como si no se hubiere  insertado, pero sin modificar la validez del resto de las cláusulas de los presentes términos, el cual será  interpretado  para  obtener  el  resultado  más  cercano a  la  intención  original  de **“LAS  PARTES”** al  celebrarlo.
+
+**CLÁUSULA DÉCIMA SÉPTIMA. LEGISLACIÓN APLICABLE:**  Para la interpretación y cumplimiento de los presentes términos, **“LAS PARTES”** se someten a la jurisdicción y competencia de los tribunales de la  ciudad de León, Guanajuato, México, así como las disposiciones contenidas en el Código Comercio y demás  legislación  aplicable  y  vigente,  renunciando  expresamente  al  fuero  que  pudiera  corresponderles  en  razón  de  su  domicilio  actual  o  futuro.
+
+**CLÁUSULA ESPECIAL A DISTANCIA.** Los presentes Términos y Condiciones obligan a las partes en la totalidad de su contenido y se tendrán por aceptados al momento de dar “click” en el botón de aceptación de la página web y/o mediante el “sign up” del Vendedor. Sin perjuicio que 1Ecommerce requiera la firma y envío mediante correo electrónico. Adicionalmente, el Vendedor deberá reunir los requisitos y documentación mínimos requeridos por 1Ecommerce. 1Ecommerce se reserva el derecho de no dar inicio a la relación comercial, en caso que a su criterio considere que el Vendedor no ha cumplido con este requisito.
+
+## CONVENIO  DE  CONFIDENCIALIDAD
+
+1. **DECLARACIONES:**
+ I. Declara **“1ECOM”:**
+ -	Que es una sociedad debidamente constituida de acuerdo a las leyes mexicanas según consta  mediante escritura pública no. 55,593 de fecha 09 de septiembre de 2020 otorgada ante la fe del Lic.  Jorge Humberto Carpio Mendoza, Notario Público número 95 de la Ciudad de León, Guanajuato, e  inscrita  en  el  registro  público  de  la  propiedad  bajo  el  folio  mercantil  electrónico  no.  N-2020066402.  Así  mismo, que está legalmente representada para los fines de este **CONVENIO** por el C. Guillermo  Plascencia Pérez, quien acredita su personalidad con el mismo instrumento notarial en el que consta  su existencia, la cual bajo protesta de decir verdad no le ha sido modificada, ni revocada en forma  alguna  a  la  fecha  de  firma  del presente **CONVENIO**.
+-	Que  tiene  establecido  su  domicilio  en  calle Bruma  número  102 interior  101  oficina A,  Colonia  Jardines  del  Moral,  en  la  ciudad  de  León,  Guanajuato.
+-	Que  su  registro  federal  de  contribuyentes es: **ECO200909J62**.
+
+II. Declaran **“LAS  PARTES”:**
+
+**ÚNICA.  -** Que  están  de  acuerdo  en  celebrar  el  presente **CONVENIO** y  sujetarse  a  cada  una  de  las  obligaciones  señaladas  en  las  siguientes **CLÁUSULAS:**
+
+2. **CLÁUSULAS**
+
+**PRIMERA. OBJETO: “1ECOM”** y el **“VENDEDOR”** desean asegurar el carácter confidencial de secretos  comerciales, información y otros materiales y/o antecedentes que una de **“LAS PARTES”** ha dado o dará a  conocer a la otra durante su actuación conjunta en el marco de una negociación o contrato entre **“LAS  PARTES”**.
+
+**SEGUNDA. NATURALEZA DEL VÍNCULO:**  El presente instrumento tiene como único objeto proteger la  información confidencial que **“LAS PARTES”** compartan en el marco de algún contrato o negociación, por lo  que el presente **CONVENIO** no constituye un joint venture, asociación, representación, contrato o negocio  mercantil  y/o civil o cualquier otro acuerdo sobre actividades comerciales y/o civiles conjuntos, las que, de  materializarse,  deberán  constar  por  escrito,  en  un  documento  separado  y  debidamente  suscrito  por  representantes  autorizados  de **“LAS  PARTES”**.  El  presente **CONVENIO** no  crea  ninguna  obligación  para **“LAS**
+
+**PARTES”** en el sentido de celebrar un contrato o acuerdo posterior, ni ninguna otra obligación adicional a las  expresamente señaladas en este instrumento. El **CONVENIO** tampoco obliga por sí mismo a la entrega de  Información  Confidencial.
+
+**TERCERA.  INFORMACION  CONFIDENCIAL:**  Para  efectos  de  este  instrumento  se  entenderá  por  "Información  Confidencial", aunque no se limita, a guías técnicas y los datos o know-how de carácter técnico del negocio de **“1ECOM”**, incluyendo, entre otras cosas, lo vinculado con hardware, software, pantallas, especificaciones,  diseños,  planes,  planos,  datos,  prototipos,  descubrimientos,  investigación,  desarrollo,  procesos,  procedimientos, propiedad intelectual, investigación de mercado, técnicas y planes de marketing, planes y  estrategias comerciales, nombres de clientes y otra información vinculada  con clientes, listas de precios,  políticas de precios e información financiera u otros negocios y/o información y materiales de carácter técnico,  comunicados en forma verbal, demostrativa, escrita, electrónica, gráfica o  legible  con  máquinas, o por  cualquier  otro  medio,  así  como  todos  los  análisis,  recopilaciones,  estudios  o  documentos  y,  en  general,  cualquier  otra información, general o particular, cuya revelación pudiera ser perjudicial para los  intereses de la parte que  entregue  la  información  y  que,  durante  el  desarrollo  del  Negocio,  sea  proporcionada  por  una  parte  a  la  otra,  o  a  sus personas relacionadas, o a la cual cada parte tenga acceso o elabore en  relación con el Negocio, aunque  la Información Confidencial no hubiere sido marcada como reservada. También se considerará Información  Confidencial toda información a la cual una de **“LAS PARTES”** tuviere acceso, de cualquier forma, en las  instalaciones  y  procesos  productivos  de  la  otra  parte.
+
+**CUARTA. EXCEPCIONES:**  Sin perjuicio de cualquier indicación contenida en el presente documento, ninguna  de **“LAS  PARTES”** estará  obligada  a  mantener  bajo  reserva  la  Información Confidencial  de  la  otra,  cuando:
+**(i)** Sea  o  llegue  a  ser  de  conocimiento  público  general,  no  habiendo  existido  un  acto  contrario  a  la  ley  o al  presente **CONVENIO** por  parte  de  quien  recibe  la  información;
+**(ii)** La  haya  obtenido  legalmente  de  un  tercero  que  no  estuviere  obligado  a  mantener  esa  información  en forma  confidencial;
+**(iii)** Al momento en que la parte Receptora reciba la Información Confidencial, ésta fuere conocida  previamente  por  ella  sin  que  existieran  obligaciones  de  confidencialidad  al  respecto,  lo  que  deberá  acreditar  documentalmente;
+**(iv)** Sea  desarrollada  independientemente  por  una  de **“LAS  PARTES”**,  sin  referencia  a  la  Información  Confidencial  o  sin  usar  la  misma,  lo  cual  deberá ser  demostrado  fehacientemente;  y,
+**(v)** En  un  convenio  escrito,  la  parte  que  la  revela  haya  aceptado  que  se  dé  a  conocer  esa  información  confidencial.
+
+En  el  evento  de  que  cualquiera  de **“LAS  PARTES”** o  sus  representantes  reciban  información  que  se  encuentre  obligada  a  revelar  por  imposición  legal,  en  cualquier  circunstancia  administrativa  o  judicial,  deberá  dar  aviso  sin  tardanza  de  esta  situación  a  la  otra  parte,  a  fin  de  que  esta  última  pueda  adoptar  las  medidas  de  protección  que  estime  convenientes  y/o  renunciar  a  la  obligación  de  no dar  a  conocer  la  información.
+
+**QUINTA.  PROTECCION  DE  LA  INFORMACION  CONFIDENCIAL: ** Cada  una  de **“LAS  PARTES”** se compromete  a  no  dar  a  conocer  y  a  proteger  la  Información  Confidencial  de  la  otra  parte  y  a  usarla  exclusivamente para los fines que la parte Reveladora de la Información Confidencial tuvo en consideración al  momento de entregar dicha información, y únicamente en relación con el desarrollo del Negocio. **“LAS  PARTES”** se comprometen a proteger la Información Confidencial que reciban y a no usarla en perjuicio de la  otra parte, evitando que se dé a conocer a personas que no sean sus directores, funcionarios y trabajadores  que  necesariamente  deban  tener  acceso a  ella.  Además,  se  compromete  a  dar  aviso  por  escrito  a  la  otra  parte,  sin tardanza, en caso de enterarse de cualquier apropiación indebida, divulgación o uso no autorizados de la  Información Confidencial recibida, y a adoptar medidas razonables para restringir o reducir la apropiación,  divulgación  o  uso  indebidos  de  la  referida  información.
+
+**“LAS  PARTES”** realizarán,  los  mismos  esfuerzos  que  realizan  para  proteger  su  propia  Información  Confidencial,  los  cuales  no  serán  de  un  nivel  inferior  a  la  clase  de  esfuerzos  que  se  realizarían  para  un  negocio  razonable en relación con la protección de su propia información altamente confidencial y con el secreto  comercial.
+
+Cada una de **“LAS PARTES”** hará únicamente el número de copias tangibles de la Información Confidencial  que sea necesaria para utilizarse de acuerdo con los términos de este **CONVENIO**, y en cada una de ellas se  incluirán  las  mismas  indicaciones  sobre  la  propiedad  que  se  indicarán  en  los  originales.
+
+Salvo frente a eventos de caso fortuito o fuerza mayor debidamente acreditado, la parte Receptora de la  Información Confidencial responderá directamente frente a la parte informante de la misma, por la divulgación  o por el uso ilegal o ilegítimo que de la Información Confidencial puedan hacer las personas y/o entidades que  hayan  tenido  acceso  a  ella.
+
+**“LAS  PARTES”** reconocen  que,  de  producirse  alguna  infracción  a  este **CONVENIO**,  la  parte  diligente  tendrá  el  derecho a solicitar medidas precautorias, el cumplimiento forzoso y cualquier otro recurso que en derecho  proceda con el objeto de impedir la divulgación no autorizada y/o lograr la devolución o la destrucción de la  Información  Confidencial.  Si  fuere  necesario  interponer  alguna  acción  judicial  para  hacer  cumplir  este **CONVENIO**,  la  parte  favorecida  en  dicha  acción  recuperará  de  la  otra  los  honorarios,  costos  y  gastos  razonables  y  necesarios  en  materia  de  abogados  y/o  gastos  procesales.
+
+**“LAS PARTES”** reconocen y acuerdan que los términos y condiciones de este **CONVENIO** son razonables y  necesarios  para  la  protección  de  los  legítimos  intereses  de  cada  una  de  ellas,  así  como  para  prevenir  perjuicios  o  pérdidas  como  consecuencia  de  cualquier  acción  u  omisión  que  importe  un  incumplimiento  de  este **CONVENIO**.
+
+**SEXTA. PROPIEDAD INTELECTUAL: “LAS PARTES”** dejan constancia y reconocen que los elementos  preexistentes de información y de software y todos los documentos asociados a los mismos que a la fecha del  presente instrumento sean de propiedad de la otra parte, son y seguirán perteneciendo a cada una de ellas,  según corresponda. Se entenderá como elementos preexistentes a los conceptos, conocimientos, know-how o  técnicas relativas al procesamiento de datos y tecnologías de la información, a todo material original escrito o  legible por máquina, incluyendo programas, medios magnéticos, listados, manuales y otra documentación de  programación.  En  consecuencia, **“LAS  PARTES”** no  conceden  u  otorgan  derecho  o  título  alguno  a  la  otra  parte  sobre  los  elementos  preexistentes  de  información  y  de  software  y  todos  los  documentos  asociados  a  los  mismos  que  son  de  su  respectiva  propiedad  o  de  terceros  al  momento  de  iniciar  el  desarrollo  del  proyecto  objeto  de  este **CONVENIO**.
+
+**“LAS PARTES”** dejan constancia que los entregables y todo estudio, informe y elemento del intelecto, sean  invenciones,  descubrimientos,  mejoras,  especificaciones,  códigos  fuente,  código  objeto,  programas,  documentación, diseños, métodos, sistemas, software, secreto industrial y, en general, cualquier material que  pueda  protegerse bajo las  leyes,  especialmente  aquellas  de propiedad  intelectual  e industrial,  que  se originen  o resulten como producto específico y directo de los servicios objeto del **CONVENIO** y que no correspondan a  elementos preexistentes según el párrafo primero de la presente cláusula, serán de propiedad de  “**LAS  PARTES”**, según corresponda, no pudiendo la otra parte utilizar de modo  alguno con terceros ninguna  documentación que se le proporcione o que se genere para el Negocio, así como tampoco el prototipo del  sistema, los programas fuentes y objetos generados, y las bases de prueba para el desarrollo que se utilicen  en cada  servicio,  sin  la  autorización  expresa  y  por  escrito  de  la  otra  parte.
+
+Cada una de **“LAS PARTES”** será el exclusivo titular, en la medida que lo permita la legislación aplicable, de  todas  las  copias,  reproducciones,  extractos  u  obras  derivadas  de  la  Información  Confidencial  de  su  propiedad.
+
+**“LAS PARTES”** están de acuerdo desde este momento, en las cláusulas que preceden, por lo que el **CONVENIO**  surte  plena  eficacia,  estando  facultada  la  parte  afectada  a  solicitar  las  indemnizaciones  procedentes  en  caso  de  incumplimiento  de  la  otra  parte.
+
+**SÉPTIMA. PUBLICIDAD: “LAS PARTES”** acuerdan no emitir ni publicar artículos, avisos, publicidad ni otro  tipo de  información  en  relación  con  este **CONVENIO**,  o el contenido  de  este  documento,  salvo en  la  medida en  que  así  lo  exija  la  ley.
+
+**OCTAVA. INEXISTENCIA DE LICENCIAS:**  La revelación de Información Confidencial a la parte Receptora no  implica el otorgamiento expreso  o tácito de licencia alguna  vinculada con marcas registradas, patentes,  derechos  de  autor  u  otro  tipo  de  propiedad  intelectual  o  industrial.  Ninguna  parte  de  la  Información  Confidencial  que pueda darse a conocer constituirá declaración, garantía, seguro o incentivo de cualquier tipo, incluyendo,  entre  otras,  declaraciones,  garantías,  seguros  o  estímulos  vinculados  con  la  no  violación  de  marcas  registradas,  patentes,  derechos  de  autor  u  otro  tipo  de  propiedad  intelectual  o  con  otros  derechos  de  una  de **“LAS  PARTES”** o  de terceros.  Tampoco  implica  el  otorgamiento  de licencia  alguna  o  derecho  para  utilizar  Información  Confidencial para su propio beneficio o beneficio de cualquier otra persona natural o jurídica, y en ese sentido, **“LAS  PARTES”** se  comprometen  expresamente  a  no  utilizarla  de  ese  modo.  Ninguna  disposición  contenida  en  este **CONVENIO** podrá interpretarse como cesión u otorgamiento de derechos, licencia o similares, sobre  cualquier invento, descubrimiento o mejora realizada, concebida o adquirida antes, durante o después de la  fecha del **CONVENIO**.
+
+**NOVENA. DURACIÓN:**  El presente **CONVENIO** estará vigente por un periodo de 2 años contados a partir de  su aceptación. Las obligaciones contenidas en éste respecto a la confidencialidad prevalecerán sobre cualquier  terminación  de  este **CONVENIO** por  un  periodo  de  2  años.  En  caso  de  incumplimiento  al presente **CONVENIO**,  el mismo se podrá dar por terminado de manera anticipada por la parte que sufrió la revelación de su  información, bastando únicamente la comunicación escrita que para tal efecto emita la parte afectada a su  contraparte,  expresando  las  causas  o  razones  que  dieron  origen  a dicha  terminación.
+
+**DÉCIMA.  RESPONSABILIDAD:**  La  parte  Receptora  de  información  será  responsable  por  cualquier  incumplimiento de este **CONVENIO** por parte suya, de sus empleados, asesores o subcontratistas y deberá  indemnizar a la parte afectada a título de pena convencional por una suma equivalente a 10 veces el valor  mensual  de  la  unidad  de  medida  y  actualización  del  mes  que  corresponda  al  momento  de  cometida  la  revelación  de la información.  Lo anterior, sin perjuicio de las acciones civiles, comerciales o penales a que haya lugar y  de las correspondientes indemnizaciones por los perjuicios que se causen, derivados de dicho incumplimiento. **“LAS PARTES”** tendrán la debida diligencia para que sus actuaciones, no se tipifiquen en un delito conforme  al Código Penal Federal y las normas que la modifiquen, adicionen o reglamenten. La parte Reveladora podrá  utilizar  todas  las  acciones  civiles  y  penales,  para  resarcir  daños  y  perjuicios  que  se  puedan  ocasionar  por  el  mal  manejo  de  datos  personales  e  Información  Confidencial.
+
+**DÉCIMA PRIMERA. ACUERDO ÍNTEGRO:**  Este **CONVENIO** contiene la totalidad del acuerdo entre **“LAS  PARTES”** sobre el asunto objeto del mismo y sustituye todos los acuerdos y declaraciones anteriores que  puedan existir entre los comparecientes, tanto verbales como escritos, referentes al presente documento,  respecto de los cuales se dan el más amplio, completo y recíproco finiquito. Su modificación sólo será eficaz  mediante  escrito  firmado  por  los  representantes  legales  de  cada  una  de **“LAS  PARTES”**.
+
+**DÉCIMA SEGUNDA. INEFICACIA:**  Si una disposición de este **CONVENIO** es declarada ilegal o no es posible  exigir su cumplimiento de acuerdo con la ley vigente, esa disposición deberá hacerse valer en la medida de lo  posible,  o  será  sustituida  de  común  acuerdo  por **“LAS  PARTES”**,  y  las  demás  disposiciones  de  este  instrumento  seguirán  plenamente  vigentes.
+
+**DÉCIMA TERCERA. JURISDICCIÓN Y LEY APLICABLE:**  Para la interpretación y cumplimiento del presente **CONVENIO,  “LAS  PARTES”** se  someten  a  la  jurisdicción  y  competencia  de  los  tribunales  de  la  ciudad  de  León,  Guanajuato, México, así como las disposiciones contenidas en el Código Comercio y demás legislación  aplicable y vigente, renunciando expresamente al fuero que pudiera corresponderles en razón de su domicilio  actual o  futuro.
+
+**DÉCIMA CUARTA. DOMICILIO Y NOTIFICACIONES:**  Para todos los efectos referentes a este **CONVENIO “LAS PARTES”**, están de acuerdo en que las notificaciones sean realizadas a los medios de contacto que se  establecen a  continuación:
+
+**“1ECOM”:  En  la  Calle  Bruma  102  Interior  101  Oficina  A,  Colonia  Jardines  del  Moral,  León  Guanajuato, México.  Y  al  correo  electrónico Luis.quinones@1ecommerce.io**
+
+**DÉCIMA  QUINTA.  PROTECCIÓN  DE  DATOS  E  INFORMACIÓN  PERSONAL:**  Mediante  la  celebración  de  este **CONVENIO**, la parte Receptora asume la obligación de proteger los datos personales a los que acceda con  ocasión del Negocio. Consecuencia de esta obligación legal, entre otras, deberá adoptar las medidas de  seguridad de tipo lógico, administrativo y físico, acorde a la delicadeza de la información personal a la que  accede, para garantizar que este tipo de información no será usada, comercializada, cedida, transferida y/o no  será sometida a cualquier otro tratamiento contrario a la finalidad comprendida en lo dispuesto en el objeto del  presente **CONVENIO**.
+
+La parte  Receptora  indemnizará  los  perjuicios  que  llegue  a  causar  a  la  parte  Reveladora  por  incumplimiento  de  las normas aplicables al tratamiento de la información personal, así como por las sanciones que llegaren a  imponerse por violación de la misma. En estos casos autoriza de manera expresa a la parte Reveladora, a  través de la firma de este **CONVENIO**, a deducir de las sumas de dinero que la parte Reveladora le adeude en  el momento en que se notifique la decisión desfavorable por la entidad competente, el valor de las multas  impuestas, sin perjuicio de que llegaren a demostrarse daños por cuantía superior a la multa impuesta. Por lo  anterior, la parte Receptora reconoce el derecho que tiene la parte Reveladora de auditar el cumplimiento de  las  obligaciones  de  confidencialidad  en  los  términos  previstos  en  este **CONVENIO**.
+
+Es  obligación de la parte Receptora  notificar  a la parte Reveladora,  por los medios señalados en  este **CONVENIO**,  cualquier  sospecha  de  pérdida,  fuga  o  ataque  contra  la  información  personal  a  la  que  ha  accedido  y/o tratado  con  ocasión  del  negocio,  notificación  que deberá  dar  una  vez  tenga  conocimiento  de tales  eventualidades. La pérdida, fuga y/o ataque contra la información personal implica así mismo la obligación de  la  parte  Receptora  de  gestionar  el incidente  de  seguridad  conforme  los  lineamientos  en  la  materia.
+
+El incumplimiento de las obligaciones derivadas de esta cláusula se considera como un incumplimiento grave  por los riesgos legales que conlleva el indebido tratamiento de datos personales, y en consecuencia será  considerada como causa de incumplimiento, y dará lugar al cobro de la cláusula penal pactada, sin necesidad  de  ningún  requerimiento,  a  los  cuales  se  renuncia  desde  ahora.
+
+El  **“VENDEDOR”**  manifiesta  que  previo  a  la  obtención  de  sus  datos,  y  de  acuerdo  a  lo  establecido  en  el  presente **CONVENIO**, “**1ECOM”** le dio a conocer el aviso de privacidad de datos personales, mismo que se encuentra  publicado  y  puede  ser  consultado  por  el **“VENDEDOR”** en  la  página  electrónica  en  la  red  mundial  (Internet)  de  “**1ECOM”** [www.1ecommerce.io](http://www.1ecommerce.io/)
+
+**DÉCIMA SEXTA. PROHIBICIÓN DE CESIÓN:**  Teniendo en cuenta el valor de la información intercambiada, “LAS PARTES” no podrán ceder los derechos de este **CONVENIO** salvo previa autorización por escrito de la  otra.
+
+**CLÁUSULA ESPECIAL A DISTANCIA.** Los presentes Términos y Condiciones obligan a las partes en la totalidad de su contenido y se tendrán por aceptados al momento de dar “click” en el botón de aceptación de la página web y/o mediante el “sign up” del Vendedor. Sin perjuicio que 1Ecommerce requiera la firma y envío mediante correo electrónico. Adicionalmente, el Vendedor deberá reunir los requisitos y documentación mínimos requeridos por 1Ecommerce. 1Ecommerce se reserva el derecho de no dar inicio a la relación comercial, en caso que a su criterio considere que el Vendedor no ha cumplido con este requisito.`);
+  }
+
+</script>

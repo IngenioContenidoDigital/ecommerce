@@ -4,6 +4,7 @@
         <%= error %>
     </div>
 <% } %>
+<div class="notification is-danger is-light is-hidden" id="notification"></div>
 <%if(action=='create' || action=='edit'){%>
     <div class="container">
       <br />
@@ -58,23 +59,19 @@
                   </div>
                 </div>              
               </div>
-              <%if(action=='edit'){%>
-                <div class="field" id="brand">
-              <%}else{%>
-                <div class="field is-hidden" id="brand">
-              <%}%>
-                  <label class="label">Marca</label>
-                  <div class="select control is-fullwidth">
-                    <select class="is-capitalized" name="brand" required >
-                      <option value="">-- Elegir Marca --</option>
-                      <%if(action=='edit'){%>
-                        <% brands.forEach((brand) =>{ %>
-                          <option class="is-capitalized" value="<%=brand.id%>" <%if(action=='edit' && variation.manufacturer !== null && brand.id == variation.manufacturer.id){%> selected <%}%>><%=brand.name%></option>
-                        <%})%>
-                      <%}%>
-                    </select>
-                  </div>
+              <div class="field is-hidden" id="brand">
+                <label class="label">Marca</label>
+                <div class="select control is-fullwidth">
+                  <select class="is-capitalized" name="brand" required>
+                    <option value="">-- Elegir Marca --</option>
+                    <%if(action=='edit'){%>
+                      <% brands.forEach((brand) =>{ %>
+                        <option class="is-capitalized" value="<%=brand.id%>" <%if(action=='edit' && variation.manufacturer !== null && brand.id == variation.manufacturer.id){%> selected <%}%>><%=brand.name%></option>
+                      <%})%>
+                    <%}%>
+                  </select>
                 </div>
+              </div>
               <div class="field">
                 <label class="label">Nombre</label>
                 <div class="control">
@@ -172,11 +169,12 @@
     </div>
     <script>
       live('select[name="seller"]','change',e =>{
-          let seller = e.target.value;
-          let brand = document.querySelector('#brand')
-          brand.querySelector('select').innerHTML='<option value="">-- Elegir Marca --</option>';
-          addClass(brand,'is-hidden');
-
+        let seller = e.target.value;
+        let brand = document.querySelector('#brand')
+        const notif = document.querySelector('#notification')
+        brand.querySelector('select').innerHTML='<option value="">-- Elegir Marca --</option>';
+        addClass(brand,'is-hidden');
+        if (seller) {
           io.socket.get('/find/brand/'+seller,resdata =>{
             if(resdata.length>0){
               for(let b of resdata){
@@ -186,9 +184,16 @@
                 brand.querySelector('select').appendChild(option);
               }
               removeClass(brand,'is-hidden');
+            } else {
+              notif.innerHTML = 'El Seller debe tener una marca asociada para continuar';
+              removeClass(notif, 'is-hidden');
+              setTimeout(function() {
+                addClass(notif,'is-hidden');
+              }, 5000);
             }
           });
-        });
+        }
+      });
     </script>
 <%}else{%>
       <p style="text-align: right;font-size: 20px; margin-right: 5px;">

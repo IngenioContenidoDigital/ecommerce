@@ -13,7 +13,11 @@ function live(selector, event, callback, context) {
 }
 
 function hasClass(el, className) {
-  return el.classList ? el.classList.contains(className) : new RegExp('\\b'+ className+'\\b').test(el.className);
+  if(el && el.classList){
+    return el.classList ? el.classList.contains(className) : new RegExp('\\b'+ className+'\\b').test(el.className);
+  }else{
+    return false;
+  }
 }
 
 function addClass(el, className) {

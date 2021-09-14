@@ -1,0 +1,68 @@
+<div class="container">
+  <div class="notification is-danger is-light is-hidden" id="error">
+  </div>
+  <h4 class="title is-4">Generar Link de Registro</h4>
+  <hr>
+  <div class="columns is-gapless">
+    <div class="column">
+      <div class="box">
+        <div class="field">
+          <label class="label is-size-7">Seleccione Plan</label>
+          <div class="control">
+            <div class="select is-fullwidth is-size-7">
+              <select required class="select is-capitalized" name="plan">
+                <option value="">-- Elegir --</option>
+                <% plans.forEach((plan) =>{ %>
+                  <option class="is-capitalized" value="<%=plan.id%>"><%= plan.name %></option>
+                <%})%>
+              </select>
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="buttons is-right is-fixed-bottom">
+          <br><br>
+          <button id="process" type="submit" class="button is-primary is-size-7"><i class='bx bx-link is-size-5'></i>&nbsp;&nbsp;Generar Link</button>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+    </div>
+  </div>
+  <article class="message is-info container-link is-hidden" id="containerLink">
+    <div class="message-body">
+      <div class="tags has-addons">
+        <span class="tag is-dark" id="resultLink"></span>
+        <a class="tag bx bxs-copy-alt is-info" id="copy"></a>
+      </div>
+    </div>
+  </article>
+</div>
+<script>
+  live('#process','click', e =>{
+    e.preventDefault();
+    let plan = document.querySelector('select[name="plan"]').value;
+    const span = document.querySelector('#resultLink');
+    const container = document.querySelector('#containerLink');
+    addClass(e.target, 'is-loading');
+    addClass(container, 'is-hidden');
+    io.socket.post('/generatekey', {text: plan}, (resData, jwRes) =>{
+      if(jwRes.statusCode == 200) {
+        removeClass(e.target, 'is-loading');
+        removeClass(container, 'is-hidden');
+        span.innerHTML = `${window.location.origin}/registerseller/${resData.key}`
+      }
+    });
+  });
+
+  live('#copy','click', e =>{
+    e.preventDefault();
+    const span = document.querySelector("#resultLink").textContent;
+    let textArea = document.createElement("textarea");
+    textArea.value = span;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand("Copy");
+    textArea.remove();
+  });
+</script>

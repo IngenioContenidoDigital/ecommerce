@@ -62,7 +62,6 @@ module.exports = {
           delete pro.tax;
           delete pro.seller;
 
-          console.log(pro);
             
           pr = await Product.updateOne({ id: exists.id }).set(pro);
 
@@ -142,12 +141,10 @@ module.exports = {
                               }).fetch();
                             }
                           } catch (err) {
-                            console.log(err);
                           }
                         }
                       }
                     } catch (error) {
-                      console.log(error)
                     }
                   } else {	
                         
@@ -335,7 +332,6 @@ module.exports = {
             }
           }	
         } catch (error) {	
-          console.log(error)
         }	
 
       }
