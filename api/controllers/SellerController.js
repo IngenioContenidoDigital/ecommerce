@@ -950,7 +950,12 @@ module.exports = {
     let error = null;
     let key = '';
     try {
-      key = await sails.helpers.encryptDecryptKey(req.body.text, 'encrypt');
+      if (req.body.name) {
+        const plan = await Plan.findOne({name: req.body.name});
+        key = await sails.helpers.encryptDecryptKey(plan.id, 'encrypt');
+      } else{
+        key = await sails.helpers.encryptDecryptKey(req.body.text, 'encrypt');
+      }
     } catch (err) {
       error = err;
     }
