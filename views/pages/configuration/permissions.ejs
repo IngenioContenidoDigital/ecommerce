@@ -21,6 +21,7 @@
                         <a class="tab" group="transporte">Transporte</a>
                         <a class="tab" group="localizacion">Localización</a>
                         <a class="tab" group="usuarios">Usuarios</a>
+                        <a class="tab" group="administracion">Administración</a>
                     </p>
                     <%permissions.forEach(permission =>{%>
                         <% let contains = profile.permissions.filter(pp => pp.id === permission.id) %>
