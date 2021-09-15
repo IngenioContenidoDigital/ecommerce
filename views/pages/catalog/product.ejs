@@ -920,7 +920,9 @@
         </div>
       </div>
     </div>
-    <%- partial('../../partials/help.ejs') %>
+    <% if(typeof helper!='undefined' && helper !=null){%>
+      <%- partial('../../partials/help.ejs') %>
+    <% } %>
     <script>
       <%if(channelErrors.length > 0){%>
         const integrations = <%- JSON.stringify(integra)%>

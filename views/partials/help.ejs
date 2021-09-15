@@ -1,11 +1,7 @@
-<div style="position:fixed; bottom: 5px; right:5px; max-width: 200px;" class="container">
+<%if(typeof helper!='undefined' && helper!=null){%>
+<div style="display:none;" class="container">
     <div class="columns is-mobile is-vcentered">
-        <div class="column is-8">
-            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 1</span></a>
-            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
-            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
-            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
-            <a class="helper is-invisible"><span class="tag is-info is-light is-4">Información general 2</span></a>
+        <div id="help-links" class="column is-8">
         </div>
         <div class="column is-4">
             <a class="icon is-large has-text-info is-size-1 is-pulled-right"><i class='bx bxs-help-circle'></i></a>
@@ -13,17 +9,18 @@
     </div>
 </div>
 
-<div class="modal modal-helper">
+<div id="help-content" class="modal modal-helper">
     <div class="modal-background"></div>
     <div class="modal-content">
-      <p class="image is-4by3">
-        <img src="https://bulma.io/images/placeholders/1280x960.png" alt="">
-      </p>
+        <figure class="image is-16by9">
+            <progress class="progress is-small is-primary" max="100">15%</progress>
+        </figure>
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
-  </div>
+</div>
 
 <script>
+
     live('.icon','click', e =>{
         let group = e.target.parentNode.parentNode.parentNode.querySelectorAll('.tag');
         let items = group.length;
@@ -38,14 +35,39 @@
 
     live('.helper','click', e =>{
         e.preventDefault;
-        let tag = e.target;
-        let modal = document.querySelector('.modal-helper');
-        console.log(modal);
-        if(!hasClass(modal,'is-active')){addClass(modal,'is-active')}
+        let tag = e.target;       
+        let id = '';
+        if(tag.tagName.toLowerCase()=='span'){
+            id = tag.parentNode.getAttribute('id')
+        }else{
+            id = tag.getAttribute('id')
+        }
+        let modal = document.querySelector('#help-content');
+        if(!hasClass(modal,'is-active')){addClass(modal,'is-active')}   
+        io.socket.post('/help/article/'+id,resData => {
+            if(resData){
+                let content = modal.querySelector('.image');
+                content.innerHTML = '<iframe class="has-ratio" width="1080" height="720" src="'+resData.source+'" frameborder="0" allowfullscreen></iframe>';
+            }
+        });
     });
 
     live('.modal-close','click', e =>{
         let modal = document.querySelector('.modal-helper');
         removeClass(modal,'is-active')
     });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        let help = document.getElementById('help-links');
+        io.socket.post('/help/<%=helper%>',(resData) =>{
+            if(resData && resData.length>0){
+                for(let link of resData){
+                    let article = '<a id="'+link.id+'" class="helper is-invisible"><span class="tag is-info is-light is-4">'+link.name+'</span></a>';
+                    help.innerHTML = help.innerHTML+article;
+                }
+                help.parentNode.parentNode.style='position:fixed; bottom: 5px; right:5px; max-width: 200px;';
+            }
+        });
+    });
 </script>
+<%}%>

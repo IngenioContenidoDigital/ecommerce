@@ -1,0 +1,128 @@
+<div class="container">
+    <% if (error != undefined || error != null) { %>
+        <div class="notification is-danger is-light" id="error">
+          <%= error %>
+        </div>
+      <% } %>
+      <% if(action=='create' || action=='edit'){ %> 
+        <div class="columns">
+          <div class="column">
+            <div class="container">
+              <br />
+              <h4 class="title is-4">Crear sección de ayuda al usuario</h4>
+              <hr>
+              <% if(action=='create') { %>
+                <form class="is-size-7" action="/help/create" method="POST">
+              <% } %>
+              <% if(action=='edit') { %>
+                <form class="is-size-7" action="/help/edit/<%= article.id %>" method="POST">
+              <% } %>
+                <div class="box">
+                    <div class="columns">
+                            <div class="column">
+                                    <label class="label is-size-7">Ubicación</label>
+                                    <div class="select is-fullwidth">
+                                        <select name="section" required>
+                                            <option value="">Elegir Sección de Ayuda</option>
+                                            <option value="catalog" <%if(action==='edit' && article.section==='catalog'){%> selected="selected" <%}%> >Catálogo</option>
+                                            <option value="logistics" <%if(action==='edit' && article.section==='logistics'){%> selected="selected" <%}%> >Logística</option>
+                                            <option value="discounts" <%if(action==='edit' && article.section==='discounts'){%> selected="selected" <%}%> >Descuentos</option>
+                                            <option value="orders" <%if(action==='edit' && article.section==='orders'){%> selected="selected" <%}%>>Pedidos</option>
+                                        </select>
+                                    </div>
+                            </div>                       
+                    </div>
+                    <div class="columns">
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label is-size-7">Nombre</label>                           
+                                    <div class="control has-icons-left">
+                                        <input class="input is-capitalized is-size-7" type="text" name="name" required="true" placeholder="Nombre de la sección de ayuda" <% if(action=='edit'){ %>value="<%= article.name %>"<% }%>/>
+                                        <span class="icon-input-left is-small is-left">
+                                            <i class='bx bx-rename'></i>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+                    <div class="columns">
+                        <div class="column">
+                        <div class="field">
+                            <label class="label is-size-7">URL del Video</label>
+                            <div class="control has-icons-left">
+                            <input class="input is-size-7" type="text" name="source" placeholder="URL del Video" required <% if(action=='edit'){ %>value="<%= article.source %>"<% }%>/>
+                            <span class="icon-input-left is-small is-left">
+                                <i class='bx bx-video'></i>
+                            </span>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    <div class="control buttons is-right">
+                        <% if(action=='edit'){ %> 
+                            <button type="submit" class="button is-primary is-size-7"><i class="bx bxs-pencil"></i>&nbsp;Modificar Ayuda</button>
+                        <% }else if (action=='create'){ %>
+                            <button type="submit" class="button is-primary is-size-7"><i class="bx bx-plus-circle"></i>&nbsp;Crear Ayuda</button>
+                        <% } %>
+                    </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="column"></div>
+        </div>
+      <% } else { %>
+        <p style="text-align: right;font-size: 20px; margin-right: 5px;">
+            <a href="/help/create" class="button is-primary is-size-7">Crear Ayuda</a>
+        </p>
+        <div class="table-container">
+            <table class="table is-hoverable" id="help-table">
+                <thead>
+                <tr>
+                    <th scope="col">Sección</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Opciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <% articles.forEach(function(article){ %>                
+                        <tr>
+                            <td class="align-middle is-capitalized"><%= article.section %></td>
+                            <td class="align-middle is-capitalized"><%= article.name %></td>               
+                            <td class="align-middle">                        
+                                <a href="/help/edit/<%= article.id %>" class="button is-small">
+                                <span class="icon">
+                                    <i class="bx bxs-edit"></i>
+                                </span>
+                                </a>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function(){
+            let table = new simpleDatatables.DataTable('#help-table',{
+                searchable:true,
+                sortable:true,
+                paging:true,
+                labels: {
+                placeholder: "Buscar...",
+                perPage: "{select} registros por página",
+                noRows: "No se encontraron datos",
+                info: "Mostrando {start} a {end} de {rows} registros",
+                }
+            });  
+            });
+        </script>
+      <% } %>
+      <script>
+        setTimeout(function() {
+          var el = document.getElementById('error');
+          if(el){
+            el.style.display='none';
+          }
+        }, 4000);
+      </script>
+</div>

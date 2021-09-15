@@ -37,6 +37,7 @@ module.exports = {
     let error = null;
     let products = null;
     let seller = null;
+    let helper = 'catalog';
     const perPage = sails.config.custom.DEFAULTPAGE;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       filter.seller = req.session.user.seller;
@@ -53,6 +54,7 @@ module.exports = {
       products: products,
       error: error,
       pages: pages,
+      helper:helper,
       seller:seller,
       moment: moment,
       root
@@ -201,6 +203,7 @@ module.exports = {
     const colors = await Color.find();
     const genders = await Gender.find();
     let sellers = null;
+    let helper = 'catalog';
     let integrations = null;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       sellers = await Seller.find({ id: req.session.user.seller });
@@ -258,6 +261,7 @@ module.exports = {
       taxes: taxes,
       action: action,
       product: product,
+      helper:helper,
       error: error,
       channelErrors,
       features: features,

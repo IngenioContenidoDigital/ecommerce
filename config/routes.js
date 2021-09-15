@@ -282,7 +282,14 @@ module.exports.routes = {
 
   'GET /plans/:action?/:id?' : {controller:'PlanController',action:'showplans'},
   'POST /plan/create' : {controller:'PlanController',action:'createplan'},
-  'POST /plan/edit/:id' : {controller:'PlanController',action:'editplan'}
+  'POST /plan/edit/:id' : {controller:'PlanController',action:'editplan'},
+  /** INICIO HELP ROUTES */
+  'GET /help/:action?/:id?' : {controller:'HelpController',action:'listterms'},
+  'POST /help/create' : {controller:'HelpController',action:'createhelp'},
+  'POST /help/edit/:id' : {controller:'HelpController',action:'edithelp'},
+  'POST /help/:section' : {controller:'HelpController',action:'findterms'},
+  'POST /help/article/:id' : {controller:'HelpController',action:'helpcontent'},
+  /** FIN HELP ROUTES*/
 
   /* ----- FIN ADMIN ROUTES  -----*/
 
