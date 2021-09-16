@@ -115,7 +115,7 @@ module.exports = {
             let corders = await sails.helpers.order({address:address,user:user,cart:cart,method:order.payments[0].payment_method_id,payment:payment,carrier:''});
             await Order.updateOne({id:corders[0].id}).set({createdAt:parseInt(moment(order['date_created']).valueOf()),tracking:''});
           } else {
-            return exits.error('No se pudo crear la orden');
+            throw new Error('No se pudo crear la orden');
           }
 
         }else if(oexists.length > 0 && order.status==='paid'){
