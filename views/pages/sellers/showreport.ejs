@@ -184,7 +184,7 @@
     const channel = e.target.getAttribute('channel');
     const load = document.querySelector('#downloadDelivered')
     let orders = <%- JSON.stringify(data.ordersDelivered) %>;
-    orders = orders.filter(order => order.channel === channel)
+    orders = orders.filter(item => item.order.channel === channel)
     if (orders.length > 0) {
       removeClass(load,'is-hidden');
       io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{

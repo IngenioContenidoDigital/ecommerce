@@ -37,6 +37,9 @@ module.exports = {
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     let statesIds = [];
     let ordersCommission = [];
+    let ordersItemsDelivered = [];
+    let ordersItemsCommission = [];
+    let ordersItems = [];
     let totalCommissionFee = 0;
     let totalRetIca = 0;
     let fleteTotal = 0;
@@ -57,7 +60,7 @@ module.exports = {
       where: {
         seller: inputs.sellerId,
         integration: inputs.integration.id,
-        createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }
+        createdAt: { '>': inputs.dateStart }
       }
     }).populate('currentstatus').populate('customer');
     let status = await OrderState.findOne({name: 'entregado'});
@@ -71,28 +74,36 @@ module.exports = {
       ordersCommission = await Order.find({
         where: {
           seller: inputs.sellerId,
-          currentstatus: statesIds,
           integration: inputs.integration.id,
-          createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndCommission },
-          updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
+          createdAt: { '>': inputs.dateStartCommission},
+          updatedAt: {'>': inputs.dateStart}
         }
       }).populate('currentstatus').populate('customer');
     }
     let ordersDelv = await Order.find({
       where: {
         seller: inputs.sellerId,
-        currentstatus: status.id,
         integration: inputs.integration.id,
-        updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
+        updatedAt: {'>': inputs.dateStart}
       }
     }).populate('currentstatus').populate('customer');
     for (const order of ordersDelv) {
-      ordersDelivered.total += 1;
-      ordersDelivered.price += order.totalOrder;
+      let items = await OrderItem.find({order: order.id, currentstatus: status.id, updatedAt: { '>': inputs.dateStart, '<': inputs.dateEnd }}).populate('currentstatus').populate('order');
+      for (const item of items) {
+        ordersItemsDelivered.push(item);
+        ordersDelivered.total += 1;
+        ordersDelivered.price += item.price;
+      }
     }
     for (const order of ordersCommission) {
-      let items = await OrderItem.find({order: order.id});
+      let items = await OrderItem.find({
+        order: order.id,
+        currentstatus: statesIds,
+        createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndCommission },
+        updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
+      }).populate('currentstatus').populate('order');
       for (const item of items) {
+        ordersItemsCommission.push(item);
         const salesCommission = item.commission || 0;
         const commissionFee = item.price * (salesCommission/100);
         commissionFeeOrdersFailed += commissionFee * 1.19;
@@ -102,22 +113,24 @@ module.exports = {
         if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
           totalRetIcaCommission += (commissionFee * (retIca/1000));
         }
-      }
-      if(order.currentstatus.name === 'fallido'){
-        ordersFailedComission.total += 1;
-        ordersFailedComission.price += order.totalOrder;
-      }else if(order.currentstatus.name === 'retornado'){
-        ordersReturnComission.total += 1;
-        ordersReturnComission.price += order.totalOrder;
+        if(item.currentstatus.name === 'fallido'){
+          ordersFailedComission.total += 1;
+          ordersFailedComission.price += item.price;
+        }else if(item.currentstatus.name === 'retornado'){
+          ordersReturnComission.total += 1;
+          ordersReturnComission.price += item.price;
+        }
       }
     }
+
     for (const order of orders) {
-      if (order.currentstatus.name === 'aceptado' || order.currentstatus.name === 'enviado'
-          || order.currentstatus.name === 'empacado' || order.currentstatus.name === 'en procesamiento'
-          || order.currentstatus.name === 'entregado'){
-        let items = await OrderItem.find({order: order.id});
-        fleteTotal += parseFloat(order.fleteTotal);
-        for (const item of items) {
+      let items = await OrderItem.find({order: order.id, createdAt: { '>': inputs.dateStart, '<': inputs.dateEnd }}).populate('currentstatus').populate('order');
+      for (const item of items) {
+        ordersItems.push(item);
+        if (item.currentstatus.name === 'aceptado' || item.currentstatus.name === 'enviado'
+            || item.currentstatus.name === 'empacado' || item.currentstatus.name === 'en procesamiento'
+            || item.currentstatus.name === 'entregado'){
+          fleteTotal += parseFloat(order.fleteTotal);
           const salesCommission = item.commission || 0;
           let commissionFee = item.price * (salesCommission/100);
           totalCommissionFee += commissionFee * 1.19;
@@ -128,16 +141,16 @@ module.exports = {
             totalRetIca += (commissionFee * (retIca/1000));
           }
           totalPrice += item.price;
+        }else if(item.currentstatus.name === 'cancelado'){
+          ordersCancel.total += 1;
+          ordersCancel.price += item.price;
+        }else if(item.currentstatus.name === 'fallido'){
+          ordersFailed.total += 1;
+          ordersFailed.price += item.price;
+        }else if(item.currentstatus.name === 'retornado'){
+          ordersReturn.total += 1;
+          ordersReturn.price += item.price;
         }
-      }else if(order.currentstatus.name === 'cancelado'){
-        ordersCancel.total += 1;
-        ordersCancel.price += order.totalOrder;
-      }else if(order.currentstatus.name === 'fallido'){
-        ordersFailed.total += 1;
-        ordersFailed.price += order.totalOrder;
-      }else if(order.currentstatus.name === 'retornado'){
-        ordersReturn.total += 1;
-        ordersReturn.price += order.totalOrder;
       }
     }
     const rteIca = (totalCc * 0.19);
@@ -159,10 +172,10 @@ module.exports = {
       fleteTotal,
       ordersFailedComission,
       ordersReturnComission,
-      ordersCommission,
-      resultOrdersDelivered: ordersDelv,
       totalDiscountOrders: commissionFeeOrdersFailed,
-      orders
+      orders: ordersItems,
+      ordersCommission: ordersItemsCommission,
+      resultOrdersDelivered: ordersItemsDelivered
     });
   }
 };

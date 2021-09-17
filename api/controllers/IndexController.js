@@ -186,7 +186,7 @@ module.exports = {
       orders = await Order.find({
         where: {
           seller: sellerId,
-          createdAt: { '>': dateStart, '<': dateEnd }
+          createdAt: { '>': dateStart }
         }
       }).populate('customer').populate('currentstatus').populate('integration');
       let seller = await Seller.findOne({ id: sellerId });
@@ -195,7 +195,7 @@ module.exports = {
       const retFte = seller.retFte && seller.retFte > 0 ? seller.retFte/100 : 0.04;
 
       for (const order of orders) {
-        let items = await OrderItem.find({order: order.id});
+        let items = await OrderItem.find({order: order.id, createdAt: { '>': dateStart, '<': dateEnd }}).populate('currentstatus');
         let commissionChannel = await CommissionChannel.findOne({seller: sellerId, channel: order.integration.channel });
         for (const item of items) {
           const salesCommission = item.commission || 0;
@@ -215,7 +215,7 @@ module.exports = {
           item.color = product.mainColor ? product.mainColor.name : '';
           item.size = productVariation ? productVariation.variation.col : '';
           item.customer = order.customer.fullName;
-          item.currentstatus = order.currentstatus.name;
+          item.currentstatus = item.currentstatus.name;
           item.paymentMethod = order.paymentMethod;
           item.paymentId = order.paymentId;
           item.channel = order.channel;
@@ -223,8 +223,8 @@ module.exports = {
           item.orderref = order.reference;
           item.tracking = order.tracking;
           item.fleteTotal = order.fleteTotal;
-          item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
-          item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
+          item.createdAt = moment(item.createdAt).format('DD-MM-YYYY');
+          item.updatedAt = moment(item.updatedAt).format('DD-MM-YYYY');
           item.commission = commissionFee.toFixed(2);
           item.commissioniva = commissioniva.toFixed(2);
           item.retefte = retefte.toFixed(2);
@@ -266,11 +266,11 @@ module.exports = {
       let dateEnd = new Date(req.param('endDate')).valueOf();
       orders = await Order.find({
         where: {
-          createdAt: { '>': dateStart, '<': dateEnd }
+          createdAt: { '>': dateStart }
         }
       }).populate('customer').populate('currentstatus');
       for (const order of orders) {
-        let items = await OrderItem.find({order: order.id});
+        let items = await OrderItem.find({order: order.id, createdAt: { '>': dateStart, '<': dateEnd }}).populate('currentstatus');
         for (const item of items) {
           let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
           let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
@@ -282,7 +282,7 @@ module.exports = {
           item.color = product.mainColor ? product.mainColor.name : '';
           item.size = productVariation ? productVariation.variation.col : '';
           item.customer = order.customer.fullName;
-          item.currentstatus = order.currentstatus.name;
+          item.currentstatus = item.currentstatus.name;
           item.paymentMethod = order.paymentMethod;
           item.paymentId = order.paymentId;
           item.channel = order.channel;
@@ -290,8 +290,8 @@ module.exports = {
           item.orderref = order.reference;
           item.tracking = order.tracking;
           item.fleteTotal = order.fleteTotal;
-          item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
-          item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
+          item.createdAt = moment(item.createdAt).format('DD-MM-YYYY');
+          item.updatedAt = moment(item.updatedAt).format('DD-MM-YYYY');
           ordersItem.push(item);
         }
       }

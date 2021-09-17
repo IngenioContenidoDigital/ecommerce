@@ -697,10 +697,10 @@ module.exports = {
   downloadordersexcel: async function (req, res) {
     const Excel = require('exceljs');
     const moment = require('moment');
-    let orders = req.body.orders;
+    let ordersItems = req.body.orders;
     let workbook = new Excel.Workbook();
     let worksheet = workbook.addWorksheet('Reporte');
-    let ordersItem = [];
+    let resultOrders = [];
 
     worksheet.columns = [
       { header: 'Id', key: 'id', width: 26 },
@@ -731,53 +731,51 @@ module.exports = {
     ];
     worksheet.getRow(1).font = { bold: true };
 
-    let seller = await Seller.findOne({ id: orders[0].seller });
+    let seller = await Seller.findOne({ id: ordersItems[0].order.seller });
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     const retIca = seller.retIca && seller.retIca > 0 ? seller.retIca : 9.66;
     const retFte = seller.retFte && seller.retFte > 0 ? seller.retFte/100 : 0.04;
 
-    for (const order of orders) {
-      let items = await OrderItem.find({order: order.id});
-      let integrat = await Integrations.findOne({id: order.integration});
-      let commissionChannel = await CommissionChannel.findOne({seller: order.seller, channel: integrat.channel});
-      for (const item of items) {
-        const salesCommission = item.commission || 0;
-        const commissionFee = item.price * (salesCommission/100);
-        const totalRetIca = address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0) ? (commissionFee * (retIca/1000)) : 0;
-        let totalCc = order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect ? item.price / 1.19 : 0;
-        let rteTc = (totalCc * 0.015) + ((totalCc * 0.19) * 0.15) + (totalCc * 0.00414);
-        const commissioniva = commissionFee * 0.19;
-        const retefte = (commissionFee/1.19) * retFte;
-        let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
-        let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
-        item.id = order.id;
-        item.seller = product.seller.name;
-        item.dni = product.seller.dni;
-        item.product = product.name;
-        item.price = item.price;
-        item.color = product.mainColor ? product.mainColor.name : '';
-        item.size = productVariation ? productVariation.variation.col : '';
-        item.customer = order.customer.fullName;
-        item.currentstatus = order.currentstatus.name;
-        item.paymentMethod = order.paymentMethod;
-        item.paymentId = order.paymentId;
-        item.channel = order.channel;
-        item.channelref = order.channelref;
-        item.orderref = order.reference;
-        item.tracking = order.tracking;
-        item.fleteTotal = order.fleteTotal;
-        item.createdAt = moment(order.createdAt).format('DD-MM-YYYY');
-        item.updatedAt = moment(order.updatedAt).format('DD-MM-YYYY');
-        item.commission = commissionFee.toFixed(2);
-        item.commissioniva = commissioniva.toFixed(2);
-        item.retefte = retefte.toFixed(2);
-        item.reteica = totalRetIca.toFixed(2);
-        item.reteiva = rteTc.toFixed(2);
-        item.total = commissionChannel && commissionChannel.collect ? (item.price - (commissionFee + commissioniva) + retefte + totalRetIca - rteTc).toFixed(2) : 0;
-        ordersItem.push(item);
-      }
+    for (const item of ordersItems) {
+      let customer = await User.findOne({id: item.order.customer});
+      let integrat = await Integrations.findOne({id: item.order.integration});
+      let commissionChannel = await CommissionChannel.findOne({seller: item.order.seller, channel: integrat.channel});
+      const salesCommission = item.commission || 0;
+      const commissionFee = item.price * (salesCommission/100);
+      const totalRetIca = address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0) ? (commissionFee * (retIca/1000)) : 0;
+      let totalCc = item.order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect ? item.price / 1.19 : 0;
+      let rteTc = (totalCc * 0.015) + ((totalCc * 0.19) * 0.15) + (totalCc * 0.00414);
+      const commissioniva = commissionFee * 0.19;
+      const retefte = (commissionFee/1.19) * retFte;
+      let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
+      let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
+      item.id = item.order.id;
+      item.seller = product.seller.name;
+      item.dni = product.seller.dni;
+      item.product = product.name;
+      item.price = item.price;
+      item.color = product.mainColor ? product.mainColor.name : '';
+      item.size = productVariation ? productVariation.variation.col : '';
+      item.customer = customer.fullName;
+      item.currentstatus = item.currentstatus.name;
+      item.paymentMethod = item.order.paymentMethod;
+      item.paymentId = item.order.paymentId;
+      item.channel = item.order.channel;
+      item.channelref = item.order.channelref;
+      item.orderref = item.order.reference;
+      item.tracking = item.order.tracking;
+      item.fleteTotal = item.order.fleteTotal;
+      item.createdAt = moment(item.createdAt).format('DD-MM-YYYY');
+      item.updatedAt = moment(item.updatedAt).format('DD-MM-YYYY');
+      item.commission = commissionFee.toFixed(2);
+      item.commissioniva = commissioniva.toFixed(2);
+      item.retefte = retefte.toFixed(2);
+      item.reteica = totalRetIca.toFixed(2);
+      item.reteiva = rteTc.toFixed(2);
+      item.total = commissionChannel && commissionChannel.collect ? (item.price - (commissionFee + commissioniva) + retefte + totalRetIca - rteTc).toFixed(2) : 0;
+      resultOrders.push(item);
     }
-    worksheet.addRows(ordersItem);
+    worksheet.addRows(resultOrders);
     const buffer = await workbook.xlsx.writeBuffer();
     return res.send(buffer);
   }

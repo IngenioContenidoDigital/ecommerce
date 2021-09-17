@@ -2469,13 +2469,12 @@ module.exports = {
 
     do {
 
-      if(req.body.channel == constants.SHOPIFY_CHANNEL){
+      if(req.body.channel == constants.SHOPIFY_CHANNEL || req.body.channel == constants.MAGENTO_CHANNEL){
         if(page === (lastPage + 1)){
           sails.sockets.broadcast(sid, 'product_task_ended', true);
           break;
         }
       }
-
       let importedProducts = await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,
@@ -2533,7 +2532,7 @@ module.exports = {
 
     do {
 
-      if(req.body.channel == constants.SHOPIFY_CHANNEL){
+      if(req.body.channel == constants.SHOPIFY_CHANNEL || req.body.channel == constants.MAGENTO_CHANNEL){
         if(page === (lastPage + 1)){
           sails.sockets.broadcast(sid, 'image_task_ended', true);
           break;
@@ -2758,7 +2757,7 @@ module.exports = {
 
     do {
 
-      if(req.body.channel == constants.SHOPIFY_CHANNEL){
+      if(req.body.channel == constants.SHOPIFY_CHANNEL || req.body.channel == constants.MAGENTO_CHANNEL){
         if(page === (lastPage + 1)){
           sails.sockets.broadcast(sid, 'variation_task_ended', true);
           break;
