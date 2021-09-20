@@ -87,8 +87,7 @@ module.exports = {
     let ordersDelv = await Order.find({
       where: {
         seller: inputs.sellerId,
-        integration: inputs.integration.id,
-        createdAt: { '<': inputs.dateStart}
+        integration: inputs.integration.id
       }
     }).populate('currentstatus').populate('customer');
     for (const order of ordersDelv) {
