@@ -162,7 +162,7 @@
                 <div class="control">
                   <div class="select is-fullwidth is-size-7">
                     <select required class="select is-capitalized" name="currency">
-                      <option value="0">Elegir Moneda</option>
+                      <option value="">Elegir Moneda</option>
                       <% currencies.forEach((currency) =>{ %>
                         <option class="is-capitalized" <%=(seller && seller.currency && seller.currency.id == currency.id) ? 'selected="selected"' : '' %> value="<%=currency.id%>"><%=currency.name%></option>
                       <%})%>

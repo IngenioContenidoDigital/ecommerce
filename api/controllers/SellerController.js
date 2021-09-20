@@ -77,7 +77,7 @@ module.exports = {
         phone:req.body.phone,
         domain:req.body.url ? req.body.url : '',
         active:isActive,
-        currency : req.body.currency,
+        currency : req.body.currency || null,
         integrationErp,
         safestock: req.body.safestock ? req.body.safestock : 0
       }
@@ -118,7 +118,7 @@ module.exports = {
         active:isActive,
         integrationErp,
         safestock: req.body.safestock ? req.body.safestock : 0,
-        currency: req.body.currency
+        currency: req.body.currency || null
       });
     }catch(err){
       error=err;
@@ -134,7 +134,7 @@ module.exports = {
           active:isActive,
           integrationErp,
           safestock: req.body.safestock ? req.body.safestock : 0,
-          currency: req.body.currency
+          currency: req.body.currency || null
         });
       }
     }
@@ -799,7 +799,7 @@ module.exports = {
             email: req.body.email,
             phone: req.body.phone,
             logo: filename[0].filename,
-            currency: req.body.currency,
+            currency: req.body.currency || null,
             active: false
           });
           await User.updateOne({id: req.body.user}).set({
@@ -828,7 +828,7 @@ module.exports = {
             phone: req.body.phone,
             active: false,
             logo: filename[0].filename,
-            currency: req.body.currency
+            currency: req.body.currency || null
           };
   
           let seller = await Seller.findOrCreate({dni: sellerData.dni}, sellerData);
