@@ -88,7 +88,7 @@ module.exports = {
       where: {
         seller: inputs.sellerId,
         integration: inputs.integration.id,
-        updatedAt: {'>': inputs.dateStart}
+        createdAt: { '<': inputs.dateStart}
       }
     }).populate('currentstatus').populate('customer');
     for (const order of ordersDelv) {
