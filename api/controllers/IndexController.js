@@ -454,7 +454,6 @@ module.exports = {
     }
   },
   showreport: async function(req, res){
-    req.setTimeout(0);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
