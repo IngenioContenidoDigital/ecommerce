@@ -26,6 +26,7 @@ module.exports = {
     externalId:{type:'string'},
     stock:{type:'boolean',defaultsTo:false},
     seller: {model:'seller'},
+    activity:{type:'string'},
     categories:{
       collection:'category',
       via:'products'

@@ -131,8 +131,25 @@
         </div>
         <div class="columns">
           <div class="column">
-            <label class="label is-inline is-size-7" for="group">Grupo de Productos</label>
-            <input class="input is-size-7" type="text" placeholder="Grupo de Productos" name="group" <% if(action=='edit'){ %> value="<%= product.group %>" <% } %> />
+            <div class="columns">
+              <div class="column">
+                <label class="label is-inline is-size-7" for="group">Grupo de Productos</label>
+                <input class="input is-size-7" type="text" placeholder="Grupo de Productos" name="group" <% if(action=='edit'){ %> value="<%= product.group %>" <% } %> />
+              </div>
+              <div class="column is-hidden" id="selectActivity">
+                <div class="control">
+                  <label class="label is-inline is-size-7" for="activity">Actividad Deportiva</label>
+                  <div class="select is-fullwidth is-size-7">
+                    <select class="is-capitalized" name="activity" id="activity">
+                      <option value="">-- Seleccione Actividad --</option>
+                      <% activities.forEach(function(activity){ %>
+                        <option <% if(action=='edit' && product.activity !== null && product.activity==activity){ %> selected <% } %> value="<%= activity %>"><%= activity %></option>
+                      <%})%>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
             <br>
             <div class="tabs">
               <ul>
@@ -1033,6 +1050,7 @@
       elm.forEach((child) =>{
         if(!hasClass(child,'visited')){
           let opened = false;
+          let columnActivity = document.querySelector('#selectActivity');
           io.socket.get('/categories/'+child.getAttribute('category'),function(resData){
               var d = document.createElement('ul');
               resData.forEach(function(son){
@@ -1045,6 +1063,9 @@
                     ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" checked />&nbsp;<span class="panel-icon"><i class="bx bx-book-open" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                     removeClass(d,'is-hidden');
                     opened = true;
+                    if (son.id === '5f3715c6ba9f2f04612a5a11') {
+                      removeClass(columnActivity, 'is-hidden');
+                    }
                   }else{
                     ca.innerHTML = '<a class="panel-block is-active" category="'+son.id+'" level="'+son.level+'"><input type="checkbox" name="categories[]" value="'+son.id+'" />&nbsp;<span class="panel-icon"><i class="bx bxs-book-add" aria-hidden="true"></i></span><span class="cat_name is-capitalized">'+son.name+'</span></a>';
                     if(son.level>2 && !opened){addClass(d,'is-hidden');}
@@ -1116,15 +1137,20 @@
       let catlevel = cat.parentNode.getAttribute('level');
       let catname = cat.parentElement.querySelector('.cat_name');
       let select = document.querySelector('#mainCategory');
+      let columnActivity = document.querySelector('#selectActivity');
       if (cat.checked){
         let op = document.createElement('option');
         op.value=cat.value;
         op.innerHTML=catname.innerHTML;
         op.setAttribute('level',catlevel);
         select.appendChild(op);
+        if (cat.value === '5f3715c6ba9f2f04612a5a11') {
+          removeClass(columnActivity, 'is-hidden');
+        }
       }else{
         let op = select.querySelector('option[value="'+cat.value+'"]');
         select.removeChild(op);
+        addClass(columnActivity, 'is-hidden');
       }
       let lowest = select.options[0];
       for(let o=0; o<select.options.length; o++){
@@ -1162,9 +1188,10 @@
           name:form.querySelector('input[name="name"]').value,
           reference:form.querySelector('input[name="reference"]').value,
           manufacturer:form.querySelector('select[name="manufacturer"]').value,
-          mainColor:form.querySelector('select[name="mainColor"]').value,
+          activity:form.querySelector('select[name="activity"]').value,
           seller:form.querySelector('select[name="seller"]').value,
           mainCategory:form.querySelector('select[name="mainCategory"]').value,
+          activity:form.querySelector('select[name="activity"]').value,
           gender:form.querySelector('select[name="gender"]').value,
           categories:lcat,
           tax:form.querySelector('select[name="tax"]').value,
