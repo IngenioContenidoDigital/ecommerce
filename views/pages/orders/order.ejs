@@ -12,7 +12,7 @@
           <p class="container is-capitalized"><span class="is-capitalized has-text-weight-bold">Teléfono:&nbsp;</span><span class="is-pulled-right is-lowercase is-size-7"><%= order.customer.mobile %></span></p>
           <%}%>
           <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Pedido creado:&nbsp;</span><span class="is-pulled-right"><%= moment(order.createdAt).locale('es').format('LLL')%></span></p>
-          <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Tiempo Transcurrido:&nbsp;</span><span class="is-pulled-right"><%= moment.duration((new Date())-order.createdAt).locale('es').humanize()%></span></p>
+          <p class="container is-lowercase"><span class="is-capitalized has-text-weight-bold">Tiempo Transcurrido:&nbsp;</span><span class="is-pulled-right"><%= moment.duration(order.updatedAt-order.createdAt).locale('es').humanize()%></span></p>
           <br>
           <div class="select is-fullwidth">
             <select class="is-capitalized" name="orderState">
