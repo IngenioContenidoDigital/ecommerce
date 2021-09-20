@@ -25,6 +25,7 @@ module.exports = {
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     let dateStart = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
     let dateEnd = new Date(moment(inputs.month, 'MMMM YYYY').subtract(1, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
+    let dateEndSearch = new Date(moment(inputs.month, 'MMMM YYYY').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let dateStartCommission = new Date(moment(inputs.month, 'MMMM YYYY').subtract(2, 'months').startOf('month').format('YYYY/MM/DD')).valueOf();
     let dateEndCommission = new Date(moment(inputs.month, 'MMMM YYYY').subtract(2, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let totalPrice = 0;
@@ -50,7 +51,7 @@ module.exports = {
     let ordersDelivered = [];
     let orders = [];
     for (const integration of integrations) {
-      const sales = await sails.helpers.salesPerChannel(seller.id, integration, dateStart, dateEnd, dateStartCommission, dateEndCommission);
+      const sales = await sails.helpers.salesPerChannel(seller.id, integration, dateStart, dateEnd, dateEndSearch, dateStartCommission, dateEndCommission);
       if (sales.totalPrice > 0) {
         salesPerChannel.push({channel: integration.channel.name, sales});
       }

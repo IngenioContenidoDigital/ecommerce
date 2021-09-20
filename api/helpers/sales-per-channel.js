@@ -18,6 +18,10 @@ module.exports = {
       type:'number',
       required: true
     },
+    dateEndSearch: {
+      type: 'number',
+      required: true
+    },
     dateStartCommission: {
       type: 'number',
       required: true
@@ -60,7 +64,7 @@ module.exports = {
       where: {
         seller: inputs.sellerId,
         integration: inputs.integration.id,
-        createdAt: { '>': inputs.dateStart }
+        createdAt: { '>': inputs.dateStart, '<': inputs.dateEndSearch }
       }
     }).populate('currentstatus').populate('customer');
     let status = await OrderState.findOne({name: 'entregado'});
@@ -75,8 +79,8 @@ module.exports = {
         where: {
           seller: inputs.sellerId,
           integration: inputs.integration.id,
-          createdAt: { '>': inputs.dateStartCommission},
-          updatedAt: {'>': inputs.dateStart}
+          createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndSearch},
+          updatedAt: {'>': inputs.dateStart }
         }
       }).populate('currentstatus').populate('customer');
     }

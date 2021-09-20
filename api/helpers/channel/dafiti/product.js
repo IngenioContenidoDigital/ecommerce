@@ -150,6 +150,10 @@ module.exports = {
                 data.Product.ProductData.Color=product.mainColor.name;
               }
 
+              if (product.activity) {
+                data.Product.ProductData.Activity=product.activity;
+              }
+
               //if(categories.length<2){delete data.Product.Categories;}
               if(categories.includes('2')/** Accesorios */ || categories.includes('138')/** Deportes */){delete data.Product.ProductData.ShortDescription;}
               if(i>0 && productvariation.length>1){
