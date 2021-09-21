@@ -11,6 +11,7 @@
       <%= success %>
     </div>
   <% } %>
+  <div class="notification is-danger is-light is-hidden" id="mgs-error"></div>
   <% if(action=='create' || action=='edit'){ %>
     <div class="box">
       <div class="columns is-mobile is-vcentered">
@@ -146,10 +147,10 @@
                         <i class="bx bx-upload"></i>
                       </span>
                       <span class="file-label">
-                        Logotipo
+                        Logotipo 281*63
                       </span>
                     </span>
-                    <span class="file-name">
+                    <span class="file-name" id="spanlogo">
                       No ha cargado ningún archivo.
                     </span>
                   </label>
@@ -182,6 +183,29 @@
             <% } %>
           </div>
         </form>
+        <script>
+          live('#logo','change', e =>{
+            const input = document.querySelector('#logo');
+            const error = document.querySelector('#mgs-error');
+            let url = window.URL || window.webkitURL;
+            let image, file;
+            if ((file = input.files[0])) {
+              image = new Image();
+              image.onload = function() {
+                if (this.width > 281 && this.height > 63) {
+                  input.value = '';
+                  document.querySelector('#spanlogo').innerHTML = 'No ha cargado ningún archivo.';
+                  error.innerHTML = 'El logo debe tener un tamaño de 281*63';
+                  removeClass(error, 'is-hidden');
+                  setTimeout(function() {
+                    addClass(error,'is-hidden');
+                  }, 5000);
+                }
+              };
+              image.src = url.createObjectURL(file);
+            }
+          });
+        </script>
       </div>
       <div class="is-hidden" id="address">
         <div class="column">
