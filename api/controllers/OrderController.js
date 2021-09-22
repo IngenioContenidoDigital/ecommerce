@@ -746,7 +746,7 @@ module.exports = {
       let totalCc = item.order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect ? item.price / 1.19 : 0;
       let rteTc = (totalCc * 0.015) + ((totalCc * 0.19) * 0.15) + (totalCc * 0.00414);
       const commissioniva = commissionFee * 0.19;
-      const retefte = (commissionFee/1.19) * retFte;
+      const retefte = commissionFee * retFte;
       let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
       let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
       item.id = item.order.id;
