@@ -9,6 +9,7 @@ module.exports = {
     user:{model:'user'},
     state:{model:'orderstate'},
     sms:{type:'boolean',defaultsTo:false},
-    email:{type:'boolean',defaultsTo:false}
-  },
+    email:{type:'boolean',defaultsTo:false},
+    feature: {type:'string', isIn: ['orderupdate', 'productnew'], defaultsTo:''}
+  }
 };

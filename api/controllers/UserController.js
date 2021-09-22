@@ -437,14 +437,17 @@ module.exports = {
     let user = req.body.user;
     let notification = req.body.notification;
     let orderState = req.body.orderState;
+    let feature = req.body.feature;
     try {
-      await UserNotification.findOrCreate({state: orderState, user: user},{
+      const filter = orderState ? {state: orderState, user: user} : {feature: feature, user: user};
+      await UserNotification.findOrCreate(filter, {
         user: user,
         state: orderState,
+        feature: feature,
         sms: notification === 'sms' ? req.body.value : false,
         email: notification === 'email' ? req.body.value : false
       }).exec(async (err, record, created)=>{
-        if(err){return new Error(err.message);}
+        if(err){return res.send({error: err.message});}
         if(!created){
           await UserNotification.updateOne({id: record.id}).set({
             sms: notification === 'sms' ? req.body.value : record.sms,
@@ -454,8 +457,7 @@ module.exports = {
       });
       return res.send({error: null});
     } catch (err) {
-      console.log(err);
-      return res.send({error: err});
+      return res.send({error: err.message});
     }
   }
 };

@@ -177,32 +177,64 @@
 				</script>
 			</div>
 			<div class="is-hidden" id="notification">
-				<table class="table is-hoverable is-size-6 is-mediumwidth">
-					<thead>
-					  <tr>
-						<th><small></small></th>
-						<th><small>Sms</small></th>
-						<th><small>Email</small></th>
-					  </tr>
-					</thead>
-					<tbody>
-						<% if(states){ %>
-							<% states.forEach(state => { %>
+				<div class="columns">
+					<div class="column">
+						<h6 class="title is-6">Notificación de Pedidos</h4>
+						<hr>
+						<table class="table is-hoverable is-size-6 is-mediumwidth">
+							<thead>
 								<tr>
-									<td><span class="tag" style="background-color: <%= state.color.code %>; width: 250px;"><p class="text-notification"><%= state.name.toUpperCase() %></p></span></span></td>
+								<th><small></small></th>
+								<th><small>Sms</small></th>
+								<th><small>Email</small></th>
+								</tr>
+							</thead>
+							<tbody>
+								<% if(states){ %>
+									<% states.forEach(state => { %>
+										<tr>
+											<td><span class="tag" style="background-color: <%= state.color.code %>; width: 250px;"><p class="text-notification"><%= state.name.toUpperCase() %></p></span></span></td>
+											<td>
+												<input id="sms-<%= state.id %>" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.state == state.id && n.sms)){%>checked<%}%>>
+												<label for="sms-<%= state.id %>"></label>
+											</td>
+											<td>
+												<input id="email-<%= state.id %>" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.state == state.id && n.email)){%>checked<%}%>>
+												<label for="email-<%= state.id %>"></label>
+											</td>
+										</tr>
+									<%})%>
+								<%}%>
+							</tbody>
+						</table>
+					</div>
+					<div class="column">
+						<h6 class="title is-6">Notificación de Productos</h4>
+						<hr>
+						<table class="table is-hoverable is-size-6 is-mediumwidth">
+							<thead>
+								<tr>
+								<th><small></small></th>
+								<th><small>Sms</small></th>
+								<th><small>Email</small></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><span class="tag" style="background-color: #32cd32; width: 250px;"><p class="text-notification">Producto Nuevo</p></span></span></td>
 									<td>
-										<input id="sms-<%= state.id %>" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.state == state.id && n.sms)){%>checked<%}%>>
-										<label for="sms-<%= state.id %>"></label>
+										<input id="sms-productnew" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.feature == 'productnew' && n.sms)){%>checked<%}%>>
+										<label for="sms-productnew"></label>
 									</td>
 									<td>
-										<input id="email-<%= state.id %>" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.state == state.id && n.email)){%>checked<%}%>>
-										<label for="email-<%= state.id %>"></label>
+										<input id="email-productnew" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.feature == 'productnew' && n.email)){%>checked<%}%>>
+										<label for="email-productnew"></label>
 									</td>
 								</tr>
-							<%})%>
-						<%}%>
-					</tbody>
-				  </table>
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 		<script>
@@ -211,8 +243,9 @@
 				let value = e.target.checked;
 				let user = '<%- user ? user.id : "" %>';
 				const notification = element.split('-')[0];
-				const orderState = element.split('-')[1];
-				io.socket.post('/usernotification', {user, notification, orderState, value}, (resData, jwRes) => {
+				const orderState = element.split('-')[1] !== 'productnew' ? element.split('-')[1] : null;
+				const feature = element.split('-')[1] === 'productnew' ? element.split('-')[1] : 'orderupdate';
+				io.socket.post('/usernotification', {user, notification, orderState, feature, value}, (resData, jwRes) => {
 					if(jwRes.statusCode == 200) {
 						if (resData.error) {
 							setTimeout(() => { 

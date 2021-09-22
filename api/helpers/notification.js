@@ -41,7 +41,7 @@ module.exports = {
           await sails.helpers.sendSms('Te informamos que se ha cambio de estado (' + state.name.toUpperCase() + ') la orden #'+ inputs.order.reference +'. Por favor verificar la orden.',country.prefix+user.mobile);
         }
         if(userNotification && userNotification.email){
-          await sails.helpers.sendEmail('email-notification',{state: state.name.toUpperCase(), order: inputs.order},user.emailAddress,'Cambio de Estado de un Pedido');
+          await sails.helpers.sendEmail('email-notification',{state: state.name.toUpperCase(), order: inputs.order},user.emailAddress,'Cambio de Estado de un Pedido', 'email-notification');
         }
       }
     }
