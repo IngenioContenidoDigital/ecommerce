@@ -767,12 +767,12 @@ module.exports = {
       item.fleteTotal = item.order.fleteTotal;
       item.createdAt = moment(item.createdAt).format('DD-MM-YYYY');
       item.updatedAt = moment(item.updatedAt).format('DD-MM-YYYY');
-      item.commission = commissionFee.toFixed(2);
-      item.commissioniva = commissioniva.toFixed(2);
-      item.retefte = retefte.toFixed(2);
-      item.reteica = totalRetIca.toFixed(2);
-      item.reteiva = rteTc.toFixed(2);
-      item.total = commissionChannel && commissionChannel.collect ? (item.price - (commissionFee + commissioniva) + retefte + totalRetIca - rteTc).toFixed(2) : 0;
+      item.commission = parseFloat(commissionFee.toFixed(3));
+      item.commissioniva = parseFloat(commissioniva.toFixed(3));
+      item.retefte = parseFloat(retefte.toFixed(3));
+      item.reteica = parseFloat(totalRetIca.toFixed(3));
+      item.reteiva = rteTc !== 0 ? parseFloat(rteTc.toFixed(3)) : 0;
+      item.total = commissionChannel && commissionChannel.collect ? parseFloat((item.price - (commissionFee + commissioniva) + retefte + totalRetIca - rteTc).toFixed(3)) : 0;
       resultOrders.push(item);
     }
     worksheet.addRows(resultOrders);
