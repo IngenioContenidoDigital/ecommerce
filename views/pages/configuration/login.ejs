@@ -68,7 +68,7 @@
 </div>
 <script>
   if (window.location.host === 'localhost:1337' || window.location.host === '1ecommerce.app') {
-    io.socket.post(`/generatekey`, {name: 'bronze'}, function (resData, jwRes) {
+    io.socket.post(`/generatekey`, {name: 'bronce'}, function (resData, jwRes) {
       if(jwRes.statusCode == 200){
         if (resData && resData.key) {
           document.getElementById("createAccount").href = `/registerseller/${resData.key}`;
