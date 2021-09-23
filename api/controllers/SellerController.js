@@ -902,7 +902,7 @@ module.exports = {
               name: card.name,
               last_name: ' ',
               email: seller.email,
-              bill: `CR-Register`,
+              bill: `CR-Register-${seller.name}`,
               description: `Cobro por registro de cuenta`,
               value: price,
               tax: ((price/1.19)*0.19).toString(),

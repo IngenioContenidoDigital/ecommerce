@@ -522,9 +522,6 @@
       let validate = validateForm(form);
       if (validate && sellerId) {
         createCreditCard(stepNext, form);
-        setTimeout(() => {
-          collectRegister(stepNext);
-        }, 7000);
       } else {
         showError('Complete los campos requeridos', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
         document.querySelector('#btn-next').removeAttribute('disabled');
@@ -703,6 +700,10 @@
         if (resData && resData.error) {
           showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
           document.querySelector('#btn-next').removeAttribute('disabled');
+        } else {
+          setTimeout(() => {
+            collectRegister(stepNext);
+          }, 3000);
         }
       } else {
         showError('Error al guardar la tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
