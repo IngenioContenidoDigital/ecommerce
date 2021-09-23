@@ -33,6 +33,7 @@ module.exports = {
           if (variations.variations.length > 0) {
             const createdProduct = await Product.create(pro).fetch();
             if (createdProduct) {
+              await sails.helpers.notificationProduct(createdProduct);
               await sails.helpers.marketplaceswebhooks.variations(variations, createdProduct.id, seller, inputs.discount);
               await sails.helpers.marketplaceswebhooks.images(images, createdProduct.id, seller);
             }
