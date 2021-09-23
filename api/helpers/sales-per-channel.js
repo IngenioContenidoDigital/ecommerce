@@ -80,7 +80,6 @@ module.exports = {
           seller: inputs.sellerId,
           integration: inputs.integration.id,
           createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndSearch},
-          updatedAt: {'>': inputs.dateStart }
         }
       }).populate('currentstatus').populate('customer');
     }
