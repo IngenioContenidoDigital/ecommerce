@@ -3505,7 +3505,7 @@ module.exports = {
           },
           'MPOffer': {
             'msiEligible': 'No',
-            'price': productvariation.price.toFixed(3),
+            'price': parseFloat(productvariation.price).toFixed(3),
             'ShippingDimensionsWidth': {
               'measure': product.width,
               'unit': 'cm'
@@ -3531,8 +3531,6 @@ module.exports = {
       };
       if(action === 'PARTIAL_UPDATE'){delete body.MPItem.MPOffer;}
     }
-    console.log(body.MPItem.MPProduct.category);
-    console.log(body);
 
     return exits.success(body);
   }
