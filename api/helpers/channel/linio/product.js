@@ -57,6 +57,7 @@ module.exports = {
           let priceDiscount = inputs.integration.priceDiscount || 0;
           let productvariation = await ProductVariation.find({product:product.id})
           .populate('variation');
+          let integration = await Integrations.findOne({id:inputs.integration.id});
           let parent = productvariation.length > 0 ? productvariation[0].id : '';
           let categories = [];
           if(inputs.alldata){
@@ -125,8 +126,8 @@ module.exports = {
               let productfeatures = await ProductFeature.find({product:p.id,value:{'!=':''}});
               if(productfeatures.length>0){
                 for(let fc of productfeatures){
-                  if(fc.value){
-                    let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
+                  if(fc.value && integration){
+                    let channelfeatures = await FeatureChannel.find({channel:integration.channel,feature:fc.feature});
                     for(let cf of channelfeatures){
                       data.Product.ProductData[cf.name] = fc.value.toLowerCase();
                     }
