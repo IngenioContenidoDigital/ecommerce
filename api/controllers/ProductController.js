@@ -2538,7 +2538,7 @@ module.exports = {
 
     let seller = null;
     let page = req.body.page;
-    let pageSize = req.body.pageSize;
+    let pageSize = req.body.channel == constants.MAGENTO_CHANNEL ? 4 : req.body.pageSize;
     let lastPage;
     let next;
     let sid = sails.sockets.getId(req);
@@ -2567,7 +2567,6 @@ module.exports = {
         'IMAGES',
         { page, pageSize, next: next || null }
       ).catch((e) => console.log(e));
-
       if (importedProductsImages && importedProductsImages.pagination){
         next = importedProductsImages.pagination;
       }
@@ -2698,7 +2697,7 @@ module.exports = {
             try {
               let product = p.externalId ? await Product.findOne({externalId: p.externalId, seller: seller}).catch((e)=>{
                 throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
-              }) : await Product.findOne({reference: p.reference, seller: seller}).catch((e)=>{
+              }) : await Product.findOne({reference: p.reference.toUpperCase(), seller: seller}).catch((e)=>{
                 throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
               });
               if(product &&  await ProductImage.count({product:product.id}) == 0){
