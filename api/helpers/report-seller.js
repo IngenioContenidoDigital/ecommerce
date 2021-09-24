@@ -37,6 +37,8 @@ module.exports = {
     let salesPerChannel = [];
     let totalCommission = 0;
     let rteTc = 0;
+    let devTotalCommission = 0;
+    let devRteIca = 0;
     let rteTcComission = 0;
     let commissionFeeOrdersFailed = 0;
     let totalCommissionNotIva = 0;
@@ -113,6 +115,8 @@ module.exports = {
       ordersFailedComission.price += sale.sales.ordersFailedComission.price;
       rteTc += sale.sales.rteTc;
       rteTcComission += sale.sales.rteTcComission;
+      devTotalCommission += sale.sales.devTotalCommission;
+      devRteIca += sale.sales.devRetIca;
       commissionFeeOrdersFailed += sale.sales.totalDiscountOrders;
       ordersCommission = [...ordersCommission, ...sale.sales.ordersCommission];
       ordersDelivered = [...ordersDelivered, ...sale.sales.resultOrdersDelivered];
@@ -121,12 +125,15 @@ module.exports = {
     let totalOtherConcepts = totalSku + fleteTotal;
     let resultRetFte = totalSku !== 0 && totalCommission === 0 ? totalRetFte + ((totalOtherConcepts/1.19)*retFte) : totalSku !== 0 ? totalRetFte + (totalOtherConcepts/1.19)*retFte : totalRetFte;
     totalRetIca = totalSku !== 0  && (seller.retIca && seller.retIca > 0) ? totalRetIca + ((totalOtherConcepts/1.19)*(retIca/1000)) : totalRetIca;
-    let totalBalance = (totalCommission + totalOtherConcepts + rteTc - rteTcComission) - commissionFeeOrdersFailed - (resultRetFte + totalRetIca);
+    let totalBalance = (totalCommission + totalOtherConcepts + rteTc - rteTcComission) - commissionFeeOrdersFailed - (resultRetFte + totalRetIca - devRteIca);
     return exits.success({
       rteTc,
+      rteTcComission,
       seller,
       address,
       totalCommission,
+      devTotalCommission,
+      devRteIca,
       totalCommissionNotIva,
       totalPrice,
       totalSku,
