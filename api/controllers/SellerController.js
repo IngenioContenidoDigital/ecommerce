@@ -756,13 +756,21 @@ module.exports = {
         const epayco = await sails.helpers.payment.init('CC');
         const resultSubscription = await epayco.subscriptions.get(req.body.x_extra1);
         if (resultSubscription.status) {
-          if(subscription.state !== resultSubscription.status_plan){
-            await Subscription.updateOne({id: subscription.id}).set({
-              state: resultSubscription.status_plan,
-              currentPeriodStart: resultSubscription.current_period_start,
-              currentPeriodEnd: resultSubscription.current_period_end
-            });
-          }
+          let state = await sails.helpers.orderState(req.body.x_response);
+          await Subscription.updateOne({id: subscription.id}).set({
+            state: resultSubscription.status_plan,
+            currentPeriodStart: resultSubscription.current_period_start,
+            currentPeriodEnd: resultSubscription.current_period_end
+          });
+          await Invoice.create({
+            reference: req.body.x_ref_payco,
+            invoice: req.body.x_id_factura,
+            state: state,
+            paymentMethod: req.body.x_franchise,
+            total: req.body.x_amount,
+            tax: req.body.x_tax,
+            seller: subscription.seller
+          }).fetch();
         }
       }
     } else {
