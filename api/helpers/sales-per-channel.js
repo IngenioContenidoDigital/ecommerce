@@ -37,6 +37,8 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
+    const moment = require('moment');
+    moment.locale('es');
     let seller = await Seller.findOne({ id: inputs.sellerId });
     let address = await Address.findOne({ id: seller.mainAddress }).populate('city').populate('country');
     let statesIds = [];
@@ -157,7 +159,8 @@ module.exports = {
     }
     const rteIca = (totalCc * 0.19);
     const rteIcaCommssion = (totalTcComission * 0.19);
-    let rteTc = (totalCc * 0.015) + (rteIca * 0.15) + (totalCc * 0.00414);
+    const rteIcaCC = inputs.dateStart < moment('01-09-2021', 'DD-MM-YYYY').valueOf() ? (totalCc * 0.00414) : 0;
+    let rteTc = (totalCc * 0.015) + (rteIca * 0.15) + rteIcaCC;
     let rteTcComission = (totalTcComission * 0.015) + (rteIcaCommssion*0.15) + (totalTcComission * 0.00414);
     const vrBase = (commissionFeeOrdersFailed / 1.19);
     return exits.success({
