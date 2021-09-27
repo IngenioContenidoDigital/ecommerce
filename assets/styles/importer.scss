@@ -1,4 +1,5 @@
 @charset "utf-8";
+@use "sass:math";
 // Import a Google Font
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
@@ -19,13 +20,8 @@ $info: $cyan;
 $button-hover-color:$blue-dark;
 
 /*! bulma.io v0.8.0 | MIT License | github.com/jgthms/bulma */
-@import "../../node_modules/bulma/sass/utilities/_all.sass";
-@import "../../node_modules/bulma/sass/base/_all.sass";
-@import "../../node_modules/bulma/sass/elements/_all.sass";
-@import "../../node_modules/bulma/sass/form/_all.sass";
-@import "../../node_modules/bulma/sass/components/_all.sass";
-@import "../../node_modules/bulma/sass/grid/_all.sass";
-@import "../../node_modules/bulma/sass/layout/_all.sass";
+@import "../../node_modules/bulma/bulma.sass";
+@import "../../node_modules/bulma-switch/src/sass/index.sass";
 @import "../../node_modules/bulma-pageloader/dist/css/bulma-pageloader.sass";
 @import "../../node_modules/bulma-calendar/src/sass/index.sass";
 @import "../../node_modules/@creativebulma/bulma-badge/src/sass/index.sass";

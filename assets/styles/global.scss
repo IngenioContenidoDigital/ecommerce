@@ -1,4 +1,14 @@
 .button{font-weight: bold;}
+/** Mega Menu */
+.navbar-item.is-mega {
+    position: static;
+  
+    .is-mega-menu-title {
+      margin-bottom: 0;
+      padding: .375rem 1rem;
+    }
+}
+/* Fin Mega menu */
 .menu{padding:7px 0px 7px 10px;}
 .menu-label{
     font-family: $family-sans-serif;
