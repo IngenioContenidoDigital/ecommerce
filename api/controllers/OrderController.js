@@ -698,6 +698,7 @@ module.exports = {
     const Excel = require('exceljs');
     const moment = require('moment');
     let ordersItems = req.body.orders;
+    let period = req.body.period;
     let workbook = new Excel.Workbook();
     let worksheet = workbook.addWorksheet('Reporte');
     let resultOrders = [];
@@ -728,6 +729,7 @@ module.exports = {
       { header: 'Flete Total', key: 'fleteTotal', width: 20 },
       { header: 'Fecha de creación', key: 'createdAt', width: 20 },
       { header: 'Fecha de actualización', key: 'updatedAt', width: 22 },
+      { header: 'Periodo', key: 'period', width: 22 }
     ];
     worksheet.getRow(1).font = { bold: true };
 
@@ -744,7 +746,8 @@ module.exports = {
       const commissionFee = item.price * (salesCommission/100);
       const totalRetIca = address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0) ? (commissionFee * (retIca/1000)) : 0;
       let totalCc = item.order.paymentMethod === 'PayuCcPayment' && commissionChannel && commissionChannel.collect ? item.price / 1.19 : 0;
-      let rteTc = (totalCc * 0.015) + ((totalCc * 0.19) * 0.15) + (totalCc * 0.00414);
+      const rteIcaCC = item.createdAt < moment('01-09-2021', 'DD-MM-YYYY').valueOf() ? (totalCc * 0.00414) : 0;
+      let rteTc = (totalCc * 0.015) + ((totalCc * 0.19) * 0.15) + rteIcaCC;
       const commissioniva = commissionFee * 0.19;
       const retefte = commissionFee * retFte;
       let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
@@ -753,7 +756,7 @@ module.exports = {
       item.seller = product.seller.name;
       item.dni = product.seller.dni;
       item.product = product.name;
-      item.price = item.price;
+      item.price = parseFloat(item.price);
       item.color = product.mainColor ? product.mainColor.name : '';
       item.size = productVariation ? productVariation.variation.col : '';
       item.customer = customer.fullName;
@@ -764,7 +767,8 @@ module.exports = {
       item.channelref = item.order.channelref;
       item.orderref = item.order.reference;
       item.tracking = item.order.tracking;
-      item.fleteTotal = item.order.fleteTotal;
+      item.fleteTotal = parseFloat(item.order.fleteTotal);
+      item.period = period === 'update' ? moment(item.updatedAt).format('YYYY-MM') : moment(item.createdAt).format('YYYY-MM');
       item.createdAt = moment(item.createdAt).format('DD-MM-YYYY');
       item.updatedAt = moment(item.updatedAt).format('DD-MM-YYYY');
       item.commission = parseFloat(commissionFee.toFixed(3));

@@ -151,7 +151,7 @@
     orders = orders.filter(order => order.currentstatus.name === status)
     if (orders.length > 0) {
       removeClass(load,'is-hidden');
-      io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
+      io.socket.post('/downloadordersexcel', {orders, period: 'create'}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
           addClass(load,'is-hidden');
           saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes ${status}.xlsx`);
@@ -173,7 +173,7 @@
     }
     if (orders.length > 0) {
       removeClass(load,'is-hidden');
-      io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
+      io.socket.post('/downloadordersexcel', {orders, period: 'update'}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
           addClass(load,'is-hidden');
           saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes ${status !== 'all' ? status : 'Comisión'}.xlsx`);
@@ -190,7 +190,7 @@
     orders = orders.filter(item => item.order.channel === channel)
     if (orders.length > 0) {
       removeClass(load,'is-hidden');
-      io.socket.post('/downloadordersexcel', {orders}, (resData, jwRes) =>{
+      io.socket.post('/downloadordersexcel', {orders, period: 'update'}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
           addClass(load,'is-hidden');
           saveAs(new Blob([resData],{type:"application/octet-stream"}), `Items Ordenes Entregadas ${channel}.xlsx`);
