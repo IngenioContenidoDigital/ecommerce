@@ -1,3 +1,4 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <div class="container">
 	<% if (error != undefined || error != null) { %>
 		<div class="notification is-danger is-light" id="error">
@@ -28,6 +29,7 @@
 									<label class="label">Tipo de Importación</label>
 									<div class="select is-fullwidth">
 										<select name="entity" required>
+											<option value="">--Seleccione--</option>
 											<option value="Product">Productos</option>
 											<option value="ProductVariation">Variaciones de Producto</option>
 											<option value="ProductImage">Imagenes de Producto</option>
@@ -52,7 +54,9 @@
 											</span>
 										</label>
 									</div>
-								</div> 
+								</div>
+								<div class="notification is-hidden" id="container-info">
+								</div>
 								<div class="control buttons is-right">
 									<button id="process" type="submit" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Archivo</button>
 								</div>  
@@ -111,14 +115,14 @@
 								<% }else{ %>
 									<div class="notification">
 										<button class="delete"></button>
-										Para realizar la importacion de catalogo de producto se debe configurar previamente
+										Para realizar la importación de catalogo de producto se debe configurar previamente
 										la plataforma de origen con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
 									</div>
 								<%}%>
 							<%}else {%> 
 								<div class="notification">
 									<button class="delete"></button>
-									Para realizar la importacion de catalogo de producto se debe configurar previamente
+									Para realizar la importación de catalogo de producto se debe configurar previamente
 									la plataforma de origen con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
 								</div>
 							<%}%>
@@ -352,16 +356,25 @@
 		const entity = document.querySelector('select[name="entity"]').value;
 		const file = document.querySelector('input[name="file"]').value;
 		const seller = '<%- seller %>';
-		addClass(box,'is-hidden');
-		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-    	document.querySelector('#divreport').innerHTML = '';
+		if (file && entity) {
+			addClass(box,'is-hidden');
+			document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+			document.querySelector('#divreport').innerHTML = '';
+		} else {
+			document.querySelector('#error-from-cms').innerHTML = 'Debes Seleccionar un tipo de importación o agregar el archivo excel';
+			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			setTimeout(() =>{
+				document.querySelector('#error-from-cms').innerHTML = '';
+				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			}, 5000)
+		}
   });
 
 	live('#process-from-provider','click',e=>{
 		e.preventDefault();
 		let box = document.querySelector('.box').parentNode;
 		const importType = document.querySelector('select[name="importType"]').value;
-    	const discount = document.querySelector('input[name="discount"]').checked;
+    const discount = document.querySelector('input[name="discount"]').checked;
 		const asColor = document.querySelector('input[name="color"]').checked;
 		const channel = document.querySelector('input[name="channel"]').value;
 		const apiUrl = document.querySelector('input[name="apiUrl"]').value;
@@ -387,19 +400,37 @@
 		});
 	});
 
-	live('select[name="entity"]','change',e=>{
+	live('select[name="entity"]','change', e =>{
 		let elm = document.querySelector('#file');
-		if(e.target.value==='ProductImage'){
+		let container = document.querySelector('#container-info');
+		let value = e.target.value;
+		if(value === 'ProductImage'){
+			addClass(container, 'is-hidden');
 			elm.setAttribute('accept','image/*');
 			elm.setAttribute('multiple','multiple');
 			document.querySelector('span .file-label').innerHTML='Imagenes a Procesar'
 			document.querySelector('.file-name').innerHTML='Cargar Varias Imagenes'
 		}else{
+			container.innerHTML = `
+			Puedes Descargar la plantilla de Excel <strong><a href="#" id='btnDownload' entity=${value}>Descargar</a></strong>`;
+			removeClass(container, 'is-hidden');
 			elm.setAttribute('accept','.xlsx, .xls');
 			elm.removeAttribute('multiple');
 			document.querySelector('span .file-label').innerHTML='Archivo Excel'
 			document.querySelector('.file-name').innerHTML='Cargar Archivo a procesar'
 		}
+	})
+
+	live('#btnDownload','click', e =>{
+		e.preventDefault();
+		let entity = e.target.getAttribute('entity');
+		let name = entity === 'Product' ? 'Productos' : entity === 'ProductVariation' ? 'Variaciones de Producto' : 
+		entity === 'ProductImage' ? 'Imagenes de Producto' : 'Descuentos';
+		io.socket.post('/downloadtemplate', {entity}, (resData, jwRes) =>{
+			if(jwRes.statusCode==200){
+				saveAs(new Blob([resData],{type:"application/octet-stream"}), `Template para ${name}.xlsx`);
+			}
+		});
 	})
 
 	document.addEventListener("DOMContentLoaded", function(event) {

@@ -1163,5 +1163,89 @@ module.exports = {
   generatelink: async function (req, res) {
     const plans = await Plan.find({});
     res.view('pages/configuration/generatelink', {layout:'layouts/admin', plans});
+  },
+  downloadtemplate: async function (req, res) {
+    const Excel = require('exceljs');
+    let entity = req.body.entity;
+    let workbook = new Excel.Workbook();
+    let worksheet = workbook.addWorksheet(entity);
+    let options = [];
+    let dataDefault = [];
+    switch (entity) {
+      case 'Product':
+        options = [
+          { header: 'name', key: 'name', width: 45 },
+          { header: 'reference', key: 'reference', width: 45 },
+          { header: 'description', key: 'description', width: 45 },
+          { header: 'descriptionShort', key: 'descriptionShort', width: 45 },
+          { header: 'active', key: 'active', width: 45 },
+          { header: 'tax', key: 'tax', width: 45 },
+          { header: 'manufacturer', key: 'manufacturer', width: 45 },
+          { header: 'width', key: 'width', width: 45 },
+          { header: 'height', key: 'height', width: 45 },
+          { header: 'length', key: 'length', width: 45 },
+          { header: 'weight', key: 'weight', width: 45 },
+          { header: 'gender', key: 'gender', width: 45 },
+          { header: 'mainColor', key: 'mainColor', width: 45 }
+        ];
+        dataDefault.push({
+          name: 'Nombre del producto',
+          reference: 'Referencia del producto',
+          description: 'Descripción del producto',
+          descriptionShort: 'Descripción corta del producto',
+          active: 'si (Producto activo) / no (Producto no activo)',
+          tax: 'Valor de impuesto (19)',
+          manufacturer: 'Marca del producto',
+          width: 'Ancho',
+          height: 'Alto',
+          length: 'Largo',
+          weight: 'Peso en Kg',
+          gender: 'Genero',
+          mainColor: 'Color'
+        });
+        break;
+      case 'ProductVariation':
+        options = [
+          { header: 'reference', key: 'reference', width: 45 },
+          { header: 'reference2', key: 'reference2', width: 45 },
+          { header: 'ean13', key: 'ean13', width: 45 },
+          { header: 'upc', key: 'upc', width: 45 },
+          { header: 'variation', key: 'variation', width: 45 },
+          { header: 'quantity', key: 'quantity', width: 45 },
+          { header: 'price', key: 'price', width: 45 }
+        ];
+        dataDefault.push({
+          reference: 'Referencia del producto',
+          reference2: 'Referencia de la variación',
+          ean13: 'EAN del producto',
+          variation: 'Talla',
+          quantity: 'Cantidad disponible',
+          price: 'Precio del producto'
+        });
+        break;
+      case 'Discount':
+        options = [
+          { header: 'name', key: 'name', width: 45 },
+          { header: 'reference', key: 'reference', width: 45 },
+          { header: 'range', key: 'range', width: 45 },
+          { header: 'type', key: 'type', width: 45 },
+          { header: 'value', key: 'value', width: 45 }
+        ];
+        dataDefault.push({
+          name: 'Nombre del descuento',
+          reference: 'Referencia del producto',
+          range: '2021-07-07 03:30:00 - 2021-08-07 03:30:00',
+          type: 'P (Porcentaje) / C (Valor)',
+          value: 'Valor a descontar'
+        });
+        break;
+      default:
+        break;
+    }
+    worksheet.columns = options;
+    worksheet.addRows(dataDefault);
+    worksheet.getRow(1).font = { bold: true };
+    const buffer = await workbook.xlsx.writeBuffer();
+    return res.send(buffer);
   }
 };
