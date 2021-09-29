@@ -81,7 +81,7 @@ module.exports = {
         where: {
           seller: inputs.sellerId,
           integration: inputs.integration.id,
-          createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndSearch},
+          createdAt: {'<': inputs.dateEndSearch},
         }
       }).populate('currentstatus').populate('customer');
     }
@@ -103,7 +103,7 @@ module.exports = {
       let items = await OrderItem.find({
         order: order.id,
         currentstatus: statesIds,
-        createdAt: { '>': inputs.dateStartCommission, '<': inputs.dateEndCommission },
+        createdAt: {'<': inputs.dateEndCommission},
         updatedAt: {'>': inputs.dateStart, '<': inputs.dateEnd}
       }).populate('currentstatus').populate('order');
       for (const item of items) {

@@ -32,8 +32,8 @@
           <tr><td><span class="has-text-weight-bold is-size-6">Subtotal Pedidos:</span></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.totalPrice).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
         <table class="table is-fullwidth">
-          <tr><td><span class="is-size-7">Retención TC (Abono)</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.rteTc).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
-          <tr><td><span class="is-size-7">Devolución Retención TC (Abono)</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.rteTcComission).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Retención TC</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.rteTc).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
+          <tr><td><span class="is-size-7">Devolución Retención TC</span></td><td><p class="has-text-dark has-text-right">$<%= Math.round(data.rteTcComission).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
           <tr><td><span class="has-text-weight-bold is-size-6">Subtotal Retenciones:</span></td><td><p class="has-text-success has-text-right is-size-6">$<%= Math.round(data.rteTc - data.rteTcComission).toLocaleString('es-CO') %>&nbsp;</p></td></tr>
         </table>
         <table class="table is-fullwidth">
@@ -80,7 +80,7 @@
         </table>
       </p>
       <p class="container is-capitalized">
-        <span class="is-capitalized has-text-weight-bold">Ordenes Mes Anterior:&nbsp;</span>
+        <span class="is-capitalized has-text-weight-bold">Ordenes Meses Anteriores:&nbsp;</span>
         <span class="icon download-right is-hidden" id="downloadOrders"><i class='bx bx-loader bx-spin bx-sm'></i></span>
       </p>
       <p class="container is-capitalized">

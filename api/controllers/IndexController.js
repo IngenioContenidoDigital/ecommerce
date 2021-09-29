@@ -375,9 +375,9 @@ module.exports = {
       doc.text('Subtotal Retenciones', 60, 96);
       doc.text(`$ ${Math.round(data.rteTc).toLocaleString('es-CO')}`, 160, 96);
       doc.setFont('times', 'normal');
-      doc.text('Retención TC (Abono)', 60, 104);
+      doc.text('Retención TC', 60, 104);
       doc.text(`$ ${Math.round(data.rteTc).toLocaleString('es-CO')}`, 130, 104);
-      doc.text('Devolución Retención TC (Abono)', 60, 112);
+      doc.text('Devolución Retención TC', 60, 112);
       doc.text(`$ ${Math.round(data.rteTcComission).toLocaleString('es-CO')}`, 130, 112);
       doc.setFont('times', 'bold');
       doc.text('Subtotal Comisiones',60, 125);
@@ -394,7 +394,7 @@ module.exports = {
       doc.text('Ordenes Mes Actual', 30, 164);
       doc.text(`$ ${Math.round(totalPriceOrders).toLocaleString('es-CO')}`, 90, 164);
       doc.text(totalOrders.toString(), 80, 164);
-      doc.text('Ordenes Mes Anterior', 120, 164);
+      doc.text('Ordenes Meses Anteriores', 120, 164);
       doc.text(`$ ${Math.round(totalPriceOrdersCommission).toLocaleString('es-CO')}`, 180, 164);
       doc.text(totalOrdersCommission.toString(), 170, 164);
       doc.setFont('times', 'normal');
