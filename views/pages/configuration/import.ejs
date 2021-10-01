@@ -19,6 +19,7 @@
 						<ul>
 							<li><a>EXCEL</a></li>
 							<li><a>INTEGRACIONES</a></li>
+							<li><a>MARKETPLACES</a></li>
 						</ul>
 					</div>
 					<div>
@@ -127,6 +128,53 @@
 								</div>
 							<%}%>
 						</section>
+
+						<section class="tab-content">
+							<% providerMarketplace = null; %>
+							<%if(typeof integrations =='object' && integrations.length>0){%>
+								<% providerMarketplace=integrations.find(data => data.channel.type === 'marketplace' && data.channel.name === 'mercadolibre');%>
+								<% if(providerMarketplace){%>
+										<div class="field">
+											<label class="label">Tipo de Importación</label>
+											<div class="select is-fullwidth">
+												<select name="importTypeMarketplace" required>
+													<option value="Product">Productos</option>
+													<option value="Variations">Variaciones</option>
+													<option value="ProductImage">Imagenes de Producto</option>
+												</select>
+											</div>
+										</div>
+										<div class="field">
+											<div class="control">
+												<label class="label">Proveedor</label>
+												<input type="text" name="channelTxtMarketplace" disabled class="input is-primary" type="text"  placeholder="Proveedor" <%if(providerMarketplace!==null){%>value="<%=providerMarketplace.channel.name%>"<%}%> />
+											</div>
+										</div>
+										<div class="field">
+											<div class="control">
+												<label class="label">User Id</label>
+												<input type="text" name="useridml" disabled class="input is-primary"  type="text" placeholder="User Id" <%if(providerMarketplace!==null){%>value="<%=providerMarketplace.useridml%>"<%}%> />
+											</div>
+										</div>
+										<div class="control buttons is-right">
+											<input type="hidden" name="secret" <%if(providerMarketplace!==null){%>value="<%=providerMarketplace.secret%>"<%}%>>
+											<button id="process-marketplace-provider" class="button is-primary"><i class="bx bx-plus-circle"></i>&nbsp;Importar Productos</button>
+										</div>
+								<% }else{ %>
+									<div class="notification">
+										<button class="delete"></button>
+										Para realizar la importación de catalogo de producto se debe configurar previamente
+										el marketplace con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
+									</div>
+								<%}%>
+							<%}else {%> 
+								<div class="notification">
+									<button class="delete"></button>
+									Para realizar la importación de catalogo de producto se debe configurar previamente
+									el marketplace con sus respectivas <strong><a href="/sellers">credenciales del api</a>.</strong>  
+								</div>
+							<%}%>
+						</section>
 					</div>
 				</div>
 				<br>
@@ -134,9 +182,7 @@
 		</div>
 		<div class="column">
 			<div class="loading"></div>
-			<div id="divreport">
-				
-			</div>
+			<div id="divreport"></div>
 		</div>
 	</div>
 </div>
@@ -395,6 +441,30 @@
 					removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
 				}
 
+				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)
+			}
+		});
+	});
+
+	live('#process-marketplace-provider','click',e=>{
+		e.preventDefault();
+		let box = document.querySelector('.box').parentNode;
+		const importType = document.querySelector('select[name="importTypeMarketplace"]').value;
+		const pk = document.querySelector('input[name="useridml"]').value;
+		const sk = document.querySelector('input[name="secret"]').value;
+		const channel = document.querySelector('input[name="channelTxtMarketplace"]').value;
+		const seller = '<%- seller %>';
+		addClass(box,'is-hidden');
+		addDivReport();
+		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+		io.socket.post('/import',{importType, discount: false, asColor: false, channel, apiUrl: '', pk, sk, version: '', seller}, (resData, jwRes) =>{
+			if(jwRes.statusCode==200){
+				removeClass(box,'is-hidden');
+				document.querySelector('.loading').innerHTML='';
+				if(resData.error){
+					document.querySelector('#error-from-cms').innerHTML = resData.error;
+					removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+				}
 				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)
 			}
 		});

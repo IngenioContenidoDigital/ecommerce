@@ -21,6 +21,8 @@ const constants = {
   PRESTASHOP_CHANNEL: sails.config.custom.PRESTASHOP_CHANNEL,
   MAGENTO_PAGESIZE : sails.config.custom.MAGENTO_PAGESIZE,
   MAGENTO_CHANNEL : sails.config.custom.MAGENTO_CHANNEL,
+  MERCADOLIBRE_PAGESIZE : sails.config.custom.MERCADOLIBRE_PAGESIZE,
+  MERCADOLIBRE_CHANNEL : sails.config.custom.MERCADOLIBRE_CHANNEL,
   TIMEOUT_PRODUCT_TASK: 4000000,
   TIMEOUT_IMAGE_TASK: 8000000,
 };
@@ -1115,7 +1117,8 @@ module.exports = {
         req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE :
         req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE :
         req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE :
-        req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE : 0;
+        req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE : 
+        req.body.channel === constants.MERCADOLIBRE_CHANNEL ? constants.MERCADOLIBRE_PAGESIZE : 0;
       let next;
 
       switch (importType) {
@@ -1176,7 +1179,7 @@ module.exports = {
         default:
           break;
       }
-      return res.send({error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, seller, rights: rights.name, type:type });
+      return res.send({error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, seller, rights: rights.name, type});
     }
 
     let route = sails.config.views.locals.imgurl;
