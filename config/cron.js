@@ -121,40 +121,45 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },
-  stockProductsSpeedo:{
-    schedule: '00 00 03 * * *',
+  stockProducts:{
+    schedule: '01 03 05 * * *',
     onTick: async () =>{
-      console.log('Iniciando Sincronizacion de Stock Speedo');
+      console.log('Iniciando Sincronizacion de Stock');
       try {
-        const seller = await Seller.findOne({name: 'creaciones nadar sa'});
-        const products = await Product.find({seller: seller.id});
-        const channel = await Channel.findOne({name: 'vtex'});
-        const integration = await Integrations.findOne({channel: channel.id, seller: seller.id}).populate('channel');
-        await ProductVariation.update({seller:seller.id}).set({quantity:0});
-        for(const prod of products){
-          let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-            integration.channel.name,
-            integration.key,
-            integration.secret,
-            integration.url,
-            integration.version,
-            'PRODUCTID',
-            prod.externalId
-          ).catch((e) => console.log(e));
-          if (product) {
-            let variations = product.productVariations;
-            await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
+        const sellers = await Seller.find({active: true});
+        for (const seller of sellers) {
+          const products = await Product.find({seller: seller.id});
+          let channels = await Channel.find({type: 'cms'});
+          channels = channels.map(chann => chann.id);
+          const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
+          if (integration) {
+            await ProductVariation.update({seller: seller.id}).set({quantity:0});
+            for(const prod of products){
+              let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                integration.channel.name,
+                integration.key,
+                integration.secret,
+                integration.url,
+                integration.version,
+                'PRODUCTID',
+                prod.externalId
+              ).catch((e) => console.log(e));
+              if (product) {
+                let variations = product.productVariations;
+                await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
+              }
+            }
+            let integrations = await Integrations.find({seller: seller.id}).populate('channel');
+            integrations = integrations.filter(data => data.channel.type === 'marketplace');
+            for (const inte of integrations) {
+              await sails.helpers.syncProductsMarketplaces(inte, inte.channel);
+            }
           }
-        }
-        let integrations = await Integrations.find({seller: seller.id}).populate('channel');
-        integrations = integrations.filter(data => data.channel.type === 'marketplace');
-        for (const inte of integrations) {
-          await sails.helpers.syncProductsMarketplaces(inte, inte.channel);
         }
       } catch (err) {
         console.log(`Se produjo un error. ${err.message}`);
       }
-      console.log('Sincronizacion de Stock Speedo Finalizada');
+      console.log('Sincronizacion de Stock Finalizada');
     },
     timezone: 'America/Bogota'
   },
