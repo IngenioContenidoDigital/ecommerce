@@ -5,6 +5,7 @@ let woocommerce = require('../graphql/woocommerce');
 let vtex = require('../graphql/vtex');
 let prestashop = require('../graphql/prestashop');
 let magento = require('../graphql/magento');
+let mercadolibre = require('../graphql/mercadolibre');
 
 let signRequest = (data, query) => {
   let rootQuery;
@@ -57,6 +58,15 @@ let signRequest = (data, query) => {
         token: jwt.sign({
           shopName: data.apiUrl,
           password: data.pk
+        }, 'secret'),
+        query: rootQuery
+      };
+    case 'mercadolibre':
+      rootQuery = mercadolibre[query];
+      return {
+        token: jwt.sign({
+          apiKey: data.pk,
+          password: data.sk
         }, 'secret'),
         query: rootQuery
       };
