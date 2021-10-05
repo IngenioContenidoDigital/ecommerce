@@ -428,6 +428,7 @@ module.exports = {
     if (!req.isSocket) {return res.badRequest();}
     let error = false;
     let product = await Product.findOne({ id: req.body[0].product }).populate('seller');
+    const channels = await ProductChannel.find({product: product.id}).populate('channel');
     for (let list of req.body) {
       ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id })
         .exec(async (err, record, wasCreated) => {
@@ -436,6 +437,24 @@ module.exports = {
             await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
           }
         });
+    }
+    if (channels.length > 0) {
+      let productchannel = channels.find(item => item.channel.name === 'mercadolibre' || item.channel.name === 'mercadolibremx');
+      if (productchannel) {
+        let integration = await Integrations.findOne({id: productchannel.integration}).populate('channel');
+        const channelPrice = productchannel ? productchannel.price : 0;
+        if (productchannel.channel.name === 'mercadolibre') {
+          let body = await sails.helpers.channel.mercadolibre.product(product.id, 'Update', integration.id, channelPrice);
+          if(body){
+            await sails.helpers.channel.mercadolibre.request(`items/${productchannel.channelid}`,integration.channel.endpoint,integration.secret,body,'PUT');
+          }
+        } else {
+          let body = await sails.helpers.channel.mercadolibremx.product(product.id, 'Update', integration.id, channelPrice);
+          if(body){
+            await sails.helpers.channel.mercadolibremx.request(`items/${productchannel.channelid}`,integration.channel.endpoint,integration.secret,body,'PUT');
+          }
+        }
+      }
     }
     if(!error){
       await sails.helpers.tools.productState(product.id,product.active,true,product.seller.active);
@@ -472,9 +491,30 @@ module.exports = {
     }
     try {
       const id = req.param('id');
-      const productVariation = await ProductVariation.findOne({id: id});
+      const productVariation = await ProductVariation.findOne({id: id}).populate('variation');
       const existOrdenItem = await OrderItem.find({product: productVariation.product, productvariation: productVariation.id});
       if (existOrdenItem.length === 0) {
+        const channels = await ProductChannel.find({product: productVariation.product}).populate('channel');
+        if (channels.length > 0) {
+          let productchannel = channels.find(item => item.channel.name === 'mercadolibre' || item.channel.name === 'mercadolibremx');
+          if (productchannel) {
+            let integration = await Integrations.findOne({id: productchannel.integration}).populate('channel');
+            let variations = productchannel.channel.name === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request(`/items/${productchannel.channelid}/variations`,integration.channel.endpoint,integration.secret,'GET') :
+            await sails.helpers.channel.mercadolibremx.request(`/items/${productchannel.channelid}/variations`,integration.channel.endpoint,integration.secret,'GET');
+            if (variations.length > 0) {
+              for (const variation of variations) {
+                const size = variation.attribute_combinations.find(attr => attr.id === 'SIZE');
+                if (size.value_name == productVariation.variation.name) {
+                  if (productchannel.channel.name === 'mercadolibre') {
+                    await sails.helpers.channel.mercadolibre.request(`/items/${productchannel.channelid}/variations/${variation.id}`,integration.channel.endpoint,integration.secret,'','DELETE');
+                  } else {
+                    await sails.helpers.channel.mercadolibremx.request(`/items/${productchannel.channelid}/variations/${variation.id}`,integration.channel.endpoint,integration.secret,'','DELETE');
+                  }
+                }
+              }
+            }
+          }
+        }
         await ProductVariation.destroyOne({id: id});
         return res.send({result: true});
       }
@@ -3236,7 +3276,22 @@ module.exports = {
           console.log(err);
           return res.send({error: err});
         });
-      }else{
+      }else if(channel === 'mercadolibre' || channel === 'mercadolibremx') {
+        let result = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: "closed"},'PUT') :
+        await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: "closed"},'PUT');
+        if (result.id) {
+          let resultDelete = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:"true"},'PUT') : 
+          await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:"true"},'PUT');
+          if (resultDelete.id) {
+            await ProductChannel.destroyOne({id: productchannelId});
+            return res.send({error: null});
+          } else {
+            return res.send({error: 'No se puede eliminar el producto en mercadolibre'});
+          }
+        } else {
+          return res.send({error: 'No se pudo inactivar el producto en mercadolibre'});
+        }
+      } else {
         for(let pv of productvariations){
           body.Request.push({Product: {SellerSku:pv.id}});
         }
