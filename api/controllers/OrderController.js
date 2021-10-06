@@ -309,17 +309,13 @@ module.exports = {
 
     for(let o of orders){
       let track = '';
-      let oitems = await OrderItem.find({order:o.id});
       const currency = await Currency.findOne({id: o.seller.currency});
-      const documentType = oitems[0].shippingType;
       o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
-      if(o.tracking!==''){
-        if (documentType === 'Cross docking') {
-          track = `<a href="/shipmentcrossdocking/${o.tracking}" target="_blank" class="button"><span class="icon"><i class='bx bx-printer'></i></span></a>`;
-        } else {
-          track ='<a href="/guia/'+o.tracking+'" target="_blank" class="button"><span class="icon"><i class="bx bx-printer"></i></span></a>';
-        }
+
+      if(o.tracking){
+        track ='<a href="" order="'+o.id+'" target="_blank" class="button tracking"><span class="icon"><i class="bx bx-printer"></i></span></a>';
       }
+
       row = [
         `<td class="align-middle><div class="field">
           <input class="is-checkradio is-small is-info" id="checkboxselect${o.id}" data-product="${o.id}" type="checkbox" name="checkboxselect">
@@ -456,6 +452,25 @@ module.exports = {
       }
     }
     return res.ok();
+  },
+  findtracking: async(req, res) =>{
+    if(!req.isSocket){
+      return res.badRequest();
+    }
+    let dest = null;
+
+    let o = await Order.findOne({id:req.body.order});
+    let oitems = await OrderItem.find({order:req.body.order});
+    const documentType = oitems[0].shippingType;
+    if(o.tracking){
+      if (documentType === 'Cross docking') {
+        dest = '/shipmentcrossdocking/'+o.tracking;
+      } else {
+        dest ='/guia/'+o.tracking;
+      }
+    }
+    return res.send(dest);
+
   },
   response: async(req, res)=>{
     let seller = null;

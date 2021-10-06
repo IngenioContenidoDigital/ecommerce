@@ -22,8 +22,8 @@
               <th scope="col">Id</th>
               <th scope="col">Canal</th>
               <th scope="col">Referencia</th>
-              <th scope="col">Manifested</th>
-              <th scope="col">Medio de Pago</th>
+              <th scope="col">Manifiesto</th>
+              <th scope="col">Pago</th>
               <th scope="col">Cliente</th>
               <th scope="col">Estado</th>
               <th scope="col">Total</th>
@@ -287,5 +287,19 @@
             addClass(resultCheck,'has-background-color');
           });
         }
+      
+        live('.tracking','click', e => {
+          e.preventDefault();
+          let control = e.target;
+          if(e.target.tagName == 'SPAN'){control = e.target.parentNode;}
+          if(e.target.tagName == 'I'){control = e.target.parentNode.parentNode;} 
+
+          let order = control.getAttribute('order');
+          io.socket.post('/findtracking',{order:order}, resData => {
+            if(resData){
+              window.location.href = resData;
+            }
+          });
+        });
       </script>
 </div>
