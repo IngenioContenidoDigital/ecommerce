@@ -297,7 +297,7 @@
           let order = control.getAttribute('order');
           io.socket.post('/findtracking',{order:order}, resData => {
             if(resData){
-              window.location.href = resData;
+              window.open(resData);
             }
           });
         });
