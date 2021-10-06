@@ -1247,5 +1247,8 @@ module.exports = {
     worksheet.getRow(1).font = { bold: true };
     const buffer = await workbook.xlsx.writeBuffer();
     return res.send(buffer);
+  },
+  servicestatus: async (req, res) =>{
+    return res.ok();
   }
 };

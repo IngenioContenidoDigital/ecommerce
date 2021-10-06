@@ -21,6 +21,7 @@ module.exports.routes = {
 
   /* ----- FRONT ROUTES  -----*/
   '/': {controller:'IndexController',action:'index'},
+  'GET /health' : {controller:'IndexController',action:'servicestatus'},
   'GET /inicio': {controller:'IndexController',action:'admin'},
   'GET /reportsadmin': {controller:'IndexController', action:'reportsadmin'},
   'POST /filter/dashboard': {controller:'IndexController', action:'filterDashboard'},
