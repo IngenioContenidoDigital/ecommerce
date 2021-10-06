@@ -3149,7 +3149,7 @@ module.exports = {
                           skuId: vr.skuId ? vr.skuId : '',
                           price: vr.price,
                           quantity: vr.quantity ? vr.quantity : 0,
-                          seller:pr.seller
+                          seller:prc.seller
                         }).fetch();
                       } else {
                         productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
