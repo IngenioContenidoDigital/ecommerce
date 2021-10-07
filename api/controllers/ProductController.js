@@ -1,3 +1,4 @@
+const { replace } = require('lodash');
 
 
 /**
@@ -1580,6 +1581,17 @@ module.exports = {
     let documents = [];
     let channel = await Channel.findOne({name:'iridio'});
 
+    let textClean = async (text) =>{
+      text = text.replace(/\n/g, ' ');
+      //text = text.replace(/[^\x00-\x7F]/g, '');
+      //text=text.replace(/&(nbsp|amp|quot|lt|gt);/g,' '); //Caracteres HTML
+      text=text.replace(/[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/ig,'');
+      text=text.replace( /(<([^>]+)>)/ig, ''); // Etiquetas HTML
+      //text=text.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g,''); //Caracteres Especiales
+      text=text.trim(); //Espacios Extra
+      return JSON.stringify(text);
+    };
+
     let products = await ProductChannel.find({channel:channel.id}).populate('product');
     products = products.filter(p => p.product && p.product.active);
 
@@ -1600,8 +1612,8 @@ module.exports = {
           id: pr.product.id,
           name: pr.product.name,
           reference: pr.product.reference,
-          description: pr.product.description,
-          shortdescription: pr.product.descriptionShort,
+          description: pr.product.description ? await textClean(pr.product.description) : '',
+          shortdescription: pr.product.descriptionShort ? await textClean(pr.product.descriptionShort) : '',
           brand: pr.product.manufacturer && pr.product.manufacturer.name ? pr.product.manufacturer.name : '',
           color: pr.product.mainColor && pr.product.mainColor.name ? pr.product.mainColor.name : '',
           gender: pr.product.gender && pr.product.gender.name ? pr.product.gender.name : '',
@@ -1609,7 +1621,11 @@ module.exports = {
           category: pr.product.mainCategory && pr.product.mainCategory.name ? pr.product.mainCategory.name : ''
         };
       }
+
+      Object.keys(doc.fields).forEach((k) => !doc.fields[k] ? delete doc.fields[k] : doc.fields[k]);
+      
       documents.push(doc);
+
     }
 
     let AWS = require('aws-sdk');
@@ -1621,7 +1637,7 @@ module.exports = {
       documents: JSON.stringify(documents) // required
     };
     csd.uploadDocuments(params, (err, data) => {
-      if (err) { console.log(err, err.stack); } // an error occurred
+      if (err) { console.log(err, err.stack); return res.redirect('/inicio');} // an error occurred
       let index = new AWS.CloudSearch();
       index.indexDocuments({ DomainName: 'iridio' }, (err, data) => {
         if (err) { console.log(err); }
