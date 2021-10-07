@@ -29,9 +29,11 @@ module.exports = {
     let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
     let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
     let shipping = null;
+    let data;
     if(order){
       try{
         orderfilter[0]={channel:'mercadolibre', channelref:order.id, integration: inputs.integration};
+        data = {channel:'mercadolibre', channelref: order.id, seller: integration.seller};
         if(order.shipping.id){
           orderfilter[1]={channel:'mercadolibre', shippingMeli:order.shipping.id, integration: inputs.integration};
           orderfilter[2]={channel:'mercadolibre', tracking:order.shipping.id, integration: inputs.integration};
@@ -169,7 +171,7 @@ module.exports = {
             });
           }
         }
-        return exits.success();
+        return exits.success(data);
       }catch(err){
         console.log(err);
         return exits.error(err);
