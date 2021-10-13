@@ -249,75 +249,11 @@
     };
 
     let options = (marketplace, elm, cat, level) =>{
-      for(let c of cat){
-        let op = document.createElement('li');
-        /*if(level<=2){
-          op.innerHTML='<span><i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-        }else{*/
-          if (marketplace === 'dafiti') {
-            if(dafiti.includes(c['CategoryId'])){
-              removeClass(elm,'is-hidden');
-              op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }else{
-              op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }
-          } else if (marketplace === 'linio') {
-            if(linio.includes(c['CategoryId'])){
-              removeClass(elm,'is-hidden');
-              op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }else{
-              op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }
-          } else if (marketplace === 'liniomx') {
-            if(liniomx.includes(c['CategoryId'])){
-              removeClass(elm,'is-hidden');
-              op.innerHTML='<span><input type="checkbox" name="liniomx[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }else{
-              op.innerHTML='<span><input type="checkbox" name="liniomx[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }
-          } else if (marketplace === 'mercadolibre') {
-            if(mercadolibre.includes(c['category_id'])){
-              removeClass(elm,'is-hidden');
-              if(c['category_name']=='Otros'){
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
-              }else{
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
-              }
-            }else{
-              if(c['category_name']=='Otros'){
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
-              }else{
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
-              }            
-            }
-          } else if (marketplace === 'mercadolibremx') {
-            if(mercadolibremx.includes(c['category_id'])){
-              removeClass(elm,'is-hidden');
-              if(c['category_name']=='Otros'){
-                op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
-              }else{
-                op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
-              }
-            }else{
-              if(c['category_name']=='Otros'){
-                op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
-              }else{
-                op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
-              }
-            }            
-          } else if (marketplace === 'walmart') {
-            if(walmart.includes(c['Name'])){
-              removeClass(elm,'is-hidden');
-              op.innerHTML='<span><input type="checkbox" name="walmart[]" value="'+c['Name']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }else{
-              op.innerHTML='<span><input type="checkbox" name="walmart[]" value="'+c['Name']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
-            }
-          }
-          
-        //}
-        elm.appendChild(op);
-        if(c.Children){
-          if(c.Children.Category!==undefined && c.Children.Category.length>0){
+      if (cat.length > 0) {
+        for(let c of cat){
+          let op = createElementli(marketplace, c, elm);
+          elm.appendChild(op);
+          if(c.Children){
             level+=1;
             let ul = document.createElement('ul');
             addClass(ul,'tree');
@@ -328,10 +264,77 @@
             level-=1;
           }
         }
+      } else {
+        let op = createElementli(marketplace, cat, elm);
+        elm.appendChild(op);
       }
       return;
     }
     
+    let createElementli = (marketplace, c, elm) => {
+      let op = document.createElement('li');
+      if (marketplace === 'dafiti') {
+        if(dafiti.includes(c['CategoryId'])){
+          removeClass(elm,'is-hidden');
+          op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }else{
+          op.innerHTML='<span><input type="checkbox" name="dafiti[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }
+      } else if (marketplace === 'linio') {
+        if(linio.includes(c['CategoryId'])){
+          removeClass(elm,'is-hidden');
+          op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }else{
+          op.innerHTML='<span><input type="checkbox" name="linio[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }
+      } else if (marketplace === 'liniomx') {
+        if(liniomx.includes(c['CategoryId'])){
+          removeClass(elm,'is-hidden');
+          op.innerHTML='<span><input type="checkbox" name="liniomx[]" value="'+c['CategoryId']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }else{
+          op.innerHTML='<span><input type="checkbox" name="liniomx[]" value="'+c['CategoryId']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }
+      } else if (marketplace === 'mercadolibre') {
+        if(mercadolibre.includes(c['category_id'])){
+          removeClass(elm,'is-hidden');
+          if(c['category_name']=='Otros'){
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+          }else{
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+          }
+        }else{
+          if(c['category_name']=='Otros'){
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+          }else{
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+          }            
+        }
+      } else if (marketplace === 'mercadolibremx') {
+        if(mercadolibremx.includes(c['category_id'])){
+          removeClass(elm,'is-hidden');
+          if(c['category_name']=='Otros'){
+            op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+          }else{
+            op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+          }
+        }else{
+          if(c['category_name']=='Otros'){
+            op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+          }else{
+            op.innerHTML='<span><input type="checkbox" name="mercadolibremx[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+          }
+        }            
+      } else if (marketplace === 'walmart') {
+        if(walmart.includes(c['Name'])){
+          removeClass(elm,'is-hidden');
+          op.innerHTML='<span><input type="checkbox" name="walmart[]" value="'+c['Name']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }else{
+          op.innerHTML='<span><input type="checkbox" name="walmart[]" value="'+c['Name']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
+        }
+      }
+      return op;
+    }
+
     const dft = (id) =>{
       let objDafiti = document.querySelector('#dafiti');
       let objLinio = document.querySelector('#linio');
@@ -467,7 +470,7 @@
     live('.tree-toggler','click',e => {
       let group = e.target.parentNode.parentNode.nextSibling;
       let icon = e.target.parentNode.querySelector('i');
-      if(group.tagName==='UL'){
+      if(group && group.tagName==='UL'){
         if(hasClass(group,'is-hidden')){
           removeClass(icon,'bxs-folder');
           addClass(icon,'bx-folder-open');

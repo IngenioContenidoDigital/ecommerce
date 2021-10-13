@@ -631,6 +631,7 @@ module.exports = {
         if(action==='Post'){
           result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST');
           if(result.id){
+            await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
             await ProductChannel.findOrCreate({id: productChannelId},{
               product:product.id,
               channel:channelId,
