@@ -1363,7 +1363,17 @@ module.exports = {
         let mainColor = await sails.helpers.tools.findColor(req.body.product.mainColor.trim().toLowerCase());
         if (mainColor.length > 0) { prod.mainColor = mainColor[0]; } else { throw new Error('No logramos identificar el color.'); }
         let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.trim().toLowerCase() });
-        if (brand) { prod.manufacturer = brand.id; } else { throw new Error('No logramos identificar la marca del producto.'); }
+        if (brand) { prod.manufacturer = brand.id; } else {
+          let manufact = await Manufacturer.create({
+            name: req.body.product.manufacturer.trim().toLowerCase(),
+            logo: '',
+            linioname: 'Generico',
+            description: req.body.product.manufacturer.trim(),
+            url: req.body.product.manufacturer.trim().toLowerCase(),
+            active: false
+          });
+          prod.manufacturer = manufact.id;
+        }
         let gender = await sails.helpers.tools.findGender(req.body.product.gender.trim().toLowerCase());
         if (gender.length > 0) { prod.gender = gender[0]; gen = await Gender.findOne({id:gender[0]});} else { throw new Error('No logramos identificar el género para este producto.'); }
         let eval = req.body.product.active.toLowerCase().trim();

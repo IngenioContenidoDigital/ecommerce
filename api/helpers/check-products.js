@@ -43,9 +43,18 @@ module.exports = {
     if(inputs.product.manufacturer){
       let brand = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() }));
       if(!brand){
-        throw new Error(`Ref: ${pro.reference} : ${inputs.product.manufacturer.toLowerCase()} esta marca no se encuentra registrada`);
+        let manufact = await Manufacturer.create({
+          name: inputs.product.manufacturer.toLowerCase(),
+          logo: '',
+          linioname: 'Generico',
+          description: inputs.product.manufacturer,
+          url: inputs.product.manufacturer.toLowerCase(),
+          active: false
+        });
+        pro.manufacturer = manufact.id;
+      } else {
+        pro.manufacturer = brand.id;
       }
-      pro.manufacturer = brand.id;
     }else{
       throw new Error(`Ref: ${pro.reference} : ${pro.name} sin marca`);
     }
