@@ -40,10 +40,10 @@ module.exports = {
               await sails.helpers.marketplaceswebhooks.variations({variations} , pr.id, seller);
             }
 
-            await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller);
+            await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller).tolerate(() =>{return;});
           }else if(!product.simple && (product.color && product.color.length == 1)){
             pr = await Product.create(pro).fetch();
-                  
+
             let variations  = inputs.product.variations;
             let images =  inputs.product.images;
 
@@ -51,7 +51,7 @@ module.exports = {
               await sails.helpers.marketplaceswebhooks.variations({variations} , pr.id, seller);
             }
 
-            await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller);
+            await sails.helpers.marketplaceswebhooks.images( {images}  , pr.id, seller).tolerate(() =>{return;});
           }
         } else {
           delete pro.mainCategory;	
