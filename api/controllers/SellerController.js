@@ -683,65 +683,133 @@ module.exports = {
   createcreditcard: async (req, res) =>{
     let id = req.param('seller');
     let type = req.body.type;
+    let tokenMercadopago = req.body.token;
     try {
       const seller = await Seller.findOne({id: id}).populate('mainAddress');
+      const user = await User.findOne({seller: id, emailAddress: seller.email});
       const city = await City.findOne({id: seller.mainAddress.city});
+      let country = await Country.findOne({id: user.mobilecountry});
       const tokens = await Token.find({user:id});
-      let creditInfo = {
-        'card[number]': req.body.card,
-        'card[exp_year]': req.body.year,
-        'card[exp_month]': req.body.month,
-        'card[cvc]': req.body.cvv
-      };
-      let token = await sails.helpers.payment.tokenize(creditInfo);
-      if (tokens.length > 0) {
-        const addDefaultCardCustomer = {
-          franchise: token.card.name,
-          token: token.id,
-          mask: token.card.mask,
-          customer_id: tokens[0].customerId
-        };
-        const epayco = await sails.helpers.payment.init('CC');
-        await epayco.customers.addDefaultCard(addDefaultCardCustomer);
-        await Token.create({
-          token:token.id,
-          customerId:tokens[0].customerId,
-          docType:req.body.tid,
-          docNumber:req.body.dni,
-          mask:token.card.mask,
-          frch:token.card.name,
-          dues:1,
-          name:req.body.cardname,
-          user:seller.id,
-          default: true
-        }).fetch();
-        for (const token of tokens) {
-          await Token.updateOne({id:token.id}).set({default: false});
+      if (tokenMercadopago) {
+        let customerName = await sails.helpers.parseName(user.fullName);
+        if (tokens.length > 0) {
+          let customer = await sails.helpers.payment.mercadopago.request(`/v1/customers/${tokens[0].customerId}`);
+          if (customer.id) {
+            let cardData = {
+              'token': tokenMercadopago
+            };
+            let responseCard = await sails.helpers.payment.mercadopago.request(`/v1/customers/${customer.id}/cards`, cardData, 'POST');
+            if (responseCard.id) {
+              await Token.create({
+                token: tokenMercadopago,
+                customerId: customer.id,
+                docType: req.body.tid,
+                docNumber: req.body.dni,
+                mask: `${responseCard.first_six_digits}******${responseCard.last_four_digits}`,
+                frch: responseCard.payment_method.name,
+                dues: 1,
+                name: req.body.cardname,
+                user: seller.id,
+                default: true
+              }).fetch();
+              for (const token of tokens) {
+                await Token.updateOne({id: token.id}).set({default: false});
+              }
+            }
+          }
+        } else {
+          const customerData = {
+            "email": seller.email,
+            "first_name": customerName.name,
+            "last_name": customerName.lastName + ' ' + customerName.secondLastName,
+            "phone": {
+              "area_code": String(country.prefix),
+              "number": String(parseInt(user.mobile))
+            },
+            "identification": {
+              "type": req.body.tid,
+              "number": req.body.dni
+            }
+          };
+          let responseCustomer = await sails.helpers.payment.mercadopago.request('/v1/customers', customerData, 'POST');
+          if (responseCustomer.id) {
+            let cardData = {
+              'token': tokenMercadopago
+            };
+            let responseCard = await sails.helpers.payment.mercadopago.request(`/v1/customers/${responseCustomer.id}/cards`, cardData, 'POST');
+            if (responseCard.id) {
+              await Token.create({
+                token: tokenMercadopago,
+                customerId: responseCustomer.id,
+                docType: req.body.tid,
+                docNumber: req.body.dni,
+                mask: `${responseCard.first_six_digits}******${responseCard.last_four_digits}`,
+                frch: responseCard.payment_method.name,
+                dues: 1,
+                name: req.body.cardname,
+                user: seller.id,
+                default: true
+              }).fetch();
+            }
+          }
         }
       } else {
-        let customerInfo = {
-          token_card: token.id,
-          name: req.body.cardname.toUpperCase().trim(),
-          last_name: ' ',
-          email: seller.email,
-          default: true,
-          city: city.name,
-          address: seller.mainAddress.addressline1+' '+seller.mainAddress.addressline2,
-          cell_phone: seller.phone.toString()
+        let creditInfo = {
+          'card[number]': req.body.card,
+          'card[exp_year]': req.body.year,
+          'card[exp_month]': req.body.month,
+          'card[cvc]': req.body.cvv
         };
-        let customer = await sails.helpers.payment.customer(customerInfo, 'CC');
-        await Token.create({
-          token:token.id,
-          customerId:customer.data.customerId,
-          docType:req.body.tid,
-          docNumber:req.body.dni,
-          mask:token.card.mask,
-          frch:token.card.name,
-          dues:1,
-          name:req.body.cardname,
-          user:seller.id,
-          default: true
-        }).fetch();
+        let token = await sails.helpers.payment.tokenize(creditInfo);
+        if (tokens.length > 0) {
+          const addDefaultCardCustomer = {
+            franchise: token.card.name,
+            token: token.id,
+            mask: token.card.mask,
+            customer_id: tokens[0].customerId
+          };
+          const epayco = await sails.helpers.payment.init('CC');
+          await epayco.customers.addDefaultCard(addDefaultCardCustomer);
+          await Token.create({
+            token:token.id,
+            customerId:tokens[0].customerId,
+            docType:req.body.tid,
+            docNumber:req.body.dni,
+            mask:token.card.mask,
+            frch:token.card.name,
+            dues:1,
+            name:req.body.cardname,
+            user:seller.id,
+            default: true
+          }).fetch();
+          for (const token of tokens) {
+            await Token.updateOne({id:token.id}).set({default: false});
+          }
+        } else {
+          let customerInfo = {
+            token_card: token.id,
+            name: req.body.cardname.toUpperCase().trim(),
+            last_name: ' ',
+            email: seller.email,
+            default: true,
+            city: city.name,
+            address: seller.mainAddress.addressline1+' '+seller.mainAddress.addressline2,
+            cell_phone: seller.phone.toString()
+          };
+          let customer = await sails.helpers.payment.customer(customerInfo, 'CC');
+          await Token.create({
+            token:token.id,
+            customerId:customer.data.customerId,
+            docType:req.body.tid,
+            docNumber:req.body.dni,
+            mask:token.card.mask,
+            frch:token.card.name,
+            dues:1,
+            name:req.body.cardname,
+            user:seller.id,
+            default: true
+          }).fetch();
+        }
       }
       return type && type === 'register' ? res.send('ok') : res.redirect(`/sellers/edit/${id}?success=Se agrego correctamente la tarjeta`);
     } catch (err) {
@@ -798,75 +866,71 @@ module.exports = {
       const getMac = require('getmac');
       let country = await Country.findOne({id:req.body.country});
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
-      if (country.iso === 'CO') {
-        if (req.body.seller && req.body.user) {
-          await Seller.updateOne({id: req.body.seller}).set({
-            name: req.body.name.trim().toLowerCase(),
-            dni: req.body.dni,
-            contact: req.body.contact,
-            email: req.body.email,
-            phone: req.body.phone,
-            logo: filename[0].filename,
-            currency: req.body.currency || null,
-            active: false
-          });
-          await User.updateOne({id: req.body.user}).set({
-            emailAddress: req.body.email,
-            password: await sails.helpers.passwords.hashPassword(req.body.password),
-            fullName: req.body.contact,
-            dni: req.body.dni,
-            mobilecountry: country.id,
-            mobile: req.body.phone,
-            active: false
-          });
-          await TermsAndConditions.updateOne({seller: req.body.seller}).set({
-            date: moment().format('YYYY-MM-DD'),
-            hour: moment().format('LTS'),
-            mac: getMac.default(),
-            ip: require('ip').address(),
-            accept: req.body.terms,
-          });
-          return res.send({error: null, seller: req.body.seller, user: req.body.user});
-        } else {
-          let sellerData = {
-            name: req.body.name.trim().toLowerCase(),
-            dni: req.body.dni,
-            contact: req.body.contact,
-            email: req.body.email,
-            phone: req.body.phone,
-            active: false,
-            logo: filename[0].filename,
-            currency: req.body.currency || null
-          };
-  
-          let seller = await Seller.findOrCreate({dni: sellerData.dni}, sellerData);
-          let profile = await Profile.findOne({name:'operaciones'});
-          let user = await User.findOrCreate({emailAddress: req.body.email},{
-            emailAddress: req.body.email,
-            emailStatus: 'confirmed',
-            password: await sails.helpers.passwords.hashPassword(req.body.password),
-            fullName: req.body.contact,
-            dniType: 'NIT',
-            dni: req.body.dni,
-            mobilecountry: country.id,
-            mobile: req.body.phone,
-            mobileStatus: 'confirmed',
-            seller: seller.id,
-            profile: profile.id,
-            active: false
-          });
-          await TermsAndConditions.create({
-            date: moment().format('YYYY-MM-DD'),
-            hour: moment().format('LTS'),
-            mac: getMac.default(),
-            ip: require('ip').address(),
-            accept: req.body.terms,
-            seller: seller.id
-          });
-          return res.send({error: null, seller: seller.id, user: user.id});
-        }
+      if (req.body.seller && req.body.user) {
+        await Seller.updateOne({id: req.body.seller}).set({
+          name: req.body.name.trim().toLowerCase(),
+          dni: req.body.dni,
+          contact: req.body.contact,
+          email: req.body.email,
+          phone: req.body.phone,
+          logo: filename[0].filename,
+          currency: req.body.currency || null,
+          active: false
+        });
+        await User.updateOne({id: req.body.user}).set({
+          emailAddress: req.body.email,
+          password: await sails.helpers.passwords.hashPassword(req.body.password),
+          fullName: req.body.contact,
+          dni: req.body.dni,
+          mobilecountry: country.id,
+          mobile: req.body.phone,
+          active: false
+        });
+        await TermsAndConditions.updateOne({seller: req.body.seller}).set({
+          date: moment().format('YYYY-MM-DD'),
+          hour: moment().format('LTS'),
+          mac: getMac.default(),
+          ip: require('ip').address(),
+          accept: req.body.terms,
+        });
+        return res.send({error: null, seller: req.body.seller, user: req.body.user});
       } else {
-        return res.send({error: 'Solo disponible para Colombia', seller: null, user: null});
+        let sellerData = {
+          name: req.body.name.trim().toLowerCase(),
+          dni: req.body.dni,
+          contact: req.body.contact,
+          email: req.body.email,
+          phone: req.body.phone,
+          active: false,
+          logo: filename[0].filename,
+          currency: req.body.currency || null
+        };
+
+        let seller = await Seller.findOrCreate({dni: sellerData.dni}, sellerData);
+        let profile = await Profile.findOne({name:'operaciones'});
+        let user = await User.findOrCreate({emailAddress: req.body.email},{
+          emailAddress: req.body.email,
+          emailStatus: 'confirmed',
+          password: await sails.helpers.passwords.hashPassword(req.body.password),
+          fullName: req.body.contact,
+          dniType: 'NIT',
+          dni: req.body.dni,
+          mobilecountry: country.id,
+          mobile: req.body.phone,
+          mobileStatus: 'confirmed',
+          seller: seller.id,
+          profile: profile.id,
+          active: false
+        });
+        await TermsAndConditions.create({
+          date: moment().format('YYYY-MM-DD'),
+          hour: moment().format('LTS'),
+          mac: getMac.default(),
+          ip: require('ip').address(),
+          accept: req.body.terms,
+          seller: seller.id
+        });
+        return res.send({error: null, seller: seller.id, user: user.id});
       }
     }catch(err){
       return res.status(404).send({error: err.message});
@@ -883,66 +947,102 @@ module.exports = {
       resultPlan = await Plan.findOne({id: resultPlan});
       if (card) {
         if (resultPlan) {
-          let price = seller.currency.isocode === 'MXN' ? resultPlan.pricemx : resultPlan.pricecop;
-          let subscriptionInfo = {
-            id_plan: resultPlan.id,
-            customer: card.customerId,
-            token_card: card.token,
-            doc_type: card.docType,
-            doc_number: card.docNumber,
-            url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
-            method_confirmation: 'POST'
-          };
-          const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
-          if (subscription.success) {
-            await Subscription.create({
-              reference: subscription.id,
-              currentPeriodStart: subscription.current_period_start,
-              currentPeriodEnd: subscription.current_period_end,
-              state: subscription.status_subscription,
-              seller: seller.id
-            }).fetch();
+          if (seller.currency.isocode === 'MXN') {
+            let price = resultPlan.pricemx;
             const paymentInfo = {
-              token_card: card.token,
-              customer_id: card.customerId,
-              doc_type: card.docType,
-              doc_number: card.docNumber,
-              name: card.name,
-              last_name: ' ',
-              email: seller.email,
-              bill: `CR-Register-${seller.name}`,
-              description: `Cobro por registro de cuenta`,
-              value: price,
-              tax: ((price/1.19)*0.19).toString(),
-              tax_base: (price/1.19).toString(),
-              currency: 'COP',
-              dues: '1',
-              ip:require('ip').address(),
-              url_confirmation: 'https://1ecommerce.app/confirmationinvoice/payment',
-              method_confirmation: 'POST',
+              description: "Cobro por registro de cuenta",
+              transaction_amount: price,
+              token: card.token,
+              installments: 1,
+              payer: {
+                type: 'customer',
+                id: card.customerId
+              }
             };
-            let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
-            if(payment.success && payment.data.estado === 'Aceptada'){
-              await User.updateOne({id: user.id}).set({active: true});
-              await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
-              let state = await sails.helpers.orderState(payment.data.estado);
-              await Invoice.create({
-                reference: payment.data.ref_payco,
-                invoice: payment.data.factura,
-                state: state,
-                paymentMethod: payment.data.franquicia,
-                total: payment.data.valor,
-                tax: payment.data.iva,
-                seller: seller.id
-              }).fetch();
-              req.session.user = user;
-              req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
-              return res.send({});
-            } else {
-              return res.send({error: payment.status ? payment.data.respuesta : payment.data.description});
+            let responsePayment = await sails.helpers.payment.mercadopago.request(`/v1/payments`, paymentInfo, 'POST');
+            if (responsePayment.id) {
+              if(responsePayment.status === 'approved'){
+                await User.updateOne({id: user.id}).set({active: true});
+                await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
+                let state = await sails.helpers.orderState(responsePayment.status);
+                await Invoice.create({
+                  reference: responsePayment.id,
+                  invoice: 'CR-Register',
+                  state: state,
+                  paymentMethod: responsePayment.payment_method_id,
+                  total: responsePayment.transaction_amount,
+                  tax: responsePayment.taxes_amount,
+                  seller: seller.id
+                }).fetch();
+                req.session.user = user;
+                req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+                return res.send({});
+              } else {
+                return res.send({error: 'La transacción no fue aprobada'});
+              }
             }
           } else {
-            return res.send({error: subscription.status ? subscription.data.respuesta : subscription.data.description});
+            let price = resultPlan.pricecop;
+            let subscriptionInfo = {
+              id_plan: resultPlan.id,
+              customer: card.customerId,
+              token_card: card.token,
+              doc_type: card.docType,
+              doc_number: card.docNumber,
+              url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
+              method_confirmation: 'POST'
+            };
+            const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
+            if (subscription.success) {
+              await Subscription.create({
+                reference: subscription.id,
+                currentPeriodStart: subscription.current_period_start,
+                currentPeriodEnd: subscription.current_period_end,
+                state: subscription.status_subscription,
+                seller: seller.id
+              }).fetch();
+              const paymentInfo = {
+                token_card: card.token,
+                customer_id: card.customerId,
+                doc_type: card.docType,
+                doc_number: card.docNumber,
+                name: card.name,
+                last_name: ' ',
+                email: seller.email,
+                bill: `CR-Register-${seller.name}`,
+                description: `Cobro por registro de cuenta`,
+                value: price,
+                tax: ((price/1.19)*0.19).toString(),
+                tax_base: (price/1.19).toString(),
+                currency: 'COP',
+                dues: '1',
+                ip:require('ip').address(),
+                url_confirmation: 'https://1ecommerce.app/confirmationinvoice/payment',
+                method_confirmation: 'POST',
+              };
+              let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
+              if(payment.success && payment.data.estado === 'Aceptada'){
+                await User.updateOne({id: user.id}).set({active: true});
+                await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
+                let state = await sails.helpers.orderState(payment.data.estado);
+                await Invoice.create({
+                  reference: payment.data.ref_payco,
+                  invoice: payment.data.factura,
+                  state: state,
+                  paymentMethod: payment.data.franquicia,
+                  total: payment.data.valor,
+                  tax: payment.data.iva,
+                  seller: seller.id
+                }).fetch();
+                req.session.user = user;
+                req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+                return res.send({});
+              } else {
+                return res.send({error: payment.status ? payment.data.respuesta : payment.data.description});
+              }
+            } else {
+              return res.send({error: subscription.status ? subscription.data.respuesta : subscription.data.description});
+            }
           }
         } else {
           return res.send({error: 'No existe un Plan'});
@@ -951,6 +1051,7 @@ module.exports = {
         return res.send({error: 'No cuenta con Tarjeta para hacer el cobro'});
       }
     } catch (error) {
+      console.log(error);
       return res.send({error: error.menssage});
     }
   },
