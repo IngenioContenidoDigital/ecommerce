@@ -1,16 +1,14 @@
 <%if(typeof helper!='undefined' && helper!=null){%>
-<div style="display:none;" class="container" id="helpContainer">
-    <div class="is-mobile is-vcentered">
-        <aside class="menu is-invisible box menu-video" id="helpMenu">
-            <p class="menu-label">
-                Videos
-            </p>
-            <ul id="help-links" class="menu-list">
-            </ul>
-        </aside>
-        <a class="icon is-large has-text-info is-size-1 is-pulled-right"><i class='bx bxs-help-circle'></i></a>
-    </div>
+<div class="is-mobile is-vcentered is-invisible container-help" id="helpMenu">
+    <aside class="menu box menu-video">
+        <p class="menu-label">
+            Videos
+        </p>
+        <ul id="help-links" class="menu-list">
+        </ul>
+    </aside>
 </div>
+<a class="icon is-large has-text-info is-size-1 is-pulled-right btn-help"><i class='bx bxs-help-circle'></i></a>
 
 <div id="help-content" class="modal modal-helper">
     <div class="modal-background"></div>
@@ -53,7 +51,6 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         let help = document.getElementById('help-links');
-        let container = document.querySelector('#helpContainer');
         io.socket.post('/help/<%=helper%>',(resData) =>{
             if(resData && resData.length>0){
                 for(let link of resData){
@@ -62,7 +59,6 @@
                     elementLi.innerHTML = `<a id='${link.id}'>${link.name}</a>`;
                     help.append(elementLi);
                 }
-                container.style='position:fixed; bottom: 71px; right:5px; max-width: 200px;';
             }
         });
     });
