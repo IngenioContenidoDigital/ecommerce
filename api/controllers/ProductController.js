@@ -654,6 +654,7 @@ module.exports = {
                 });
               }
             });
+            await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
           }
         }
         return res.send({error: null});
@@ -739,6 +740,7 @@ module.exports = {
                 });
               }
             });
+            await sails.helpers.channel.mercadolibremx.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
           }
         }
         return res.send({error: null});
@@ -2061,7 +2063,7 @@ module.exports = {
                 .tolerate((err)=>{
                   response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
                 });
-                if(result && result.id.length>0){
+                if(result && result.id){
                   await ProductChannel.findOrCreate({id: productChannelId},{
                     product:pl.id,
                     channel:integration.channel.id,
@@ -2080,6 +2082,7 @@ module.exports = {
                       });
                     }
                   });
+                  await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
                   response.items.push(body);
                 }
               }
@@ -2141,7 +2144,7 @@ module.exports = {
                 .tolerate((err)=>{
                   response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
                 });
-                if(result && result.id.length>0){
+                if(result && result.id){
                   await ProductChannel.findOrCreate({id: productChannelId},{
                     product:pl.id,
                     channel:integration.channel.id,
@@ -2160,6 +2163,7 @@ module.exports = {
                       });
                     }
                   });
+                  await sails.helpers.channel.mercadolibremx.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
                   response.items.push(body);
                 }
               }
