@@ -30,6 +30,7 @@ module.exports = {
     let dateEndCommission = new Date(moment(inputs.month, 'MMMM YYYY').subtract(2, 'months').endOf('month').add(1, 'days').format('YYYY/MM/DD')).valueOf();
     let totalPrice = 0;
     let totalRetFte = 0;
+    let devRteFteCommission = 0;
     let totalRetIca = 0;
     let totalSkuInactive = 0;
     let totalSkuActive = 0;
@@ -97,7 +98,7 @@ module.exports = {
     let totalSku = totalProducts ? (Math.ceil(totalProducts /100)) * skuPrice * 1.19 : 0;
 
     for (const sale of salesPerChannel) {
-      totalRetIca += sale.sales.totalRetIca;
+      totalRetIca += sale.sales.totalRetIca-sale.sales.devRetIca;
       totalRetFte += sale.sales.totalCommission*retFte;
       fleteTotal += sale.sales.fleteTotal;
       totalPrice += sale.sales.totalPrice;
@@ -116,6 +117,7 @@ module.exports = {
       rteTc += sale.sales.rteTc;
       rteTcComission += sale.sales.rteTcComission;
       devTotalCommission += sale.sales.devTotalCommission;
+      devRteFteCommission += sale.sales.devTotalCommission*retFte;
       devRteIca += sale.sales.devRetIca;
       commissionFeeOrdersFailed += sale.sales.totalDiscountOrders;
       ordersCommission = [...ordersCommission, ...sale.sales.ordersCommission];
@@ -125,7 +127,7 @@ module.exports = {
     let totalOtherConcepts = totalSku + fleteTotal;
     let resultRetFte = totalSku !== 0 && totalCommission === 0 ? totalRetFte + ((totalOtherConcepts/1.19)*retFte) : totalSku !== 0 ? totalRetFte + (totalOtherConcepts/1.19)*retFte : totalRetFte;
     totalRetIca = totalSku !== 0  && (seller.retIca && seller.retIca > 0) ? totalRetIca + ((totalOtherConcepts/1.19)*(retIca/1000)) : totalRetIca;
-    let totalBalance = (totalCommission + totalOtherConcepts) - (rteTcComission + commissionFeeOrdersFailed + resultRetFte + totalRetIca + devRteIca + rteTc);
+    let totalBalance = (totalCommission + totalOtherConcepts + devRteIca + devRteFteCommission) - (resultRetFte + totalRetIca + commissionFeeOrdersFailed + rteTc + rteTcComission);
     return exits.success({
       rteTc,
       rteTcComission,
@@ -133,6 +135,7 @@ module.exports = {
       address,
       totalCommission,
       devTotalCommission,
+      devRteFteCommission,
       devRteIca,
       totalCommissionNotIva,
       totalPrice,
