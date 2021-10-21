@@ -126,7 +126,7 @@ module.exports = {
     }
     let totalOtherConcepts = totalSku + fleteTotal;
     let resultRetFte = totalSku !== 0 && totalCommission === 0 ? totalRetFte + ((totalOtherConcepts/1.19)*retFte) : totalSku !== 0 ? totalRetFte + (totalOtherConcepts/1.19)*retFte : totalRetFte;
-    totalRetIca = totalSku !== 0  && (seller.retIca && seller.retIca > 0) ? totalRetIca + ((totalOtherConcepts/1.19)*(retIca/1000)) : totalRetIca;
+    totalRetIca = totalSku !== 0  && (seller.retIca && seller.retIca > 0) ? totalRetIca + ((totalOtherConcepts/1.19)*(retIca/1000)) - devRteIca : totalRetIca - devRteIca;
     let totalBalance = (totalCommission + totalOtherConcepts + devRteFteCommission) - (resultRetFte + totalRetIca + commissionFeeOrdersFailed + rteTc + rteTcComission + devRteIca);
     return exits.success({
       rteTc,
