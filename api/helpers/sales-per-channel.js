@@ -115,7 +115,7 @@ module.exports = {
           totalTcComission += item.price / 1.19;
         }
         if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
-          totalRetIcaCommission += (commissionFee * (retIca/1000));
+          totalRetIcaCommission += ((commissionFee/1.19) * (retIca/1000));
         }
         if(item.currentstatus.name === 'fallido'){
           ordersFailedComission.total += 1;
