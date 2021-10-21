@@ -87,6 +87,12 @@ module.exports = {
               case 'ondademar colombia':
                 brand = 'ondademar';
                 break;
+              case 'l\'occitane colombia':
+                brand = 'L\'Occitane';
+                break;
+              case 'l\'occitane':
+                brand = 'L\'Occitane';
+                break;
               default:
                 brand = product.manufacturer.name;
                 break;
@@ -105,7 +111,7 @@ module.exports = {
                 Quantity:pvstock < 0 ? '0' : pvstock.toString(),
               }
             };
-              
+
             if(inputs.alldata){
 
               data.Product.Name=product.name;
@@ -124,7 +130,7 @@ module.exports = {
                     data.Product.ProductData.Gender='Niños (8 - 16 Años)';
                     break;
                   case 'niñas':
-                    data.Product.ProductData.Gender='Niñas (8 - 16 Años)'
+                    data.Product.ProductData.Gender='Niñas (8 - 16 Años)';
                     break;
                   case 'bebés niña':
                     data.Product.ProductData.Gender='Bebés Niña (2 - 7 Años)';
@@ -177,7 +183,7 @@ module.exports = {
               }else{
                 data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
               }*/
-              
+
             i++;
             data.Product.SalePrice=null;
             data.Product.SaleStartDate=null;
@@ -185,7 +191,7 @@ module.exports = {
             if(product.discount.length>0){
               let discountids = product.discount.map(d => d.id);
               let allowedDiscount = await CatalogDiscount.find({id:discountids}).populate('integrations',{id:inputs.integration.id});
-              allowedDiscount = allowedDiscount.filter(ad =>{ if(ad.integrations && ad.integrations.length > 0){return ad;}})
+              allowedDiscount = allowedDiscount.filter(ad =>{ if(ad.integrations && ad.integrations.length > 0){return ad;}});
               if(allowedDiscount.length>0){
                 let discPrice=0;
                 let valueDisc=0;
