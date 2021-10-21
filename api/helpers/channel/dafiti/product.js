@@ -114,7 +114,7 @@ module.exports = {
 
             if(inputs.alldata){
 
-              data.Product.Name=product.name;
+              data.Product.Name=product.name.toUpperCase();
               data.Product.PrimaryCategory=product.mainCategory.dafiti.split(',')[0];
               //data.Product.Categories=categories.join(',');
               data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));

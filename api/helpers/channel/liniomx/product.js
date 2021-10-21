@@ -86,7 +86,7 @@ module.exports = {
             };
 
             if(inputs.alldata){
-              data.Product.Name= product.name;
+              data.Product.Name= product.name.toUpperCase();
               data.Product.Variation= (pv.variation.mx.toString() === 'Único' || pv.variation.mx.toString() === 'único' || pv.variation.mx.toString() === 'Única' || pv.variation.mx.toString() === 'única') ? 'Talla Única' : pv.variation.mx.toString();
               data.Product.PrimaryCategory= product.mainCategory.liniomx.split(',')[0];
               //data.Product.Categories= categories.join(',');

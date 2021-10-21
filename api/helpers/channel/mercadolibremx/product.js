@@ -138,7 +138,7 @@ module.exports = {
         }
 
         body ={
-          'title':product.name.substring(0,59),
+          'title':product.name.substring(0,59).toUpperCase(),
           'price':parseInt(price),
           'currency_id': 'MXN',
           'buying_mode':'buy_it_now',
