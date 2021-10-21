@@ -87,7 +87,7 @@ module.exports = {
             };
 
             if(inputs.alldata){
-              data.Product.Name= product.name;
+              data.Product.Name= product.name.toUpperCase();
               data.Product.Variation= (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString();
               data.Product.PrimaryCategory= product.mainCategory.linio.split(',')[0];
               //data.Product.Categories= categories.join(',');
