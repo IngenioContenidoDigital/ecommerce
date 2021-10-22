@@ -120,7 +120,7 @@ module.exports = {
               data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
               data.Product.Brand=brand;
               data.Product.Condition='new';
-              data.Product.Variation=pv.variation.col.replace(/\.5/,'½').toString();
+              data.Product.Variation= pv.variation.col ? pv.variation.col.replace(/\.5/,'½').toString() : pv.variation.name;
 
               data.Product.ProductData = {};
 
