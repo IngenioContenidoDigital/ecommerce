@@ -34,29 +34,29 @@ module.exports = {
     let body={Request:[]};
     let pvstock = 0;
     for(let p of inputs.products){
-      try{
-        if(await ProductVariation.count({product:p.id})>0){
+      if(await ProductVariation.count({product:p.id})>0){
+        try{
           let product = await Product.findOne({id:p.id})
-            .populate('gender')
-            .populate('mainColor')
-            .populate('manufacturer')
-            .populate('mainCategory')
-            .populate('tax')
-            .populate('seller')
-            .populate('categories',{level:{'>=':4}})
-            .populate('discount',{
-              where:{
-                to:{'>=':moment().valueOf()},
-                from:{'<=':moment().valueOf()}
-              },
-              sort: 'createdAt DESC'
-            })
-            .populate('channels',{integration:inputs.integration.id});
+              .populate('gender')
+              .populate('mainColor')
+              .populate('manufacturer')
+              .populate('mainCategory')
+              .populate('tax')
+              .populate('seller')
+              .populate('categories',{level:{'>=':4}})
+              .populate('discount',{
+                where:{
+                  to:{'>=':moment().valueOf()},
+                  from:{'<=':moment().valueOf()}
+                },
+                sort: 'createdAt DESC'
+              })
+              .populate('channels',{integration:inputs.integration.id});
           let priceadjust = (inputs.dafitiprice && inputs.dafitiprice > 0) ? parseFloat(inputs.dafitiprice) : 0;
           let priceDiscount = inputs.integration.priceDiscount || 0;
           let status= inputs.status ? inputs.status : 'active';
           let productvariation = await ProductVariation.find({product:product.id})
-            .populate('variation');
+              .populate('variation');
           let parent = productvariation.length > 0 ? productvariation[0].id : '';
           let categories = [];
           let brand = null;
@@ -115,7 +115,7 @@ module.exports = {
             if(inputs.alldata){
 
               data.Product.Name=product.name.toUpperCase();
-              data.Product.PrimaryCategory=product.mainCategory.dafiti.split(',')[0];
+              if(product.mainCategory.dafiti.split(',')[0]){data.Product.PrimaryCategory = product.mainCategory.dafiti.split(',')[0];}else{throw new Error('Categoria no homologada en Dafiti');}
               //data.Product.Categories=categories.join(',');
               data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
               data.Product.Brand=brand;
@@ -179,10 +179,10 @@ module.exports = {
               }
             }
             /*if(brand==='speedo'){
-                data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>');
-              }else{
-                data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
-              }*/
+                  data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>');
+                }else{
+                  data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
+                }*/
 
             i++;
             data.Product.SalePrice=null;
@@ -213,11 +213,9 @@ module.exports = {
             }
             body.Request.push(data);
           }
-        }else{
-          throw new Error ('Producto sin variaciones');
+        }catch(err){
+          console.log(err.message);
         }
-      }catch(err){
-        console.log(err);
       }
     }
     return exits.success(body);
