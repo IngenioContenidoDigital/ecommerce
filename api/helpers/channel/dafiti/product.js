@@ -39,7 +39,8 @@ module.exports = {
       text=text.replace(/&(nbsp|amp|quot|lt|gt|bull|middot);/g,' '); //Caracteres HTML
       text=text.replace(/([^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]|\u2022)/ig,'');
       text=text.replace( /(<([^>]+)>)/ig, ''); // Etiquetas HTML
-      text=text.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g,''); //Caracteres Especiales
+      text=text.replace(/&/g,'y'); //Caracteres Especiales
+      text=text.replace(/[\/\\#,+()$~%.'":*?<>{} ]/g,''); //Caracteres Especiales
       text=text.trim(); //Espacios Extra
       return JSON.stringify(text);
     };
@@ -131,7 +132,7 @@ module.exports = {
 
             if(inputs.alldata){
 
-              data.Product.Name=product.name.toUpperCase();
+              data.Product.Name= await textClean(product.name.toUpperCase());
               if(product.mainCategory.dafiti.split(',')[0]){data.Product.PrimaryCategory = product.mainCategory.dafiti.split(',')[0];}else{throw new Error('Categoria no homologada en Dafiti');}
               //data.Product.Categories=categories.join(',');
               data.Product.Description= jsonxml.cdata(await textClean(product.description));
