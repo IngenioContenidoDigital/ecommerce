@@ -8,7 +8,7 @@
         </ul>
     </aside>
 </div>
-<a class="icon is-large has-text-info is-size-1 is-pulled-right btn-help"><i class='bx bxs-help-circle'></i></a>
+<a class="icon is-large has-text-info is-size-1 is-pulled-right btn-help" id="buttonHelp"><i class='bx bxs-help-circle'></i></a>
 
 <div id="help-content" class="modal modal-helper">
     <div class="modal-background"></div>
@@ -22,7 +22,7 @@
 
 <script>
 
-    live('.icon','click', e =>{
+    live('#buttonHelp','click', e =>{
         let menu = document.querySelector('#helpMenu');
         if(hasClass(menu,'is-invisible')){
             removeClass(menu,'is-invisible');

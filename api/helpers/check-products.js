@@ -100,7 +100,7 @@ module.exports = {
     pro.width = (inputs.product.width === undefined || inputs.product.width === null || inputs.product.width < 1) ? 15 : inputs.product.width;
     pro.height = (inputs.product.height === undefined || inputs.product.height === null || inputs.product.height < 1) ? 15 : inputs.product.height;
     pro.length = (inputs.product.length === undefined || inputs.product.length === null || inputs.product.length < 1) ? 32 : inputs.product.length;
-    pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : inputs.seller === '60c144f4c90e3d77c4bc0e13' || inputs.seller === '5fdb7430710aa6e66628adf5' ? inputs.product.weight/1000 : inputs.product.weight;
+    pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : (inputs.seller === '60c144f4c90e3d77c4bc0e13' || inputs.seller === '5fdb7430710aa6e66628adf5' || inputs.seller === '612e67c526e3fa4772e1bde7') ? inputs.product.weight/1000 : inputs.product.weight;
     pro.product_weight =  inputs.product.product_weight;
 
     return exits.success(pro);
