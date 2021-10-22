@@ -1687,7 +1687,8 @@ module.exports = {
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller}).populate('channels',{
+        products = await Product.find({seller: seller})
+        .populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId

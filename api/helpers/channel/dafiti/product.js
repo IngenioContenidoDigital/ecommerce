@@ -33,6 +33,17 @@ module.exports = {
     var jsonxml = require('jsontoxml');
     let body={Request:[]};
     let pvstock = 0;
+    let textClean = async (text) =>{
+      text = text.replace(/\n/g, ' ');
+      //text = text.replace(/[^\x00-\x7F]/g, '');
+      text=text.replace(/&(nbsp|amp|quot|lt|gt|bull|middot);/g,' '); //Caracteres HTML
+      text=text.replace(/([^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]|\u2022)/ig,'');
+      text=text.replace( /(<([^>]+)>)/ig, ''); // Etiquetas HTML
+      text=text.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g,''); //Caracteres Especiales
+      text=text.trim(); //Espacios Extra
+      return JSON.stringify(text);
+    };
+
     for(let p of inputs.products){
       if(await ProductVariation.count({product:p.id})>0){
         try{
@@ -117,7 +128,7 @@ module.exports = {
               data.Product.Name=product.name.toUpperCase();
               if(product.mainCategory.dafiti.split(',')[0]){data.Product.PrimaryCategory = product.mainCategory.dafiti.split(',')[0];}else{throw new Error('Categoria no homologada en Dafiti');}
               //data.Product.Categories=categories.join(',');
-              data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
+              data.Product.Description= jsonxml.cdata(await textClean(product.description));
               data.Product.Brand=brand;
               data.Product.Condition='new';
               data.Product.Variation= pv.variation.col ? pv.variation.col.replace(/\.5/,'½').toString() : pv.variation.name;
