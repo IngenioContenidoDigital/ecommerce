@@ -118,10 +118,16 @@ module.exports = {
               Product:{
                 SellerSku:pv.id,
                 Status:status,
-                Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0),
                 Quantity:pvstock < 0 ? '0' : pvstock.toString(),
               }
             };
+
+            let pvprice = (Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0);
+            if(pvprice>0){
+              data.Product.Price = pvprice;
+            }else{
+              throw new Error('Variacion sin precio');
+            }
 
             if(inputs.alldata){
 
