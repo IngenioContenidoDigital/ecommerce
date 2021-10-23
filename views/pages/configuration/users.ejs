@@ -223,11 +223,11 @@
 								<tr>
 									<td><span class="tag" style="background-color: #32cd32; width: 250px;"><p class="text-notification">Producto Nuevo</p></span></span></td>
 									<td>
-										<input id="sms-productnew" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.feature == 'productnew' && n.sms)){%>checked<%}%>>
+										<input id="sms-productnew" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications && userNotifications.some(n => n.feature == 'productnew' && n.sms)){%>checked<%}%>>
 										<label for="sms-productnew"></label>
 									</td>
 									<td>
-										<input id="email-productnew" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications.some(n => n.feature == 'productnew' && n.email)){%>checked<%}%>>
+										<input id="email-productnew" type="checkbox" name="valuestate" class="switch is-success" <%if(userNotifications && userNotifications.some(n => n.feature == 'productnew' && n.email)){%>checked<%}%>>
 										<label for="email-productnew"></label>
 									</td>
 								</tr>

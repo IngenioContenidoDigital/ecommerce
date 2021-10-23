@@ -671,3 +671,16 @@ article > .content:hover{cursor:pointer;}
 .menu-video {
     margin-bottom: 0% !important;
 }
+
+.container-help {
+    position:fixed !important;
+    right:52px !important;
+    bottom: 71px !important;
+    z-index: 1 !important;
+}
+
+.btn-help {
+    position:fixed !important;
+    right:5px !important;
+    bottom: 71px !important;
+}

@@ -33,30 +33,42 @@ module.exports = {
     var jsonxml = require('jsontoxml');
     let body={Request:[]};
     let pvstock = 0;
+    let textClean = async (text) =>{
+      text = text.replace(/\n/g, ' ');
+      //text = text.replace(/[^\x00-\x7F]/g, '');
+      text=text.replace(/&(nbsp|amp|quot|lt|gt|bull|middot);/g,' '); //Caracteres HTML
+      text=text.replace(/([^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]|\u2022)/ig,'');
+      text=text.replace( /(<([^>]+)>)/ig, ''); // Etiquetas HTML
+      text=text.replace(/&/g,'y'); //Caracteres Especiales
+      text=text.replace(/[\/\\#,+()$~%.'":*?<>{} ]/g,''); //Caracteres Especiales
+      text=text.trim(); //Espacios Extra
+      return JSON.stringify(text);
+    };
+
     for(let p of inputs.products){
-      try{
-        if(await ProductVariation.count({product:p.id})>0){
+      if(await ProductVariation.count({product:p.id})>0){
+        try{
           let product = await Product.findOne({id:p.id})
-            .populate('gender')
-            .populate('mainColor')
-            .populate('manufacturer')
-            .populate('mainCategory')
-            .populate('tax')
-            .populate('seller')
-            .populate('categories',{level:{'>=':4}})
-            .populate('discount',{
-              where:{
-                to:{'>=':moment().valueOf()},
-                from:{'<=':moment().valueOf()}
-              },
-              sort: 'createdAt DESC'
-            })
-            .populate('channels',{integration:inputs.integration.id});
+              .populate('gender')
+              .populate('mainColor')
+              .populate('manufacturer')
+              .populate('mainCategory')
+              .populate('tax')
+              .populate('seller')
+              .populate('categories',{level:{'>=':4}})
+              .populate('discount',{
+                where:{
+                  to:{'>=':moment().valueOf()},
+                  from:{'<=':moment().valueOf()}
+                },
+                sort: 'createdAt DESC'
+              })
+              .populate('channels',{integration:inputs.integration.id});
           let priceadjust = (inputs.dafitiprice && inputs.dafitiprice > 0) ? parseFloat(inputs.dafitiprice) : 0;
           let priceDiscount = inputs.integration.priceDiscount || 0;
           let status= inputs.status ? inputs.status : 'active';
           let productvariation = await ProductVariation.find({product:product.id})
-            .populate('variation');
+              .populate('variation');
           let parent = productvariation.length > 0 ? productvariation[0].id : '';
           let categories = [];
           let brand = null;
@@ -87,6 +99,12 @@ module.exports = {
               case 'ondademar colombia':
                 brand = 'ondademar';
                 break;
+              case 'l\'occitane colombia':
+                brand = 'L\'Occitane';
+                break;
+              case 'l\'occitane':
+                brand = 'L\'Occitane';
+                break;
               default:
                 brand = product.manufacturer.name;
                 break;
@@ -101,20 +119,26 @@ module.exports = {
               Product:{
                 SellerSku:pv.id,
                 Status:status,
-                Price:(Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0),
                 Quantity:pvstock < 0 ? '0' : pvstock.toString(),
               }
             };
-              
+
+            let pvprice = (Math.ceil((pv.price*(1+priceadjust))*100)/100).toFixed(0);
+            if(pvprice>0){
+              data.Product.Price = pvprice;
+            }else{
+              throw new Error('Variacion sin precio');
+            }
+
             if(inputs.alldata){
 
-              data.Product.Name=product.name;
-              data.Product.PrimaryCategory=product.mainCategory.dafiti.split(',')[0];
+              data.Product.Name= await textClean(product.name.toUpperCase());
+              if(product.mainCategory.dafiti.split(',')[0]){data.Product.PrimaryCategory = product.mainCategory.dafiti.split(',')[0];}else{throw new Error('Categoria no homologada en Dafiti');}
               //data.Product.Categories=categories.join(',');
-              data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
+              data.Product.Description= jsonxml.cdata(await textClean(product.description));
               data.Product.Brand=brand;
               data.Product.Condition='new';
-              data.Product.Variation=pv.variation.col.replace(/\.5/,'½').toString();
+              data.Product.Variation= pv.variation.col ? pv.variation.col.replace(/\.5/,'½').toString() : pv.variation.name;
 
               data.Product.ProductData = {};
 
@@ -124,7 +148,7 @@ module.exports = {
                     data.Product.ProductData.Gender='Niños (8 - 16 Años)';
                     break;
                   case 'niñas':
-                    data.Product.ProductData.Gender='Niñas (8 - 16 Años)'
+                    data.Product.ProductData.Gender='Niñas (8 - 16 Años)';
                     break;
                   case 'bebés niña':
                     data.Product.ProductData.Gender='Bebés Niña (2 - 7 Años)';
@@ -173,11 +197,11 @@ module.exports = {
               }
             }
             /*if(brand==='speedo'){
-                data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>');
-              }else{
-                data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
-              }*/
-              
+                  data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>');
+                }else{
+                  data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
+                }*/
+
             i++;
             data.Product.SalePrice=null;
             data.Product.SaleStartDate=null;
@@ -185,7 +209,7 @@ module.exports = {
             if(product.discount.length>0){
               let discountids = product.discount.map(d => d.id);
               let allowedDiscount = await CatalogDiscount.find({id:discountids}).populate('integrations',{id:inputs.integration.id});
-              allowedDiscount = allowedDiscount.filter(ad =>{ if(ad.integrations && ad.integrations.length > 0){return ad;}})
+              allowedDiscount = allowedDiscount.filter(ad =>{ if(ad.integrations && ad.integrations.length > 0){return ad;}});
               if(allowedDiscount.length>0){
                 let discPrice=0;
                 let valueDisc=0;
@@ -207,11 +231,9 @@ module.exports = {
             }
             body.Request.push(data);
           }
-        }else{
-          throw new Error ('Producto sin variaciones');
+        }catch(err){
+          console.log(err.message);
         }
-      }catch(err){
-        console.log(err);
       }
     }
     return exits.success(body);

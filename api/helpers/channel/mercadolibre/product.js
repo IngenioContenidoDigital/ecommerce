@@ -70,7 +70,7 @@ module.exports = {
       */
         /** FIN ELIMINAR PROMOCIONES ASOCIADAS A UN PRODUCTO */
 
-        let productimages = await ProductImage.find({product:product.id});
+        let productimages = await ProductImage.find({product:product.id}).sort('position ASC');
         productimages.forEach(image =>{
           images.push({'source':sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file});
           vimages.push(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
@@ -149,7 +149,7 @@ module.exports = {
         }
 
         body ={
-          'title':product.name.substring(0,59),
+          'title':product.name.substring(0,59).toUpperCase(),
           'price':parseInt(price),
           'currency_id':'COP',
           'buying_mode':'buy_it_now',
