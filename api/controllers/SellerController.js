@@ -938,6 +938,7 @@ module.exports = {
   },
   collectregister: async(req, res)=>{
     try {
+      const moment = require('moment');
       let id = req.param('seller');
       const key = req.body.key;
       const seller = await Seller.findOne({id: id}).populate('currency');
@@ -949,36 +950,59 @@ module.exports = {
         if (resultPlan) {
           if (seller.currency.isocode === 'MXN') {
             let price = resultPlan.pricemx;
-            const paymentInfo = {
-              description: "Cobro por registro de cuenta",
-              transaction_amount: price,
-              token: card.token,
-              installments: 1,
-              payer: {
-                type: 'customer',
-                id: card.customerId
-              }
-            };
-            let responsePayment = await sails.helpers.payment.mercadopago.request(`/v1/payments`, paymentInfo, 'POST');
-            if (responsePayment.id) {
-              if(responsePayment.status === 'approved'){
-                await User.updateOne({id: user.id}).set({active: true});
-                await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
-                let state = await sails.helpers.orderState(responsePayment.status);
-                await Invoice.create({
-                  reference: responsePayment.id,
-                  invoice: 'CR-Register',
-                  state: state,
-                  paymentMethod: responsePayment.payment_method_id,
-                  total: responsePayment.transaction_amount,
-                  tax: responsePayment.taxes_amount,
-                  seller: seller.id
-                }).fetch();
-                req.session.user = user;
-                req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
-                return res.send({});
-              } else {
-                return res.send({error: 'La transacción no fue aprobada'});
+            const subscriptionInfo = {
+              auto_recurring: {
+                frequency: 1,
+                frequency_type: "months",
+                transaction_amount: resultPlan.pricesubscriptionmx,
+                currency_id: "MXN",
+                start_date: new Date(moment().add(2, 'month').format()),
+                end_date: new Date(moment().add(3, 'month').format()),
+              },
+              back_url: "https://1ecommerce.app",
+              reason: 'Suscripcion Seller',
+              payer_email: seller.email
+            }
+            let responseSubscription = await sails.helpers.payment.mercadopago.request(`/preapproval`, subscriptionInfo, 'POST');
+            if (responseSubscription.id) {
+              await Subscription.create({
+                reference: responseSubscription.id,
+                currentPeriodStart: moment(responseSubscription.auto_recurring.start_date).format('DD-MM-YYYY'),
+                currentPeriodEnd: moment(responseSubscription.auto_recurring.end_date).format('DD-MM-YYYY'),
+                state: responseSubscription.status,
+                seller: seller.id
+              }).fetch();
+              const paymentInfo = {
+                description: "Cobro por registro de cuenta",
+                transaction_amount: price,
+                token: card.token,
+                installments: 1,
+                payer: {
+                  type: 'customer',
+                  id: card.customerId
+                }
+              };
+              let responsePayment = await sails.helpers.payment.mercadopago.request(`/v1/payments`, paymentInfo, 'POST');
+              if (responsePayment.id) {
+                if(responsePayment.status === 'approved'){
+                  await User.updateOne({id: user.id}).set({active: true});
+                  await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
+                  let state = await sails.helpers.orderState(responsePayment.status);
+                  await Invoice.create({
+                    reference: responsePayment.id,
+                    invoice: 'CR-Register',
+                    state: state,
+                    paymentMethod: responsePayment.payment_method_id,
+                    total: responsePayment.transaction_amount,
+                    tax: responsePayment.taxes_amount,
+                    seller: seller.id
+                  }).fetch();
+                  req.session.user = user;
+                  req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+                  return res.send({});
+                } else {
+                  return res.send({error: 'La transacción no fue aprobada'});
+                }
               }
             }
           } else {

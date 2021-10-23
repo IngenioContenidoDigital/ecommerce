@@ -23,7 +23,7 @@ module.exports = {
   fn: async function (inputs,exits) {
     const axios = require('axios');
     const apiUrl = 'https://api.mercadopago.com';
-    const token = 'TEST-484307057093084-092917-cc8fd4560a25aceb590255eec4ea3f6e-824344788';
+    const token = 'APP_USR-484307057093084-092917-8833d9842aca63c924bd7b1d868e7873-824344788';
     let params = {};
     let config = {
       headers: {

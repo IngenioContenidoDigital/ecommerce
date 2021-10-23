@@ -441,8 +441,8 @@
 </div>
 <script>
   bulmaSteps.attach();
-  let sellerId = '61606dcc2e0773210c6f9cfe';
-  let userId = '61606dcd2e0773210c6f9cff';
+  let sellerId = '';
+  let userId = '';
   let fmanager = document.querySelector('input[name="document"]');
   fmanager.onchange = createDocuments;
   const fileInput = document.querySelector('#file-loader input[type=file]');
@@ -531,16 +531,16 @@
   live('#btn-next','click',function(e){
     e.preventDefault();
     const stepNext = document.querySelector('.step-item.is-info.is-active');
-    const stepId = stepNext.getAttribute('data-step-id') - 1
+    const stepId = stepNext.getAttribute('data-step-id') - 1;
     if (stepId === 0) {
-      // createSeller(stepNext);
+      createSeller(stepNext);
     } else if(stepId === 1) {
-      // createAddress(stepNext);
+      createAddress(stepNext);
     } else if(stepId === 2) {
-      // let numChildren = document.querySelector('.preview').children.length;
-      // if (numChildren < 3) {
-      //   showError('Debe subir los documentos requeridos', stepNext, document.querySelector('#documents'), document.querySelector('#contentsuscriptions'), document.querySelector('#contentdocuments'));
-      // }
+      let numChildren = document.querySelector('.preview').children.length;
+      if (numChildren < 3) {
+        showError('Debe subir los documentos requeridos', stepNext, document.querySelector('#documents'), document.querySelector('#contentsuscriptions'), document.querySelector('#contentdocuments'));
+      }
     } else if (stepId === 3) {
       let form = document.querySelector('#form-suscription');
       let validate = validateForm(form);
@@ -711,7 +711,7 @@
 
   async function createCreditCard(stepNext, form) {
     let formAdress = document.querySelector('#form-address');
-    const mp = new MercadoPago('TEST-a3d0540b-0bcb-4927-82a0-0beedea7e8ad');
+    const mp = new MercadoPago('APP_USR-17a0df06-739d-40de-95df-c51536da1070');
     const countries = <%- JSON.stringify(countries) %>;
     const countryId = formAdress.querySelector('select[name="country"]').value;
     const country = countries.find(c => c.id === countryId);
