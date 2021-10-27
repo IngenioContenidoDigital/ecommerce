@@ -9,8 +9,11 @@ module.exports = {
   },
   exits: {
     success: {
-      description: 'All done.',
+      description: 'All done.'
     },
+    error: {
+      description: 'All done.'
+    }
   },
   fn: async function (inputs, exits) {
     let moment = require('moment');
@@ -53,8 +56,8 @@ module.exports = {
 
         let payment = {
           orderId: String(order.reference) + 'MKP',
-          paymentSystem: (order.paymentMethod === 'COD' || order.paymentMethod === 'CashOnDeliveryPayment' || order.paymentMethod === 'CashOnDelivery_Payment' ? 4 : 3),
-          paymentSystemName: order.paymentMethod,
+          paymentSystem: (order.paymentMethod === 'COD' || order.paymentMethod === 'CashOnDeliveryPayment' || order.paymentMethod === 'CashOnDelivery_Payment') ? 4 : 3,
+          paymentSystemName: (order.paymentMethod === 'COD' || order.paymentMethod === 'CashOnDeliveryPayment' || order.paymentMethod === 'CashOnDelivery_Payment') ? 'Pago contra entrega' : 'Payu Latam',
           value: order.totalOrder
         };
 
@@ -79,49 +82,43 @@ module.exports = {
           complement: address.notes,
           status: 'P'
         };
-        console.log(requestArgs);
-        console.log(payment);
-        // let responseOrder = await axios({
-        //   method: 'post',
-        //   url: urlOrder,
-        //   headers: {
-        //     'content-type': 'application/json',
-        //     user: 'milonga',
-        //     password: 'milonga11.'
-        //   },
-        //   data: requestArgs
-        // });
-
-        // console.log(responseOrder);
-
-        // if(responseOrder && responseOrder.data){
-        //   await axios({
-        //     method: 'post',
-        //     url: urlPayment,
-        //     headers: {
-        //       'content-type': 'application/json',
-        //       user: 'milonga',
-        //       password: 'milonga11.'
-        //     },
-        //     data: payment
-        //   });
-        //   for (const detail of details) {
-        //     await axios({
-        //       method: 'post',
-        //       url: urlDetails,
-        //       headers: {
-        //         'content-type': 'application/json',
-        //         user: 'milonga',
-        //         password: 'milonga11.'
-        //       },
-        //       data: detail
-        //     });
-        //   }
-        // }
+        let responseOrder = await axios({
+          method: 'post',
+          url: urlOrder,
+          headers: {
+            'content-type': 'application/json',
+            user: 'milonga',
+            password: 'milonga11.'
+          },
+          data: requestArgs
+        });
+        if(responseOrder && responseOrder.data){
+          await axios({
+            method: 'post',
+            url: urlPayment,
+            headers: {
+              'content-type': 'application/json',
+              user: 'milonga',
+              password: 'milonga11.'
+            },
+            data: payment
+          });
+          for (const detail of details) {
+            await axios({
+              method: 'post',
+              url: urlDetails,
+              headers: {
+                'content-type': 'application/json',
+                user: 'milonga',
+                password: 'milonga11.'
+              },
+              data: detail
+            });
+          }
+        }
         return exits.success(true);
       } catch (error) {
-        console.log(error.menssage);
-        return exits.error(error.menssage);
+        return exits.error('Error al procesar el pedido');
       }
     } else {
       return exits.error('La orden no fue encontrada');

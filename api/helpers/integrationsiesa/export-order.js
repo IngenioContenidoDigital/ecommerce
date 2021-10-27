@@ -9,8 +9,11 @@ module.exports = {
   },
   exits: {
     success: {
-      description: 'All done.',
+      description: 'All done.'
     },
+    error: {
+      description: 'All done.'
+    }
   },
   fn: async function (inputs, exits) {
     let moment = require('moment');

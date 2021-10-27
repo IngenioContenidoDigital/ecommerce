@@ -902,6 +902,8 @@ module.exports = {
                   await sails.helpers.integrationsiesa.exportOrder(data);
                 } else if(integration.seller.nameErp === 'busint'){
                   await sails.helpers.integrationbusint.exportOrder(data);
+                } else if(integration.seller.nameErp === 'sap'){
+                  await sails.helpers.integrationsap.exportOrder(data);
                 }
               }
               break;
@@ -993,6 +995,8 @@ module.exports = {
               await sails.helpers.integrationsiesa.exportOrder(data);
             } else if(seller.nameErp === 'busint'){
               await sails.helpers.integrationbusint.exportOrder(data);
+            } else if(seller.nameErp === 'sap'){
+              await sails.helpers.integrationsap.exportOrder(data);
             }
           }
         }
@@ -1058,6 +1062,8 @@ module.exports = {
               await sails.helpers.integrationsiesa.exportOrder(data);
             } else if(seller.nameErp === 'busint'){
               await sails.helpers.integrationbusint.exportOrder(data);
+            } else if(seller.nameErp === 'sap'){
+              await sails.helpers.integrationsap.exportOrder(data);
             }
           }
         }
