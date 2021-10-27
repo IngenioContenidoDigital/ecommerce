@@ -21,6 +21,7 @@ module.exports.routes = {
 
   /* ----- FRONT ROUTES  -----*/
   '/': {controller:'IndexController',action:'index'},
+  'GET /health' : {controller:'IndexController',action:'servicestatus'},
   'GET /inicio': {controller:'IndexController',action:'admin'},
   'GET /reportsadmin': {controller:'IndexController', action:'reportsadmin'},
   'POST /filter/dashboard': {controller:'IndexController', action:'filterDashboard'},
@@ -189,6 +190,7 @@ module.exports.routes = {
   'GET /orders' : {controller:'OrderController',action:'listorders'},
   'GET /order/:action/:id' : {controller:'OrderController',action:'ordermgt'},
   'GET /ordersquery/:page' : {controller:'OrderController',action:'findorders'},
+  'POST /findtracking' : {controller:'OrderController', action:'findtracking'},
   'GET /order/report' : {controller:'OrderController', action:'report'},
   'POST /order/generatereport': {controller:'OrderController', action:'generateReportExcel'},
   'GET /manifest' : {controller:'OrderController', action:'manifest'},

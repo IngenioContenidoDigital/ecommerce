@@ -1,13 +1,14 @@
 <%if(typeof helper!='undefined' && helper!=null){%>
-<div style="display:none;" class="container">
-    <div class="columns is-mobile is-vcentered">
-        <div id="help-links" class="column is-8">
-        </div>
-        <div class="column is-4">
-            <a class="icon is-large has-text-info is-size-1 is-pulled-right"><i class='bx bxs-help-circle'></i></a>
-        </div>
-    </div>
+<div class="is-mobile is-vcentered is-invisible container-help" id="helpMenu">
+    <aside class="menu box menu-video">
+        <p class="menu-label">
+            Videos
+        </p>
+        <ul id="help-links" class="menu-list">
+        </ul>
+    </aside>
 </div>
+<a class="icon is-large has-text-info is-size-1 is-pulled-right btn-help" id="buttonHelp"><i class='bx bxs-help-circle'></i></a>
 
 <div id="help-content" class="modal modal-helper">
     <div class="modal-background"></div>
@@ -21,29 +22,20 @@
 
 <script>
 
-    live('.icon','click', e =>{
-        let group = e.target.parentNode.parentNode.parentNode.querySelectorAll('.tag');
-        let items = group.length;
-        for(let t of group){
-            if(hasClass(t.parentNode,'is-invisible')){
-                removeClass(t.parentNode,'is-invisible');
-            }else{
-                addClass(t.parentNode,'is-invisible');
-            }
+    live('#buttonHelp','click', e =>{
+        let menu = document.querySelector('#helpMenu');
+        if(hasClass(menu,'is-invisible')){
+            removeClass(menu,'is-invisible');
+        }else{
+            addClass(menu,'is-invisible');
         }
     });
 
     live('.helper','click', e =>{
-        e.preventDefault;
-        let tag = e.target;       
-        let id = '';
-        if(tag.tagName.toLowerCase()=='span'){
-            id = tag.parentNode.getAttribute('id')
-        }else{
-            id = tag.getAttribute('id')
-        }
+        e.preventDefault();
+        let id = e.target.id
         let modal = document.querySelector('#help-content');
-        if(!hasClass(modal,'is-active')){addClass(modal,'is-active')}   
+        if(!hasClass(modal,'is-active')){addClass(modal,'is-active')}
         io.socket.post('/help/article/'+id,resData => {
             if(resData){
                 let content = modal.querySelector('.image');
@@ -52,7 +44,7 @@
         });
     });
 
-    live('.modal-close','click', e =>{
+    live('.modal-background, .modal-close','click', e =>{
         let modal = document.querySelector('.modal-helper');
         removeClass(modal,'is-active')
     });
@@ -62,10 +54,11 @@
         io.socket.post('/help/<%=helper%>',(resData) =>{
             if(resData && resData.length>0){
                 for(let link of resData){
-                    let article = '<a id="'+link.id+'" class="helper is-invisible"><span class="tag is-info is-light is-4">'+link.name+'</span></a>';
-                    help.innerHTML = help.innerHTML+article;
+                    let elementLi = document.createElement('li');
+                    addClass(elementLi,'helper');
+                    elementLi.innerHTML = `<a id='${link.id}'>${link.name}</a>`;
+                    help.append(elementLi);
                 }
-                help.parentNode.parentNode.style='position:fixed; bottom: 5px; right:5px; max-width: 50px;';
             }
         });
     });

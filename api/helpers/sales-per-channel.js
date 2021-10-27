@@ -110,12 +110,12 @@ module.exports = {
         ordersItemsCommission.push(item);
         const salesCommission = item.commission || 0;
         const commissionFee = item.price * (salesCommission/100);
-        commissionFeeOrdersFailed += commissionFee * 1.19;
+        commissionFeeOrdersFailed += commissionFee;
         if (order.paymentMethod === 'PayuCcPayment') {
           totalTcComission += item.price / 1.19;
         }
         if (address.city.name === 'bogota' || (seller.retIca && seller.retIca > 0)) {
-          totalRetIcaCommission += (commissionFee * (retIca/1000));
+          totalRetIcaCommission += ((commissionFee/1.19) * (retIca/1000));
         }
         if(item.currentstatus.name === 'fallido'){
           ordersFailedComission.total += 1;

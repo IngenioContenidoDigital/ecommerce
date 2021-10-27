@@ -1,3 +1,4 @@
+<link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
 <div class="container">
     <% if (error != undefined || error != null) { %>
         <div class="notification is-danger is-light" id="error">
@@ -73,36 +74,70 @@
         </div>
       <% } else { %>
         <p style="text-align: right;font-size: 20px; margin-right: 5px;">
-            <a href="/help/create" class="button is-primary is-size-7">Crear Ayuda</a>
+          <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin' || req.session.user.rights.permissions.includes('createhelp')){%><a href="/help/create" class="button is-primary is-size-7">Crear Ayuda</a><%}%>
         </p>
         <div class="table-container">
             <table class="table is-hoverable" id="help-table">
                 <thead>
                 <tr>
-                    <th scope="col">Sección</th>
-                    <th scope="col">Nombre</th>
-                    <th scope="col">Opciones</th>
+                  <th scope="col">Sección</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Opciones</th>
                 </tr>
                 </thead>
                 <tbody>
                     <% articles.forEach(function(article){ %>                
-                        <tr>
-                            <td class="align-middle is-capitalized"><%= article.section %></td>
-                            <td class="align-middle is-capitalized"><%= article.name %></td>               
-                            <td class="align-middle">                        
-                                <a href="/help/edit/<%= article.id %>" class="button is-small">
+                      <tr>
+                        <td class="align-middle is-capitalized"><%= article.section %></td>
+                        <td class="align-middle is-capitalized"><%= article.name %></td>
+                          <td class="align-middle">
+                            <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin' || req.session.user.rights.permissions.includes('edithelp')){%>
+                              <a href="/help/edit/<%= article.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Editar Ayuda">
                                 <span class="icon">
-                                    <i class="bx bxs-edit"></i>
+                                  <i class="bx bxs-edit"></i>
                                 </span>
-                                </a>
-                            </td>
-                        </tr>
+                              </a>
+                            <%}%>
+                            <a id="<%= article.id %>" class="playvideo button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Ver Video">
+                              <span class="icon" id="<%= article.id %>">
+                                <i id="<%= article.id %>" class='bx bx-play-circle'></i>
+                              </span>
+                            </a>
+                          </td>
+                      </tr>
                     <% }); %>
                 </tbody>
             </table>
         </div>
+        <div id="help-content" class="modal modal-helper">
+          <div class="modal-background"></div>
+          <div class="modal-content">
+            <figure class="image is-16by9">
+              <progress class="progress is-small is-primary" max="100">15%</progress>
+            </figure>
+          </div>
+          <button class="modal-close is-large" aria-label="close"></button>
+        </div>
         <script>
-            document.addEventListener('DOMContentLoaded', function(){
+          live('.playvideo','click', e =>{
+            e.preventDefault();
+            let id = e.target.id
+            let modal = document.querySelector('#help-content');
+            if(!hasClass(modal,'is-active')){addClass(modal,'is-active')}
+            io.socket.post('/help/article/'+id,resData => {
+              if(resData){
+                let content = modal.querySelector('.image');
+                content.innerHTML = '<iframe class="has-ratio" width="1080" height="720" src="'+resData.source+'" frameborder="0" allowfullscreen></iframe>';
+              }
+            });
+          });
+
+          live('.modal-background, .modal-close','click', e =>{
+            let modal = document.querySelector('.modal-helper');
+            removeClass(modal,'is-active')
+          });
+
+          document.addEventListener('DOMContentLoaded', function(){
             let table = new simpleDatatables.DataTable('#help-table',{
                 searchable:true,
                 sortable:true,
@@ -114,7 +149,7 @@
                 info: "Mostrando {start} a {end} de {rows} registros",
                 }
             });  
-            });
+          });
         </script>
       <% } %>
       <script>

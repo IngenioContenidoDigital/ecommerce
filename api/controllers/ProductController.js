@@ -1,3 +1,4 @@
+const { replace } = require('lodash');
 
 
 /**
@@ -21,6 +22,8 @@ const constants = {
   PRESTASHOP_CHANNEL: sails.config.custom.PRESTASHOP_CHANNEL,
   MAGENTO_PAGESIZE : sails.config.custom.MAGENTO_PAGESIZE,
   MAGENTO_CHANNEL : sails.config.custom.MAGENTO_CHANNEL,
+  MERCADOLIBRE_PAGESIZE : sails.config.custom.MERCADOLIBRE_PAGESIZE,
+  MERCADOLIBRE_CHANNEL : sails.config.custom.MERCADOLIBRE_CHANNEL,
   TIMEOUT_PRODUCT_TASK: 4000000,
   TIMEOUT_IMAGE_TASK: 8000000,
 };
@@ -253,7 +256,7 @@ module.exports = {
       for (let c of product.categories) {
         let cat = await Category.findOne({id: c.id}).populate('features');
         for (let f of cat.features){
-          if(!features.some(feat=>feat.id==f.id) && f!=='' && f!== null){
+          if(!features.some(feat=>feat.id===f.id) && f!=='' && f!== null){
             features.push(f);
           }
         }
@@ -426,6 +429,7 @@ module.exports = {
     if (!req.isSocket) {return res.badRequest();}
     let error = false;
     let product = await Product.findOne({ id: req.body[0].product }).populate('seller');
+    const channels = await ProductChannel.find({product: product.id}).populate('channel');
     for (let list of req.body) {
       ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id })
         .exec(async (err, record, wasCreated) => {
@@ -434,6 +438,24 @@ module.exports = {
             await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
           }
         });
+    }
+    if (channels.length > 0) {
+      let productchannel = channels.find(item => item.channel.name === 'mercadolibre' || item.channel.name === 'mercadolibremx');
+      if (productchannel) {
+        let integration = await Integrations.findOne({id: productchannel.integration}).populate('channel');
+        const channelPrice = productchannel ? productchannel.price : 0;
+        if (productchannel.channel.name === 'mercadolibre') {
+          let body = await sails.helpers.channel.mercadolibre.product(product.id, 'Update', integration.id, channelPrice);
+          if(body){
+            await sails.helpers.channel.mercadolibre.request(`items/${productchannel.channelid}`,integration.channel.endpoint,integration.secret,body,'PUT');
+          }
+        } else {
+          let body = await sails.helpers.channel.mercadolibremx.product(product.id, 'Update', integration.id, channelPrice);
+          if(body){
+            await sails.helpers.channel.mercadolibremx.request(`items/${productchannel.channelid}`,integration.channel.endpoint,integration.secret,body,'PUT');
+          }
+        }
+      }
     }
     if(!error){
       await sails.helpers.tools.productState(product.id,product.active,true,product.seller.active);
@@ -470,9 +492,30 @@ module.exports = {
     }
     try {
       const id = req.param('id');
-      const productVariation = await ProductVariation.findOne({id: id});
+      const productVariation = await ProductVariation.findOne({id: id}).populate('variation');
       const existOrdenItem = await OrderItem.find({product: productVariation.product, productvariation: productVariation.id});
       if (existOrdenItem.length === 0) {
+        const channels = await ProductChannel.find({product: productVariation.product}).populate('channel');
+        if (channels.length > 0) {
+          let productchannel = channels.find(item => item.channel.name === 'mercadolibre' || item.channel.name === 'mercadolibremx');
+          if (productchannel) {
+            let integration = await Integrations.findOne({id: productchannel.integration}).populate('channel');
+            let variations = productchannel.channel.name === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request(`/items/${productchannel.channelid}/variations`,integration.channel.endpoint,integration.secret,'GET') :
+            await sails.helpers.channel.mercadolibremx.request(`/items/${productchannel.channelid}/variations`,integration.channel.endpoint,integration.secret,'GET');
+            if (variations.length > 0) {
+              for (const variation of variations) {
+                const size = variation.attribute_combinations.find(attr => attr.id === 'SIZE');
+                if (size.value_name == productVariation.variation.name) {
+                  if (productchannel.channel.name === 'mercadolibre') {
+                    await sails.helpers.channel.mercadolibre.request(`/items/${productchannel.channelid}/variations/${variation.id}`,integration.channel.endpoint,integration.secret,'','DELETE');
+                  } else {
+                    await sails.helpers.channel.mercadolibremx.request(`/items/${productchannel.channelid}/variations/${variation.id}`,integration.channel.endpoint,integration.secret,'','DELETE');
+                  }
+                }
+              }
+            }
+          }
+        }
         await ProductVariation.destroyOne({id: id});
         return res.send({result: true});
       }
@@ -611,6 +654,7 @@ module.exports = {
                 });
               }
             });
+            await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
           }
         }
         return res.send({error: null});
@@ -696,6 +740,7 @@ module.exports = {
                 });
               }
             });
+            await sails.helpers.channel.mercadolibremx.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
           }
         }
         return res.send({error: null});
@@ -1115,7 +1160,8 @@ module.exports = {
         req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE :
         req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE :
         req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE :
-        req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE : 0;
+        req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE : 
+        req.body.channel === constants.MERCADOLIBRE_CHANNEL ? constants.MERCADOLIBRE_PAGESIZE : 0;
       let next;
 
       switch (importType) {
@@ -1176,7 +1222,7 @@ module.exports = {
         default:
           break;
       }
-      return res.send({error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, seller, rights: rights.name, type:type });
+      return res.send({error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, seller, rights: rights.name, type});
     }
 
     let route = sails.config.views.locals.imgurl;
@@ -1259,6 +1305,7 @@ module.exports = {
         prod.ean13 = req.body.product.ean13 ? req.body.product.ean13.toString() : '';
         prod.upc = req.body.product.upc ? parseInt(req.body.product.upc) : 0;
         prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
+        prod.seller = seller;
 
         let products = await Product.find({ reference: prod.supplierreference, seller: seller })
           .populate('tax')
@@ -1297,7 +1344,8 @@ module.exports = {
                 quantity: prod.quantity,
                 variation: prod.variation,
                 product: prod.product,
-                price: prod.price
+                price: prod.price,
+                seller: prod.seller
               });
             }
             result['items'].push(prod);
@@ -1315,7 +1363,17 @@ module.exports = {
         let mainColor = await sails.helpers.tools.findColor(req.body.product.mainColor.trim().toLowerCase());
         if (mainColor.length > 0) { prod.mainColor = mainColor[0]; } else { throw new Error('No logramos identificar el color.'); }
         let brand = await Manufacturer.findOne({ name: req.body.product.manufacturer.trim().toLowerCase() });
-        if (brand) { prod.manufacturer = brand.id; } else { throw new Error('No logramos identificar la marca del producto.'); }
+        if (brand) { prod.manufacturer = brand.id; } else {
+          let manufact = await Manufacturer.create({
+            name: req.body.product.manufacturer.trim().toLowerCase(),
+            logo: '',
+            linioname: 'Generico',
+            description: req.body.product.manufacturer.trim(),
+            url: req.body.product.manufacturer.trim().toLowerCase(),
+            active: false
+          });
+          prod.manufacturer = manufact.id;
+        }
         let gender = await sails.helpers.tools.findGender(req.body.product.gender.trim().toLowerCase());
         if (gender.length > 0) { prod.gender = gender[0]; gen = await Gender.findOne({id:gender[0]});} else { throw new Error('No logramos identificar el género para este producto.'); }
         let eval = req.body.product.active.toLowerCase().trim();
@@ -1535,6 +1593,17 @@ module.exports = {
     let documents = [];
     let channel = await Channel.findOne({name:'iridio'});
 
+    let textClean = async (text) =>{
+      text = text.replace(/\n/g, ' ');
+      //text = text.replace(/[^\x00-\x7F]/g, '');
+      //text=text.replace(/&(nbsp|amp|quot|lt|gt);/g,' '); //Caracteres HTML
+      text=text.replace(/[^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]/ig,'');
+      text=text.replace( /(<([^>]+)>)/ig, ''); // Etiquetas HTML
+      //text=text.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g,''); //Caracteres Especiales
+      text=text.trim(); //Espacios Extra
+      return JSON.stringify(text);
+    };
+
     let products = await ProductChannel.find({channel:channel.id}).populate('product');
     products = products.filter(p => p.product && p.product.active);
 
@@ -1555,8 +1624,8 @@ module.exports = {
           id: pr.product.id,
           name: pr.product.name,
           reference: pr.product.reference,
-          description: pr.product.description,
-          shortdescription: pr.product.descriptionShort,
+          description: pr.product.description ? await textClean(pr.product.description) : '',
+          shortdescription: pr.product.descriptionShort ? await textClean(pr.product.descriptionShort) : '',
           brand: pr.product.manufacturer && pr.product.manufacturer.name ? pr.product.manufacturer.name : '',
           color: pr.product.mainColor && pr.product.mainColor.name ? pr.product.mainColor.name : '',
           gender: pr.product.gender && pr.product.gender.name ? pr.product.gender.name : '',
@@ -1564,7 +1633,11 @@ module.exports = {
           category: pr.product.mainCategory && pr.product.mainCategory.name ? pr.product.mainCategory.name : ''
         };
       }
+
+      Object.keys(doc.fields).forEach((k) => !doc.fields[k] ? delete doc.fields[k] : doc.fields[k]);
+      
       documents.push(doc);
+
     }
 
     let AWS = require('aws-sdk');
@@ -1576,7 +1649,7 @@ module.exports = {
       documents: JSON.stringify(documents) // required
     };
     csd.uploadDocuments(params, (err, data) => {
-      if (err) { console.log(err, err.stack); } // an error occurred
+      if (err) { console.log(err, err.stack); return res.redirect('/inicio');} // an error occurred
       let index = new AWS.CloudSearch();
       index.indexDocuments({ DomainName: 'iridio' }, (err, data) => {
         if (err) { console.log(err); }
@@ -1614,7 +1687,8 @@ module.exports = {
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller}).populate('channels',{
+        products = await Product.find({seller: seller})
+        .populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2000,7 +2074,7 @@ module.exports = {
                 .tolerate((err)=>{
                   response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
                 });
-                if(result && result.id.length>0){
+                if(result && result.id){
                   await ProductChannel.findOrCreate({id: productChannelId},{
                     product:pl.id,
                     channel:integration.channel.id,
@@ -2019,6 +2093,7 @@ module.exports = {
                       });
                     }
                   });
+                  await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
                   response.items.push(body);
                 }
               }
@@ -2080,7 +2155,7 @@ module.exports = {
                 .tolerate((err)=>{
                   response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);
                 });
-                if(result && result.id.length>0){
+                if(result && result.id){
                   await ProductChannel.findOrCreate({id: productChannelId},{
                     product:pl.id,
                     channel:integration.channel.id,
@@ -2099,6 +2174,7 @@ module.exports = {
                       });
                     }
                   });
+                  await sails.helpers.channel.mercadolibremx.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
                   response.items.push(body);
                 }
               }
@@ -3104,7 +3180,7 @@ module.exports = {
                           skuId: vr.skuId ? vr.skuId : '',
                           price: vr.price,
                           quantity: vr.quantity ? vr.quantity : 0,
-                          seller:pr.seller
+                          seller:prc.seller
                         }).fetch();
                       } else {
                         productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
@@ -3233,7 +3309,22 @@ module.exports = {
           console.log(err);
           return res.send({error: err});
         });
-      }else{
+      }else if(channel === 'mercadolibre' || channel === 'mercadolibremx') {
+        let result = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: "closed"},'PUT') :
+        await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: "closed"},'PUT');
+        if (result.id) {
+          let resultDelete = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:"true"},'PUT') : 
+          await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:"true"},'PUT');
+          if (resultDelete.id) {
+            await ProductChannel.destroyOne({id: productchannelId});
+            return res.send({error: null});
+          } else {
+            return res.send({error: 'No se puede eliminar el producto en mercadolibre'});
+          }
+        } else {
+          return res.send({error: 'No se pudo inactivar el producto en mercadolibre'});
+        }
+      } else {
         for(let pv of productvariations){
           body.Request.push({Product: {SellerSku:pv.id}});
         }

@@ -15,6 +15,9 @@ module.exports = {
   fn: async function (inputs,exits) {
     let name=null;
     switch(inputs.state){
+      case 'approved':
+        name='aceptado';
+        break;
       case 'Aceptada':
         name='aceptado';
         break;

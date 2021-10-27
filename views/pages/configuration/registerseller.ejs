@@ -2,6 +2,7 @@
 <script src="https://cdn.jsdelivr.net/npm/bulma-steps@2.2.1/dist/js/bulma-steps.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://sdk.mercadopago.com/js/v2"></script>
 <div class="columns is-centered is-gapless">
   <div class="column is-8">
     <div class="container">
@@ -381,6 +382,7 @@
                                   <option value="SSN">SSN</option>
                                   <option value="LIC">LIC</option>
                                   <option value="DNI">DNI</option>
+                                  <option value="RFC">RFC</option>
                                 </select>
                               </div>
                             </div>
@@ -529,7 +531,7 @@
   live('#btn-next','click',function(e){
     e.preventDefault();
     const stepNext = document.querySelector('.step-item.is-info.is-active');
-    const stepId = stepNext.getAttribute('data-step-id') - 1
+    const stepId = stepNext.getAttribute('data-step-id') - 1;
     if (stepId === 0) {
       createSeller(stepNext);
     } else if(stepId === 1) {
@@ -707,31 +709,76 @@
     fmanager.value='';
   }
 
-  function createCreditCard(stepNext, form) {
-    io.socket.post(`${form.action}/${sellerId}`, {
-      type: 'register',
-      card: form.querySelector('input[name="card"]').value,
-      month: form.querySelector('select[name="month"]').value,
-      year: form.querySelector('select[name="year"]').value,
-      cvv: form.querySelector('input[name="cvv"]').value,
-      cardname: form.querySelector('input[name="cardname"]').value,
-      tid: form.querySelector('select[name="tid"]').value,
-      dni: form.querySelector('input[name="dni"]').value,
-    }, function (resData, jwRes) {
-      if(jwRes.statusCode == 200){
-        if (resData && resData.error) {
-          showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
-          document.querySelector('#btn-next').removeAttribute('disabled');
-        } else {
-          setTimeout(() => {
-            collectRegister(stepNext);
-          }, 3000);
-        }
-      } else {
-        showError('Error al guardar la tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+  async function createCreditCard(stepNext, form) {
+    let formAdress = document.querySelector('#form-address');
+    const mp = new MercadoPago('APP_USR-17a0df06-739d-40de-95df-c51536da1070');
+    const countries = <%- JSON.stringify(countries) %>;
+    const countryId = formAdress.querySelector('select[name="country"]').value;
+    const country = countries.find(c => c.id === countryId);
+    if (country && country.iso === 'MX') {
+      try {
+        let cardToken = await mp.createCardToken({
+          cardNumber: form.querySelector('input[name="card"]').value,
+          cardholderName: form.querySelector('input[name="cardname"]').value,
+          cardExpirationMonth: form.querySelector('select[name="month"]').value,
+          cardExpirationYear: form.querySelector('select[name="year"]').value,
+          securityCode: form.querySelector('input[name="cvv"]').value,
+          identificationType:  form.querySelector('select[name="tid"]').value,
+          identificationNumber: form.querySelector('input[name="dni"]').value,
+        })
+        io.socket.post(`${form.action}/${sellerId}`, {
+          type: 'register',
+          country: country.iso,
+          token: cardToken.id,
+          card: form.querySelector('input[name="card"]').value,
+          cardname: form.querySelector('input[name="cardname"]').value,
+          tid: form.querySelector('select[name="tid"]').value,
+          dni: form.querySelector('input[name="dni"]').value
+        }, function (resData, jwRes) {
+          if(jwRes.statusCode == 200){
+            if (resData && resData.error) {
+              showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+              document.querySelector('#btn-next').removeAttribute('disabled');
+            } else {
+              setTimeout(() => {
+                collectRegister(stepNext);
+              }, 3000);
+            }
+          } else {
+            showError('Error al guardar la tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+            document.querySelector('#btn-next').removeAttribute('disabled');
+          };
+        });
+      } catch (error) {
+        showError(`Error creando el token: ${error.message}`, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
         document.querySelector('#btn-next').removeAttribute('disabled');
-      };
-    });
+      }
+    } else if (country && country.iso === 'CO') {
+      io.socket.post(`${form.action}/${sellerId}`, {
+        type: 'register',
+        card: form.querySelector('input[name="card"]').value,
+        month: form.querySelector('select[name="month"]').value,
+        year: form.querySelector('select[name="year"]').value,
+        cvv: form.querySelector('input[name="cvv"]').value,
+        cardname: form.querySelector('input[name="cardname"]').value,
+        tid: form.querySelector('select[name="tid"]').value,
+        dni: form.querySelector('input[name="dni"]').value,
+      }, function (resData, jwRes) {
+        if(jwRes.statusCode == 200){
+          if (resData && resData.error) {
+            showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+            document.querySelector('#btn-next').removeAttribute('disabled');
+          } else {
+            setTimeout(() => {
+              collectRegister(stepNext);
+            }, 3000);
+          }
+        } else {
+          showError('Error al guardar la tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+          document.querySelector('#btn-next').removeAttribute('disabled');
+        };
+      });
+    }
   }
 
   function collectRegister(stepNext) {
