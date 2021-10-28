@@ -431,7 +431,6 @@ module.exports = {
     let product = await Product.findOne({ id: req.body[0].product }).populate('seller').populate('categories',{level:2});
     const channels = await ProductChannel.find({product: product.id}).populate('channel');
     for (let list of req.body) {
-      //No se debe reemplazar ProductVariation, se debe buscar un variation equivalente en la nueva categoría, o crearlo y asignarlo al ProductVariation ya Existente sin cambiar los demás datos.
       let pv = await ProductVariation.findOne({id: list.productvariation}).populate('variation');
       if(pv){
         let vFilter = {name:pv.variation.name,gender:product.gender,category:product.categories[0].id, manufacturer:product.manufacturer,seller:product.seller.id};

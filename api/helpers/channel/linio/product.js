@@ -88,7 +88,7 @@ module.exports = {
 
             if(inputs.alldata){
               data.Product.Name= product.name.toUpperCase();
-              data.Product.Variation= (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString();
+              data.Product.Variation= pv.variation.col ? (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString() : (pv.variation.name.toString() === 'Único' || pv.variation.name.toString() === 'único' || pv.variation.name.toString() === 'Única' || pv.variation.name.toString() === 'única') ? 'Talla Única' : pv.variation.name;
               data.Product.PrimaryCategory= product.mainCategory.linio.split(',')[0];
               //data.Product.Categories= categories.join(',');
               data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
