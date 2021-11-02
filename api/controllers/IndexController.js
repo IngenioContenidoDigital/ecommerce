@@ -858,113 +858,115 @@ module.exports = {
       let seller = integration.seller.id;
       const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
       try {
-        if (address.country.iso === 'CO') {
-          switch (topic) {
-            case 'questions':
-              let question = await sails.helpers.channel.mercadolibre.findQuestion(integration.id, resource);
-              let itemId = question.item_id;
-              let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
-              if (productchan) {
-                let questi = {
-                  idMl: question.id,
-                  seller: seller,
-                  text: question.text,
-                  status: question.status,
-                  dateCreated: parseInt(moment(question.date_created).valueOf()),
-                  product: productchan.product,
-                  integration: integration.id
-                };
-                const existsQuest = await Question.findOne({idMl: question.id});
-                if (existsQuest) {
-                  questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
-                } else {
-                  questi = await Question.create(questi).fetch();
+        if (integration.seller.active) {
+          if (address.country.iso === 'CO') {
+            switch (topic) {
+              case 'questions':
+                let question = await sails.helpers.channel.mercadolibre.findQuestion(integration.id, resource);
+                let itemId = question.item_id;
+                let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
+                if (productchan) {
+                  let questi = {
+                    idMl: question.id,
+                    seller: seller,
+                    text: question.text,
+                    status: question.status,
+                    dateCreated: parseInt(moment(question.date_created).valueOf()),
+                    product: productchan.product,
+                    integration: integration.id
+                  };
+                  const existsQuest = await Question.findOne({idMl: question.id});
+                  if (existsQuest) {
+                    questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
+                  } else {
+                    questi = await Question.create(questi).fetch();
+                  }
+                  if (question.answer !== null) {
+                    await Answer.create({
+                      text: question.answer.text,
+                      status: question.answer.status,
+                      dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                      question: questi.id
+                    }).fetch();
+                  } else {
+                    await sails.helpers.channel.chatBot(true, integration, question.text, 'question', question.id, questi.id);
+                  }
                 }
-                if (question.answer !== null) {
-                  await Answer.create({
-                    text: question.answer.text,
-                    status: question.answer.status,
-                    dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-                    question: questi.id
-                  }).fetch();
-                } else {
-                  await sails.helpers.channel.chatBot(true, integration, question.text, 'question', question.id, questi.id);
+                let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+                sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
+                break;
+              case 'shipments':
+                await sails.helpers.channel.mercadolibre.statusOrder(integration.id, resource);
+                break;
+              case 'orders_v2':
+                await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
+                break;
+              case 'items':
+                await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
+                break;
+              case 'claims':
+                await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
+                break;
+              case 'messages':
+                await sails.helpers.channel.mercadolibre.messages(integration.id, resource);
+                break;
+              default:
+                break;
+            }
+          } else if (address.country.iso === 'MX') {
+            switch (topic) {
+              case 'questions':
+                let question = await sails.helpers.channel.mercadolibremx.findQuestion(integration.id, resource);
+                let itemId = question.item_id;
+                let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
+                if (productchan) {
+                  let questi = {
+                    idMl: question.id,
+                    seller: seller,
+                    text: question.text,
+                    status: question.status,
+                    dateCreated: parseInt(moment(question.date_created).valueOf()),
+                    product: productchan.product,
+                    integration: integration.id
+                  };
+                  const existsQuest = await Question.findOne({idMl: question.id});
+                  if (existsQuest) {
+                    questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
+                  } else {
+                    questi = await Question.create(questi).fetch();
+                  }
+                  if (question.answer !== null) {
+                    await Answer.create({
+                      text: question.answer.text,
+                      status: question.answer.status,
+                      dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
+                      question: questi.id
+                    }).fetch();
+                  } else {
+                    await sails.helpers.channel.chatBot(true, integration, question.text, 'question', question.id, questi.id);
+                  }
                 }
-              }
-              let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-              sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
-              break;
-            case 'shipments':
-              await sails.helpers.channel.mercadolibre.statusOrder(integration.id, resource);
-              break;
-            case 'orders_v2':
-              await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
-              break;
-            case 'items':
-              await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
-              break;
-            case 'claims':
-              await sails.helpers.channel.mercadolibre.claims(integration.id, resource);
-              break;
-            case 'messages':
-              await sails.helpers.channel.mercadolibre.messages(integration.id, resource);
-              break;
-            default:
-              break;
-          }
-        } else if (address.country.iso === 'MX') {
-          switch (topic) {
-            case 'questions':
-              let question = await sails.helpers.channel.mercadolibremx.findQuestion(integration.id, resource);
-              let itemId = question.item_id;
-              let productchan = await ProductChannel.findOne({channelid: itemId, integration: integration.id});
-              if (productchan) {
-                let questi = {
-                  idMl: question.id,
-                  seller: seller,
-                  text: question.text,
-                  status: question.status,
-                  dateCreated: parseInt(moment(question.date_created).valueOf()),
-                  product: productchan.product,
-                  integration: integration.id
-                };
-                const existsQuest = await Question.findOne({idMl: question.id});
-                if (existsQuest) {
-                  questi = await Question.updateOne({id: existsQuest.id}).set({status: question.status});
-                } else {
-                  questi = await Question.create(questi).fetch();
-                }
-                if (question.answer !== null) {
-                  await Answer.create({
-                    text: question.answer.text,
-                    status: question.answer.status,
-                    dateCreated: parseInt(moment(question.answer.date_created).valueOf()),
-                    question: questi.id
-                  }).fetch();
-                } else {
-                  await sails.helpers.channel.chatBot(true, integration, question.text, 'question', question.id, questi.id);
-                }
-              }
-              let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-              sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
-              break;
-            case 'shipments':
-              await sails.helpers.channel.mercadolibremx.statusOrder(integration.id, resource);
-              break;
-            case 'orders_v2':
-              await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
-              break;
-            case 'items':
-              await sails.helpers.channel.mercadolibremx.productQc(integration.id, resource);
-              break;
-            case 'claims':
-              await sails.helpers.channel.mercadolibremx.claims(integration.id, resource);
-              break;
-            case 'messages':
-              await sails.helpers.channel.mercadolibremx.messages(integration.id, resource);
-              break;
-            default:
-              break;
+                let questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+                sails.sockets.blast('notificationml', {questionsSeller: questionsSeller, seller});
+                break;
+              case 'shipments':
+                await sails.helpers.channel.mercadolibremx.statusOrder(integration.id, resource);
+                break;
+              case 'orders_v2':
+                await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
+                break;
+              case 'items':
+                await sails.helpers.channel.mercadolibremx.productQc(integration.id, resource);
+                break;
+              case 'claims':
+                await sails.helpers.channel.mercadolibremx.claims(integration.id, resource);
+                break;
+              case 'messages':
+                await sails.helpers.channel.mercadolibremx.messages(integration.id, resource);
+                break;
+              default:
+                break;
+            }
           }
         }
       } catch(err) {
@@ -975,168 +977,172 @@ module.exports = {
   dafitiSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
-    let integration = await Integrations.findOne({key: identifier}).populate('channel');
+    let integration = await Integrations.findOne({key: identifier}).populate('channel').populate('seller');
     await sails.helpers.channel.successRequest(res);
-    switch (req.body.event) {
-      case 'onOrderCreated':
-        if(identifier){
-          let order = req.body.payload.OrderId;
-          let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller,  ['OrderId='+order]);
-          let seller = await Seller.findOne({id: integration.seller});
-          if (data && seller.integrationErp) {
-            await sails.helpers.integrationsiesa.exportOrder(data);
+    if (integration.seller.active) {
+      switch (req.body.event) {
+        case 'onOrderCreated':
+          if(identifier){
+            let order = req.body.payload.OrderId;
+            let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller.id,  ['OrderId='+order]);
+            if (data && integration.seller.integrationErp) {
+              await sails.helpers.integrationsiesa.exportOrder(data);
+            }
           }
-        }
-        break;
-      case 'onOrderItemsStatusChanged':
-        let state = await sails.helpers.orderState(data.NewStatus);
-        if (state) {
-          let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
-          let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
-          let result = await JSON.parse(response);
-          let dord = result.SuccessResponse.Body.Orders.Order;
-          const order = await Order.findOne({channelref:data.OrderId});
-          await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
-          for(let it of data.OrderItemIds){
-            await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
-          }
-          await OrderHistory.create({
-            order:order.id,
-            state:state,
-            createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
-            updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
-          });
-          let seller = await Seller.findOne({id: order.seller});
-          if (seller && seller.integrationErp && state) {
-            let orderstate = await OrderState.findOne({id:state});
-            let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
-            await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
-          }
-          await sails.helpers.notification(order, state);
           break;
-        }
-      case 'onFeedCompleted':
-        const feed = req.body.payload.Feed;
-        await sails.helpers.channel.feedSync(integration, feed);
-        break;
-      case 'onProductCreated':
-        const skus = req.body.payload.SellerSkus;
-        await sails.helpers.channel.productSync(integration, skus);
-        break;
-      case 'onProductQcStatusChanged':
-        const sellerSkus = req.body.payload.SellerSkus;
-        await sails.helpers.channel.productQc(integration, sellerSkus);
-        break;
-      default:
-        break;
+        case 'onOrderItemsStatusChanged':
+          let state = await sails.helpers.orderState(data.NewStatus);
+          if (state) {
+            let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrder',integration.seller.id, ['OrderId='+data.OrderId]);
+            let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+            let result = await JSON.parse(response);
+            let dord = result.SuccessResponse.Body.Orders.Order;
+            const order = await Order.findOne({channelref:data.OrderId});
+            await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+            for(let it of data.OrderItemIds){
+              await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
+            }
+            await OrderHistory.create({
+              order:order.id,
+              state:state,
+              createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+              updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+            });
+            let seller = await Seller.findOne({id: order.seller});
+            if (seller && seller.integrationErp && state) {
+              let orderstate = await OrderState.findOne({id:state});
+              let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
+              await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+            }
+            await sails.helpers.notification(order, state);
+            break;
+          }
+        case 'onFeedCompleted':
+          const feed = req.body.payload.Feed;
+          await sails.helpers.channel.feedSync(integration, feed);
+          break;
+        case 'onProductCreated':
+          const skus = req.body.payload.SellerSkus;
+          await sails.helpers.channel.productSync(integration, skus);
+          break;
+        case 'onProductQcStatusChanged':
+          const sellerSkus = req.body.payload.SellerSkus;
+          await sails.helpers.channel.productQc(integration, sellerSkus);
+          break;
+        default:
+          break;
+      }
     }
   },
   linioSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
-    let integration = await Integrations.findOne({key: identifier}).populate('channel');
+    let integration = await Integrations.findOne({key: identifier}).populate('channel').populate('seller');
     await sails.helpers.channel.successRequest(res);
-    switch (req.body.event) {
-      case 'onOrderCreated':
-        if(identifier){
-          let order = req.body.payload.OrderId;
-          let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller,  ['OrderId='+order] );
-          let seller = await Seller.findOne({id: integration.seller});
-          if (data && seller.integrationErp) {
-            await sails.helpers.integrationsiesa.exportOrder(data);
+    if (integration.seller.active) {
+      switch (req.body.event) {
+        case 'onOrderCreated':
+          if(identifier){
+            let order = req.body.payload.OrderId;
+            let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller.id,  ['OrderId='+order] );
+            if (data && integration.seller.integrationErp) {
+              await sails.helpers.integrationsiesa.exportOrder(data);
+            }
           }
-        }
-        break;
-      case 'onOrderItemsStatusChanged':
-        let state = await sails.helpers.orderState(data.NewStatus);
-        if (state) {
-          let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
-          let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
-          let result = await JSON.parse(response);
-          let dord = result.SuccessResponse.Body.Orders.Order;
-          const order = await Order.findOne({channelref:data.OrderId});
-          await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
-          for(let it of data.OrderItemIds){
-            await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
-          }
-          await OrderHistory.create({
-            order:order.id,
-            state:state,
-            createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
-            updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
-          });
-          let seller = await Seller.findOne({id: order.seller});
-          if (seller && seller.integrationErp && state) {
-            let orderstate = await OrderState.findOne({id:state});
-            let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
-            await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
-          }
-          await sails.helpers.notification(order, state);
           break;
-        }
-      case 'onFeedCompleted':
-        const feed = req.body.payload.Feed;
-        await sails.helpers.channel.feedSync(integration, feed);
-        break;
-      case 'onProductCreated':
-        const skus = req.body.payload.SellerSkus;
-        await sails.helpers.channel.productSync(integration, skus);
-        break;
-      case 'onProductQcStatusChanged':
-        const sellerSkus = req.body.payload.SellerSkus;
-        await sails.helpers.channel.productQc(integration, sellerSkus);
-        break;
-      default:
-        break;
+        case 'onOrderItemsStatusChanged':
+          let state = await sails.helpers.orderState(data.NewStatus);
+          if (state) {
+            let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',integration.seller.id, ['OrderId='+data.OrderId]);
+            let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+            let result = await JSON.parse(response);
+            let dord = result.SuccessResponse.Body.Orders.Order;
+            const order = await Order.findOne({channelref:data.OrderId});
+            await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+            for(let it of data.OrderItemIds){
+              await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
+            }
+            await OrderHistory.create({
+              order:order.id,
+              state:state,
+              createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+              updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+            });
+            let seller = await Seller.findOne({id: order.seller});
+            if (seller && seller.integrationErp && state) {
+              let orderstate = await OrderState.findOne({id:state});
+              let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
+              await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+            }
+            await sails.helpers.notification(order, state);
+            break;
+          }
+        case 'onFeedCompleted':
+          const feed = req.body.payload.Feed;
+          await sails.helpers.channel.feedSync(integration, feed);
+          break;
+        case 'onProductCreated':
+          const skus = req.body.payload.SellerSkus;
+          await sails.helpers.channel.productSync(integration, skus);
+          break;
+        case 'onProductQcStatusChanged':
+          const sellerSkus = req.body.payload.SellerSkus;
+          await sails.helpers.channel.productQc(integration, sellerSkus);
+          break;
+        default:
+          break;
+      }
     }
   },
   liniomxSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
-    let integration = await Integrations.findOne({key: identifier}).populate('channel');
+    let integration = await Integrations.findOne({key: identifier}).populate('channel').populate('seller');
     await sails.helpers.channel.successRequest(res);
-    switch (req.body.event) {
-      case 'onOrderCreated':
-        if(identifier){
-          let order = req.body.payload.OrderId;
-          await sails.helpers.channel.liniomx.orderbyid(integration.id, integration.seller,  ['OrderId='+order] );
-        }
-        break;
-      case 'onOrderItemsStatusChanged':
-        let state = await sails.helpers.orderState(data.NewStatus);
-        if(state){
-          let sign = await sails.helpers.channel.liniomx.sign(integration.id, 'GetOrder',integration.seller, ['OrderId='+data.OrderId]);
-          let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
-          let result = await JSON.parse(response);
-          let dord = result.SuccessResponse.Body.Orders.Order;
-          const order = await Order.findOne({channelref:data.OrderId});
-          await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
-          for(let it of data.OrderItemIds){
-            await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state, updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
+    if (integration.seller.active) {
+      switch (req.body.event) {
+        case 'onOrderCreated':
+          if(identifier){
+            let order = req.body.payload.OrderId;
+            await sails.helpers.channel.liniomx.orderbyid(integration.id, integration.seller.id,  ['OrderId='+order] );
           }
-          await OrderHistory.create({
-            order:order.id,
-            state:state,
-            createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
-            updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
-          });
-          await sails.helpers.notification(order, state);
           break;
-        }
-      case 'onFeedCompleted':
-        const feed = req.body.payload.Feed;
-        await sails.helpers.channel.liniomx.feedSync(integration, feed);
-        break;
-      case 'onProductCreated':
-        const skus = req.body.payload.SellerSkus;
-        await sails.helpers.channel.liniomx.productSync(integration, skus);
-        break;
-      case 'onProductQcStatusChanged':
-        const sellerSkus = req.body.payload.SellerSkus;
-        await sails.helpers.channel.liniomx.productQc(integration, sellerSkus);
-        break;
-      default:
-        break;
+        case 'onOrderItemsStatusChanged':
+          let state = await sails.helpers.orderState(data.NewStatus);
+          if(state){
+            let sign = await sails.helpers.channel.liniomx.sign(integration.id, 'GetOrder',integration.seller.id, ['OrderId='+data.OrderId]);
+            let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+            let result = await JSON.parse(response);
+            let dord = result.SuccessResponse.Body.Orders.Order;
+            const order = await Order.findOne({channelref:data.OrderId});
+            await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+            for(let it of data.OrderItemIds){
+              await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state, updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
+            }
+            await OrderHistory.create({
+              order:order.id,
+              state:state,
+              createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+              updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+            });
+            await sails.helpers.notification(order, state);
+            break;
+          }
+        case 'onFeedCompleted':
+          const feed = req.body.payload.Feed;
+          await sails.helpers.channel.liniomx.feedSync(integration, feed);
+          break;
+        case 'onProductCreated':
+          const skus = req.body.payload.SellerSkus;
+          await sails.helpers.channel.liniomx.productSync(integration, skus);
+          break;
+        case 'onProductQcStatusChanged':
+          const sellerSkus = req.body.payload.SellerSkus;
+          await sails.helpers.channel.liniomx.productQc(integration, sellerSkus);
+          break;
+        default:
+          break;
+      }
     }
   },
   downloadexcel: async function (req, res) {
