@@ -416,8 +416,10 @@ module.exports = {
       await OrderItem.updateOne({id: it.id}).set({currentstatus: req.body.orderState});
     }
     if (seller && seller.integrationErp && newstate) {
-      let resultState = newstate.name === 'en procesamiento' ? 'En procesa' : newstate.name === 'reintegrado' ? 'Reintegrad' : newstate.name.charAt(0).toUpperCase() + newstate.name.slice(1);
-      await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+      if (seller.nameErp === 'siesa') {
+        let resultState = newstate.name === 'en procesamiento' ? 'En procesa' : newstate.name === 'reintegrado' ? 'Reintegrad' : newstate.name.charAt(0).toUpperCase() + newstate.name.slice(1);
+        await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+      }
     }
     if(newstate.name==='empacado' && order.tracking===''){
       await sails.helpers.carrier.shipment(id);

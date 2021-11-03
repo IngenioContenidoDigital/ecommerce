@@ -428,16 +428,20 @@ module.exports = {
     }
     if (!req.isSocket) {return res.badRequest();}
     let error = false;
-    let product = await Product.findOne({ id: req.body[0].product }).populate('seller');
+    let product = await Product.findOne({ id: req.body[0].product }).populate('seller').populate('categories',{level:2});
     const channels = await ProductChannel.find({product: product.id}).populate('channel');
     for (let list of req.body) {
-      ProductVariation.findOrCreate({ id: list.productvariation }, { product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id })
-        .exec(async (err, record, wasCreated) => {
-          if (err) { error = true; return res.send('error'); }
-          if (!wasCreated) {
-            await ProductVariation.updateOne({ id: record.id }).set({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
-          }
-        });
+      let pv = await ProductVariation.findOne({id: list.productvariation}).populate('variation');
+      if(pv){
+        let vFilter = {name:pv.variation.name,gender:product.gender,category:product.categories[0].id, manufacturer:product.manufacturer,seller:product.seller.id};
+        let v = await Variation.find(vFilter)[0];
+        if(!v){
+          v = await Variation.create(vFilter).fetch();
+        }
+        await ProductVariation.updateOne({id:list.productvariation}).set({product: list.product, variation:v.id, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
+      }else{
+        await Productvariation.create({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
+      }
     }
     if (channels.length > 0) {
       let productchannel = channels.find(item => item.channel.name === 'mercadolibre' || item.channel.name === 'mercadolibremx');
