@@ -899,7 +899,16 @@ module.exports = {
                 await sails.helpers.channel.mercadolibre.statusOrder(integration.id, resource);
                 break;
               case 'orders_v2':
-                await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
+                let data = await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
+                if (data && integration.seller.integrationErp) {
+                  if (integration.seller.nameErp === 'siesa') {
+                    await sails.helpers.integrationsiesa.exportOrder(data);
+                  } else if(integration.seller.nameErp === 'busint'){
+                    await sails.helpers.integrationbusint.exportOrder(data);
+                  } else if(integration.seller.nameErp === 'sap'){
+                    await sails.helpers.integrationsap.exportOrder(data);
+                  }
+                }
                 break;
               case 'items':
                 await sails.helpers.channel.mercadolibre.productQc(integration.id, resource);
@@ -986,7 +995,13 @@ module.exports = {
             let order = req.body.payload.OrderId;
             let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller.id,  ['OrderId='+order]);
             if (data && integration.seller.integrationErp) {
-              await sails.helpers.integrationsiesa.exportOrder(data);
+              if (seller.nameErp === 'siesa') {
+                await sails.helpers.integrationsiesa.exportOrder(data);
+              } else if(seller.nameErp === 'busint'){
+                await sails.helpers.integrationbusint.exportOrder(data);
+              } else if(seller.nameErp === 'sap'){
+                await sails.helpers.integrationsap.exportOrder(data);
+              }
             }
           }
           break;
@@ -1010,9 +1025,11 @@ module.exports = {
             });
             let seller = await Seller.findOne({id: order.seller});
             if (seller && seller.integrationErp && state) {
-              let orderstate = await OrderState.findOne({id:state});
-              let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
-              await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+              if (seller.nameErp === 'siesa') {
+                let orderstate = await OrderState.findOne({id:state});
+                let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
+                await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+              }
             }
             await sails.helpers.notification(order, state);
             break;
@@ -1046,7 +1063,13 @@ module.exports = {
             let order = req.body.payload.OrderId;
             let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller.id,  ['OrderId='+order] );
             if (data && integration.seller.integrationErp) {
-              await sails.helpers.integrationsiesa.exportOrder(data);
+              if (seller.nameErp === 'siesa') {
+                await sails.helpers.integrationsiesa.exportOrder(data);
+              } else if(seller.nameErp === 'busint'){
+                await sails.helpers.integrationbusint.exportOrder(data);
+              } else if(seller.nameErp === 'sap'){
+                await sails.helpers.integrationsap.exportOrder(data);
+              }
             }
           }
           break;
@@ -1070,9 +1093,11 @@ module.exports = {
             });
             let seller = await Seller.findOne({id: order.seller});
             if (seller && seller.integrationErp && state) {
-              let orderstate = await OrderState.findOne({id:state});
-              let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
-              await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+              if (seller.nameErp === 'siesa') {
+                let orderstate = await OrderState.findOne({id:state});
+                let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
+                await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+              }
             }
             await sails.helpers.notification(order, state);
             break;

@@ -118,19 +118,25 @@
                 <div class="column">
                   <div class="field">
                     <div class="control">
-                      <label class="label is-size-7">Integracion ERP</label>
-                      <input id="integrationErp" type="checkbox" name="integrationErp" class="switch is-success" <% if(action=='edit' && seller.integrationErp){%>checked<%}%>>
-                      <label for="integrationErp"></label>
-                    </div>
-                  </div>
-                </div>
-                <div class="column">
-                  <div class="field">
-                    <div class="control">
                       <label for="safestock" class="label is-size-7">Stock de Seguridad</label>
                       <input id="safestock" type="number" min="0" max="5" name="safestock" class="input is-size-7" value="<% if(action=='edit'){%><%= seller.safestock %><%}else{%>0<%}%>" >
                     </div>
                   </div>    
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Moneda</label>
+                    <div class="control">
+                      <div class="select is-fullwidth is-size-7">
+                        <select required class="select is-capitalized" name="currency">
+                          <option value="">Elegir Moneda</option>
+                          <% currencies.forEach((currency) =>{ %>
+                            <option class="is-capitalized" <%=(seller && seller.currency && seller.currency.id == currency.id) ? 'selected="selected"' : '' %> value="<%=currency.id%>"><%=currency.name%></option>
+                          <%})%>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -157,21 +163,37 @@
                 </div>
               </div>
             </div>
+            <div class="column"></div>
+          </div>
+          <br>
+          <h6 class="title is-6">Integración ERP</h4>
+          <hr>
+          <div class="columns">
             <div class="column">
               <div class="field">
-                <label class="label is-size-7">Moneda</label>
+                <div class="control">
+                  <label class="label is-size-7">ERP</label>
+                  <input id="integrationErp" type="checkbox" name="integrationErp" class="switch is-success" <% if(action=='edit' && seller.integrationErp){%>checked<%}%>>
+                  <label for="integrationErp"></label>
+                </div>
+              </div>
+            </div>
+            <div class="column">
+              <div class="field">
+                <label class="label is-size-7">Integración</label>
                 <div class="control">
                   <div class="select is-fullwidth is-size-7">
-                    <select required class="select is-capitalized" name="currency">
-                      <option value="">Elegir Moneda</option>
-                      <% currencies.forEach((currency) =>{ %>
-                        <option class="is-capitalized" <%=(seller && seller.currency && seller.currency.id == currency.id) ? 'selected="selected"' : '' %> value="<%=currency.id%>"><%=currency.name%></option>
-                      <%})%>
+                    <select required class="select is-capitalized" name="nameErp">
+                      <option value="">--Seleccionar integración--</option>
+                      <option class="is-capitalized" value="siesa" <% if(action=='edit' && seller.nameErp === 'siesa'){%>selected="selected"<%}%>>SIESA</option>
+                      <option class="is-capitalized" value="busint" <% if(action=='edit' && seller.nameErp === 'busint'){%>selected="selected"<%}%>>BUSINT</option>
+                      <option class="is-capitalized" value="sap" <% if(action=='edit' && seller.nameErp === 'sap'){%>selected="selected"<%}%>>SAP</option>
                     </select>
                   </div>
                 </div>
               </div>
             </div>
+            <div class="column"></div>
             <div class="column"></div>
           </div>
           <br>
