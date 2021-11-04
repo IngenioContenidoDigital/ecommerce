@@ -995,11 +995,11 @@ module.exports = {
             let order = req.body.payload.OrderId;
             let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller.id,  ['OrderId='+order]);
             if (data && integration.seller.integrationErp) {
-              if (seller.nameErp === 'siesa') {
+              if (integration.seller.nameErp === 'siesa') {
                 await sails.helpers.integrationsiesa.exportOrder(data);
-              } else if(seller.nameErp === 'busint'){
+              } else if(integration.seller.nameErp === 'busint'){
                 await sails.helpers.integrationbusint.exportOrder(data);
-              } else if(seller.nameErp === 'sap'){
+              } else if(integration.seller.nameErp === 'sap'){
                 await sails.helpers.integrationsap.exportOrder(data);
               }
             }
@@ -1063,11 +1063,11 @@ module.exports = {
             let order = req.body.payload.OrderId;
             let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller.id,  ['OrderId='+order] );
             if (data && integration.seller.integrationErp) {
-              if (seller.nameErp === 'siesa') {
+              if (integration.seller.nameErp === 'siesa') {
                 await sails.helpers.integrationsiesa.exportOrder(data);
-              } else if(seller.nameErp === 'busint'){
+              } else if(integration.seller.nameErp === 'busint'){
                 await sails.helpers.integrationbusint.exportOrder(data);
-              } else if(seller.nameErp === 'sap'){
+              } else if(integration.seller.nameErp === 'sap'){
                 await sails.helpers.integrationsap.exportOrder(data);
               }
             }
