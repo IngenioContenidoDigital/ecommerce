@@ -2660,7 +2660,7 @@ module.exports = {
           let errors = [];
           let result = [];
 
-          if(p.color && p.color.length > 0 && !p.simple && req.body.channel == constants.WOOCOMMERCE_CHANNEL){
+          if(p.color && p.color.length > 0 && !p.simple && req.body.channel === constants.WOOCOMMERCE_CHANNEL){
             let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                 req.body.channel,
                 req.body.pk,
@@ -2689,27 +2689,30 @@ module.exports = {
                         try {
                           let url = (im.src.split('?'))[0];
                           let file = (im.file.split('?'))[0];
-                          let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
-                            throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
-                          });
-                          if (uploaded) {
-                            let cover = 1;
-                            let totalimg = await ProductImage.count({ product: productColor.id});
-                            totalimg += 1;
-                            if (totalimg > 1) { cover = 0; }
-
-                            let rs = await ProductImage.create({
-                              file: file,
-                              position: totalimg,
-                              cover: cover,
-                              product: productColor.id
-                            }).fetch();
-
-                            if(typeof(rs) === 'object'){
-                              result.push(rs);
+                          let existImage = await ProductImage.find({product: product.id, file: file});
+                          if (existImage.length === 0) {
+                            let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
+                              throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
+                            });
+                            if (uploaded) {
+                              let cover = 1;
+                              let totalimg = await ProductImage.count({ product: productColor.id});
+                              totalimg += 1;
+                              if (totalimg > 1) { cover = 0; }
+  
+                              let rs = await ProductImage.create({
+                                file: file,
+                                position: totalimg,
+                                cover: cover,
+                                product: productColor.id
+                              }).fetch();
+  
+                              if(typeof(rs) === 'object'){
+                                result.push(rs);
+                              }
+  
+                              sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                             }
-
-                            sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                           }
                         } catch (err) {
                           errors.push({ name:'ERRDATA', message:err.message });
@@ -2734,31 +2737,31 @@ module.exports = {
                   });
                   if(product &&  await ProductImage.count({product:product.id}) == 0){
                     for (let im of p.images) {
-
                       let url = (im.src.split('?'))[0];
                       let file = (im.file.split('?'))[0];
-                      let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                        throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                      });
-                      if (uploaded) {
-                        let cover = 1;
-                        let totalimg = await ProductImage.count({ product: product.id});
-                        totalimg += 1;
-                        if (totalimg > 1) { cover = 0; }
-
-                        let rs = await ProductImage.create({
-                          file: file,
-                          position: totalimg,
-                          cover: cover,
-                          product: product.id
-                        }).fetch();
-
-                        if(typeof(rs) === 'object'){
-                          result.push(rs);
+                      let existImage = await ProductImage.find({product: product.id, file: file});
+                      if (existImage.length === 0) {
+                        let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                          throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                        });
+                        if (uploaded) {
+                          let cover = 1;
+                          let totalimg = await ProductImage.count({ product: product.id});
+                          totalimg += 1;
+                          if (totalimg > 1) { cover = 0; }
+  
+                          let rs = await ProductImage.create({
+                            file: file,
+                            position: totalimg,
+                            cover: cover,
+                            product: product.id
+                          }).fetch();
+  
+                          if(typeof(rs) === 'object'){
+                            result.push(rs);
+                          }
+                          sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                         }
-
-                        sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-
                       }
                     }
                   }else{
@@ -2775,36 +2778,38 @@ module.exports = {
             }
           }else{
             try {
-              let product = p.externalId ? await Product.findOne({externalId: p.externalId, seller: seller}).catch((e)=>{
+              let product = p.externalId ? await Product.findOne({externalId: p.externalId, seller: seller}).populate('images').catch((e)=>{
                 throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
-              }) : await Product.findOne({reference: p.reference.toUpperCase(), seller: seller}).catch((e)=>{
+              }) : await Product.findOne({reference: p.reference.toUpperCase(), seller: seller}).populate('images').catch((e)=>{
                 throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
               });
-              if(product &&  await ProductImage.count({product:product.id}) == 0){
+              if(product && product.images.length === 0){
                 for (let im of p.images) {
-
                   let url = (im.src.split('?'))[0];
                   let file = (im.file.split('?'))[0];
-                  let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                    throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                  });
-                  if (uploaded) {
-                    let cover = 1;
-                    let totalimg = await ProductImage.count({ product: product.id});
-                    totalimg += 1;
-                    if (totalimg > 1) { cover = 0; }
-
-                    let rs = await ProductImage.create({
-                      file: file,
-                      position: totalimg,
-                      cover: cover,
-                      product: product.id
-                    }).fetch();
-
-                    if(typeof(rs) === 'object'){
-                      result.push(rs);
+                  let existImage = await ProductImage.find({product: product.id, file: file});
+                  if (existImage.length === 0) {
+                    let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                      throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                    });
+                    if (uploaded) {
+                      let cover = 1;
+                      let totalimg = await ProductImage.count({ product: product.id});
+                      totalimg += 1;
+                      if (totalimg > 1) { cover = 0; }
+  
+                      let rs = await ProductImage.create({
+                        file: file,
+                        position: totalimg,
+                        cover: cover,
+                        product: product.id
+                      }).fetch();
+  
+                      if(typeof(rs) === 'object'){
+                        result.push(rs);
+                      }
+                      sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                     }
-                    sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                   }
                 }
               }else{
