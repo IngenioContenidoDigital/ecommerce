@@ -115,7 +115,9 @@ module.exports = {
         let route = await sails.helpers.channel.dafiti.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
         let response = await sails.helpers.request('https://sellercenter-api.dafiti.com.co','/?'+route,'GET');
         let result = JSON.parse(response);
-        guia = result.SuccessResponse.Body.Documents.Document.File;
+        if (result.SuccessResponse) {
+          guia = result.SuccessResponse.Body.Documents.Document.File;
+        }
       }else if(order.channel==='linio'){
         let oitems = await OrderItem.find({order:order.id});
         let litems = [];
@@ -127,7 +129,9 @@ module.exports = {
         let route = await sails.helpers.channel.linio.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
         let response = await sails.helpers.request('https://sellercenter-api.linio.com.co','/?'+route,'GET');
         let result = JSON.parse(response);
-        guia = result.SuccessResponse.Body.Documents.Document.File;
+        if (result.SuccessResponse) {
+          guia = result.SuccessResponse.Body.Documents.Document.File;
+        }
       }else if(order.channel==='liniomx'){
         let oitems = await OrderItem.find({order:order.id});
         let litems = [];
@@ -139,7 +143,9 @@ module.exports = {
         let route = await sails.helpers.channel.liniomx.sign(order.integration,'GetDocument',order.seller,['OrderItemIds=['+litems.join(',')+']','DocumentType=shippingParcel']);
         let response = await sails.helpers.request('https://sellercenter-api.linio.com.mx','/?'+route,'GET');
         let result = JSON.parse(response);
-        guia = result.SuccessResponse.Body.Documents.Document.File;
+        if (result.SuccessResponse) {
+          guia = result.SuccessResponse.Body.Documents.Document.File;
+        }
       }else if(order.channel==='mercadolibre'){
         guia = await sails.helpers.channel.mercadolibre.shipping(order);
       }else if(order.channel==='mercadolibremx'){
