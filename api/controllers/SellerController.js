@@ -81,6 +81,7 @@ module.exports = {
         active:isActive,
         currency : req.body.currency || null,
         integrationErp,
+        nameErp: req.body.nameErp || '',
         safestock: req.body.safestock ? req.body.safestock : 0
       }
 
@@ -119,6 +120,7 @@ module.exports = {
         logo: filename[0].filename,
         active:isActive,
         integrationErp,
+        nameErp: req.body.nameErp || '',
         safestock: req.body.safestock ? req.body.safestock : 0,
         currency: req.body.currency || null
       });
@@ -135,6 +137,7 @@ module.exports = {
           domain:req.body.url,
           active:isActive,
           integrationErp,
+          nameErp: req.body.nameErp || '',
           safestock: req.body.safestock ? req.body.safestock : 0,
           currency: req.body.currency || null
         });

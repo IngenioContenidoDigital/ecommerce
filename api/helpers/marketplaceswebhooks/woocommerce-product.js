@@ -124,21 +124,24 @@ module.exports = {
                           try {
                             let url = (im.src.split('?'))[0];
                             let file = (im.file.split('?'))[0];
-                            let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
-                              throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
-                            });
-                            if (uploaded) {
-                              let cover = 1;
-                              let totalimg = await ProductImage.count({ product: productColor.id});
-                              totalimg += 1;
-                              if (totalimg > 1) { cover = 0; }
-      
-                              let rs = await ProductImage.create({
-                                file: file,
-                                position: totalimg,
-                                cover: cover,
-                                product: productColor.id
-                              }).fetch();
+                            let existImage = await ProductImage.find({product: product.id, file: file});
+                            if (existImage.length === 0) {
+                              let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
+                                throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
+                              });
+                              if (uploaded) {
+                                let cover = 1;
+                                let totalimg = await ProductImage.count({ product: productColor.id});
+                                totalimg += 1;
+                                if (totalimg > 1) { cover = 0; }
+        
+                                let rs = await ProductImage.create({
+                                  file: file,
+                                  position: totalimg,
+                                  cover: cover,
+                                  product: productColor.id
+                                }).fetch();
+                              }
                             }
                           } catch (err) {
                           }
