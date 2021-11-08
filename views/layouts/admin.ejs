@@ -68,7 +68,7 @@
             <div class="buttons">
               <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
                 <a href="#" id="addTicket" class="button">
-                  <i class='is-size-4 bx bx-mail-send'></i>
+                  <i class='is-size-4 bx bx-question-mark bx-tada'></i>
                 </a>
                 <a href="/channelmessages/<%=session.user.seller%>" id="notification-button" class="button">
                   <span title="Badge top right" class="badge"><%if(session.questions !== undefined ){%><%=session.questions%> <%}else{%>0<%}%></span>
@@ -134,7 +134,7 @@
             <div class="field">
               <label class="label">Nombre</label>
               <div class="control has-icons-left has-icons-right">
-                <input class="input" name="name" type="text" placeholder="Ingresa Nombre" />
+                <input class="input" name="name" type="text" disabled placeholder="Ingresa Nombre" value="<%= session.user.fullName %>"/>
                 <span class="icon is-small is-left">
                   <i class='bx bxs-user'></i>
                 </span>
@@ -143,7 +143,7 @@
             <div class="field">
               <label class="label">Email</label>
               <div class="control has-icons-left has-icons-right">
-                <input class="input" name="email" type="email" placeholder="Ingresa Email" />
+                <input class="input" name="email" type="email" disabled placeholder="Ingresa Email" value="<%= session.user.emailAddress %>"/>
                 <span class="icon is-small is-left">
                   <i class="bx bx-envelope"></i>
                 </span>

@@ -1264,27 +1264,28 @@ module.exports = {
     let error = null;
     let data = req.body
     let result = null;
+    const user = await User.findOne({emailAddress: data.email}).populate('seller');
     try {
       const body = {
         "data": {
-          "approval_statu": "pending",
+          "approval_status": "pending",
           "assignee": null,
           "assignee_section": null,
           "completed": false,
           "due_at": null,
           "due_on": null,
           "name": data.issue,
-          "notes": `Nombre Usuario: ${data.name} -- Email Usuario: ${data.email} -- Descripción: ${data.description}`,
+          "notes": `*Nombre Usuario: ${data.name} \n*Seller: ${user.seller.name.toUpperCase()} \n* Email Usuario: ${data.email} \n* Descripción: ${data.description}`,
           "parent": null,
           "start_on": null,
           "resource_subtype": "default_task",
           "workspace": "1199922449338143",
-          "projects": ["1201319424175688"]
+          "projects": ["1201339644354969"]
         }
       }
       let config = {
         headers: {
-          Authorization: `Bearer 1/1199922530968847:04e60b648a138dc1294a21f97dfe4423`
+          Authorization: `Bearer 1/1199922530340923:187703a003eedf564f8dacf30f612fbc`
         }
       };
       const response = await axios.post("https://app.asana.com/api/1.0/tasks", body, config);
