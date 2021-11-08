@@ -22,6 +22,7 @@ module.exports = {
     let channels = null;
     let commissiondiscount = null;
     let commissionchannel = null;
+    let plans = null;
     let tokens = [];
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
@@ -53,10 +54,11 @@ module.exports = {
         stringFrch.includes('visa') ? 'visa' : '';
         token.frchimg = frch;
       }
+      plans = await Plan.find();
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',rights,sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment, tokens});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',rights,sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment, tokens, plans});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -79,6 +81,7 @@ module.exports = {
         active:isActive,
         currency : req.body.currency || null,
         integrationErp,
+        nameErp: req.body.nameErp || '',
         safestock: req.body.safestock ? req.body.safestock : 0
       }
 
@@ -117,6 +120,7 @@ module.exports = {
         logo: filename[0].filename,
         active:isActive,
         integrationErp,
+        nameErp: req.body.nameErp || '',
         safestock: req.body.safestock ? req.body.safestock : 0,
         currency: req.body.currency || null
       });
@@ -133,6 +137,7 @@ module.exports = {
           domain:req.body.url,
           active:isActive,
           integrationErp,
+          nameErp: req.body.nameErp || '',
           safestock: req.body.safestock ? req.body.safestock : 0,
           currency: req.body.currency || null
         });
