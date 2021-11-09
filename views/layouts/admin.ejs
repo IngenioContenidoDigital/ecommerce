@@ -215,6 +215,8 @@
                 addClass(success,'is-hidden');
                 removeClass(form,'is-hidden');
                 closeModal();
+                form.querySelector('input[name="issue"]').value = '',
+                form.querySelector('textarea[name="description"]').value = ''
               }, 5000);
             }
           } else {
@@ -254,6 +256,7 @@
     });
 
     live('.modal-background, .modal-close, #cancel', 'click',e=>{
+      e.preventDefault();
       closeModal();
     });
 
