@@ -33,6 +33,17 @@ module.exports = {
     var jsonxml = require('jsontoxml');
     let body={Request:[]};
     let pvstock = 0;
+    let textClean = async (text) =>{
+      text = text.replace(/\n/g, ' ');
+      //text = text.replace(/[^\x00-\x7F]/g, '');
+      text=text.replace(/&(nbsp|amp|quot|lt|gt|bull|middot);/g,' '); //Caracteres HTML
+      text=text.replace(/([^\u0009\u000a\u000d\u0020-\uD7FF\uE000-\uFFFD]|\u2022)/ig,'');
+      text=text.replace( /(<([^>]+)>)/ig, ''); // Etiquetas HTML
+      text=text.replace(/&/g,'y'); //Caracteres Especiales
+      text=text.replace(/[\/\\#,+()$~%.'":*?<>{} ]/g,''); //Caracteres Especiales
+      text=text.trim(); //Espacios Extra
+      return JSON.stringify(text);
+    };
     for(let p of inputs.products){
       try{
         if(await ProductVariation.count({product:p.id})>0){
@@ -87,11 +98,11 @@ module.exports = {
             };
 
             if(inputs.alldata){
-              data.Product.Name= product.name.toUpperCase();
+              data.Product.Name= await textClean(product.name.toUpperCase());
               data.Product.Variation= pv.variation.col ? (pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString() : (pv.variation.name.toString() === 'Único' || pv.variation.name.toString() === 'único' || pv.variation.name.toString() === 'Única' || pv.variation.name.toString() === 'única') ? 'Talla Única' : pv.variation.name;
               data.Product.PrimaryCategory= product.mainCategory.linio.split(',')[0];
               //data.Product.Categories= categories.join(',');
-              data.Product.Description= jsonxml.cdata((product.description).replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''));
+              data.Product.Description= jsonxml.cdata(await textClean(product.description));
               data.Product.Brand= product.manufacturer.linioname ? product.manufacturer.linioname : product.manufacturer.name;
               data.Product.TaxClass= product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%';
               data.Product.ProductData= {
