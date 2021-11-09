@@ -28,6 +28,7 @@ module.exports.routes = {
   'POST /generatereport': {controller:'IndexController', action:'generateReport'},
   'POST /reportseller': {controller:'IndexController', action:'generateReportSeller'},
   'POST /generateinvoice': {controller:'IndexController', action:'generateinvoice'},
+  'POST /createticket': {controller:'IndexController', action:'createticket'},
   'GET /showreport/:seller': {controller:'IndexController', action:'showreport'},
   'GET /login' : {view:'pages/configuration/login', locals:{error:null}},
   'POST /login' : {action:'login'},

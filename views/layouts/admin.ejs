@@ -67,6 +67,9 @@
         <div class="navbar-item is-inline-block">
             <div class="buttons">
               <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
+                <a href="#" id="addTicket" class="button">
+                  <i class='is-size-4 bx bx-question-mark bx-tada'></i>
+                </a>
                 <a href="/channelmessages/<%=session.user.seller%>" id="notification-button" class="button">
                   <span title="Badge top right" class="badge"><%if(session.questions !== undefined ){%><%=session.questions%> <%}else{%>0<%}%></span>
                   <i class='is-size-4 bx bxs-bell-ring'></i>
@@ -117,33 +120,57 @@
       <div class="modal-background"></div>
       <div class="modal-content">
         <div class="box">
-          <form method="POST" action="/login">
-            <a class="link is-pulled-right" href="/register">Crear una cuenta</a>
+          <article class="message is-success is-hidden" id="msg-success">
+            <div class="message-body">
+              Se envió tu ticket correctamente! Te responderemos en el transcurso de 24 horas.
+            </div>
+          </article>
+          <article class="message is-danger is-hidden" id="msg-error">
+            <div class="message-body">
+              <p id="text-error">Se produjo un error al enviar tu ticket! Intenta más tarde.</p>
+            </div>
+          </article>
+          <form id="formTicket">
+            <div class="field">
+              <label class="label">Nombre</label>
+              <div class="control has-icons-left has-icons-right">
+                <input class="input" name="name" type="text" disabled placeholder="Ingresa Nombre" value="<%= session.user.fullName %>"/>
+                <span class="icon is-small is-left">
+                  <i class='bx bxs-user'></i>
+                </span>
+              </div>
+            </div>
             <div class="field">
               <label class="label">Email</label>
               <div class="control has-icons-left has-icons-right">
-                <input class="input" name="emailAddress" type="email" placeholder="Ingresa Email" />
+                <input class="input" name="email" type="email" disabled placeholder="Ingresa Email" value="<%= session.user.emailAddress %>"/>
                 <span class="icon is-small is-left">
                   <i class="bx bx-envelope"></i>
                 </span>
               </div>
             </div>
             <div class="field">
-              <label class="label">Contraseña</label>
+              <label class="label">Asunto</label>
               <div class="control has-icons-left has-icons-right">
-                <input class="input" name="password" type="password" placeholder="Contraseña" autocomplete="off"/>
+                <input class="input" name="issue" type="text" placeholder="Asunto por el cual quiere crear el ticket" autocomplete="off"/>
                 <span class="icon is-small is-left">
-                  <i class="bx bx-lock"></i>
+                  <i class='bx bxs-edit-alt'></i>
                 </span>
               </div>
             </div>
+            <div class="field">
+              <label class="label">Descripción</label>
+              <div class="control">
+                <textarea class="textarea" name="description" placeholder="Descripción del problema que presenta"></textarea>
+              </div>
+            </div>
             <div class="field is-grouped">
-                <div class="control">
-                  <button id="enter" class="button is-primary">Entrar</button>
-                </div>
-                <div class="control">
-                  <button id="cancel" class="button is-light">Cancelar</button>
-                </div>
+              <div class="control">
+                <button id='sendTicket' class="button is-primary is-small">Enviar Ticket</button>
+              </div>
+              <div class="control">
+                <button id='cancel' class="button is-light is-small">Cancelar</button>
+              </div>
             </div>
           </form>
         </div>
@@ -151,15 +178,64 @@
       <button class="modal-close is-large" aria-label="close"></button>
     </div>
   <script>
-    live('#login','click',function(){
+    live('#addTicket','click',function(){
       const modal = document.querySelector('.modal');
       if(!hasClass(modal,'is-active'))
         addClass(modal,'is-active');
-
     });
 
-    live('.modal-close','click',function(){modalClose();});
-    live('#cancel','click',function(e){e.preventDefault(); modalClose();});
+    live('#sendTicket','click', e => {
+      e.preventDefault();
+      addClass(e.target, 'is-loading');
+      let form = document.querySelector('#formTicket');
+      let success = document.querySelector('#msg-success');
+      let error = document.querySelector('#msg-error');
+      let texterror = document.querySelector('#text-error');
+      let data = {
+        name: form.querySelector('input[name="name"]').value,
+        email: form.querySelector('input[name="email"]').value,
+        issue: form.querySelector('input[name="issue"]').value,
+        description: form.querySelector('textarea[name="description"]').value
+      }
+      if (data.name || data.email || data.issue || data.description) {
+        io.socket.post(`/createticket`, data, function (resData, jwRes) {
+          removeClass(e.target, 'is-loading');
+          if(jwRes.statusCode == 200){
+            if (resData && resData.error) {
+              removeClass(error, 'is-hidden');
+              addClass(form,'is-hidden');
+              setTimeout(function() {
+                removeClass(form,'is-hidden');
+                addClass(error,'is-hidden');
+              }, 5000);
+            } else {
+              removeClass(success, 'is-hidden');
+              addClass(form,'is-hidden');
+              setTimeout(function() {
+                addClass(success,'is-hidden');
+                removeClass(form,'is-hidden');
+                closeModal();
+              }, 5000);
+            }
+          } else {
+            removeClass(error, 'is-hidden');
+            addClass(form,'is-hidden');
+            setTimeout(function() {
+              removeClass(form,'is-hidden');
+              addClass(error,'is-hidden');
+            }, 5000);
+          };
+        });
+      } else {
+        removeClass(e.target, 'is-loading');
+        texterror.innerHTML = "Debes completar todos los campos."
+        removeClass(error, 'is-hidden');
+        setTimeout(function() {
+          texterror.innerHTML = "Se produjo un error al enviar tu ticket! Intenta más tarde."
+          addClass(error,'is-hidden');
+        }, 5000);
+      }
+    });
     
     const toogleMenu = (elm) => {
       let icon = elm.target.querySelector('span');
@@ -177,10 +253,15 @@
       element.addEventListener('click', toogleMenu);
     });
 
-    function modalClose(){
-      const modal = document.querySelector('.modal');
-      if (hasClass(modal,'is-active'))
-        removeClass(modal,'is-active'); 
+    live('.modal-background, .modal-close, #cancel', 'click',e=>{
+      closeModal();
+    });
+
+    function closeModal() {
+      let modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        removeClass(modal,'is-active');
+      });
     }
 
     const socket = io.socket.on('addtocart', function (data){
