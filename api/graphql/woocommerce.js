@@ -20,7 +20,6 @@ module.exports = {
                     reference
                     descriptionShort
                     active
-                    price
                     manufacturer
                     quantity
                     color
@@ -116,7 +115,6 @@ PRODUCTID :
                 reference
                 descriptionShort
                 active
-                price
                 manufacturer
                 color
                 quantity

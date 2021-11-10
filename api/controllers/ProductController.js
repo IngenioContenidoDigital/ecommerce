@@ -2908,11 +2908,6 @@ module.exports = {
               if( req.body.channel == sails.config.custom.WOOCOMMERCE_CHANNEL){
                 if(p.variations && p.variations.length > 0){
                   let pvrs = require('lodash').uniqBy(p.variations.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
-
-                  if(p.reference == '3000631'){
-                    console.log(p);
-                  }
-
                   if(pvrs.length > 0){
                     for (let index = 0; index < pvrs.length; index++) {
                       pvrs[index].variations = p.variations.filter((v)=>v.color[0] == pvrs[index].color[0]).map((v)=>{
@@ -2927,12 +2922,6 @@ module.exports = {
                     for (let index = 0; index < pvrs.length; index++) {
                       let vr = pvrs[index];
                       let reference;
-
-                      if(vr.reference == '3000631'){
-                        console.log(p);
-                      }
-
-
                       let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
 
                       if(color && color.length > 0){
@@ -2991,10 +2980,6 @@ module.exports = {
                           let pdv = vr.variations[index];
                           let vt_name;
 
-                          if(pdv.reference == '3000631'){
-                            console.log(p);
-                          }
-
                           if(pdv.talla){
                             vt_name = pdv.talla.toLowerCase().replace(',','.');
                           }
@@ -3009,11 +2994,7 @@ module.exports = {
                           variation = variation.length ? variation[0] : variation;
                           let pvs = await ProductVariation.find({ product:prc.id,supplierreference:`${prc.reference}-${color.name}`}).populate('variation');
                           let pv = pvs.find(pv=> pv.variation.name == variation.name);
-
                           if (!pv) {
-                            if(vr.reference == '3000631'){
-                              console.log(vr);
-                            }
                             productVariation = await ProductVariation.create({
                               product:prc.id,
                               variation:variation.id,
