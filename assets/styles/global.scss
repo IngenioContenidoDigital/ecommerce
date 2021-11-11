@@ -240,16 +240,16 @@ display: block;
 }
 
 .product-description {
-    width: 50%;
+    width: 42%;
     display: table;
-    margin-left: 20px;
+    margin-left: 10px;
     float: left;
     font-size: 12px;
 }
 
 .product-sku {
-    float: right;
-    width: 25%;
+    float: left;
+    width: 22%;
     font-size: 12px;
     font-weight: bold;
 }
@@ -683,4 +683,10 @@ article > .content:hover{cursor:pointer;}
     position:fixed !important;
     right:5px !important;
     bottom: 71px !important;
+}
+
+.quantity-top {
+    text-align: right;
+    font-size: 12px;
+    font-weight: bold;
 }

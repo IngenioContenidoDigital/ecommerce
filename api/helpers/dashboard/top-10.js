@@ -62,13 +62,16 @@ module.exports = {
 
     if (inputs.profile !== 'superadmin' && inputs.profile !== 'admin') {
       topProductsCant = topProducts.sort((a, b)=> b.quantity - a.quantity).slice(0, 10);
-      topProductsPrice = topProducts.sort((a, b)=> b.product.price - a.product.price).slice(0, 10);
+      topProductsPrice = topProductsCant.sort((a, b)=> {
+        const priceA = a.price * a.quantity;
+        const priceB = b.price * b.quantity;
+        return (priceA > priceB) ? -1 : 1;
+      }).slice(0, 10);
     }
-
     return exits.success({
       topProductsCant,
       topProductsPrice,
-      lessProducts: topProducts.sort((a, b)=> a.quantity - b.quantity).slice(0, 10)
+      lessProducts: [...topProducts].sort((a, b)=> a.quantity - b.quantity).slice(0, 10)
     });
   }
 };

@@ -780,9 +780,9 @@
     localStorage.setItem('topProductsPrice', JSON.stringify(data.topProductsPrice));
     localStorage.setItem('topProductsCant', JSON.stringify(data.topProductsCant));
     localStorage.setItem('lessProducts', JSON.stringify(data.lessProducts));
-    processDataProductsOrders(data.topProductsPrice, ulTopProductsPrice);
-    processDataProductsOrders(data.topProductsCant, ulTopProductsCant);
-    processDataProductsOrders(data.lessProducts, ullessProducts);
+    processDataProductsOrders(data.topProductsPrice, ulTopProductsPrice, 'price');
+    processDataProductsOrders(data.topProductsCant, ulTopProductsCant, 'quantity');
+    processDataProductsOrders(data.lessProducts, ullessProducts, 'quantity');
   }
 
   function showInfoLogistics(data) {
@@ -856,10 +856,10 @@
     });
   }
 
-  function processDataProductsOrders(products, ul) {
+  function processDataProductsOrders(products, ul, type) {
     products.forEach(item => {
       let div = document.createElement('div');
-      var imageProduct = "";
+      let imageProduct = "";
       addClass(div,'list-item');
       if (item.product.images && item.product.images.length > 0) {
         item.product.images.forEach(image => {
@@ -868,8 +868,9 @@
           }
         })
       }
-      var srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
-      var listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div></div>';
+      let quantity = type === 'quantity' ? item.quantity : `$${Math.round(item.price * item.quantity).toLocaleString('es-CO')}`;
+      let srcImg = imageProduct ? imgurl + '/images/products/' + item.product.id + '/' + imageProduct : "/images/not-available.png";
+      let listItem = '<div class="list-item"><figure class="image is-48x48 product-image"><img class="is-rounded" src='+srcImg +' /></figure><div class="product-description is-uppercase"><h5>' + item.product.name + '</h5></div> <div class="product-sku">' + item.product.reference + '</div><div class="quantity-top">' + quantity + '</div></div>';
       div.innerHTML = listItem;
       ul.appendChild(div);
     });

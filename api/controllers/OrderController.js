@@ -616,7 +616,8 @@ module.exports = {
     const moment = require('moment');
     const seller = req.session.user.seller;
     let listOrders = [];
-    let orders = await Order.find({where: {seller: seller, channel: 'dafiti', manifest: {'!=': ''}}});
+    let orders = await Order.find({where: {seller: seller, channel: 'dafiti', manifest: {'!=': ''}},
+    sort: 'dateManifest DESC'});
     for(let order of orders){
       if(!listOrders.some(e => e.manifest === order.manifest) && order.manifest){
         listOrders.push({manifest: order.manifest, date: order.dateManifest});
@@ -654,7 +655,7 @@ module.exports = {
         let sign = await sails.helpers.channel.dafiti.sign(integration.id,'CreateForwardManifest',integration.seller);
         await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml).then(async (resData)=>{
           resData = JSON.parse(resData);
-          if(resData.SuccessResponse.Body.ManifestCode){
+          if(resData.SuccessResponse){
             let manifest = resData.SuccessResponse.Body.ManifestCode;
             for (const order of orders) {
               await Order.updateOne({id:order.id}).set({manifest:manifest, dateManifest: moment().valueOf()});
