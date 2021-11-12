@@ -33,7 +33,9 @@ module.exports = {
           let pro = await sails.helpers.checkProducts(product, seller, inputs.asColor || false);
           if(typeof(pro) === 'object'){
             let pr;
-            let exists = await Product.findOne({ externalId:pro.externalId, seller:seller, reference : pro.reference});
+            const query1 = {externalId: pro.externalId, seller:seller};
+            const query2 = {reference: pro.reference, seller:seller};
+            let exists = await Product.findOne({or: [query1, query2]});
             if (!exists) {
               if(inputs.provider != sails.config.custom.WOOCOMMERCE_CHANNEL){
                 pr = await Product.create(pro).fetch();
