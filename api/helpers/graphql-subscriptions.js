@@ -39,7 +39,7 @@ module.exports = {
               ).catch((e) => console.log(e));
               if (response && response.data.length > 0) {
                 for (const product of response.data) {
-                  await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e));
+                  await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e.message));
                 }
               }
             }
@@ -64,7 +64,7 @@ module.exports = {
                     result.productId
               ).catch((e) => console.log(e));
               if (product) {
-                await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.product(product, integration.seller, result.discount).catch((e)=>console.log(e.message));
               }
             }
           }
@@ -88,7 +88,7 @@ module.exports = {
                     result.productId
               ).catch((e) => console.log(e));
               if (response) {
-                await sails.helpers.marketplaceswebhooks.woocommerceProduct(response.product, integration.seller, integration, result.separate_product_by_color ).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.woocommerceProduct(response.product, integration.seller, integration, result.separate_product_by_color ).catch((e)=>console.log(e.message));
               }
             }
           }
@@ -112,7 +112,7 @@ module.exports = {
                     result.productId
               ).catch((e) => console.log(e));
               if (product) {
-                await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.product(product, integration.seller).catch((e)=>console.log(e.message));
               }
             }
           }
@@ -137,7 +137,7 @@ module.exports = {
                 result.orderId
               ).catch((e) => console.log(e));
               if (order) {
-                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e.message));
               }
             }
           }
@@ -161,7 +161,7 @@ module.exports = {
                 result.orderId
               ).catch((e) => console.log(e));
               if (order) {
-                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e.message));
               }
             }
           }
@@ -185,7 +185,7 @@ module.exports = {
                 result.orderId
               ).catch((e) => console.log(e));
               if (order) {
-                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e.message));
               }
             }
           }
@@ -209,7 +209,7 @@ module.exports = {
                 result.orderId
               ).catch((e) => console.log(e));
               if (order) {
-                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e));
+                await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e.message));
               }
             }
           }

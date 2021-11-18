@@ -2684,13 +2684,12 @@ module.exports = {
                       throw new Error(`Ref: ${pcolor.reference} y externalId : ${pcolor.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
                     });
 
-                    if(productColor && await ProductImage.count({product:productColor.id}) == 0){
+                    if(productColor){
                       for (let im of pcolor.images) {
                         try {
-                          let url = (im.src.split('?'))[0];
-                          let file = (im.file.split('?'))[0];
-                          let existImage = await ProductImage.find({product: product.id, file: file});
-                          if (existImage.length === 0) {
+                          if (im.file && im.src) {
+                            let url = (im.src.split('?'))[0];
+                            let file = (im.file.split('?'))[0];
                             let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
                               throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
                             });
@@ -2699,18 +2698,25 @@ module.exports = {
                               let totalimg = await ProductImage.count({ product: productColor.id});
                               totalimg += 1;
                               if (totalimg > 1) { cover = 0; }
-  
-                              let rs = await ProductImage.create({
+        
+                              await ProductImage.findOrCreate({product: productColor.id, file: file},{
                                 file: file,
                                 position: totalimg,
                                 cover: cover,
                                 product: productColor.id
-                              }).fetch();
-  
-                              if(typeof(rs) === 'object'){
-                                result.push(rs);
-                              }
-  
+                              }).exec(async (err, record, created)=>{
+                                if(err){return new Error(err.message);}
+                                if(!created){
+                                  await ProductImage.updateOne({id: record.id}).set({
+                                    file: file,
+                                    position: totalimg,
+                                    cover: cover
+                                  });
+                                }
+                                if(typeof(record) === 'object'){
+                                  result.push(record);
+                                }
+                              });                    
                               sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                             }
                           }
@@ -2735,12 +2741,11 @@ module.exports = {
                   let product = await Product.findOne({externalId : p.externalId, seller : seller}).catch((e)=>{
                     throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
                   });
-                  if(product &&  await ProductImage.count({product:product.id}) == 0){
+                  if(product){
                     for (let im of p.images) {
-                      let url = (im.src.split('?'))[0];
-                      let file = (im.file.split('?'))[0];
-                      let existImage = await ProductImage.find({product: product.id, file: file});
-                      if (existImage.length === 0) {
+                      if (im.file && im.src) {
+                        let url = (im.src.split('?'))[0];
+                        let file = (im.file.split('?'))[0];
                         let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
                           throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                         });
@@ -2749,17 +2754,25 @@ module.exports = {
                           let totalimg = await ProductImage.count({ product: product.id});
                           totalimg += 1;
                           if (totalimg > 1) { cover = 0; }
-  
-                          let rs = await ProductImage.create({
+    
+                          await ProductImage.findOrCreate({product: product.id, file: file},{
                             file: file,
                             position: totalimg,
                             cover: cover,
                             product: product.id
-                          }).fetch();
-  
-                          if(typeof(rs) === 'object'){
-                            result.push(rs);
-                          }
+                          }).exec(async (err, record, created)=>{
+                            if(err){return new Error(err.message);}
+                            if(!created){
+                              await ProductImage.updateOne({id: record.id}).set({
+                                file: file,
+                                position: totalimg,
+                                cover: cover
+                              });
+                            }
+                            if(typeof(record) === 'object'){
+                              result.push(record);
+                            }
+                          });                    
                           sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                         }
                       }
@@ -2783,12 +2796,11 @@ module.exports = {
               }) : await Product.findOne({reference: p.reference.toUpperCase(), seller: seller}).populate('images').catch((e)=>{
                 throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
               });
-              if(product && product.images.length === 0){
+              if(product){
                 for (let im of p.images) {
-                  let url = (im.src.split('?'))[0];
-                  let file = (im.file.split('?'))[0];
-                  let existImage = await ProductImage.find({product: product.id, file: file});
-                  if (existImage.length === 0) {
+                  if (im.file && im.src) {
+                    let url = (im.src.split('?'))[0];
+                    let file = (im.file.split('?'))[0];
                     let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
                       throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                     });
@@ -2797,17 +2809,25 @@ module.exports = {
                       let totalimg = await ProductImage.count({ product: product.id});
                       totalimg += 1;
                       if (totalimg > 1) { cover = 0; }
-  
-                      let rs = await ProductImage.create({
+
+                      await ProductImage.findOrCreate({product: product.id, file: file},{
                         file: file,
                         position: totalimg,
                         cover: cover,
                         product: product.id
-                      }).fetch();
-  
-                      if(typeof(rs) === 'object'){
-                        result.push(rs);
-                      }
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductImage.updateOne({id: record.id}).set({
+                            file: file,
+                            position: totalimg,
+                            cover: cover
+                          });
+                        }
+                        if(typeof(record) === 'object'){
+                          result.push(record);
+                        }
+                      });                    
                       sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                     }
                   }
@@ -2876,7 +2896,7 @@ module.exports = {
         'VARIATIONS',
         { page: page, pageSize: pageSize, next: next|| null }
       ).catch((e) => console.log(e));
-
+      
       if (importedProductsVariations && importedProductsVariations.pagination)
       {next = importedProductsVariations.pagination;}
       lastPage = importedProductsVariations.pagesCount;

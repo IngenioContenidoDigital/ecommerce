@@ -917,8 +917,8 @@ module.exports = {
                     }
                   }
                 } else if (resource === resourceTemp) {
-                  timer ++;
-                  await sleep(3000 * timer);
+                  timer = timer + 1;
+                  await sleep(3500 * timer);
                   let data = await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
                   if (data && integration.seller.integrationErp) {
                     if (integration.seller.nameErp === 'siesa') {
@@ -988,8 +988,8 @@ module.exports = {
                   resourceTemp = resource;
                   await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
                 } else if (resource === resourceTemp) {
-                  timer ++;
-                  await sleep(3000 * timer);
+                  timer = timer + 1;
+                  await sleep(3500 * timer);
                   await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
                 }
                 break;
