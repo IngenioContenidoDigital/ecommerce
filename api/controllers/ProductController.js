@@ -1469,11 +1469,45 @@ module.exports = {
           }
         }
       }
+      if(req.body.type === 'Feature'){
+        prod.reference = req.body.product.reference ? req.body.product.reference.trim() : '';
+        prod.value = req.body.product.value;
+        let features = [];
+        let productVariation = await ProductVariation.findOne({reference: prod.reference});
+        let product = productVariation ? await Product.findOne({id: productVariation.product}).populate('categories') : await Product.findOne({reference: prod.reference}).populate('categories');
+        if (product && prod.value) {
+          for (let c of product.categories) {
+            let cat = await Category.findOne({id: c.id}).populate('features');
+            for (let f of cat.features){
+              if(!features.some(feat=>feat.id===f.id) && f!=='' && f!== null && f.name === 'registro sanitario'){
+                features.push(f);
+              }
+            }
+          }
+          if (features.length > 0) {
+            let feature = features[0].id;
+            let exists = await ProductFeature.findOne({product: product.id, feature:feature});
+            if (!exists) {
+             await ProductFeature.create({
+                product:product.id,
+                feature:feature,
+                value:prod.value
+              });
+            } else {
+             await ProductFeature.updateOne({product:product.id, feature:feature}).set({
+                value:prod.value
+              });
+            }
+            result['items'].push(prod);
+          }
+        }
+      }
     } catch (err) {
       if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: ' + req.body.product.variation + ' - ' + err.message); }
       if (req.body.type === 'Product') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }
       if (req.body.type === 'ProductImage') { result['errors'].push('Archivo: ' + req.body.product.original + ': ' + err.message); }
       if (req.body.type === 'Discount') { result['errors'].push('Ref: ' + req.body.product.reference + ': ' + err.message); }
+      if (req.body.type === 'Feature') { result['errors'].push('Ref: ' + req.body.product.reference + ': ' + err.message); }
     }
     return res.send(result);
   },

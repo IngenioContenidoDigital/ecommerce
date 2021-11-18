@@ -173,7 +173,6 @@ module.exports = {
         }
         return exits.success(data);
       }catch(err){
-        console.log(err);
         return exits.error(err);
       }
     }else{

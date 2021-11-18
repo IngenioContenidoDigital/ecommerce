@@ -35,6 +35,7 @@
 											<option value="ProductVariation">Variaciones de Producto</option>
 											<option value="ProductImage">Imagenes de Producto</option>
 											<option value="Discount">Descuentos</option>
+											<option value="Feature">Registros Sanitarios</option>
 										</select>
 									</div>
 								</div>
@@ -495,7 +496,7 @@
 		e.preventDefault();
 		let entity = e.target.getAttribute('entity');
 		let name = entity === 'Product' ? 'Productos' : entity === 'ProductVariation' ? 'Variaciones de Producto' : 
-		entity === 'ProductImage' ? 'Imagenes de Producto' : 'Descuentos';
+		entity === 'ProductImage' ? 'Imagenes de Producto' : entity === 'Feature' ? 'Registros Sanitarios' : 'Descuentos';
 		io.socket.post('/downloadtemplate', {entity}, (resData, jwRes) =>{
 			if(jwRes.statusCode==200){
 				saveAs(new Blob([resData],{type:"application/octet-stream"}), `Template para ${name}.xlsx`);
