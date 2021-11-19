@@ -48,15 +48,10 @@ module.exports = {
                     cover: cover
                   });
                 }
-                if(typeof(record) === 'object'){
-                  result.push(record);
-                }
-              });                    
-              sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
+              });
             }
           }
         } catch (err) {
-          console.log(err.message);
           throw new Error (err.message);
         }
       }

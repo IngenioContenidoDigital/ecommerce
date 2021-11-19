@@ -1301,6 +1301,16 @@ module.exports = {
           value: 'Valor a descontar'
         });
         break;
+      case 'Feature':
+        options = [
+          { header: 'reference', key: 'reference', width: 45 },
+          { header: 'value', key: 'value', width: 45 }
+        ];
+        dataDefault.push({
+          reference: 'Referencia del producto',
+          value: 'Registro Sanitario'
+        });
+        break;
       default:
         break;
     }
