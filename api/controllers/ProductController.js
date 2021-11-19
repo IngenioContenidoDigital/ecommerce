@@ -1340,19 +1340,17 @@ module.exports = {
             if (!pv) {
               await ProductVariation.create(prod).fetch();
             } else {
-              for (const resultpv of pvs) {
-                await ProductVariation.updateOne({ id: resultpv.id }).set({
-                  supplierreference: prod.supplierreference.toUpperCase(),
-                  reference: prod.reference,
-                  ean13: prod.ean13,
-                  upc: prod.upc,
-                  quantity: prod.quantity,
-                  variation: prod.variation,
-                  product: prod.product,
-                  price: prod.price,
-                  seller: prod.seller
-                });
-              }
+              await ProductVariation.updateOne({ id: pv.id }).set({
+                supplierreference: prod.supplierreference,
+                reference: prod.reference,
+                ean13: prod.ean13,
+                upc: prod.upc,
+                quantity: prod.quantity,
+                variation: prod.variation,
+                product: prod.product,
+                price: prod.price,
+                seller: prod.seller
+              });
             }
             result['items'].push(prod);
           }
