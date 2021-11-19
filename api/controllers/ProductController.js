@@ -1305,13 +1305,13 @@ module.exports = {
       }
       if (req.body.type === 'ProductVariation') {
         prod.reference = req.body.product.reference2 ? req.body.product.reference2.trim().toUpperCase() : '';
-        prod.supplierreference = req.body.product.reference.trim().toUpperCase();
+        prod.supplierreference = req.body.product.reference.trim();
         prod.ean13 = req.body.product.ean13 ? req.body.product.ean13.toString() : '';
         prod.upc = req.body.product.upc ? parseInt(req.body.product.upc) : 0;
         prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
         prod.seller = seller;
 
-        let products = await Product.find({ reference: prod.supplierreference, seller: seller })
+        let products = await Product.find({ reference: [prod.supplierreference, prod.supplierreference.toUpperCase()], seller: seller })
           .populate('tax')
           .populate('categories');
         let categories = [];
@@ -1335,22 +1335,24 @@ module.exports = {
             }
             variation = variation.length > 0 ? variation[0] : variation;
             prod.variation = variation.id;
-            let pvs = await ProductVariation.find({ product:prod.product,supplierreference:prod.supplierreference}).populate('variation');
+            let pvs = await ProductVariation.find({product:prod.product,supplierreference:[prod.supplierreference, prod.supplierreference.toUpperCase()]}).populate('variation');
             let pv = pvs.find(pv=> pv.variation.name == variation.name);
             if (!pv) {
               await ProductVariation.create(prod).fetch();
             } else {
-              await ProductVariation.updateOne({ id: pv.id }).set({
-                supplierreference: prod.supplierreference,
-                reference: prod.reference,
-                ean13: prod.ean13,
-                upc: prod.upc,
-                quantity: prod.quantity,
-                variation: prod.variation,
-                product: prod.product,
-                price: prod.price,
-                seller: prod.seller
-              });
+              for (const resultpv of pvs) {
+                await ProductVariation.updateOne({ id: resultpv.id }).set({
+                  supplierreference: prod.supplierreference.toUpperCase(),
+                  reference: prod.reference,
+                  ean13: prod.ean13,
+                  upc: prod.upc,
+                  quantity: prod.quantity,
+                  variation: prod.variation,
+                  product: prod.product,
+                  price: prod.price,
+                  seller: prod.seller
+                });
+              }
             }
             result['items'].push(prod);
           }
