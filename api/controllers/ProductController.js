@@ -1095,8 +1095,7 @@ module.exports = {
       };
 
       let response_xml = await axios(options).catch((e) => {error=e; console.log(e);});
-
-      if (response_xml){
+      if (response_xml && response_xml.data){
         await ProductChannel.findOrCreate({id: productChannelId},{
           product:product.id,
           integration:integrationId,
@@ -1500,6 +1499,8 @@ module.exports = {
             }
             result['items'].push(prod);
           }
+        } else {
+          throw new Error('Producto principal no localizado');
         }
       }
     } catch (err) {
@@ -1792,38 +1793,42 @@ module.exports = {
               let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
-                resData = JSON.parse(resData);
-                if(resData.SuccessResponse){
-                  for (const pro of products) {
-                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
-                    if(action === 'ProductCreate'){
-                      await ProductChannel.findOrCreate({id: productChannelId},{
-                        product:pro.id,
-                        integration:integration.id,
-                        channel:integration.channel.id,
-                        channelid:'',
-                        status:false,
-                        qc:false,
-                        price:priceAdjust,
-                        iscreated:false,
-                        socketid:sid
-                      }).exec(async (err, record, created)=>{
-                        if(err){return new Error(err.message);}
-                        if(!created){
-                          await ProductChannel.updateOne({id: record.id}).set({
-                            price:priceAdjust,
-                            socketid:sid
-                          });
-                        }
-                      });
+                if (resData) {
+                  resData = JSON.parse(resData);
+                  if(resData.SuccessResponse){
+                    for (const pro of products) {
+                      const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                      if(action === 'ProductCreate'){
+                        await ProductChannel.findOrCreate({id: productChannelId},{
+                          product:pro.id,
+                          integration:integration.id,
+                          channel:integration.channel.id,
+                          channelid:'',
+                          status:false,
+                          qc:false,
+                          price:priceAdjust,
+                          iscreated:false,
+                          socketid:sid
+                        }).exec(async (err, record, created)=>{
+                          if(err){return new Error(err.message);}
+                          if(!created){
+                            await ProductChannel.updateOne({id: record.id}).set({
+                              price:priceAdjust,
+                              socketid:sid
+                            });
+                          }
+                        });
+                      }
+                      if(action === 'ProductUpdate'){
+                        await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
+                      }
+                      response.items.push(pro);
                     }
-                    if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
-                    }
-                    response.items.push(pro);
+                  }else{
+                    throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
                   }
-                }else{
-                  throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                } else {
+                  throw new Error ('Error en el proceso, Intenta de nuevo más tarde.');
                 }
               })
               .catch(err =>{
