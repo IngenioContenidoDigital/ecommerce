@@ -42,6 +42,7 @@
     "node-uuid": "^1.4.8",
     "pdf-lib": "^1.16.0",
     "pdf-to-base64": "^1.0.3",
+    "promise-ratelimit": "0.0.3",
     "randomatic": "^3.1.1",
     "sails": "^1.2.4",
     "sails-hook-cron": "^3.1.0",

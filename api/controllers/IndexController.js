@@ -5,10 +5,7 @@ let moment = require('moment');
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-let resourceTemp = '';
-let timer = 1;
-
+let throttle = require('promise-ratelimit')(4500);
 module.exports = {
   index: async function(req, res){
     let seller = null;
@@ -902,32 +899,16 @@ module.exports = {
               case 'shipments':
                 await sails.helpers.channel.mercadolibre.statusOrder(integration.id, resource);
                 break;
-              case 'orders_v2':       
-                if (resource !== resourceTemp) {
-                  timer = 1;
-                  resourceTemp = resource;
-                  let data = await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
-                  if (data && integration.seller.integrationErp) {
-                    if (integration.seller.nameErp === 'siesa') {
-                      await sails.helpers.integrationsiesa.exportOrder(data);
-                    } else if(integration.seller.nameErp === 'busint'){
-                      await sails.helpers.integrationbusint.exportOrder(data);
-                    } else if(integration.seller.nameErp === 'sap'){
-                      await sails.helpers.integrationsap.exportOrder(data);
-                    }
-                  }
-                } else if (resource === resourceTemp) {
-                  timer = timer + 1;
-                  await sleep(3500 * timer);
-                  let data = await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
-                  if (data && integration.seller.integrationErp) {
-                    if (integration.seller.nameErp === 'siesa') {
-                      await sails.helpers.integrationsiesa.exportOrder(data);
-                    } else if(integration.seller.nameErp === 'busint'){
-                      await sails.helpers.integrationbusint.exportOrder(data);
-                    } else if(integration.seller.nameErp === 'sap'){
-                      await sails.helpers.integrationsap.exportOrder(data);
-                    }
+              case 'orders_v2':
+                await throttle()
+                let data = await sails.helpers.channel.mercadolibre.orders(integration.id, resource);
+                if (data && integration.seller.integrationErp) {
+                  if (integration.seller.nameErp === 'siesa') {
+                    await sails.helpers.integrationsiesa.exportOrder(data);
+                  } else if(integration.seller.nameErp === 'busint'){
+                    await sails.helpers.integrationbusint.exportOrder(data);
+                  } else if(integration.seller.nameErp === 'sap'){
+                    await sails.helpers.integrationsap.exportOrder(data);
                   }
                 }
                 break;
@@ -983,15 +964,8 @@ module.exports = {
                 await sails.helpers.channel.mercadolibremx.statusOrder(integration.id, resource);
                 break;
               case 'orders_v2':
-                if (resource !== resourceTemp) {
-                  timer = 1;
-                  resourceTemp = resource;
-                  await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
-                } else if (resource === resourceTemp) {
-                  timer = timer + 1;
-                  await sleep(3500 * timer);
-                  await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
-                }
+                await throttle()
+                await sails.helpers.channel.mercadolibremx.orders(integration.id, resource);
                 break;
               case 'items':
                 await sails.helpers.channel.mercadolibremx.productQc(integration.id, resource);
