@@ -187,10 +187,9 @@ module.exports = {
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
       if (!isAdmin) {
-        row.splice(0, 1);
         row.splice(9, 1);
       }
-      if(p.images.length<1){row[isAdmin ? 1 : 0]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
+      if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
       productdata.push(row);
     }
     return res.send(productdata);
@@ -1311,7 +1310,6 @@ module.exports = {
         prod.seller = seller;
 
         let products = await Product.find({ reference: [prod.supplierreference, prod.supplierreference.toUpperCase()], seller: seller })
-          .populate('tax')
           .populate('categories');
         let categories = [];
 
@@ -1323,8 +1321,7 @@ module.exports = {
               }
             });
             prod.product = product.id;
-            const tax = product.tax ? product.tax.value : 0;
-            prod.price = parseInt(req.body.product.price * (1 + tax / 100));
+            prod.price = req.body.product.price
             let variation = await Variation.find({
               where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, seller: product.seller, manufacturer: product.manufacturer, category: { 'in': categories } },
               limit: 1
