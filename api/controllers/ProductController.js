@@ -187,7 +187,7 @@ module.exports = {
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
       if (!isAdmin) {
-        row.splice(9, 1);
+        row.splice(10, 1);
       }
       if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
       productdata.push(row);
