@@ -77,7 +77,7 @@ module.exports = {
             GroupCode: 167,
             GroupNum: 12,
             Telefono: order.customer.mobile,
-            Email: order.customer.emailAddress,
+            Email: 'servicioalcliente@evacol.com',
             Direccion: address.addressline1,
             Ciudad: address.city.name.toUpperCase(),
             Departamento: address.region.name.toUpperCase(),

@@ -439,7 +439,7 @@ module.exports = {
         }
         await ProductVariation.updateOne({id:list.productvariation}).set({product: list.product, variation:v.id, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
       }else{
-        await Productvariation.create({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
+        await ProductVariation.create({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
       }
     }
     if (channels.length > 0) {
