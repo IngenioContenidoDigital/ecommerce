@@ -124,7 +124,7 @@ module.exports = {
           }
         }
       } catch (e) {
-        console.log(e);
+        console.log(e.message);
       }
     }
     return exits.success(true);

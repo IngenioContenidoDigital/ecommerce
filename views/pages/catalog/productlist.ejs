@@ -25,14 +25,12 @@
       <table class="table is-hoverable is-size-7" id="products-table">
           <thead>
           <tr>
-            <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-              <th scope="col">
-                <div class="field" id="selectedall">
-                  <input class="is-checkradio is-small is-info" id="checkboxselectall" type="checkbox" name="checkboxselect">
-                  <label for="checkboxselectall"></label>
-                </div>
-              </th>
-            <%}%>
+            <th scope="col">
+              <div class="field" id="selectedall">
+                <input class="is-checkradio is-small is-info" id="checkboxselectall" type="checkbox" name="checkboxselect">
+                <label for="checkboxselectall"></label>
+              </div>
+            </th>
             <th scope="col">Nombre</th>
             <th scope="col">SKU</th>
             <th scope="col">Marca</th>

@@ -28,10 +28,12 @@ module.exports = {
     //let result = await sails.helpers.channel.mercadolibre.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
     let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
     let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
+    
     let shipping = null;
     let data;
     if(order){
       try{
+        let customer = await sails.helpers.channel.mercadolibre.findOrder(`orders/${order.id}/billing_info`, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
         orderfilter[0]={channel:'mercadolibre', channelref:order.id, integration: inputs.integration};
         data = {channel:'mercadolibre', channelref: order.id, seller: integration.seller};
         if(order.shipping.id){
@@ -42,17 +44,18 @@ module.exports = {
           });
         }
         let oexists = await Order.find({or:orderfilter});
+
         if(oexists.length < 1 && order.status==='paid'){
           let user = await User.findOrCreate({emailAddress:order.buyer.email},{
             emailAddress:order.buyer.email,
             emailStatus:'confirmed',
             password:await sails.helpers.passwords.hashPassword(order.buyer.id.toString()),
             fullName:order.buyer['first_name']+' '+order.buyer['last_name'],
-            dniType: order.buyer && order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? 'CC' : 'MLID',
-            dni: order.buyer && order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? order.buyer['billing_info']['doc_number'].toString() : order.buyer.id.toString(),
-            mobilecountry:null,
-            mobile:0,
-            mobileStatus:'unconfirmed',
+            dniType: customer && customer.billing_info ? customer.billing_info.doc_type.toString() : order.buyer && order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? 'CC' : 'MLID',
+            dni: customer && customer.billing_info ? customer.billing_info.doc_number.toString() : order.buyer && order.buyer.billing_info && order.buyer['billing_info']['doc_number'] ? order.buyer['billing_info']['doc_number'].toString() : order.buyer.id.toString(),
+            mobilecountry: order.buyer && order.buyer.phone ? '5eeb7a88cc42a6289844ec83' : null,
+            mobile: order.buyer && order.buyer.phone && order.buyer.phone.number ? parseFloat(order.buyer.phone.number) : 0,
+            mobileStatus: order.buyer && order.buyer.phone ? 'confirmed' : 'unconfirmed',
             profile:profile.id
           });
           let address = null;
@@ -173,7 +176,6 @@ module.exports = {
         }
         return exits.success(data);
       }catch(err){
-        console.log(err);
         return exits.error(err);
       }
     }else{

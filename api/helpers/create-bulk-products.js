@@ -159,7 +159,7 @@ module.exports = {
       return exits.success(true);
 
     } catch (error) {
-      errors.push(error);
+      errors.push({name:'ERRDATA', message:error.message});
       sails.sockets.broadcast(sid, 'product_processed', { errors, result });
       return exits.error(error.message);
     }

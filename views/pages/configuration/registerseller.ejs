@@ -607,8 +607,8 @@
         data.append('user', userId);
         data.append('terms', terms);
         request.addEventListener('load', function(e) {
+          const resData = JSON.parse(request.response);
           if (request.status == 200) {
-            const resData = JSON.parse(request.response);
             if (resData && resData.error) {
               showError(resData.error, stepNext, document.querySelector('#infobasics'), document.querySelector('#contentaddress'), document.querySelector('#contentinfo'));
               document.querySelector('#btn-back').setAttribute('disabled', 'disabled');
@@ -617,7 +617,7 @@
               userId = resData.user;
             }
           } else {
-            showError(resData.data.message, stepNext, document.querySelector('#infobasics'), document.querySelector('#contentaddress'), document.querySelector('#contentinfo'));
+            showError(resData.error, stepNext, document.querySelector('#infobasics'), document.querySelector('#contentaddress'), document.querySelector('#contentinfo'));
             document.querySelector('#btn-back').setAttribute('disabled', 'disabled');
           }
         });

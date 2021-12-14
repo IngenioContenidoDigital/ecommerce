@@ -529,14 +529,14 @@ module.exports = {
       throw 'forbidden';
     }
 
-    let dateStart = new Date(req.param('startFilter')).valueOf();
-    let dateEnd = new Date(req.param('endFilter')).valueOf();
+    let dateStart = new Date(req.param('start')).valueOf();
+    let dateEnd = new Date(req.param('end')).valueOf();
     let seller = req.body.seller;
 
     let orders = await Order.find({
       where: {
-        updatedAt: { '>': dateStart, '<': dateEnd },
-        seller:seller
+        seller:seller,
+        createdAt: { '>': dateStart, '<': dateEnd }
       }
     }).populate('customer').populate('currentstatus');
 
@@ -571,7 +571,7 @@ module.exports = {
     for (const order of orders) {
       let items = await OrderItem.find({order: order.id});
       let address = await Address.find({id:order.addressDelivery}).populate('region').populate('city');
-      items.forEach(async item => {
+      for (const item of items) {
         let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller').populate('manufacturer');
         let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
         item.id = order.id;
@@ -595,7 +595,7 @@ module.exports = {
         item.region = address.length > 0 ? address[0].region.name : '';
         item.address = address.length > 0 ? address[0].addressline1 : '';
         ordersItem.push(item);
-      });
+      }
     }
     worksheet.addRows(ordersItem);
     const buffer = await workbook.xlsx.writeBuffer();

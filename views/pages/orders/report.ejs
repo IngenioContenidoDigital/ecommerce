@@ -67,8 +67,6 @@
   <script>
     let start = moment().startOf('month');
     let end = moment().endOf('month');
-    let startFilter = moment().startOf('month');
-    let endFilter = moment().endOf('month');
     let seller = document.querySelector('#selectSeller').value;
 
     <%if(sellers){%>
@@ -80,61 +78,42 @@
       seller = document.querySelector('#selectSeller').value;
     }
 
-    const calendars = bulmaCalendar.attach('[name="range"]', {
-    type:'date',
-    isRange: true,
-    allowSameDayRange: true,
-    dateFormat:'YYYY-MM-DD',
-    displayMode:'default',
-    cancelLabel:'Cancelar',
-    clearLabel:'Limpiar',
-    todayLabel:'Hoy',
-    validateLabel:'Seleccionar',
-    startDate: new Date(start),
-    endDate: new Date(end),
-  });
-
-  const filterGenerate = bulmaCalendar.attach('[name="filter"]', {
-    type:'date',
-    isRange: true,
-    allowSameDayRange: true,
-    dateFormat:'YYYY-MM-DD',
-    displayMode:'default',
-    cancelLabel:'Cancelar',
-    clearLabel:'Limpiar',
-    todayLabel:'Hoy',
-    validateLabel:'Seleccionar',
-    startDate: new Date(startFilter),
-    endDate: new Date(endFilter),
-  });
-
-  filterGenerate.forEach(calendar => {
-    calendar.on('select', date => {
-      startFilter = moment(date.data.startDate).format('YYYY/MM/DD');
-      endFilter = moment(date.data.endDate).add(1, 'days').format('YYYY/MM/DD');
+    // Initialize all input of date type.
+    const calendars = bulmaCalendar.attach('[name="filter"]', {
+      type:'date',
+      isRange: true,
+      allowSameDayRange: true,
+      dateFormat:'YYYY-MM-DD',
+      displayMode:'default',
+      cancelLabel:'Cancelar',
+      clearLabel:'Limpiar',
+      todayLabel:'Hoy',
+      validateLabel:'Seleccionar',
+      startDate: new Date(start),
+      endDate: new Date(end),
     });
-  });
 
-  calendars.forEach(calendar => {
-    calendar.on('select', date => {
-      filterDate(moment(date.data.startDate).format('YYYY/MM/DD'), moment(date.data.endDate).add(1, 'days').format('YYYY/MM/DD'))
+    calendars.forEach(calendar => {
+      calendar.on('select', date => {
+        start = moment(date.data.startDate).format('YYYY/MM/DD')
+        end = moment(date.data.endDate).add(1, 'days').format('YYYY/MM/DD');
+      });
     });
-  });
 
     live('#generateReport','click',e=>{
-    e.preventDefault();
-    let index=document.getElementById("selectSeller").options.selectedIndex;
-    let name=document.getElementById("selectSeller").options[index].text;
-    let report = document.querySelector('#report');
-    let loadingBlock = document.querySelector('#loading-block');
-    if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-    if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
-    io.socket.post('/order/generatereport', {startFilter, endFilter, seller}, (resData, jwRes) =>{
-      if(jwRes.statusCode == 200) {
-        saveAs(new Blob([resData],{type:"application/octet-stream"}), `Reporte ${name}.xlsx`);
-        addClass(report,'is-hidden');
-        addClass(loadingBlock,'is-hidden');
-      }
-    });
+      e.preventDefault();
+      let index=document.getElementById("selectSeller").options.selectedIndex;
+      let name=document.getElementById("selectSeller").options[index].text;
+      let report = document.querySelector('#report');
+      let loadingBlock = document.querySelector('#loading-block');
+      if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+      if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
+      io.socket.post('/order/generatereport', {start, end, seller}, (resData, jwRes) =>{
+        if(jwRes.statusCode == 200) {
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Reporte ${name}.xlsx`);
+          addClass(report,'is-hidden');
+          addClass(loadingBlock,'is-hidden');
+        }
+      });
     });
   </script>

@@ -187,10 +187,9 @@ module.exports = {
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
       if (!isAdmin) {
-        row.splice(0, 1);
-        row.splice(9, 1);
+        row.splice(10, 1);
       }
-      if(p.images.length<1){row[isAdmin ? 1 : 0]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
+      if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
       productdata.push(row);
     }
     return res.send(productdata);
@@ -440,7 +439,7 @@ module.exports = {
         }
         await ProductVariation.updateOne({id:list.productvariation}).set({product: list.product, variation:v.id, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
       }else{
-        await Productvariation.create({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
+        await ProductVariation.create({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
       }
     }
     if (channels.length > 0) {
@@ -1095,8 +1094,7 @@ module.exports = {
       };
 
       let response_xml = await axios(options).catch((e) => {error=e; console.log(e);});
-
-      if (response_xml){
+      if (response_xml && response_xml.data){
         await ProductChannel.findOrCreate({id: productChannelId},{
           product:product.id,
           integration:integrationId,
@@ -1305,14 +1303,13 @@ module.exports = {
       }
       if (req.body.type === 'ProductVariation') {
         prod.reference = req.body.product.reference2 ? req.body.product.reference2.trim().toUpperCase() : '';
-        prod.supplierreference = req.body.product.reference.trim().toUpperCase();
+        prod.supplierreference = req.body.product.reference.trim();
         prod.ean13 = req.body.product.ean13 ? req.body.product.ean13.toString() : '';
         prod.upc = req.body.product.upc ? parseInt(req.body.product.upc) : 0;
         prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
         prod.seller = seller;
 
-        let products = await Product.find({ reference: prod.supplierreference, seller: seller })
-          .populate('tax')
+        let products = await Product.find({ reference: [prod.supplierreference, prod.supplierreference.toUpperCase()], seller: seller })
           .populate('categories');
         let categories = [];
 
@@ -1324,8 +1321,7 @@ module.exports = {
               }
             });
             prod.product = product.id;
-            const tax = product.tax ? product.tax.value : 0;
-            prod.price = parseInt(req.body.product.price * (1 + tax / 100));
+            prod.price = req.body.product.price
             let variation = await Variation.find({
               where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, seller: product.seller, manufacturer: product.manufacturer, category: { 'in': categories } },
               limit: 1
@@ -1335,7 +1331,7 @@ module.exports = {
             }
             variation = variation.length > 0 ? variation[0] : variation;
             prod.variation = variation.id;
-            let pvs = await ProductVariation.find({ product:prod.product,supplierreference:prod.supplierreference}).populate('variation');
+            let pvs = await ProductVariation.find({product:prod.product,supplierreference:[prod.supplierreference, prod.supplierreference.toUpperCase()]}).populate('variation');
             let pv = pvs.find(pv=> pv.variation.name == variation.name);
             if (!pv) {
               await ProductVariation.create(prod).fetch();
@@ -1469,11 +1465,47 @@ module.exports = {
           }
         }
       }
+      if(req.body.type === 'Feature'){
+        prod.reference = req.body.product.reference ? req.body.product.reference.trim() : '';
+        prod.value = req.body.product.value;
+        let features = [];
+        let productVariation = await ProductVariation.findOne({reference: prod.reference});
+        let product = productVariation ? await Product.findOne({id: productVariation.product}).populate('categories') : await Product.findOne({reference: prod.reference}).populate('categories');
+        if (product && prod.value) {
+          for (let c of product.categories) {
+            let cat = await Category.findOne({id: c.id}).populate('features');
+            for (let f of cat.features){
+              if(!features.some(feat=>feat.id===f.id) && f!=='' && f!== null && f.name === 'registro sanitario'){
+                features.push(f);
+              }
+            }
+          }
+          if (features.length > 0) {
+            let feature = features[0].id;
+            let exists = await ProductFeature.findOne({product: product.id, feature:feature});
+            if (!exists) {
+             await ProductFeature.create({
+                product:product.id,
+                feature:feature,
+                value:prod.value
+              });
+            } else {
+             await ProductFeature.updateOne({product:product.id, feature:feature}).set({
+                value:prod.value
+              });
+            }
+            result['items'].push(prod);
+          }
+        } else {
+          throw new Error('Producto principal no localizado');
+        }
+      }
     } catch (err) {
       if (req.body.type === 'ProductVariation') { result['errors'].push('Ref: ' + prod.supplierreference + '- Variación: ' + req.body.product.variation + ' - ' + err.message); }
       if (req.body.type === 'Product') { result['errors'].push('Ref: ' + prod.reference + ': ' + err.message); }
       if (req.body.type === 'ProductImage') { result['errors'].push('Archivo: ' + req.body.product.original + ': ' + err.message); }
       if (req.body.type === 'Discount') { result['errors'].push('Ref: ' + req.body.product.reference + ': ' + err.message); }
+      if (req.body.type === 'Feature') { result['errors'].push('Ref: ' + req.body.product.reference + ': ' + err.message); }
     }
     return res.send(result);
   },
@@ -1758,38 +1790,42 @@ module.exports = {
               let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
               await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
               .then(async (resData)=>{
-                resData = JSON.parse(resData);
-                if(resData.SuccessResponse){
-                  for (const pro of products) {
-                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
-                    if(action === 'ProductCreate'){
-                      await ProductChannel.findOrCreate({id: productChannelId},{
-                        product:pro.id,
-                        integration:integration.id,
-                        channel:integration.channel.id,
-                        channelid:'',
-                        status:false,
-                        qc:false,
-                        price:priceAdjust,
-                        iscreated:false,
-                        socketid:sid
-                      }).exec(async (err, record, created)=>{
-                        if(err){return new Error(err.message);}
-                        if(!created){
-                          await ProductChannel.updateOne({id: record.id}).set({
-                            price:priceAdjust,
-                            socketid:sid
-                          });
-                        }
-                      });
+                if (resData) {
+                  resData = JSON.parse(resData);
+                  if(resData.SuccessResponse){
+                    for (const pro of products) {
+                      const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                      if(action === 'ProductCreate'){
+                        await ProductChannel.findOrCreate({id: productChannelId},{
+                          product:pro.id,
+                          integration:integration.id,
+                          channel:integration.channel.id,
+                          channelid:'',
+                          status:false,
+                          qc:false,
+                          price:priceAdjust,
+                          iscreated:false,
+                          socketid:sid
+                        }).exec(async (err, record, created)=>{
+                          if(err){return new Error(err.message);}
+                          if(!created){
+                            await ProductChannel.updateOne({id: record.id}).set({
+                              price:priceAdjust,
+                              socketid:sid
+                            });
+                          }
+                        });
+                      }
+                      if(action === 'ProductUpdate'){
+                        await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
+                      }
+                      response.items.push(pro);
                     }
-                    if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
-                    }
-                    response.items.push(pro);
+                  }else{
+                    throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
                   }
-                }else{
-                  throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                } else {
+                  throw new Error ('Error en el proceso, Intenta de nuevo más tarde.');
                 }
               })
               .catch(err =>{
@@ -2684,13 +2720,12 @@ module.exports = {
                       throw new Error(`Ref: ${pcolor.reference} y externalId : ${pcolor.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
                     });
 
-                    if(productColor && await ProductImage.count({product:productColor.id}) == 0){
+                    if(productColor){
                       for (let im of pcolor.images) {
                         try {
-                          let url = (im.src.split('?'))[0];
-                          let file = (im.file.split('?'))[0];
-                          let existImage = await ProductImage.find({product: product.id, file: file});
-                          if (existImage.length === 0) {
+                          if (im.file && im.src) {
+                            let url = (im.src.split('?'))[0];
+                            let file = (im.file.split('?'))[0];
                             let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
                               throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
                             });
@@ -2699,18 +2734,25 @@ module.exports = {
                               let totalimg = await ProductImage.count({ product: productColor.id});
                               totalimg += 1;
                               if (totalimg > 1) { cover = 0; }
-  
-                              let rs = await ProductImage.create({
+        
+                              await ProductImage.findOrCreate({product: productColor.id, file: file},{
                                 file: file,
                                 position: totalimg,
                                 cover: cover,
                                 product: productColor.id
-                              }).fetch();
-  
-                              if(typeof(rs) === 'object'){
-                                result.push(rs);
-                              }
-  
+                              }).exec(async (err, record, created)=>{
+                                if(err){return new Error(err.message);}
+                                if(!created){
+                                  await ProductImage.updateOne({id: record.id}).set({
+                                    file: file,
+                                    position: totalimg,
+                                    cover: cover
+                                  });
+                                }
+                                if(typeof(record) === 'object'){
+                                  result.push(record);
+                                }
+                              });                    
                               sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                             }
                           }
@@ -2735,12 +2777,11 @@ module.exports = {
                   let product = await Product.findOne({externalId : p.externalId, seller : seller}).catch((e)=>{
                     throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
                   });
-                  if(product &&  await ProductImage.count({product:product.id}) == 0){
+                  if(product){
                     for (let im of p.images) {
-                      let url = (im.src.split('?'))[0];
-                      let file = (im.file.split('?'))[0];
-                      let existImage = await ProductImage.find({product: product.id, file: file});
-                      if (existImage.length === 0) {
+                      if (im.file && im.src) {
+                        let url = (im.src.split('?'))[0];
+                        let file = (im.file.split('?'))[0];
                         let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
                           throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                         });
@@ -2749,17 +2790,25 @@ module.exports = {
                           let totalimg = await ProductImage.count({ product: product.id});
                           totalimg += 1;
                           if (totalimg > 1) { cover = 0; }
-  
-                          let rs = await ProductImage.create({
+    
+                          await ProductImage.findOrCreate({product: product.id, file: file},{
                             file: file,
                             position: totalimg,
                             cover: cover,
                             product: product.id
-                          }).fetch();
-  
-                          if(typeof(rs) === 'object'){
-                            result.push(rs);
-                          }
+                          }).exec(async (err, record, created)=>{
+                            if(err){return new Error(err.message);}
+                            if(!created){
+                              await ProductImage.updateOne({id: record.id}).set({
+                                file: file,
+                                position: totalimg,
+                                cover: cover
+                              });
+                            }
+                            if(typeof(record) === 'object'){
+                              result.push(record);
+                            }
+                          });                    
                           sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                         }
                       }
@@ -2783,12 +2832,11 @@ module.exports = {
               }) : await Product.findOne({reference: p.reference.toUpperCase(), seller: seller}).populate('images').catch((e)=>{
                 throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
               });
-              if(product && product.images.length === 0){
+              if(product){
                 for (let im of p.images) {
-                  let url = (im.src.split('?'))[0];
-                  let file = (im.file.split('?'))[0];
-                  let existImage = await ProductImage.find({product: product.id, file: file});
-                  if (existImage.length === 0) {
+                  if (im.file && im.src) {
+                    let url = (im.src.split('?'))[0];
+                    let file = (im.file.split('?'))[0];
                     let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
                       throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                     });
@@ -2797,17 +2845,25 @@ module.exports = {
                       let totalimg = await ProductImage.count({ product: product.id});
                       totalimg += 1;
                       if (totalimg > 1) { cover = 0; }
-  
-                      let rs = await ProductImage.create({
+
+                      await ProductImage.findOrCreate({product: product.id, file: file},{
                         file: file,
                         position: totalimg,
                         cover: cover,
                         product: product.id
-                      }).fetch();
-  
-                      if(typeof(rs) === 'object'){
-                        result.push(rs);
-                      }
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductImage.updateOne({id: record.id}).set({
+                            file: file,
+                            position: totalimg,
+                            cover: cover
+                          });
+                        }
+                        if(typeof(record) === 'object'){
+                          result.push(record);
+                        }
+                      });                    
                       sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                     }
                   }
@@ -2876,7 +2932,7 @@ module.exports = {
         'VARIATIONS',
         { page: page, pageSize: pageSize, next: next|| null }
       ).catch((e) => console.log(e));
-
+      
       if (importedProductsVariations && importedProductsVariations.pagination)
       {next = importedProductsVariations.pagination;}
       lastPage = importedProductsVariations.pagesCount;

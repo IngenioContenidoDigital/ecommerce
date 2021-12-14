@@ -11,6 +11,9 @@ module.exports = {
     success: {
       description: 'All done.',
     },
+    error:{
+      description: 'Error'
+    },
   },
   fn: async function (inputs, exits) {
     let moment = require('moment');
@@ -154,7 +157,6 @@ module.exports = {
           order.products = oitems;
           await sails.helpers.notification(order, order.currentstatus.id);
         }catch(err){
-          console.log(err);
           return exits.error(err);
         }
       }

@@ -50,7 +50,7 @@ module.exports = {
         }
       }
     } catch (error) {
-      return exits.error(error);
+      return exits.serverError(error.message);
     }
     return exits.success(true);
   }
