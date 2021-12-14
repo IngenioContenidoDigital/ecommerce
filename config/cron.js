@@ -349,4 +349,35 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },
+  refreshTokenShopee: {
+    schedule: '01 */5 * * * *',
+    onTick: async () => {
+      console.log('Iniciando refrescar token shopee');
+      try {
+        let sellers = await Seller.find({active: true});
+        let channel = await Channel.findOne({name: 'shopee'});
+        if (channel) {
+          for (const seller of sellers) {
+            let integrations = await Integrations.find({seller: seller.id, channel: channel.id, shopid: {'!=': ''}}).populate('channel');
+            for (const integration of integrations) {
+              let params = {
+                'refresh_token': integration.url,
+                'partner_id': sails.config.custom.PARTNER_ID_SHOPEE,
+                'shop_id': parseInt(integration.shopid)
+              };
+              let response = await sails.helpers.channel.shopee.request('/api/v2/auth/access_token/get',integration.channel.endpoint,[],params,'POST').catch((err) =>{
+                console.log(`Error al refrescar token ${integration.name}: ${err.message}`);
+              });
+              if(response && !response.error){
+                await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token']});
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    },
+    timezone: 'America/Bogota'
+  },
 };

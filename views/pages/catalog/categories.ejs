@@ -149,39 +149,57 @@
             <p class="has-text-centered title is-6">Equivalencia Marketplace</p>
             <hr>
             <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
-            <div class="tabs is-toggle o-x-h">
-              <ul class="markeplace-categories">
-                <li id="dafit">
-                  <a>
-                    <p class="has-text-centered" id="dafit"><img src="/images/dafiti.png" /></p>
-                  </a>
-                </li>
-                <li id="lini">
-                  <a>
-                    <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
-                  </a>
-                </li>
-                <li id="linimx">
-                  <a>
-                    <p class="has-text-centered" id="linimx"><img src="/images/linio.png" /></p>
-                  </a>
-                </li>
-                <li id="meli">
-                  <a>
-                    <p class="has-text-centered" id="meli"><img src="/images/mercadolibre.png" /></p>
-                  </a>
-                </li>
-                <li id="melimx">
-                  <a>
-                    <p class="has-text-centered" id="melimx"><img src="/images/mercadolibre.png" /></p>
-                    </a>
-                </li>
-                <li id="walm">
-                  <a>
-                    <p class="has-text-centered" id="walm"><img src="/images/walmart.png" /></p>
-                  </a>
-                </li>
-              </ul>
+            <div class="columns is-gapless is-multiline">
+              <div class="column">
+                <div class="tabs is-toggle o-x-h">
+                  <ul class="markeplace-categories">
+                    <li class="container-li-categories" id="dafit">
+                      <a>
+                        <p class="has-text-centered" id="dafit"><img src="/images/dafiti.png" /></p>
+                      </a>
+                    </li>
+                    <li class="container-li-categories" id="lini">
+                      <a>
+                        <p class="has-text-centered" id="lini"><img src="/images/linio.png" /></p>
+                      </a>
+                    </li>
+                    <li class="container-li-categories" id="meli">
+                      <a>
+                        <p class="has-text-centered" id="meli"><img src="/images/mercadolibre.png" /></p>
+                      </a>
+                    </li>
+                    <li class="container-li-categories" id="linimx">
+                      <a>
+                        <p class="has-text-centered" id="linimx"><img src="/images/liniomx.png" /></p>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div class="columns is-gapless is-multiline">
+              <div class="column">
+                <div class="tabs is-toggle o-x-h">
+                  <ul class="markeplace-categories">
+                    <li class="container-li-categories" id="melimx">
+                      <a>
+                        <p class="has-text-centered" id="melimx"><img src="/images/mercadolibremx.png" /></p>
+                        </a>
+                    </li>
+                    <li class="container-li-categories" id="walm">
+                      <a>
+                        <p class="has-text-centered" id="walm"><img src="/images/walmart.png" /></p>
+                      </a>
+                    </li>
+                    <li class="container-li-categories" id="shop">
+                      <a>
+                        <p class="has-text-centered" id="shop"><img src="/images/shopee.png" /></p>
+                      </a>
+                    </li>
+                    <li class="container-li-categories"></li>
+                  </ul>
+                </div>
+              </div>
             </div>
             <div class="setup is-hidden dafit">
               <h6 class="title is-6 title-markeplace">Categorías en Dafiti</h6>
@@ -227,6 +245,11 @@
               <ul class="cattree tree" id="walmart">
               </ul>
             </div>
+            <div class="setup is-hidden shop">
+              <h6 class="title is-6 title-markeplace">Categorías en Shopee</h6>
+              <ul class="cattree tree" id="shopee">
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -238,6 +261,7 @@
     let liniomx = '<%= current.liniomx %>' !== '' ? '<%= current.liniomx %>'.split(',') : [];
     let mercadolibre = '<%= current.mercadolibre %>' !== '' ? '<%= current.mercadolibre %>'.split(',') : [];
     let mercadolibremx = '<%= current.mercadolibremx %>' !== '' ? '<%= current.mercadolibremx %>'.split(',') : [];
+    let shopee = '<%= current.shopee %>' !== '' ? '<%= current.shopee %>'.split(',') : [];
     let progress = document.querySelector('progress');
 
     let walmart = '<%= current.walmart %>' !== '' ? '<%= current.walmart %>'.split(',') : [];
@@ -267,6 +291,26 @@
       } else {
         let op = createElementli(marketplace, cat, elm);
         elm.appendChild(op);
+      }
+      return;
+    }
+
+    let optionsShopee = (marketplace, elm, cat, level) =>{
+      if (cat.length > 0) {
+        for(let c of cat){
+          let op = createElementli(marketplace, c, elm);
+          elm.appendChild(op);
+          if(c.Children){
+            level+=1;
+            let ul = document.createElement('ul');
+            addClass(ul,'tree');
+            addClass(ul,'is-hidden');
+            ul.style.marginLeft='10px';
+            op.parentNode.insertBefore(ul, op.nextSibling);
+            optionsShopee(marketplace,ul,c.Children,level);
+            level-=1;
+          }
+        }
       }
       return;
     }
@@ -331,7 +375,15 @@
         }else{
           op.innerHTML='<span><input type="checkbox" name="walmart[]" value="'+c['Name']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['Name']+'</label></span>';
         }
+      }  else if (marketplace === 'shopee') {
+        if(shopee.includes(String(c['category_id']))){
+          removeClass(elm,'is-hidden');
+          op.innerHTML='<span><input type="checkbox" name="shopee[]" value="'+c['category_id']+'" checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['display_category_name']+'</label></span>';
+        }else{
+          op.innerHTML='<span><input type="checkbox" name="shopee[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['display_category_name']+'</label></span>';
+        }
       }
+
       return op;
     }
 
@@ -342,6 +394,7 @@
       let ObjMeli = document.querySelector('#mercadolibre');
       let ObjMelimx = document.querySelector('#mercadolibremx');
       let objWalmart = document.querySelector('#walmart');
+      let objShopee = document.querySelector('#shopee');
       let category_name =document.querySelector('input[name=nombre]');
       let predictor = document.querySelector('#predictor');
       let predictormx = document.querySelector('#predictormx');
@@ -396,13 +449,24 @@
           }
           addClass(progress,'is-hidden');
         });
-      }else if (id === 'walm' && objWalmart.children.length === 0){
+      } else if (id === 'walm' && objWalmart.children.length === 0){
         removeClass(progress,'is-hidden');
         io.socket.get('/integrations/walmart/categories',(resData, res)=>{
           if(res.statusCode == 200){
             options('walmart', objWalmart, resData, 1);
           } else {
             document.querySelector('.walm').innerHTML='';
+          }
+          addClass(progress,'is-hidden');
+        });
+      } else if (id === 'shop' && objShopee.children.length === 0){
+        removeClass(progress,'is-hidden');
+        io.socket.get('/integrations/shopee/categories',(resData, res)=>{
+          if(res.statusCode == 200){
+            const result = resData.filter(cat => cat.parent_category_id === 0);
+            optionsShopee('shopee', objShopee, result, 1);
+          } else {
+            document.querySelector('.shopee').innerHTML='';
           }
           addClass(progress,'is-hidden');
         });

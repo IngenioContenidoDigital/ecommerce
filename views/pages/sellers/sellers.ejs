@@ -811,6 +811,42 @@
                     <button type="submit" class="button is-info is-small">${edit ? 'Actualizar Integración' : 'Autorizar Acceso'}</button>
                   </div>
                 </div>
+              </form>`: nameChannel.includes('shopee') ? 
+              `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
+                <div class="container">
+                  <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
+                  <div class="field">
+                    <label class="label">Nombre</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${intname}"/>
+                      <span class="icon is-small is-left">
+                        <i class='bx bx-collapse' ></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label">App Id</label>
+                    <div class="control has-icons-left">
+                      <input class="input" type="text" name="user" placeholder="Id de Cliente" required value="<%= appIdShopee %>" readonly/>
+                      <span class="icon is-small is-left">
+                        <i class='bx bx-user-circle' ></i>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label">Secret Key</label>
+                    <div class="control has-icons-left">
+                      <input class="input" type="text" name="key" placeholder="Clave de API" required value="<%= keyShopee %>" readonly/>
+                      <span class="icon is-small is-left">
+                        <i class='bx bx-key' ></i>
+                      </span>
+                    </div>
+                  </div>
+                  <br>
+                  <div class="control is-right">
+                    <button type="submit" class="button is-info is-small">${edit ? 'Actualizar Integración' : 'Autorizar Acceso'}</button>
+                  </div>
+                </div>
               </form>`:
               `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
                 <div class="container">

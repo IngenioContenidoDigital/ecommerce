@@ -6,7 +6,9 @@
  */
 const constant = {
   APP_ID_ML: sails.config.custom.APP_ID_ML,
-  SECRET_KEY_ML: sails.config.custom.SECRET_KEY_ML
+  SECRET_KEY_ML: sails.config.custom.SECRET_KEY_ML,
+  PARTNER_ID_SHOPEE: sails.config.custom.PARTNER_ID_SHOPEE,
+  PARTNER_KEY_SHOPEE: sails.config.custom.PARTNER_KEY_SHOPEE
 };
 module.exports = {
   showsellers: async function(req, res){
@@ -58,7 +60,7 @@ module.exports = {
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
-    res.view('pages/sellers/sellers',{layout:'layouts/admin',rights,sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, moment, tokens, plans});
+    res.view('pages/sellers/sellers',{layout:'layouts/admin',rights,sellers:sellers,action:action,seller:seller,error:error,success:success,countries:countries,currencies, channels, integrations, commissiondiscount,commissionchannel, appIdMl: constant.APP_ID_ML, secretKeyMl: constant.SECRET_KEY_ML, appIdShopee: constant.PARTNER_ID_SHOPEE, keyShopee: constant.PARTNER_KEY_SHOPEE, moment, tokens, plans});
   },
   createseller: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -579,6 +581,10 @@ module.exports = {
         return res.redirect('https://auth.mercadolibre.com.co/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
       }else if(nameChannel == 'mercadolibremx' && !edit){
         return res.redirect('https://auth.mercadolibre.com.mx/authorization?response_type=code&client_id='+record.user+'&state='+integration+'&redirect_uri='+'https://'+req.hostname+'/mlauth/'+record.user);
+      }else if(nameChannel == 'shopee'){
+        let path = '/api/v2/shop/auth_partner';
+        let sign = await sails.helpers.channel.shopee.sign(path, [`redirect=https://1ecommerce.app/shopeeauth/${integration}/`]);
+        return res.redirect(`https://partner.test-stable.shopeemobile.com${path}?${sign}`);
       }else{
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }

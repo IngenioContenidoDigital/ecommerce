@@ -50,6 +50,7 @@ module.exports = {
     let mercadolibrecat = '';
     let mercadolibremxcat = '';
     let walmartcat = '';
+    let shopeecat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -92,6 +93,13 @@ module.exports = {
         walmartcat = req.body['walmart[]'];
       }
     }
+    if(req.body['shopee[]']!==undefined){
+      if(typeof req.body['shopee[]']!=='string'){
+        shopeecat = req.body['shopee[]'].join(',');
+      }else{
+        shopeecat = req.body['shopee[]'];
+      }
+    }
     try{
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
@@ -105,6 +113,7 @@ module.exports = {
         mercadolibre: mercadolibrecat,
         mercadolibremx: mercadolibremxcat,
         walmart: walmartcat,
+        shopee: shopeecat,
         parent:current.id,
         active:isActive,
         url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
@@ -124,6 +133,7 @@ module.exports = {
           mercadolibre: mercadolibrecat,
           mercadolibremx: mercadolibremxcat,
           walmart: walmartcat,
+          shopee: shopeecat,
           active:isActive,
           url:(current.name.trim().toLowerCase().replace(/\s/g,'-'))+'-'+(req.body.nombre.trim().toLowerCase()).replace(/\s/g,'-'),
           level:current.level+1
@@ -155,6 +165,7 @@ module.exports = {
     let mercadolibrecat = '';
     let mercadolibremxcat = '';
     let walmartcat = '';
+    let shopeecat = '';
     if(req.body['dafiti[]']!==undefined){
       if(typeof req.body['dafiti[]']!=='string'){
         dafiticat = req.body['dafiti[]'].join(',');
@@ -197,6 +208,13 @@ module.exports = {
         walmartcat = req.body['walmart[]'];
       }
     }
+    if(req.body['shopee[]']!==undefined){
+      if(typeof req.body['shopee[]']!=='string'){
+        shopeecat = req.body['shopee[]'].join(',');
+      }else{
+        shopeecat = req.body['shopee[]'];
+      }
+    }
     if(req.body.activo==='on'){isActive=true;}
     let body = {
       name:req.body.nombre,
@@ -214,7 +232,7 @@ module.exports = {
     if(mercadolibrecat){body.mercadolibre=mercadolibrecat}
     if(mercadolibremxcat){body.mercadolibremx=mercadolibremxcat}
     if(walmartcat){body.walmart=walmartcat}
-    
+    if(shopeecat){body.shopee=shopeecat}
     try{
       uploaded = await sails.helpers.fileUpload(req,'logo',2000000,route);
       if(uploaded){
@@ -400,6 +418,36 @@ module.exports = {
         return new Error(err.message);
       });
       return res.ok(body);
+    }catch(err){
+      return res.serverError(err);
+    }
+  },
+  shopeecategories: async (req,res)=>{
+    if(!req.isSocket){
+      return res.badrequest();
+    }
+    try{
+      let channel = await Channel.find({name: 'shopee'});
+      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
+      if(integration.length>0){
+        let response = await sails.helpers.channel.shopee.request('/api/v2/product/get_category',channel[0].endpoint,[`shop_id=${parseInt(integration[0].shopid)}`,`language=es-mx`,`access_token=${integration[0].secret}`]);
+        if (response && !response.error) {
+          let result = response.response.category_list;
+          let resultParentsCategories = [];
+          for (const category of result) {
+            if(category.has_children){
+              const children = result.filter(cate => cate.parent_category_id === category.category_id);
+              category.Children = children;
+              resultParentsCategories.push(category);
+            } else {
+              category.Children = [];
+            }
+          }
+          return res.ok(resultParentsCategories);
+        }
+      }else{
+        return res.serverError();
+      }
     }catch(err){
       return res.serverError(err);
     }

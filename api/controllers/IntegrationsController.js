@@ -52,6 +52,27 @@ module.exports = {
     } catch (err) {
       return res.send({error: 'No se logro actualizar la Integración.', mgs: ''});
     }
+  },
+  shopeeauth: async (req, res) =>{
+    let code = req.param('code');
+    let shop_id = req.param('shop_id');
+    let integration = await Integrations.findOne({id: req.param('integration')}).populate('channel');
+    let params = {
+      'code': code,
+      'shop_id': parseInt(shop_id),
+      'partner_id': sails.config.custom.PARTNER_ID_SHOPEE
+    };
+    let response = await sails.helpers.channel.shopee.request('/api/v2/auth/token/get',integration.channel.endpoint,[],params,'POST')
+    .intercept((err) =>{
+      return res.redirect(`/sellers/edit/${integration.seller}?error=${err.message}`);
+    });
+
+    if(response && !response.error){
+      await Integrations.updateOne({id:integration.id}).set({url: response['refresh_token'], secret: response['access_token'], shopid: shop_id});
+      return res.redirect('/sellers/edit/' + integration.seller + '?success=Integración Habilitada Exitosamente');
+    } else {
+      return res.redirect(`/sellers/edit/${integration.seller}?error=${response.message}`);
+    }
   }
 };
 
