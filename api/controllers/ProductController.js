@@ -1129,6 +1129,85 @@ module.exports = {
       return res.send(err.message);
     }
   },
+  shopeeadd: async (req, res) => {
+    if (!req.isSocket) { return res.badRequest(); }
+    let sid = sails.sockets.getId(req);
+    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    const integrationId = req.body.integrationId;
+    const channelId = req.body.channelId;
+    let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
+    let integration = await Integrations.findOne({ id : integrationId}).populate('channel');
+    const productChannelId = productchannel ? productchannel.id : '';
+    let variations = null;
+    try {
+      let action = null;
+      if (productchannel && productchannel.channelid) {
+        action = 'Update';
+      } else {
+        action = 'Post';
+      }
+      let status = req.body.status ? 'NORMAL' : 'UNLIST';
+      let body = await sails.helpers.channel.shopee.product(product.id, action, integration, parseFloat(req.body.price), status);
+      if (body) {
+        variations = body.variations;
+        delete variations;
+        if(action==='Update'){
+          body.item_id = parseInt(productchannel.channelid);
+          let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST');
+          if (response && !response.error) {
+            await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations)
+            await ProductChannel.updateOne({id: productChannelId}).set({
+              status: req.body.status ? true : false,
+              qc: true,
+              price: req.body.price ? parseFloat(req.body.price) : 0,
+              reason: ''
+            });
+          } else {
+            return res.send({error: response.message});
+          }
+        } 
+        if(action==='Post'){
+          let response = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST');
+          if (response && !response.error) {
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:product.id,
+              channel:channelId,
+              integration:integrationId,
+              channelid: response.response.item_id,
+              status: true,
+              qc:true,
+              iscreated:true,
+              price: req.body.price ? parseFloat(req.body.price) : 0,
+              reason: ''
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){
+                await ProductChannel.updateOne({id: record.id}).set({
+                  channelid:response.response.item_id,
+                  status:true,
+                  qc:true,
+                  iscreated:true,
+                  price: req.body.price ? parseFloat(req.body.price) : 0,
+                  reason: ''
+                });
+              }
+            });
+            variations.item_id = response.response.item_id;
+            let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],variations,'POST');
+            if (responseVariations && responseVariations.error) {
+              return res.send({error: response.message});
+            }
+          } else{
+            return res.send({error: response.message});
+          }
+        }
+        return res.send({error: null});  
+      }
+    } catch (err) {
+      console.log(err);
+      return res.send({error: err.message});
+    }
+  },
   import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
@@ -3370,7 +3449,15 @@ module.exports = {
         } else {
           return res.send({error: 'No se pudo inactivar el producto en mercadolibre'});
         }
-      } else {
+      }else if(channel === 'shopee'){
+        let response = await sails.helpers.channel.shopee.request('/api/v2/product/delete_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],{item_id: parseInt(productchannel.channelid)},'POST');
+        if (response && !response.error) {
+          await ProductChannel.destroyOne({id: productchannelId});
+          return res.send({error: null});
+        } else {
+          return res.send({error: response.message});
+        }
+      }else {
         for(let pv of productvariations){
           body.Request.push({Product: {SellerSku:pv.id}});
         }

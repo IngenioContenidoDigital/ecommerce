@@ -250,6 +250,7 @@ module.exports.routes = {
   'POST /liniomx/add' : {controller:'ProductController',action:'liniomxadd'},
   'POST /coppel/add' : {controller:'ProductController',action:'coppeladd'},
   'POST /iridio/add' : {controller:'ProductController',action:'iridioadd'},
+  'POST /shopee/add' : {controller:'ProductController',action:'shopeeadd'},
   'POST /delete/product' : {controller:'ProductController',action:'deleteproduct'},
   'POST /updatemultiple/products' : {controller:'ProductController',action:'updatemultipleproduct'},
   'POST /walmart/add' : {controller:'ProductController',action:'walmartadd'},
