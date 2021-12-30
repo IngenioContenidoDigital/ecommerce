@@ -123,6 +123,7 @@ module.exports.routes = {
   'POST /dafitisync/:identifier?' : {controller:'IndexController',action:'dafitiSync'},
   'POST /liniosync/:identifier?' : {controller:'IndexController',action:'linioSync'},
   'POST /liniomxsync/:identifier?' : {controller:'IndexController',action:'liniomxSync'},
+  'POST /shopeesync' : {controller:'IndexController',action:'shopeeSync'},
   'POST /productcheck' : {controller:'ProductController',action:'checkdata'},
   'POST /check-product-provider' : {controller:'ProductController',action:'checkProductFromProvider'},
 

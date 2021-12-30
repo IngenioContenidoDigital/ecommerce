@@ -1183,6 +1183,37 @@ module.exports = {
       }
     }
   },
+  shopeeSync : async (req, res)=>{
+    let body = req.body;
+    let auth = req.headers.authorization;
+    let url = req.protocol + '://' + req.headers.host + req.originalUrl;
+    await sails.helpers.channel.successRequest(res);
+    let result = await sails.helpers.channel.shopee.verifyPushNotification(body, auth, url);
+    if (result) {
+      let integration = await Integrations.findOne({shopid: body.shop_id}).populate('channel').populate('seller');
+      if (integration.seller.active) {
+        switch (body.code) {
+          case 3:
+            if(body.shop_id){
+              let order = body.data.ordersn;
+              let resultData = await sails.helpers.channel.shopee.orders(integration, integration.seller.id, order);
+              // if (data && integration.seller.integrationErp) {
+              //   if (integration.seller.nameErp === 'siesa') {
+              //     await sails.helpers.integrationsiesa.exportOrder(data);
+              //   } else if(integration.seller.nameErp === 'busint'){
+              //     await sails.helpers.integrationbusint.exportOrder(data);
+              //   } else if(integration.seller.nameErp === 'sap'){
+              //     await sails.helpers.integrationsap.exportOrder(data);
+              //   }
+              // }
+            }
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  },
   downloadexcel: async function (req, res) {
     const Excel = require('exceljs');
     let products = req.body.products;
