@@ -1165,7 +1165,7 @@ module.exports = {
           } else {
             return res.send({error: response.message});
           }
-        } 
+        }
         if(action==='Post'){
           let response = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST');
           if (response && !response.error) {
@@ -1201,7 +1201,7 @@ module.exports = {
             return res.send({error: response.message});
           }
         }
-        return res.send({error: null});  
+        return res.send({error: null});
       }
     } catch (err) {
       console.log(err);
@@ -2589,6 +2589,97 @@ module.exports = {
                   }
                 );
                 response.errors.push('REF: '+pl.reference+' no ha sido eviado: '+ error.error.description);
+              }
+            }
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar');
+        }
+      }
+      if (channel === 'shopee' && req.body.action !== 'ProductQcStatus') {
+        const intgrationId = integration.id;
+        let variations = null;
+        let products = await Product.find({seller: seller}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        });
+
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'Post';
+            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            break;
+          case 'ProductUpdate':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            break;
+        }
+        if (products.length > 0) {
+          for (let pl of products) {
+            const shopeePrice = priceAdjust;
+            const shopeeId = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+            let body = await sails.helpers.channel.shopee.product(pl.id, action, integration, parseFloat(shopeePrice))
+            .tolerate(async (err) => {
+              response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ err.message);
+            });
+            if(body){
+              variations = body.variations;
+              delete variations;
+              if(action==='Update'){
+                body.item_id = parseInt(shopeeId);
+                let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST')
+                .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ err.message);});
+                if (response && !response.error) {
+                  await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations)
+                  await ProductChannel.updateOne({id: productChannelId}).set({
+                    status: true,
+                    qc: true,
+                    price: shopeePrice,
+                    reason: ''
+                  });
+                } else {
+                  response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ err.message);
+                }
+              }
+              if(action==='Post'){
+                let responseItem = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST')
+                .tolerate((err)=>{
+                  response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ err.message);
+                });
+                if (responseItem && !responseItem.error) {
+                  await ProductChannel.findOrCreate({id: productChannelId},{
+                    product:pl.id,
+                    channel:integration.channel.id,
+                    integration:integration.id,
+                    channelid: responseItem.response.item_id,
+                    status: true,
+                    qc:true,
+                    iscreated:true,
+                    price: shopeePrice,
+                    reason: ''
+                  }).exec(async (err, record, created)=>{
+                    if(err){return new Error(err.message);}
+                    if(!created){
+                      await ProductChannel.updateOne({id: record.id}).set({
+                        channelid: responseItem.response.item_id,
+                        price: shopeePrice
+                      });
+                    }
+                  });
+                  variations.item_id = responseItem.response.item_id;
+                  let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],variations,'POST');
+                  if (responseVariations && responseVariations.error) {
+                    response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ response.message);
+                  } else {
+                    response.items.push(body);
+                  }
+                } else{
+                  response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ response.message);
+                }
               }
             }
           }

@@ -322,7 +322,7 @@ module.exports.cron = {
           if (duration >= 61) {
             const seller = await Seller.findOne({id: subscription.seller});
             const card = await Token.findOne({user: seller.id, default: true});
-            if (card) {
+            if (card && seller.active) {
               const chargeSubscription = {
                 id_plan: seller.plan,
                 customer: card.customerId,

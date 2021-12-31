@@ -28,7 +28,7 @@ module.exports = {
     let moment = require('moment');
     let data;
 
-    let response = await sails.helpers.channel.shopee.request('/api/v2/order/get_order_detail',inputs.integration.channel.endpoint,[`shop_id=${parseInt(inputs.integration.shopid)}`,`language=es-mx`,`access_token=${inputs.integration.secret}`,`order_sn_list=${inputs.orderId}`,`response_optional_fields=payment_method,recipient_address,item_list,buyer_username,buyer_user_id,shipping_carrier`]);
+    let response = await sails.helpers.channel.shopee.request('/api/v2/order/get_order_detail',inputs.integration.channel.endpoint,[`shop_id=${parseInt(inputs.integration.shopid)}`,`language=es-mx`,`access_token=${inputs.integration.secret}`,`order_sn_list=${inputs.orderId}`,`response_optional_fields=payment_method,recipient_address,item_list,buyer_username,buyer_user_id,shipping_carrier,package_list`]);
     if (response && !response.error) {
       for(let order of response.response.order_list){
         let oexists = await Order.findOne({channel: 'shopee', channelref: order.order_sn, seller: inputs.seller, integration: inputs.integration.id});
@@ -103,6 +103,10 @@ module.exports = {
             let currentStatus = await sails.helpers.orderState(order.order_status);
             await sails.helpers.notification(oexists, currentStatus);
             await Order.updateOne({id:oexists.id}).set({updatedAt:parseInt(moment(order.update_time).valueOf()),currentstatus:currentStatus});
+            let oitems = await OrderItem.find({order:oexists.id});
+            for(let it of oitems){
+              await OrderItem.updateOne({id: it.id}).set({currentstatus: currentStatus,updatedAt:parseInt(moment(order.update_time).valueOf())});
+            }
             await OrderHistory.create({
               order:oexists.id,
               state:currentStatus
