@@ -19,6 +19,9 @@ module.exports = {
     success: {
       description: 'All done.',
     },
+    error: {
+      description: 'Ocurrio un error al procesar la orden.',
+    }
   },
   fn: async function (inputs,exits) {
     let moment = require('moment');
@@ -36,7 +39,8 @@ module.exports = {
           for(let order of orders.Order){
             let oexists = await Order.findOne({channel:'linio',channelref:order.OrderId,seller:inputs.seller});
             data = {channel: 'linio', channelref: order.OrderId, seller: inputs.seller};
-            if(order.Statuses.Status==='pending'){
+            let resultStatus = typeof order.Statuses.Status === 'string' ? order.Statuses.Status === 'pending' : order.Statuses.Status.includes('pending');
+            if(resultStatus){
               let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
               if(city.length>0 && oexists===undefined){
                 let userEmail = order.AddressBilling.CustomerEmail ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).replace(/\s/g,''))+'@linio.com.co'
@@ -87,6 +91,7 @@ module.exports = {
                   }else{
                     items['OrderItem'].push(rs.SuccessResponse.Body.OrderItems.OrderItem);
                   }
+
                   for(let item of items.OrderItem){
                     let productvariation = await ProductVariation.find({
                       where: {
@@ -101,7 +106,7 @@ module.exports = {
                       console.log(err.message);
                     });
                     //let productvariation = await ProductVariation.findOne({id:'5ef0c5ae4283b925e44c2c4f'});
-                    if(productvariation){
+                    if(productvariation.length > 0){
                       await CartProduct.create({
                         cart:cart.id,
                         product:productvariation[0].product,
@@ -110,6 +115,8 @@ module.exports = {
                         totalPrice:parseFloat(item.ItemPrice),
                         externalReference:item.OrderItemId
                       });
+                    } else {
+                      return exits.error('No se encontró producto en 1E');
                     }
                   }
                   if((await CartProduct.count({cart:cart.id}))>0){
