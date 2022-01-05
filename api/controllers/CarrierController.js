@@ -150,10 +150,25 @@ module.exports = {
         guia = await sails.helpers.channel.mercadolibre.shipping(order);
       }else if(order.channel==='mercadolibremx'){
         guia = await sails.helpers.channel.mercadolibremx.shipping(order);
-      }
-
-      if(order.channel==='walmart'){
+      }else if(order.channel==='walmart'){
         guia = await sails.helpers.channel.walmart.shipping(order);
+      }else if(order.channel==='shopee'){
+        let integrat = await Integrations.findOne({id: order.integration}).populate('channel');
+        let bodyDocument = [
+          {
+            order_sn: order.channelref,
+            package_number: order.paymentId
+          }
+        ];
+        let resultDocument = await sails.helpers.channel.shopee.request('/api/v2/logistics/get_shipping_document_result',integrat.channel.endpoint,[`shop_id=${parseInt(integrat.shopid)}`,`access_token=${integrat.secret}`],bodyDocument,'POST');
+        if (resultDocument && !resultDocument.error) {
+          if (resultDocument.response.result_list[0].shipping_document_type === 'READY') {
+            let resultDownloadDocument = await sails.helpers.channel.shopee.request('/api/v2/logistics/download_shipping_document',integrat.channel.endpoint,[`shop_id=${parseInt(integrat.shopid)}`,`access_token=${integrat.secret}`],bodyDocument,'POST');
+            if (resultDownloadDocument && !resultDownloadDocument.error) {
+              console.log(resultDownloadDocument);
+            }
+          }
+        }
       }
     }
     return res.view('pages/pdf',{layout:'layouts/admin',guia:guia,label:label});

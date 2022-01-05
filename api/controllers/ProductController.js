@@ -1153,7 +1153,7 @@ module.exports = {
         delete variations;
         if(action==='Update'){
           body.item_id = parseInt(productchannel.channelid);
-          let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST');
+          let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST');
           if (response && !response.error) {
             await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations)
             await ProductChannel.updateOne({id: productChannelId}).set({
@@ -1167,7 +1167,7 @@ module.exports = {
           }
         }
         if(action==='Post'){
-          let response = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST');
+          let response = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST');
           if (response && !response.error) {
             await ProductChannel.findOrCreate({id: productChannelId},{
               product:product.id,
@@ -1193,7 +1193,7 @@ module.exports = {
               }
             });
             variations.item_id = response.response.item_id;
-            let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],variations,'POST');
+            let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],variations,'POST');
             if (responseVariations && responseVariations.error) {
               return res.send({error: response.message});
             }
@@ -2631,7 +2631,7 @@ module.exports = {
               delete variations;
               if(action==='Update'){
                 body.item_id = parseInt(shopeeId);
-                let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST')
+                let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST')
                 .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ err.message);});
                 if (response && !response.error) {
                   await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations)
@@ -2646,7 +2646,7 @@ module.exports = {
                 }
               }
               if(action==='Post'){
-                let responseItem = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],body,'POST')
+                let responseItem = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST')
                 .tolerate((err)=>{
                   response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ err.message);
                 });
@@ -2671,7 +2671,7 @@ module.exports = {
                     }
                   });
                   variations.item_id = responseItem.response.item_id;
-                  let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],variations,'POST');
+                  let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],variations,'POST');
                   if (responseVariations && responseVariations.error) {
                     response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ response.message);
                   } else {
@@ -3541,7 +3541,7 @@ module.exports = {
           return res.send({error: 'No se pudo inactivar el producto en mercadolibre'});
         }
       }else if(channel === 'shopee'){
-        let response = await sails.helpers.channel.shopee.request('/api/v2/product/delete_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`language=es-mx`,`access_token=${integration.secret}`],{item_id: parseInt(productchannel.channelid)},'POST');
+        let response = await sails.helpers.channel.shopee.request('/api/v2/product/delete_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],{item_id: parseInt(productchannel.channelid)},'POST');
         if (response && !response.error) {
           await ProductChannel.destroyOne({id: productchannelId});
           return res.send({error: null});

@@ -350,7 +350,7 @@ module.exports.cron = {
     timezone: 'America/Bogota'
   },
   refreshTokenShopee: {
-    schedule: '01 */10 * * * *',
+    schedule: '01 05 */1 * * *',
     onTick: async () => {
       console.log('Iniciando refrescar token shopee');
       try {

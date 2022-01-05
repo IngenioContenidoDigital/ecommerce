@@ -1197,15 +1197,15 @@ module.exports = {
             if(body.shop_id){
               let order = body.data.ordersn;
               let resultData = await sails.helpers.channel.shopee.orders(integration, integration.seller.id, order);
-              // if (data && integration.seller.integrationErp) {
-              //   if (integration.seller.nameErp === 'siesa') {
-              //     await sails.helpers.integrationsiesa.exportOrder(data);
-              //   } else if(integration.seller.nameErp === 'busint'){
-              //     await sails.helpers.integrationbusint.exportOrder(data);
-              //   } else if(integration.seller.nameErp === 'sap'){
-              //     await sails.helpers.integrationsap.exportOrder(data);
-              //   }
-              // }
+              if (resultData && integration.seller.integrationErp) {
+                if (integration.seller.nameErp === 'siesa') {
+                  await sails.helpers.integrationsiesa.exportOrder(resultData);
+                } else if(integration.seller.nameErp === 'busint'){
+                  await sails.helpers.integrationbusint.exportOrder(resultData);
+                } else if(integration.seller.nameErp === 'sap'){
+                  await sails.helpers.integrationsap.exportOrder(resultData);
+                }
+              }
             }
             break;
           default:

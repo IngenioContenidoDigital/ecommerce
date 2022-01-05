@@ -28,7 +28,7 @@ module.exports = {
     let moment = require('moment');
     let data;
 
-    let response = await sails.helpers.channel.shopee.request('/api/v2/order/get_order_detail',inputs.integration.channel.endpoint,[`shop_id=${parseInt(inputs.integration.shopid)}`,`language=es-mx`,`access_token=${inputs.integration.secret}`,`order_sn_list=${inputs.orderId}`,`response_optional_fields=payment_method,recipient_address,item_list,buyer_username,buyer_user_id,shipping_carrier,package_list`]);
+    let response = await sails.helpers.channel.shopee.request('/api/v2/order/get_order_detail',inputs.integration.channel.endpoint,[`shop_id=${parseInt(inputs.integration.shopid)}`,`access_token=${inputs.integration.secret}`,`order_sn_list=${inputs.orderId}`,`response_optional_fields=payment_method,recipient_address,item_list,buyer_username,buyer_user_id,shipping_carrier,package_list`]);
     if (response && !response.error) {
       for(let order of response.response.order_list){
         let oexists = await Order.findOne({channel: 'shopee', channelref: order.order_sn, seller: inputs.seller, integration: inputs.integration.id});
@@ -68,7 +68,7 @@ module.exports = {
                 channel: 'shopee',
                 channelref: order.order_sn,
                 integration: inputs.integration.id,
-                ref_payco: ''
+                ref_payco: order.package_list[0].package_number
               }
             };
             let cart = await Cart.create().fetch();

@@ -60,7 +60,6 @@ module.exports = {
       }
     }catch(err){
       console.log(err.response);
-
       let cause = '';
       if (err.response && err.response.data) {
         cause = err.response.data.message;
@@ -69,4 +68,3 @@ module.exports = {
     }
   }
 };
-
