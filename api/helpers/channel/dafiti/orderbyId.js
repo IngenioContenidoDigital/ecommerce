@@ -104,7 +104,7 @@ module.exports = {
                     console.log(err.message);
                   });
                   //let productvariation = await ProductVariation.findOne({id:'5ef0c5ae4283b925e44c2c4f'});
-                  if(productvariation){
+                  if(productvariation.length > 0){
                     await CartProduct.create({
                       cart:cart.id,
                       product:productvariation[0].product,
@@ -114,6 +114,8 @@ module.exports = {
                       externalReference:item.OrderItemId,
                       shippingType: item.ShippingType
                     });
+                  } else {
+                    return exits.error('No se encontró producto en 1E');
                   }
                 }
                 if((await CartProduct.count({cart:cart.id}))>0){

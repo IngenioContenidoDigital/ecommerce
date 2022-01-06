@@ -76,85 +76,91 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },
-  SiesaOrdersStatusChanged: {
-    schedule: '50 */20 * * * *',
-    onTick: async () => {
-      console.log('Iniciando Rastreo de Pedidos Siesa');
+  // SiesaOrdersStatusChanged: {
+  //   schedule: '50 */20 * * * *',
+  //   onTick: async () => {
+  //     console.log('Iniciando Rastreo de Pedidos Siesa');
+  //     try {
+  //       let moment = require('moment');
+  //       let ini = moment().subtract(15,'d').format('YYYYMMDD');
+  //       let end = moment().format('YYYYMMDD');
+  //       let status = 4;
+  //       let oneCommerceStatus = 'Aceptado';
+
+  //       let orders = await sails.helpers.siesaGetOrders({ini, end, status, oneCommerceStatus}).catch(e=>{
+  //         console.log('Error recuperando las ordenens de siesas details : ',  e.message);
+  //       });
+
+  //       if(orders && orders.length > 0){
+  //         let state = await OrderState.findOne({name: 'empacado'});
+
+  //         for (let index = 0; index < orders.length; index++) {
+  //           const incomingOrder = orders[index];
+  //           let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
+
+  //           if(order){
+  //             if(order.currentstatus.id != state.id){
+  //               let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
+  //               let oitems = await OrderItem.find({order:order.id});
+  //               for(let it of oitems){
+  //                 await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
+  //               }
+  //               await sails.helpers.notification(order, state.id);
+  //               if(!updatedOrder.tracking){
+  //                 await sails.helpers.carrier.shipment(order.id);
+  //                 await OrderHistory.create({order: order.id, state: state.id});
+  //               }
+
+  //             }
+  //           }
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.log('Error recuperando las ordenens de siesas details : ',  error.message);
+  //     }
+  //   },
+  //   timezone: 'America/Bogota'
+  // },
+  stockProducts:{
+    schedule: '01 05 */6 * * *',
+    onTick: async () =>{
+      console.log('Iniciando Sincronizacion de Stock');
       try {
-        let moment = require('moment');
-        let ini = moment().subtract(15,'d').format('YYYYMMDD');
-        let end = moment().format('YYYYMMDD');
-        let status = 4;
-        let oneCommerceStatus = 'Aceptado';
-
-        let orders = await sails.helpers.siesaGetOrders({ini, end, status, oneCommerceStatus}).catch(e=>{
-          console.log('Error recuperando las ordenens de siesas details : ',  e.message);
-        });
-
-        if(orders && orders.length > 0){
-          let state = await OrderState.findOne({name: 'empacado'});
-
-          for (let index = 0; index < orders.length; index++) {
-            const incomingOrder = orders[index];
-            let order = await Order.findOne({ reference :  incomingOrder.oc_referencia}).populate('currentstatus');
-
-            if(order){
-              if(order.currentstatus.id != state.id){
-                let updatedOrder =  await Order.updateOne({reference: incomingOrder.oc_referencia}).set({currentstatus: state.id});
-                let oitems = await OrderItem.find({order:order.id});
-                for(let it of oitems){
-                  await OrderItem.updateOne({id: it.id}).set({currentstatus: state.id});
-                }
-                await sails.helpers.notification(order, state.id);
-                if(!updatedOrder.tracking){
-                  await sails.helpers.carrier.shipment(order.id);
-                  await OrderHistory.create({order: order.id, state: state.id});
-                }
-
+        const sellers = await Seller.find({active: true});
+        for (const seller of sellers) {
+          const products = await Product.find({seller: seller.id});
+          let channels = await Channel.find({type: 'cms'});
+          channels = channels.map(chann => chann.id);
+          const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
+          if (integration) {
+            for(const prod of products){
+              let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                integration.channel.name,
+                integration.key,
+                integration.secret,
+                integration.url,
+                integration.version,
+                'PRODUCTID',
+                prod.externalId
+              ).catch((e) => console.log(e));
+              if (product) {
+                let variations = product.productVariations;
+                await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
+              } else {
+                await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
               }
             }
+            let integrations = await Integrations.find({seller: seller.id}).populate('channel');
+            integrations = integrations.filter(data => data.channel.type === 'marketplace');
+            for (const inte of integrations) {
+              await sails.helpers.syncProductsMarketplaces(inte, inte.channel);
+            }
           }
-        }
-      } catch (error) {
-        console.log('Error recuperando las ordenens de siesas details : ',  error.message);
-      }
-    },
-    timezone: 'America/Bogota'
-  },
-  stockProductsSpeedo:{
-    schedule: '00 00 03 * * *',
-    onTick: async () =>{
-      console.log('Iniciando Sincronizacion de Stock Speedo');
-      try {
-        const seller = await Seller.findOne({name: 'creaciones nadar sa'});
-        const products = await Product.find({seller: seller.id});
-        const channel = await Channel.findOne({name: 'vtex'});
-        const integration = await Integrations.findOne({channel: channel.id, seller: seller.id}).populate('channel');
-        await ProductVariation.update({seller:seller.id}).set({quantity:0});
-        for(const prod of products){
-          let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-            integration.channel.name,
-            integration.key,
-            integration.secret,
-            integration.url,
-            integration.version,
-            'PRODUCTID',
-            prod.externalId
-          ).catch((e) => console.log(e));
-          if (product) {
-            let variations = product.productVariations;
-            await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
-          }
-        }
-        let integrations = await Integrations.find({seller: seller.id}).populate('channel');
-        integrations = integrations.filter(data => data.channel.type === 'marketplace');
-        for (const inte of integrations) {
-          await sails.helpers.syncProductsMarketplaces(inte, inte.channel);
         }
       } catch (err) {
         console.log(`Se produjo un error. ${err.message}`);
       }
-      console.log('Sincronizacion de Stock Speedo Finalizada');
+      console.log('Sincronizacion de Stock Finalizada');
     },
     timezone: 'America/Bogota'
   },
@@ -337,7 +343,7 @@ module.exports.cron = {
               if (resultCharge.success) {
                 await Subscription.updateOne({id: subscription.id}).set({
                   state: resultCharge.subscription.status,
-                  currentPeriodEnd: resultSubscription.periodEnd
+                  currentPeriodEnd: resultCharge.subscription.periodEnd
                 });
               }
             }

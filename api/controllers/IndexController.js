@@ -999,137 +999,145 @@ module.exports = {
   dafitiSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
-    let integration = await Integrations.findOne({key: identifier}).populate('channel').populate('seller');
-    await sails.helpers.channel.successRequest(res);
-    if (integration.seller.active) {
-      switch (req.body.event) {
-        case 'onOrderCreated':
-          if(identifier){
-            let order = req.body.payload.OrderId;
-            let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller.id,  ['OrderId='+order]);
-            if (data && integration.seller.integrationErp) {
-              if (integration.seller.nameErp === 'siesa') {
-                await sails.helpers.integrationsiesa.exportOrder(data);
-              } else if(integration.seller.nameErp === 'busint'){
-                await sails.helpers.integrationbusint.exportOrder(data);
-              } else if(integration.seller.nameErp === 'sap'){
-                await sails.helpers.integrationsap.exportOrder(data);
+    try {
+      let integration = await Integrations.findOne({key: identifier}).populate('channel').populate('seller');
+      await sails.helpers.channel.successRequest(res);
+      if (integration.seller.active) {
+        switch (req.body.event) {
+          case 'onOrderCreated':
+            if(identifier){
+              let order = req.body.payload.OrderId;
+              let data = await sails.helpers.channel.dafiti.orderbyid(integration.id,  integration.seller.id,  ['OrderId='+order]);
+              if (data && integration.seller.integrationErp) {
+                if (integration.seller.nameErp === 'siesa') {
+                  await sails.helpers.integrationsiesa.exportOrder(data);
+                } else if(integration.seller.nameErp === 'busint'){
+                  await sails.helpers.integrationbusint.exportOrder(data);
+                } else if(integration.seller.nameErp === 'sap'){
+                  await sails.helpers.integrationsap.exportOrder(data);
+                }
               }
             }
-          }
-          break;
-        case 'onOrderItemsStatusChanged':
-          let state = await sails.helpers.orderState(data.NewStatus);
-          if (state) {
-            let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrder',integration.seller.id, ['OrderId='+data.OrderId]);
-            let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
-            let result = await JSON.parse(response);
-            let dord = result.SuccessResponse.Body.Orders.Order;
-            const order = await Order.findOne({channelref:data.OrderId});
-            await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
-            for(let it of data.OrderItemIds){
-              await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
-            }
-            await OrderHistory.create({
-              order:order.id,
-              state:state,
-              createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
-              updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
-            });
-            let seller = await Seller.findOne({id: order.seller});
-            if (seller && seller.integrationErp && state) {
-              if (seller.nameErp === 'siesa') {
-                let orderstate = await OrderState.findOne({id:state});
-                let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
-                await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
-              }
-            }
-            await sails.helpers.notification(order, state);
             break;
-          }
-        case 'onFeedCompleted':
-          const feed = req.body.payload.Feed;
-          await sails.helpers.channel.feedSync(integration, feed);
-          break;
-        case 'onProductCreated':
-          const skus = req.body.payload.SellerSkus;
-          await sails.helpers.channel.productSync(integration, skus);
-          break;
-        case 'onProductQcStatusChanged':
-          const sellerSkus = req.body.payload.SellerSkus;
-          await sails.helpers.channel.productQc(integration, sellerSkus);
-          break;
-        default:
-          break;
+          case 'onOrderItemsStatusChanged':
+            let state = await sails.helpers.orderState(data.NewStatus);
+            if (state) {
+              let sign = await sails.helpers.channel.dafiti.sign(integration.id, 'GetOrder',integration.seller.id, ['OrderId='+data.OrderId]);
+              let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+              let result = await JSON.parse(response);
+              let dord = result.SuccessResponse.Body.Orders.Order;
+              const order = await Order.findOne({channelref:data.OrderId});
+              await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+              for(let it of data.OrderItemIds){
+                await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
+              }
+              await OrderHistory.create({
+                order:order.id,
+                state:state,
+                createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+                updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+              });
+              let seller = await Seller.findOne({id: order.seller});
+              if (seller && seller.integrationErp && state) {
+                if (seller.nameErp === 'siesa') {
+                  let orderstate = await OrderState.findOne({id:state});
+                  let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
+                  await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+                }
+              }
+              await sails.helpers.notification(order, state);
+            }
+            break;
+          case 'onFeedCompleted':
+            const feed = req.body.payload.Feed;
+            await sails.helpers.channel.feedSync(integration, feed);
+            break;
+          case 'onProductCreated':
+            const skus = req.body.payload.SellerSkus;
+            await sails.helpers.channel.productSync(integration, skus);
+            break;
+          case 'onProductQcStatusChanged':
+            const sellerSkus = req.body.payload.SellerSkus;
+            await sails.helpers.channel.productQc(integration, sellerSkus);
+            break;
+          default:
+            break;
+        }
       }
+    } catch (error) {
+      console.log(error.message);
     }
   },
   linioSync : async (req, res)=>{
     let data = req.body.payload;
     let identifier = req.param('identifier');
-    let integration = await Integrations.findOne({key: identifier}).populate('channel').populate('seller');
-    await sails.helpers.channel.successRequest(res);
-    if (integration.seller.active) {
-      switch (req.body.event) {
-        case 'onOrderCreated':
-          if(identifier){
-            let order = req.body.payload.OrderId;
-            let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller.id,  ['OrderId='+order] );
-            if (data && integration.seller.integrationErp) {
-              if (integration.seller.nameErp === 'siesa') {
-                await sails.helpers.integrationsiesa.exportOrder(data);
-              } else if(integration.seller.nameErp === 'busint'){
-                await sails.helpers.integrationbusint.exportOrder(data);
-              } else if(integration.seller.nameErp === 'sap'){
-                await sails.helpers.integrationsap.exportOrder(data);
+    try {
+      let integration = await Integrations.findOne({key: identifier}).populate('channel').populate('seller');
+      await sails.helpers.channel.successRequest(res);
+      if (integration.seller.active) {
+        switch (req.body.event) {
+          case 'onOrderCreated':
+            if(identifier){
+              let order = req.body.payload.OrderId;
+              let data = await sails.helpers.channel.linio.orderbyid(integration.id, integration.seller.id,  ['OrderId='+order] );
+              if (data && integration.seller.integrationErp) {
+                if (integration.seller.nameErp === 'siesa') {
+                  await sails.helpers.integrationsiesa.exportOrder(data);
+                } else if(integration.seller.nameErp === 'busint'){
+                  await sails.helpers.integrationbusint.exportOrder(data);
+                } else if(integration.seller.nameErp === 'sap'){
+                  await sails.helpers.integrationsap.exportOrder(data);
+                }
               }
             }
-          }
-          break;
-        case 'onOrderItemsStatusChanged':
-          let state = await sails.helpers.orderState(data.NewStatus);
-          if (state) {
-            let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',integration.seller.id, ['OrderId='+data.OrderId]);
-            let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
-            let result = await JSON.parse(response);
-            let dord = result.SuccessResponse.Body.Orders.Order;
-            const order = await Order.findOne({channelref:data.OrderId});
-            await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
-            for(let it of data.OrderItemIds){
-              await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
-            }
-            await OrderHistory.create({
-              order:order.id,
-              state:state,
-              createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
-              updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
-            });
-            let seller = await Seller.findOne({id: order.seller});
-            if (seller && seller.integrationErp && state) {
-              if (seller.nameErp === 'siesa') {
-                let orderstate = await OrderState.findOne({id:state});
-                let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
-                await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
-              }
-            }
-            await sails.helpers.notification(order, state);
             break;
-          }
-        case 'onFeedCompleted':
-          const feed = req.body.payload.Feed;
-          await sails.helpers.channel.feedSync(integration, feed);
-          break;
-        case 'onProductCreated':
-          const skus = req.body.payload.SellerSkus;
-          await sails.helpers.channel.productSync(integration, skus);
-          break;
-        case 'onProductQcStatusChanged':
-          const sellerSkus = req.body.payload.SellerSkus;
-          await sails.helpers.channel.productQc(integration, sellerSkus);
-          break;
-        default:
-          break;
+          case 'onOrderItemsStatusChanged':
+            let state = await sails.helpers.orderState(data.NewStatus);
+            if (state) {
+              let sign = await sails.helpers.channel.linio.sign(integration.id, 'GetOrder',integration.seller.id, ['OrderId='+data.OrderId]);
+              let response = await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET');
+              let result = await JSON.parse(response);
+              let dord = result.SuccessResponse.Body.Orders.Order;
+              const order = await Order.findOne({channelref:data.OrderId});
+              await Order.updateOne({id:order.id}).set({updatedAt:parseInt(moment(dord.UpdatedAt).valueOf()),currentstatus:state});
+              for(let it of data.OrderItemIds){
+                await OrderItem.updateOne({order: order.id, externalReference: it}).set({currentstatus: state,updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())});
+              }
+              await OrderHistory.create({
+                order:order.id,
+                state:state,
+                createdAt:parseInt(moment(dord.CreatedAt).valueOf()),
+                updatedAt:parseInt(moment(dord.UpdatedAt).valueOf())
+              });
+              let seller = await Seller.findOne({id: order.seller});
+              if (seller && seller.integrationErp && state) {
+                if (seller.nameErp === 'siesa') {
+                  let orderstate = await OrderState.findOne({id:state});
+                  let resultState = orderstate.name === 'en procesamiento' ? 'En procesa' : orderstate.name === 'reintegrado' ? 'Reintegrad' : orderstate.name.charAt(0).toUpperCase() + orderstate.name.slice(1);
+                  await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+                }
+              }
+              await sails.helpers.notification(order, state);
+              break;
+            }
+          case 'onFeedCompleted':
+            const feed = req.body.payload.Feed;
+            await sails.helpers.channel.feedSync(integration, feed);
+            break;
+          case 'onProductCreated':
+            const skus = req.body.payload.SellerSkus;
+            await sails.helpers.channel.productSync(integration, skus);
+            break;
+          case 'onProductQcStatusChanged':
+            const sellerSkus = req.body.payload.SellerSkus;
+            await sails.helpers.channel.productQc(integration, sellerSkus);
+            break;
+          default:
+            break;
+        }
       }
+    } catch (error) {
+      console.log(error.message);
     }
   },
   liniomxSync : async (req, res)=>{
