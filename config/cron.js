@@ -328,7 +328,7 @@ module.exports.cron = {
           if (duration >= 61) {
             const seller = await Seller.findOne({id: subscription.seller});
             const card = await Token.findOne({user: seller.id, default: true});
-            if (card) {
+            if (card && seller.active) {
               const chargeSubscription = {
                 id_plan: seller.plan,
                 customer: card.customerId,
@@ -345,6 +345,37 @@ module.exports.cron = {
                   state: resultCharge.subscription.status,
                   currentPeriodEnd: resultCharge.subscription.periodEnd
                 });
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    },
+    timezone: 'America/Bogota'
+  },
+  refreshTokenShopee: {
+    schedule: '01 05 */1 * * *',
+    onTick: async () => {
+      console.log('Iniciando refrescar token shopee');
+      try {
+        let sellers = await Seller.find({active: true});
+        let channel = await Channel.findOne({name: 'shopee'});
+        if (channel) {
+          for (const seller of sellers) {
+            let integrations = await Integrations.find({seller: seller.id, channel: channel.id, shopid: {'!=': ''}}).populate('channel');
+            for (const integration of integrations) {
+              let params = {
+                'refresh_token': integration.url,
+                'partner_id': sails.config.custom.PARTNER_ID_SHOPEE,
+                'shop_id': parseInt(integration.shopid)
+              };
+              let response = await sails.helpers.channel.shopee.request('/api/v2/auth/access_token/get',integration.channel.endpoint,[],params,'POST').catch((err) =>{
+                console.log(`Error al refrescar token ${integration.name}: ${err.message}`);
+              });
+              if(response && !response.error){
+                await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token']});
               }
             }
           }

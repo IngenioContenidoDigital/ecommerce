@@ -23,6 +23,7 @@ module.exports = {
     linio:{type:'string'},
     liniomx:{type:'string'},
     walmart:{type:'string'},
+    shopee:{type:'string'},
     parent:{
       model:'category'
     },

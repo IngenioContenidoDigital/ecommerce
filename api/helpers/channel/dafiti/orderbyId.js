@@ -32,6 +32,7 @@ module.exports = {
     await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET')
       .then(async (response)=>{
         let result = await JSON.parse(response);
+        console.log(result);
         let orders = {
           Order:[]
         };

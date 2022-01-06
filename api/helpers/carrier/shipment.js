@@ -389,7 +389,32 @@ module.exports = {
         }
 
       }
-
+      if (order.channel==='shopee') {
+        let body = {
+          order_sn: order.channelref,
+          dropoff: {
+            branch_id: 0,
+            sender_real_name: '',
+            tracking_number: ''
+          }
+        };
+        let result = await sails.helpers.channel.shopee.request('/api/v2/logistics/ship_order',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST');
+        if (result && !result.error) {
+          let resultTraking = await sails.helpers.channel.shopee.request('/api/v2/logistics/get_tracking_number',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`,`order_sn=${order.channelref}`]);
+          if (resultTraking && !resultTraking.error && resultTraking.response.tracking_number) {
+            await Order.updateOne({id:order.id}).set({tracking: resultTraking.response.tracking_number});
+            let bodyDocument = {
+              order_list: [
+                {
+                  order_sn: order.channelref,
+                  package_number: order.paymentId
+                }
+              ]
+            };
+            await sails.helpers.channel.shopee.request('/api/v2/logistics/create_shipping_document',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],bodyDocument,'POST');
+          }
+        }
+      }
       return exits.success();
     } catch (error) {
       return exits.error(error.message);

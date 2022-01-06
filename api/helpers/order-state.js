@@ -47,7 +47,7 @@ module.exports = {
         break;
       case 'onhold':
         name='pendiente';
-        break;  
+        break;
       case '5':
         name='enviado';
         break;
@@ -101,7 +101,25 @@ module.exports = {
         break;
       case 'CLOSED':
         name='entregado';
-        break;    
+        break;
+      case 'UNPAID':
+        name='aceptado';
+        break;
+      case 'READY_TO_SHIP':
+        name='empacado';
+        break;
+      case 'PROCESSED':
+        name='en procesamiento';
+        break;
+      case 'SHIPPED':
+        name='enviado';
+        break;
+      case 'COMPLETED':
+        name='entregado';
+        break;
+      case 'CANCELLED':
+        name='cancelado';
+        break;
       default:
         name='pendiente';
         break;

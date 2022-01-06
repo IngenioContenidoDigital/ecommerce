@@ -9,7 +9,7 @@
  */
 //IMPORT_MICROSERVICE  : 'https://import.1ecommerce.app:9000/graphql',
 module.exports.custom = {
-  IMPORT_MICROSERVICE  : process.env.IMPORT_MICROSERVICE ? process.env.IMPORT_MICROSERVICE : 'https://import.1ecommerce.app/graphql',
+  IMPORT_MICROSERVICE  : process.env.IMPORT_MICROSERVICE ? process.env.IMPORT_MICROSERVICE : 'http://localhost:9000/graphql',
   PRODUCT_TYPE: 'Product',
   PRODUCT_VARIATION: 'Variations',
   IMAGE_TYPE: 'ProductImage',
@@ -28,7 +28,9 @@ module.exports.custom = {
   MERCADOLIBRE_CHANNEL : 'mercadolibre',
   DEFAULTPAGE: 300,
   APP_ID_ML: '376091216963139',
-  SECRET_KEY_ML: 'eP3O9LD9hxTBooRGmYSj0EiuC1c48LbS'
+  SECRET_KEY_ML: 'eP3O9LD9hxTBooRGmYSj0EiuC1c48LbS',
+  PARTNER_ID_SHOPEE: 1005085,
+  PARTNER_KEY_SHOPEE: '7ec956a561478d1095602bd12f8a4e8b9a6b061e2ea856f6ec7420f3680c2075'
   /***************************************************************************
   *                                                                          *
   * Any other custom config this Sails app should use during development.    *
