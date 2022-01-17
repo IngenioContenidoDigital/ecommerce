@@ -116,7 +116,7 @@ module.exports.routes = {
   'GET /products/:seller?' : {controller:'ProductController',action:'showproducts'},
   'POST /products/download' : {controller:'ProductController',action:'downloadproducts'},
   'POST /downloadexcel' : {controller:'IndexController',action:'downloadexcel'},
-  'GET /catalogquery/:page?/:seller?' : {controller:'ProductController',action:'findcatalog'},
+  'GET /catalogquery/:page?/:filter?/:seller?' : {controller:'ProductController',action:'findcatalog'},
   'GET /product/:action?/:id?' : {controller:'ProductController',action:'productmgt'},
   'GET /import/:seller' : {controller:'ProductController',action:'import'},
   'POST /import' : {controller:'ProductController',action:'importexecute'},

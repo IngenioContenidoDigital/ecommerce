@@ -134,7 +134,6 @@ module.exports = {
 
               data.Product.Name= await textClean(product.name.toUpperCase());
               if(product.mainCategory.dafiti.split(',')[0]){data.Product.PrimaryCategory = product.mainCategory.dafiti.split(',')[0];}else{throw new Error('Categoria no homologada en Dafiti');}
-              //data.Product.Categories=categories.join(',');
               data.Product.Description= jsonxml.cdata(await textClean(product.description));
               data.Product.Brand=brand;
               data.Product.Condition='new';
@@ -196,11 +195,6 @@ module.exports = {
                 }
               }
             }
-            /*if(brand==='speedo'){
-                  data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>');
-                }else{
-                  data.Product.ProductData.ShortDescription=jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort);
-                }*/
 
             i++;
             data.Product.SalePrice=null;

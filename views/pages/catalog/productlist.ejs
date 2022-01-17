@@ -1,5 +1,7 @@
 <script src='https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment-with-locales.min.js'></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
+<link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
+
 <div class="container">
 <div class="notification is-hidden" id="notificationmessage">
 </div>
@@ -21,6 +23,16 @@
   <p style="text-align: right;font-size: 20px; margin-right: 5px;">
     <a href="/product/create" class="button is-primary is-size-7">Crear Producto</a>
   </p>
+  <div class="tabs is-small">
+    <ul>
+      <li class="is-active filters"><a filter='all'>Todos</a></li>
+      <li class="filters"><a filter='active'>Activos</a></li>
+      <li class="filters"><a filter='inactive'>Inactivos</a></li>
+      <li class="filters"><a filter='image'>Imagen faltante</a></li>
+      <li class="filters"><a filter='stock'>Agotado</a></li>
+      <li class="filters"><a filter='content'>Mala Calidad</a></li>
+    </ul>
+  </div>
   <div class="table-container">
       <table class="table is-hoverable is-size-7" id="products-table">
           <thead>
@@ -47,7 +59,7 @@
           </tr>
           </thead>
           <tbody>
-              
+            
           </tbody>
       </table>
   </div>
@@ -100,6 +112,37 @@
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
   </div>
+
+  <div id="modal-details" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <section class="modal-card-body">
+        <div class="box">
+          <h6 class="title is-6">Errores de contenido</h4>
+          <hr>
+          <div class="columns is-gapless">
+            <div class="column content">
+              <div class="column content">
+                <ol id="detailsContent"></ol>
+              </div>
+            </div>
+          </div>
+          <h6 class="title is-6">Errores de integraciones</h4>
+          <hr>
+          <div class="columns is-gapless">
+            <div class="column content">
+              <div class="column content">
+                <ol id="errorIntegrations"></ol>
+              </div>
+            </div>
+          </div>
+          <div class="control buttons is-right" id="footer-details">
+          </div>
+        </div>
+      </section>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
   <script>
     let cont = 0;
     let productsSelected = [];
@@ -116,7 +159,7 @@
         noRows: "No se encontraron datos",
         info: "Mostrando {start} a {end} de {rows} registros",
       }
-    });  
+    });
 
     live('.state', 'click', function(){ 
         var elm = this;
@@ -134,6 +177,45 @@
             addClass(elm,'bx-x-circle');
           }
         });
+    });
+
+    live('.showDetails', 'click', function(){
+      let id = this.getAttribute('product');
+      let ol = document.querySelector('#detailsContent');
+      let errors = document.querySelector('#errorIntegrations');
+      let footer = document.querySelector('#footer-details');
+      io.socket.get('/getcover/'+id,resData=>{
+        if(resData){
+          let details = resData.details.split(' | ');
+          let html = '';
+          let htmlErrors = '';
+          for (const detail of details) {
+            if (detail) {
+              html += `<li class="is-uppercase">
+                  <article class="message is-danger is-small">
+                    <div class="message-body">
+                      ${detail}
+                    </div>
+                  </article>
+                </li>`;
+            }
+          }
+          for(let e of resData.channelErrors){
+            htmlErrors += `<li class="is-uppercase">
+              <article class="message is-danger is-small">
+                <div class="message-body">
+                  Referencia: ${e.reference} <br>Integración: ${e.integration} <br>Errores: ${e.reason}
+                </div>
+              </article>
+            </li>`;
+          }
+          ol.innerHTML = html;
+          errors.innerHTML = htmlErrors;
+          footer.innerHTML = `<a href="/product/edit/` + resData.id + `" target="_blank" class="button is-primary is-small"><i class="bx bxs-pencil"></i>&nbsp;Corregir Contenido</a>`;
+          let modal = document.querySelector('#modal-details');
+          addClass(modal,'is-active');
+        }
+      });
     });
     
     live('.product-image','click',(e)=>{
@@ -299,6 +381,33 @@
       }
     });
 
+    live('.filters','click', e =>{
+      e.preventDefault();
+      let filter = e.target.getAttribute('filter');
+      const filters = document.querySelectorAll('.filters');
+      let loader = document.querySelector('.pageloader');
+      filters.forEach(li =>{
+        removeClass(li, 'is-active');
+      });
+      addClass(e.target.parentElement,'is-active');
+      addClass(loader,'is-active');
+      datatable.destroy();
+      datatable = new simpleDatatables.DataTable('#products-table', {
+        searchable:true,
+        sortable:true,
+        paging:true,
+        perPageSelect:[5,10,20,30,50],
+        perPage:50,
+        labels: {
+          placeholder: "Buscar...",
+          perPage: "{select} registros por página",
+          noRows: "No se encontraron datos",
+          info: "Mostrando {start} a {end} de {rows} registros",
+        }
+      });
+      catalogQuery(1, filter);
+    });
+
     datatable.on('datatable.page', function(page) {
       const divSelectedAll = document.querySelector('#selectedall');
       if (hasClass(divSelectedAll, 'is-hidden')) {
@@ -383,11 +492,11 @@
     let pages = parseInt(<%= pages; %>);
     <% if(seller!==undefined && seller!==null){%>let seller = '<%= seller%>';<%}else{%>let seller = null;<%} %>;
     
-    let catalogQuery = (page) => {
+    let catalogQuery = (page, filter) => {
       if(page>pages){
         return;
       }else{
-        let route = '/catalogquery/'+page;
+        let route = `/catalogquery/${page}/${filter}`;
         if(seller!==null){route+='/'+seller;}
         io.socket.get(route, p =>{
           let loader = document.querySelector('.pageloader');
@@ -397,11 +506,11 @@
           datatable.rows().add(p);
           const currentPage = datatable.currentPage;
           checkCheckbox(currentPage);
-          catalogQuery(page+=1);
+          catalogQuery(page+=1,filter);
         });
       }
     };
-    catalogQuery(1);
+    catalogQuery(1, 'all');
 
     function checkCheckbox(page) {
       const resultCheckbox = checkboxChecked.filter(item => item.page == page);

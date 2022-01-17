@@ -54,7 +54,8 @@ module.exports = {
     discount:{
       collection:'catalogdiscount',
       via:'products'
-    }
+    },
+    details:{type:'string',defaultsTo:''},
   },
 };
 

@@ -43,6 +43,7 @@
     "node-uuid": "^1.4.8",
     "pdf-lib": "^1.16.0",
     "pdf-to-base64": "^1.0.3",
+    "probe-image-size": "^7.2.2",
     "queue": "^6.0.2",
     "randomatic": "^3.1.1",
     "sails": "^1.2.4",
