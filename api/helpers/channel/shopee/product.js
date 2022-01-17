@@ -79,17 +79,18 @@ module.exports = {
         let cont = 0;
         for(let variation of productvariations){
           pvstock = (variation.quantity-product.seller.safestock);
+          const resultStock = pvstock < 0 ? 0 : pvstock;
           price = (Math.ceil((variation.price*(1+priceadjust))*100)/100).toFixed(0);
           optionList.push({
             option: variation.variation.col ? variation.variation.col : variation.variation.name
           });
           models.push({
             tier_index: [cont],
-            normal_stock: pvstock < 0 ? 0 : pvstock,
+            normal_stock: resultStock,
             original_price: parseInt(price),
             model_sku: variation.id
           });
-          stock+=parseInt(pvstock);
+          stock+=parseInt(resultStock);
           cont ++;
         }
 

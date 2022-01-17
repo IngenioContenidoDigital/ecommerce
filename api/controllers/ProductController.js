@@ -117,9 +117,11 @@ module.exports = {
     if (!req.isSocket) { return res.badRequest(); }
     let filter = {};
     let productdata = [];
+    let productsStock = [];
     let row = [];
     let page = req.param('page') ? parseInt(req.param('page')) : 1;
     let seller = req.param('seller') ? req.param('seller') : null;
+    let paramFilter = req.param('filter') ? req.param('filter') : 'all';
     const perPage = sails.config.custom.DEFAULTPAGE;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       filter.seller = req.session.user.seller;
@@ -127,8 +129,13 @@ module.exports = {
       filter.seller = seller;
     }
 
-    productdata = [];
-    products = await Product.find({
+    if (paramFilter === 'active') {
+      filter.active = true;
+    } else if (paramFilter === 'inactive') {
+      filter.active = false;
+    }
+
+    let products = await Product.find({
       where: filter,
       sort: 'createdAt DESC',
       skip: ((page - 1) * perPage),
@@ -141,6 +148,13 @@ module.exports = {
       .populate('mainCategory')
       .populate('seller')
       .populate('channels');
+
+    if (paramFilter === 'image') {
+      products = products.filter(product => product.images.length === 0);
+    }
+    if (paramFilter === 'content') {
+      products = products.filter(product => (product.channels.some(channel => channel.reason && channel.reason !== '') || product.details));
+    }
 
     const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -156,7 +170,7 @@ module.exports = {
       for(let pchannel of p.channels){
         let cn = await Integrations.findOne({id:pchannel.integration});
         if(cn){
-          const color = pchannel.iscreated === false || (pchannel.reason && pchannel.reason !== '') ? 'has-text-danger' : pchannel.qc && pchannel.status === false ? 'has-text-warning' : 'has-text-success';
+          let color = pchannel.iscreated && pchannel.qc && pchannel.status ? 'has-text-success' : (pchannel.iscreated && pchannel.qc === false && pchannel.reason === '') ? 'has-text-warning' : 'has-text-danger';
           published +=
           `<div class="icon-text">
             <span class="icon `+color+`">
@@ -167,8 +181,10 @@ module.exports = {
         }
       }
 
+      let reason = p.channels.some(channel => channel.reason && channel.reason !== '');
       let price = await ProductVariation.avg('price', { product: p.id }); //p.price ? p.price : 0;
       let isAdmin = rights.name !== 'superadmin' && rights.name !== 'admin' ? false : true;
+      let options = (p.details || reason) ? `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Editar producto"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Ver producto" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a><a product="` + p.id + `" class="button showDetails has-tooltip-bottom has-tooltip-info" data-tooltip="Errores de contenido"><span class="icon"><i class='bx bxs-detail'></i></span></a></td>` : `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Editar producto"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Ver producto" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`;
       row = [
         `<td class="align-middle><div class="field">
           <input class="is-checkradio is-small is-info" id="checkboxselect${p.id}" data-product="${p.id}" type="checkbox" name="checkboxselect">
@@ -182,7 +198,7 @@ module.exports = {
         `<td class="align-middle is-capitalized">` + (p.mainCategory ? p.mainCategory.name : '') + `</td>`,
         `<td class="align-middle">` + p.stock + `</td>`,
         `<td class="align-middle"><span class="action"><i product="` + p.id + `" seller="` + p.seller.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
-        `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`,
+        options,
         '<td class="align-middle"><span>' + p.seller.name + '</span></td>',
         `<td class="align-middle"><ul>` + published + `</ul></td>`,
       ];
@@ -190,9 +206,13 @@ module.exports = {
         row.splice(10, 1);
       }
       if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
-      productdata.push(row);
+      if (paramFilter === 'stock' && p.stock === 0) {
+        productsStock.push(row);
+      } else {
+        productdata.push(row);
+      }
     }
-    return res.send(productdata);
+    return res.send(paramFilter === 'stock' ? productsStock : productdata);
   },
   productmgt: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
@@ -546,7 +566,11 @@ module.exports = {
   dafitiadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
     let sid = sails.sockets.getId(req);
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -561,50 +585,59 @@ module.exports = {
         action = 'ProductCreate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.dafiti.product([product], integration, parseFloat(req.body.price), status);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.dafiti.sign(integrationId, action, product.seller);
-      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
-      .then(async (resData)=>{
-        resData = JSON.parse(resData);
-        if(resData.SuccessResponse){
-          await ProductChannel.findOrCreate({id: productChannelId},{
-            product:product.id,
-            integration:integrationId,
-            channel:integration.channel.id,
-            channelid:'',
-            status:false,
-            qc:false,
-            price:req.body.price ? parseFloat(req.body.price) : 0,
-            iscreated:false,
-            socketid:sid
-          }).exec(async (err, record, created)=>{
-            if(err){return new Error(err.message);}
-            if(!created){
-              await ProductChannel.updateOne({id: record.id}).set({
-                status: record.iscreated ? req.body.status : false,
-                price:req.body.price ? parseFloat(req.body.price) : 0,
-                socketid:sid
-              });
-            }
-          });
-          return res.send({error: null});
-        }else{
-          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
-        }
-      })
-      .catch(err =>{
-        console.log(err);
-        return res.send({error: err.message});
-      });
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'ProductUpdate') {
+        let result = await sails.helpers.channel.dafiti.product([product], integration, parseFloat(req.body.price), status);
+        var xml = jsonxml(result,true);
+        let sign = await sails.helpers.channel.dafiti.sign(integrationId, action, product.seller.id);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+        .then(async (resData)=>{
+          resData = JSON.parse(resData);
+          if(resData.SuccessResponse){
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:product.id,
+              integration:integrationId,
+              channel:integration.channel.id,
+              channelid:'',
+              status:false,
+              qc:false,
+              price:req.body.price ? parseFloat(req.body.price) : 0,
+              iscreated:false,
+              socketid:sid
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){
+                await ProductChannel.updateOne({id: record.id}).set({
+                  status: record.iscreated ? req.body.status : false,
+                  price:req.body.price ? parseFloat(req.body.price) : 0,
+                  reason: '',
+                  socketid:sid
+                });
+              }
+            });
+            return res.send({error: null});
+          }else{
+            return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
+          }
+        })
+        .catch(err =>{
+          console.log(err);
+          return res.send({error: err.message});
+        });
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
+      }
     } catch (err) {
-      console.log(err);
       return res.send({error: err.message});
     }
   },
   mercadolibreadd: async (req, res) => {
     if (!req.isSocket) {return res.badRequest();}
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -619,78 +652,65 @@ module.exports = {
       } else {
         action = 'Post';
       }
-      let integration = await sails.helpers.channel.mercadolibre.sign(integrationId);
-      let body = await sails.helpers.channel.mercadolibre.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status);
-      if(body){
-        if(action==='Update'){
-          result = await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
-          await ProductChannel.updateOne({id: productChannelId}).set({
-            status: req.body.status ? true : false,
-            qc:true,
-            price: req.body.price ? parseFloat(req.body.price) : 0,
-            reason: ''
-          });
-        }
-        if(action==='Post'){
-          result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST');
-          if(result.id){
-            await ProductChannel.findOrCreate({id: productChannelId},{
-              product:product.id,
-              channel:channelId,
-              integration:integrationId,
-              channelid: result.id,
-              status: true,
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'Update') {
+        let integration = await sails.helpers.channel.mercadolibre.sign(integrationId);
+        let body = await sails.helpers.channel.mercadolibre.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status);
+        if(body){
+          if(action==='Update'){
+            result = await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
+            await ProductChannel.updateOne({id: productChannelId}).set({
+              status: req.body.status ? true : false,
               qc:true,
-              iscreated:true,
               price: req.body.price ? parseFloat(req.body.price) : 0,
               reason: ''
-            }).exec(async (err, record, created)=>{
-              if(err){return new Error(err.message);}
-              if(!created){
-                await ProductChannel.updateOne({id: record.id}).set({
-                  channelid:result.id,
-                  status:true,
-                  qc:true,
-                  iscreated:true,
-                  price: req.body.price ? parseFloat(req.body.price) : 0,
-                  reason: ''
-                });
-              }
             });
-            await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
           }
+          if(action==='Post'){
+            result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST');
+            if(result.id){
+              await ProductChannel.findOrCreate({id: productChannelId},{
+                product:product.id,
+                channel:channelId,
+                integration:integrationId,
+                channelid: result.id,
+                status: true,
+                qc:true,
+                iscreated:true,
+                price: req.body.price ? parseFloat(req.body.price) : 0,
+                reason: ''
+              }).exec(async (err, record, created)=>{
+                if(err){return new Error(err.message);}
+                if(!created){
+                  await ProductChannel.updateOne({id: record.id}).set({
+                    channelid:result.id,
+                    status:true,
+                    qc:true,
+                    iscreated:true,
+                    price: req.body.price ? parseFloat(req.body.price) : 0,
+                    reason: ''
+                  });
+                }
+              });
+              await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
+            }
+          }
+          return res.send({error: null});
         }
-        return res.send({error: null});
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
       }
     } catch (err) {
-      await ProductChannel.findOrCreate({id: productChannelId},{
-        product:product.id,
-        channel:channelId,
-        integration:integrationId,
-        channelid:'',
-        status:false,
-        qc:false,
-        iscreated:false,
-        price:0,
-        reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
-      }).exec(async (er, record, created)=>{
-        if(er){return res.send({error: er});}
-        if(!created){
-          await ProductChannel.updateOne({id: record.id}).set({
-            channelid:productchannel.channelid ? productchannel.channelid : '',
-            status:false,
-            qc:false,
-            price:0,
-            reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
-          });
-        }
-      });
-      return res.send({error: err.message});
+      return res.send({error: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'});
     }
   },
   mercadolibremxadd: async (req, res) => {
     if (!req.isSocket) {return res.badRequest();}
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -705,79 +725,66 @@ module.exports = {
       } else {
         action = 'Post';
       }
-      let integration = await sails.helpers.channel.mercadolibremx.sign(integrationId);
-      let body = await sails.helpers.channel.mercadolibremx.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status);
-      if(body){
-        if(action==='Update'){
-          result = await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
-          await ProductChannel.updateOne({id: productChannelId}).set({
-            status: req.body.status ? true : false,
-            qc:true,
-            price: req.body.price ? parseFloat(req.body.price) : 0,
-            reason: ''
-          });
-        }
-        if(action==='Post'){
-          result = await sails.helpers.channel.mercadolibremx.request('items',integration.channel.endpoint,integration.secret, body,'POST');
-          if(result.id){
-            await ProductChannel.findOrCreate({id: productChannelId},{
-              product:product.id,
-              channel:channelId,
-              integration:integrationId,
-              channelid: result.id,
-              status: true,
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'Update') {
+        let integration = await sails.helpers.channel.mercadolibremx.sign(integrationId);
+        let body = await sails.helpers.channel.mercadolibremx.product(product.id, action, integration.id,channelPrice,parseFloat(req.body.price),status);
+        if(body){
+          if(action==='Update'){
+            result = await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret, body,'PUT');
+            await ProductChannel.updateOne({id: productChannelId}).set({
+              status: req.body.status ? true : false,
               qc:true,
-              iscreated:true,
               price: req.body.price ? parseFloat(req.body.price) : 0,
               reason: ''
-            }).exec(async (err, record, created)=>{
-              if(err){return new Error(err.message);}
-              if(!created){
-                await ProductChannel.updateOne({id: record.id}).set({
-                  channelid:result.id,
-                  status:true,
-                  qc:true,
-                  iscreated:true,
-                  price: req.body.price ? parseFloat(req.body.price) : 0,
-                  reason: ''
-                });
-              }
             });
-            await sails.helpers.channel.mercadolibremx.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
           }
+          if(action==='Post'){
+            result = await sails.helpers.channel.mercadolibremx.request('items',integration.channel.endpoint,integration.secret, body,'POST');
+            if(result.id){
+              await ProductChannel.findOrCreate({id: productChannelId},{
+                product:product.id,
+                channel:channelId,
+                integration:integrationId,
+                channelid: result.id,
+                status: true,
+                qc:true,
+                iscreated:true,
+                price: req.body.price ? parseFloat(req.body.price) : 0,
+                reason: ''
+              }).exec(async (err, record, created)=>{
+                if(err){return new Error(err.message);}
+                if(!created){
+                  await ProductChannel.updateOne({id: record.id}).set({
+                    channelid:result.id,
+                    status:true,
+                    qc:true,
+                    iscreated:true,
+                    price: req.body.price ? parseFloat(req.body.price) : 0,
+                    reason: ''
+                  });
+                }
+              });
+              await sails.helpers.channel.mercadolibremx.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
+            }
+          }
+          return res.send({error: null});
         }
-        return res.send({error: null});
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
       }
     } catch (err) {
-      await ProductChannel.findOrCreate({id: productChannelId},{
-        product:product.id,
-        channel:channelId,
-        integration:integrationId,
-        channelid:'',
-        status:false,
-        qc:false,
-        iscreated:false,
-        price:0,
-        reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
-      }).exec(async (er, record, created)=>{
-        if(er){return res.send({error: er});}
-        if(!created){
-          await ProductChannel.updateOne({id: record.id}).set({
-            channelid:productchannel.channelid ? productchannel.channelid : '',
-            status:false,
-            qc:false,
-            price:0,
-            reason: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'
-          });
-        }
-      });
-      return res.send({error: err.message});
+      return res.send({error: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'});
     }
   },
   linioadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
     let sid = sails.sockets.getId(req);
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -792,51 +799,60 @@ module.exports = {
         action = 'ProductCreate';
       }
       let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.linio.product([product], integration, parseFloat(req.body.price), status);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.linio.sign(integrationId, action, product.seller);
-      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
-      .then(async (resData)=>{
-        resData = JSON.parse(resData);
-        if(resData.SuccessResponse){
-          await ProductChannel.findOrCreate({id: productChannelId},{
-            product:product.id,
-            integration:integrationId,
-            channel:integration.channel.id,
-            channelid:'',
-            status:false,
-            qc:false,
-            price:req.body.price ? parseFloat(req.body.price) : 0,
-            iscreated:false,
-            socketid:sid
-          }).exec(async (err, record, created)=>{
-            if(err){return new Error(err.message);}
-            if(!created){
-              await ProductChannel.updateOne({id: record.id}).set({
-                status: record.iscreated ? req.body.status : false,
-                price:req.body.price ? parseFloat(req.body.price) : 0,
-                socketid:sid
-              });
-            }
-          });
-          return res.send({error: null});
-        }else{
-          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
-        }
-      })
-      .catch(err =>{
-        console.log(err);
-        return res.send({error: err.message});
-      });
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'ProductUpdate') {
+        let result = await sails.helpers.channel.linio.product([product], integration, parseFloat(req.body.price), status);
+        var xml = jsonxml(result,true);
+        let sign = await sails.helpers.channel.linio.sign(integrationId, action, product.seller.id);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+        .then(async (resData)=>{
+          resData = JSON.parse(resData);
+          if(resData.SuccessResponse){
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:product.id,
+              integration:integrationId,
+              channel:integration.channel.id,
+              channelid:'',
+              status:false,
+              qc:false,
+              price:req.body.price ? parseFloat(req.body.price) : 0,
+              iscreated:false,
+              socketid:sid
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){
+                await ProductChannel.updateOne({id: record.id}).set({
+                  status: record.iscreated ? req.body.status : false,
+                  price:req.body.price ? parseFloat(req.body.price) : 0,
+                  reason: '',
+                  socketid:sid
+                });
+              }
+            });
+            return res.send({error: null});
+          }else{
+            return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
+          }
+        })
+        .catch(err =>{
+          console.log(err);
+          return res.send({error: err.message});
+        });
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
+      }
     } catch (err) {
-      console.log(err);
       return res.send({error: err.message});
     }
   },
   liniomxadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
     let sid = sails.sockets.getId(req);
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -850,45 +866,50 @@ module.exports = {
       } else {
         action = 'ProductCreate';
       }
-      let status = req.body.status ? 'active' : 'inactive';
-      let result = await sails.helpers.channel.liniomx.product([product], integration, parseFloat(req.body.price), status);
-      var xml = jsonxml(result,true);
-      let sign = await sails.helpers.channel.liniomx.sign(integrationId, action, product.seller);
-      await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
-      .then(async (resData)=>{
-        resData = JSON.parse(resData);
-        if(resData.SuccessResponse){
-          await ProductChannel.findOrCreate({id: productChannelId},{
-            product:product.id,
-            integration:integrationId,
-            channel:integration.channel.id,
-            channelid:'',
-            status:false,
-            qc:false,
-            price:req.body.price ? parseFloat(req.body.price) : 0,
-            iscreated:false,
-            socketid:sid
-          }).exec(async (err, record, created)=>{
-            if(err){return new Error(err.message);}
-            if(!created){
-              await ProductChannel.updateOne({id: record.id}).set({
-                status: record.iscreated ? req.body.status : false,
-                price:req.body.price ? parseFloat(req.body.price) : 0,
-                socketid:sid
-              });
-            }
-          });
-          return res.send({error: null});
-        }else{
-          return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
-        }
-      })
-      .catch(err =>{
-        console.log(err);
-        return res.send({error: err.message});
-      });
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'ProductUpdate') {
+        let status = req.body.status ? 'active' : 'inactive';
+        let result = await sails.helpers.channel.liniomx.product([product], integration, parseFloat(req.body.price), status);
+        var xml = jsonxml(result,true);
+        let sign = await sails.helpers.channel.liniomx.sign(integrationId, action, product.seller.id);
+        await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+        .then(async (resData)=>{
+          resData = JSON.parse(resData);
+          if(resData.SuccessResponse){
+            await ProductChannel.findOrCreate({id: productChannelId},{
+              product:product.id,
+              integration:integrationId,
+              channel:integration.channel.id,
+              channelid:'',
+              status:false,
+              qc:false,
+              price:req.body.price ? parseFloat(req.body.price) : 0,
+              iscreated:false,
+              socketid:sid
+            }).exec(async (err, record, created)=>{
+              if(err){return new Error(err.message);}
+              if(!created){
+                await ProductChannel.updateOne({id: record.id}).set({
+                  status: record.iscreated ? req.body.status : false,
+                  price:req.body.price ? parseFloat(req.body.price) : 0,
+                  reason: '',
+                  socketid:sid
+                });
+              }
+            });
+            return res.send({error: null});
+          }else{
+            return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
+          }
+        })
+        .catch(err =>{
+          console.log(err);
+          return res.send({error: err.message});
+        });
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
+      }
     } catch (err) {
-      console.log(err);
       return res.send({error: err.message});
     }
   },
@@ -897,7 +918,11 @@ module.exports = {
     let axios = require('axios');
     let fs = require('fs');
     let FormData = require('form-data');
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -905,7 +930,6 @@ module.exports = {
     const channelPrice = productchannel ? productchannel.price : 0;
     let integration = await Integrations.findOne({id: integrationId}).populate('channel');
     try {
-
       let action = null;
       let result = null;
       let status = req.body.status ? 'active' : 'paused';
@@ -914,107 +938,104 @@ module.exports = {
       } else {
         action = 'Post';
       }
-
-      options = {
-        method: 'get',
-        url: `${integration.channel.endpoint}api/products?product_references=EAN|${product.id}`,
-        headers: {
-          'Authorization':`${integration.key}`,
-          accept: 'application/json'
-        }
-      };
-      let created = await axios(options).catch((e) => {result=e.response;});
-      if(created){
-        if(created.data.total_count==0 && status=='active'){
-          await sails.helpers.channel.coppel.product(product.id, action, parseFloat(channelPrice), status)
-          .intercept((err) => {return new Error(err.message);});
-          let file = new FormData();
-          file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
-          options = {
-            method: 'post',
-            url: `${integration.channel.endpoint}api/products/imports`,
-            headers: {
-              'Authorization':`${integration.key}`,
-              'content-type': `multipart/form-data; boundary=${file._boundary}`,
-              accept: 'application/json'
-            },
-            data:file
-          };
-          let response = await axios(options).catch((e) => {result=e.response; console.log(result);});
-          if(response){
-            await ProductChannel.findOrCreate({id: productChannelId},{
-              product:product.id,
-              channel:channelId,
-              integration:integrationId,
-              channelid: response.data.import_id,
-              status: true,
-              qc:true,
-              iscreated:true,
-              price: req.body.price ? parseFloat(req.body.price) : 0
-            }).exec(async (err, record, created)=>{
-              if(err){return new Error(err.message);}
-              if(!created){
-                productChannelId = await ProductChannel.updateOne({id: record.id}).set({
-                  channelid: response.data.import_id,
-                  status:req.body.status,
-                  iscreated:true,
-                  price: req.body.price ? parseFloat(req.body.price) : 0
-                });
-              }
-            });
-            return res.send(response.data.import_id);
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'Update') {
+        options = {
+          method: 'get',
+          url: `${integration.channel.endpoint}api/products?product_references=EAN|${product.id}`,
+          headers: {
+            'Authorization':`${integration.key}`,
+            accept: 'application/json'
+          }
+        };
+        let created = await axios(options).catch((e) => {result=e.response;});
+        if(created){
+          if(created.data.total_count==0 && status=='active'){
+            await sails.helpers.channel.coppel.product(product.id, action, parseFloat(channelPrice), status)
+            .intercept((err) => {return new Error(err.message);});
+            let file = new FormData();
+            file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+            options = {
+              method: 'post',
+              url: `${integration.channel.endpoint}api/products/imports`,
+              headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                accept: 'application/json'
+              },
+              data:file
+            };
+            let response = await axios(options).catch((e) => {result=e.response; console.log(result);});
+            if(response){
+              await ProductChannel.findOrCreate({id: productChannelId},{
+                product:product.id,
+                channel:channelId,
+                integration:integrationId,
+                channelid: response.data.import_id,
+                status: true,
+                qc:true,
+                iscreated:true,
+                price: req.body.price ? parseFloat(req.body.price) : 0
+              }).exec(async (err, record, created)=>{
+                if(err){return new Error(err.message);}
+                if(!created){
+                  productChannelId = await ProductChannel.updateOne({id: record.id}).set({
+                    channelid: response.data.import_id,
+                    status:req.body.status,
+                    iscreated:true,
+                    price: req.body.price ? parseFloat(req.body.price) : 0,
+                    reason: '',
+                  });
+                }
+              });
+              return res.send(response.data.import_id);
+            }
+          }
+          if(action == 'Post'){
+            await sails.helpers.channel.coppel.product(product.id, 'Offer', parseFloat(req.body.price), status)
+            .intercept((err) => {return new Error(err.message);});
+            let file = new FormData();
+            file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
+            file.append('import_mode','NORMAL');
+            options = {
+              method: 'post',
+              url: `${integration.channel.endpoint}api/offers/imports`,
+              headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `multipart/form-data; boundary=${file._boundary}`,
+                accept: 'application/json'
+              },
+              data:file
+            };
+            await axios(options).catch((e) => {result=e.response; console.log(result);});
+          }else if(action == 'Update'){
+            let body = await sails.helpers.channel.coppel.product(product.id, 'Update', parseFloat(req.body.price), status)
+            .intercept((err) => {return new Error(err.message);});
+            options = {
+              method: 'post',
+              url: `${integration.channel.endpoint}api/offers`,
+              headers: {
+                'Authorization':`${integration.key}`,
+                'content-type': `application/json`,
+                accept: 'application/json'
+              },
+              data:body
+            };
+            let response_offer = await axios(options).catch((e) => {result=e.response; console.log(result);});
+            if(response_offer){
+              await ProductChannel.updateOne({ id: productChannelId }).set({
+                status: req.body.status,
+                reason: '',
+                price: req.body.price ? parseFloat(req.body.price) : 0
+              });
+            }
           }
         }
-        if(action == 'Post'){
-          await sails.helpers.channel.coppel.product(product.id, 'Offer', parseFloat(req.body.price), status)
-          .intercept((err) => {return new Error(err.message);});
-          let file = new FormData();
-          file.append('file',fs.createReadStream('./.tmp/uploads/product.xlsx'));
-          file.append('import_mode','NORMAL');
-          options = {
-            method: 'post',
-            url: `${integration.channel.endpoint}api/offers/imports`,
-            headers: {
-              'Authorization':`${integration.key}`,
-              'content-type': `multipart/form-data; boundary=${file._boundary}`,
-              accept: 'application/json'
-            },
-            data:file
-          };
-          await axios(options).catch((e) => {result=e.response; console.log(result);});
-        }else if(action == 'Update'){
-          let body = await sails.helpers.channel.coppel.product(product.id, 'Update', parseFloat(req.body.price), status)
-          .intercept((err) => {return new Error(err.message);});
-          console.log(body);
-          options = {
-            method: 'post',
-            url: `${integration.channel.endpoint}api/offers`,
-            headers: {
-              'Authorization':`${integration.key}`,
-              'content-type': `application/json`,
-              accept: 'application/json'
-            },
-            data:body
-          };
-          let response_offer = await axios(options).catch((e) => {result=e.response; console.log(result);});
-          if(response_offer){
-            await ProductChannel.updateOne({ id: productChannelId }).set({
-              status: req.body.status,
-              price: req.body.price ? parseFloat(req.body.price) : 0
-            });
-          }
-        }
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
       }
     } catch (err) {
-      console.log(err);
-      await ProductChannel.updateOne({id: productChannelId}).set({
-        channelid: '',
-        status:false,
-        qc:false,
-        iscreated:false,
-        price: 0
-      });
-      return res.send(err.message);
+      return res.send({error: err.message});
     }
   },
   iridioadd: async (req, res) => {
@@ -1025,26 +1046,35 @@ module.exports = {
     let integration = await Integrations.findOne({id:integrationId}).populate('channel');
     let status = req.body.status ? true : false;
     let product = await Product.findOne({ id: req.body.product })
-    .populate('channels', {integration:integrationId,channel:channelId});
+    .populate('channels', {integration:integrationId,channel:channelId})
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     try {
-      if(product.channels.length<1){
-        await ProductChannel.create({
-          product:product.id,
-          integration:integrationId,
-          channel:integration.channel.id,
-          channelid:'',
-          status:status,
-          qc:true,
-          price:0,
-          iscreated:true,
-          socketid:sid
-        });
-      }else{
-        await ProductChannel.updateOne({id:product.channels[0].id}).set({
-          status:status,
-        });
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct) {
+        if(product.channels.length<1){
+          await ProductChannel.create({
+            product:product.id,
+            integration:integrationId,
+            channel:integration.channel.id,
+            channelid:'',
+            status:status,
+            qc:true,
+            price:0,
+            iscreated:true,
+            socketid:sid
+          });
+        }else{
+          await ProductChannel.updateOne({id:product.channels[0].id}).set({
+            reason: '',
+            status:status,
+          });
+        }
+        return res.send({error: null});
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
       }
-      return res.send({error: null});
     } catch (err) {
       return res.send({error: err.message});
     }
@@ -1053,7 +1083,11 @@ module.exports = {
     if (!req.isSocket) { return res.badRequest(); }
     let axios = require('axios');
 
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -1069,70 +1103,78 @@ module.exports = {
     }
 
     try {
-      let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), channelPrice, action, integration.channel.id);
-      const buffer_xml = Buffer.from(xml,'latin1');
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'ProductUpdate') {
+        let xml = await sails.helpers.channel.walmart.product([product], parseFloat(req.body.price), channelPrice, action, integration.channel.id);
+        const buffer_xml = Buffer.from(xml,'latin1');
 
-      let token = await sails.helpers.channel.walmart.sign(integration);
+        let token = await sails.helpers.channel.walmart.sign(integration);
 
-      let auth = `${integration.user}:${integration.key}`;
-      const buferArray = Buffer.from(auth);
-      let encodedAuth = buferArray.toString('base64');
+        let auth = `${integration.user}:${integration.key}`;
+        const buferArray = Buffer.from(auth);
+        let encodedAuth = buferArray.toString('base64');
 
-      let options = {
-        method: 'post',
-        url: `${integration.channel.endpoint}/v3/feeds?feedType=item`,
-        headers: {
-          'content-type': `application/xml`,
-          accept: 'application/json',
-          'WM_MARKET' : 'mx',
-          'WM_SEC.ACCESS_TOKEN':token,
-          'WM_SVC.NAME' : 'Walmart Marketplace',
-          'WM_QOS.CORRELATION_ID': '11111111',
-          'Authorization': `Basic ${encodedAuth}`
-        },
-        data:buffer_xml
-      };
+        let options = {
+          method: 'post',
+          url: `${integration.channel.endpoint}/v3/feeds?feedType=item`,
+          headers: {
+            'content-type': `application/xml`,
+            accept: 'application/json',
+            'WM_MARKET' : 'mx',
+            'WM_SEC.ACCESS_TOKEN':token,
+            'WM_SVC.NAME' : 'Walmart Marketplace',
+            'WM_QOS.CORRELATION_ID': '11111111',
+            'Authorization': `Basic ${encodedAuth}`
+          },
+          data:buffer_xml
+        };
 
-      let response_xml = await axios(options).catch((e) => {error=e; console.log(e);});
-      if (response_xml && response_xml.data){
-        await ProductChannel.findOrCreate({id: productChannelId},{
-          product:product.id,
-          integration:integrationId,
-          channel : integration.channel.id,
-          channelid: response_xml.data.feedId,
-          status: false,
-          iscreated:false,
-          qc:false,
-          price: req.body.price ? parseFloat(req.body.price) : 0
-        }).exec(async (err, record, created)=>{
-          if(err){return new Error(err.message);}
-          if(!created){
-            await ProductChannel.updateOne({id: record.id}).set({
-              status: record.iscreated ? req.body.status : false,
-              price: req.body.price ? parseFloat(req.body.price) : 0
-            });
-          }
-        });
-        return res.send(response_xml.data.feedId);
-      }else{
-        await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
-          {
+        let response_xml = await axios(options).catch((e) => {error=e; console.log(e);});
+        if (response_xml && response_xml.data){
+          await ProductChannel.findOrCreate({id: productChannelId},{
+            product:product.id,
+            integration:integrationId,
+            channel : integration.channel.id,
+            channelid: response_xml.data.feedId,
             status: false,
-            price: 0
-          }
-        );
-        return res.send(error.error.description);
+            iscreated:false,
+            qc:false,
+            price: req.body.price ? parseFloat(req.body.price) : 0
+          }).exec(async (err, record, created)=>{
+            if(err){return new Error(err.message);}
+            if(!created){
+              await ProductChannel.updateOne({id: record.id}).set({
+                status: record.iscreated ? req.body.status : false,
+                reason: '',
+                price: req.body.price ? parseFloat(req.body.price) : 0
+              });
+            }
+          });
+          return res.send(response_xml.data.feedId);
+        }else{
+          await ProductChannel.updateOne({ product:product.id , integration:integrationId }).set(
+            {
+              status: false,
+              reason: '',
+              price: 0
+            }
+          );
+          return res.send({error: error.error.description});
+        }
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
       }
-
     } catch (err) {
-      console.log(err);
-      return res.send(err.message);
+      return res.send({error: err.message});
     }
   },
   shopeeadd: async (req, res) => {
     if (!req.isSocket) { return res.badRequest(); }
-    let sid = sails.sockets.getId(req);
-    let product = await Product.findOne({ id: req.body.product }).populate('channels');
+    let product = await Product.findOne({ id: req.body.product })
+    .populate('channels')
+    .populate('gender')
+    .populate('manufacturer')
+    .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
     let productchannel = product.channels.find(item => item.integration === integrationId && item.channel === channelId);
@@ -1147,64 +1189,68 @@ module.exports = {
         action = 'Post';
       }
       let status = req.body.status ? 'NORMAL' : 'UNLIST';
-      let body = await sails.helpers.channel.shopee.product(product.id, action, integration, parseFloat(req.body.price), status);
-      if (body) {
-        variations = body.variations;
-        delete variations;
-        if(action==='Update'){
-          body.item_id = parseInt(productchannel.channelid);
-          let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST');
-          if (response && !response.error) {
-            await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations)
-            await ProductChannel.updateOne({id: productChannelId}).set({
-              status: req.body.status ? true : false,
-              qc: true,
-              price: req.body.price ? parseFloat(req.body.price) : 0,
-              reason: ''
-            });
-          } else {
-            return res.send({error: response.message});
-          }
-        }
-        if(action==='Post'){
-          let response = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST');
-          if (response && !response.error) {
-            await ProductChannel.findOrCreate({id: productChannelId},{
-              product:product.id,
-              channel:channelId,
-              integration:integrationId,
-              channelid: response.response.item_id,
-              status: true,
-              qc:true,
-              iscreated:true,
-              price: req.body.price ? parseFloat(req.body.price) : 0,
-              reason: ''
-            }).exec(async (err, record, created)=>{
-              if(err){return new Error(err.message);}
-              if(!created){
-                await ProductChannel.updateOne({id: record.id}).set({
-                  channelid:response.response.item_id,
-                  status:true,
-                  qc:true,
-                  iscreated:true,
-                  price: req.body.price ? parseFloat(req.body.price) : 0,
-                  reason: ''
-                });
-              }
-            });
-            variations.item_id = response.response.item_id;
-            let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],variations,'POST');
-            if (responseVariations && responseVariations.error) {
+      let checkProduct = await sails.helpers.checkContentProduct(product);
+      if (checkProduct || action === 'Update') {
+        let body = await sails.helpers.channel.shopee.product(product.id, action, integration, parseFloat(req.body.price), status);
+        if (body) {
+          variations = body.variations;
+          delete variations;
+          if(action==='Update'){
+            body.item_id = parseInt(productchannel.channelid);
+            let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST');
+            if (response && !response.error) {
+              await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations);
+              await ProductChannel.updateOne({id: productChannelId}).set({
+                status: req.body.status ? true : false,
+                qc: true,
+                price: req.body.price ? parseFloat(req.body.price) : 0,
+                reason: ''
+              });
+            } else {
               return res.send({error: response.message});
             }
-          } else{
-            return res.send({error: response.message});
           }
+          if(action==='Post'){
+            let response = await sails.helpers.channel.shopee.request('/api/v2/product/add_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST');
+            if (response && !response.error) {
+              await ProductChannel.findOrCreate({id: productChannelId},{
+                product:product.id,
+                channel:channelId,
+                integration:integrationId,
+                channelid: response.response.item_id,
+                status: true,
+                qc:true,
+                iscreated:true,
+                price: req.body.price ? parseFloat(req.body.price) : 0,
+                reason: ''
+              }).exec(async (err, record, created)=>{
+                if(err){return new Error(err.message);}
+                if(!created){
+                  await ProductChannel.updateOne({id: record.id}).set({
+                    channelid:response.response.item_id,
+                    status:true,
+                    qc:true,
+                    iscreated:true,
+                    price: req.body.price ? parseFloat(req.body.price) : 0,
+                    reason: ''
+                  });
+                }
+              });
+              variations.item_id = response.response.item_id;
+              let responseVariations = await sails.helpers.channel.shopee.request('/api/v2/product/init_tier_variation',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],variations,'POST');
+              if (responseVariations && responseVariations.error) {
+                return res.send({error: response.message});
+              }
+            } else{
+              return res.send({error: response.message});
+            }
+          }
+          return res.send({error: null});
         }
-        return res.send({error: null});
+      } else {
+        return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
       }
     } catch (err) {
-      console.log(err);
       return res.send({error: err.message});
     }
   },
@@ -1241,7 +1287,7 @@ module.exports = {
         req.body.channel === constants.SHOPIFY_CHANNEL ? constants.SHOPIFY_PAGESIZE :
         req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE :
         req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE :
-        req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE : 
+        req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE :
         req.body.channel === constants.MERCADOLIBRE_CHANNEL ? constants.MERCADOLIBRE_PAGESIZE : 0;
       let next;
 
@@ -1400,7 +1446,7 @@ module.exports = {
               }
             });
             prod.product = product.id;
-            prod.price = req.body.product.price
+            prod.price = req.body.product.price;
             let variation = await Variation.find({
               where: { name: req.body.product.variation.replace(',', '.').trim().toLowerCase(), gender: product.gender, seller: product.seller, manufacturer: product.manufacturer, category: { 'in': categories } },
               limit: 1
@@ -1563,13 +1609,13 @@ module.exports = {
             let feature = features[0].id;
             let exists = await ProductFeature.findOne({product: product.id, feature:feature});
             if (!exists) {
-             await ProductFeature.create({
+              await ProductFeature.create({
                 product:product.id,
                 feature:feature,
                 value:prod.value
               });
             } else {
-             await ProductFeature.updateOne({product:product.id, feature:feature}).set({
+              await ProductFeature.updateOne({product:product.id, feature:feature}).set({
                 value:prod.value
               });
             }
@@ -1750,7 +1796,7 @@ module.exports = {
       }
 
       Object.keys(doc.fields).forEach((k) => !doc.fields[k] ? delete doc.fields[k] : doc.fields[k]);
-      
+
       documents.push(doc);
 
     }
@@ -1802,14 +1848,26 @@ module.exports = {
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller})
+        let resultProducts = await Product.find({seller: seller})
         .populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
@@ -1817,11 +1875,11 @@ module.exports = {
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0 /*&& pro.channels[0].iscreated*/);
+            products = products.filter(pro => pro.channels.length > 0);
             break;
           case 'Image':
             action = 'Image';
-            products = products.filter(pro => pro.channels.length > 0 /*&& !pro.channels[0].iscreated*/);
+            products = products.filter(pro => pro.channels.length > 0);
             break;
           case 'ProductQcStatus':
             action = 'ProductQcStatus';
@@ -1924,7 +1982,19 @@ module.exports = {
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
@@ -2036,7 +2106,20 @@ module.exports = {
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
+
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
@@ -2148,7 +2231,19 @@ module.exports = {
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
 
         switch (req.body.action) {
           case 'ProductCreate':
@@ -2230,7 +2325,20 @@ module.exports = {
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
+
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'Post';
@@ -2318,7 +2426,20 @@ module.exports = {
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
+
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'Post';
@@ -2481,7 +2602,20 @@ module.exports = {
             channel: integration.channel.id,
             integration: integration.id
           }
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
+
         products = products.filter(pro => pro.channels.length<1);
         if(products.length>0){
           for (let pro of products) {
@@ -2508,7 +2642,20 @@ module.exports = {
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
+
         let error;
         let axios = require('axios');
 
@@ -2605,7 +2752,19 @@ module.exports = {
             integration: intgrationId
           },
           limit: 1
-        });
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        }
 
         switch (req.body.action) {
           case 'ProductCreate':
@@ -2634,7 +2793,7 @@ module.exports = {
                 let response = await sails.helpers.channel.shopee.request('/api/v2/product/update_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],body,'POST')
                 .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No creado en Shopee: '+ err.message);});
                 if (response && !response.error) {
-                  await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations)
+                  await sails.helpers.channel.shopee.updateModel(integration, parseInt(productchannel.channelid), variations);
                   await ProductChannel.updateOne({id: productChannelId}).set({
                     status: true,
                     qc: true,
@@ -2697,15 +2856,26 @@ module.exports = {
     if (!req.isSocket) {
       return res.badRequest();
     }
-    let product = await Product.findOne({ id: req.param('productid') });
+    let channelErrors = [];
+    let product = await Product.findOne({ id: req.param('productid') }).populate('channels');
     let cover = await ProductImage.findOne({ product: req.param('productid'), cover: 1 });
     let response = {};
+    for (const channel of product.channels) {
+      if (channel.reason && channel.reason !== '') {
+        let integration = await Integrations.findOne({id: channel.integration});
+        channelErrors.push({reference: product.reference, reason: channel.reason, integration: integration.name});
+      }
+    }
+    response.id = product.id;
     response.name = product.name;
     response.reference = product.reference;
+    response.details = product.details ? product.details : '';
+    response.channelErrors = channelErrors;
     if (cover) {
       let image = sails.config.views.locals.imgurl + '/images/products/' + req.param('productid') + '/' + cover.file;
       response.image = image;
     }
+
     return res.send(response);
   },
   genderindex: async (req, res) => {
@@ -2904,7 +3074,7 @@ module.exports = {
                               let totalimg = await ProductImage.count({ product: productColor.id});
                               totalimg += 1;
                               if (totalimg > 1) { cover = 0; }
-        
+
                               await ProductImage.findOrCreate({product: productColor.id, file: file},{
                                 file: file,
                                 position: totalimg,
@@ -2922,7 +3092,7 @@ module.exports = {
                                 if(typeof(record) === 'object'){
                                   result.push(record);
                                 }
-                              });                    
+                              });
                               sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                             }
                           }
@@ -2960,7 +3130,7 @@ module.exports = {
                           let totalimg = await ProductImage.count({ product: product.id});
                           totalimg += 1;
                           if (totalimg > 1) { cover = 0; }
-    
+
                           await ProductImage.findOrCreate({product: product.id, file: file},{
                             file: file,
                             position: totalimg,
@@ -2978,7 +3148,7 @@ module.exports = {
                             if(typeof(record) === 'object'){
                               result.push(record);
                             }
-                          });                    
+                          });
                           sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                         }
                       }
@@ -3033,7 +3203,7 @@ module.exports = {
                         if(typeof(record) === 'object'){
                           result.push(record);
                         }
-                      });                    
+                      });
                       sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                     }
                   }
@@ -3102,7 +3272,7 @@ module.exports = {
         'VARIATIONS',
         { page: page, pageSize: pageSize, next: next|| null }
       ).catch((e) => console.log(e));
-      
+
       if (importedProductsVariations && importedProductsVariations.pagination)
       {next = importedProductsVariations.pagination;}
       lastPage = importedProductsVariations.pagesCount;
@@ -3526,11 +3696,11 @@ module.exports = {
           return res.send({error: err});
         });
       }else if(channel === 'mercadolibre' || channel === 'mercadolibremx') {
-        let result = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: "closed"},'PUT') :
-        await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: "closed"},'PUT');
+        let result = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: 'closed'},'PUT') :
+        await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: 'closed'},'PUT');
         if (result.id) {
-          let resultDelete = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:"true"},'PUT') : 
-          await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:"true"},'PUT');
+          let resultDelete = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:'true'},'PUT') :
+          await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:'true'},'PUT');
           if (resultDelete.id) {
             await ProductChannel.destroyOne({id: productchannelId});
             return res.send({error: null});

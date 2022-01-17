@@ -14,6 +14,7 @@
         <%if(features.length>0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="features">Características</a></li><%}%>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
+        <%if(product.details && product.details.length > 0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="statusQc">Detalles de Contenido</a></li><%}%>
       </ul>
     </div>
     <div id ="basics">
@@ -869,9 +870,12 @@
                                 </select>
                               </div>
                             </td>
-                            <td style="padding-top:10px;">
+                            <td style="padding-top:10px; text-align: center;">
+                              <span class="icon is-hidden" id="icon<%= i.id %>">
+                                <i class='bx bx-loader-alt bx-spin bx-md' ></i>
+                              </span>
                               <input id="<%= i.id %>" type="checkbox" name="productstatus" channelId='<%= i.channel.id %>' nameChannel="<%= i.channel.name %>" <%if(typeof product=='object' && productchannel && productchannel.status){%>checked<%}%> class="switch is-success">
-                              <label for="<%= i.id %>"></label>
+                              <label id="label<%= i.id %>" for="<%= i.id %>"></label>
                             </td>
                             <% if(productchannel && (i.channel.name === 'mercadolibre' || i.channel.name === 'dafiti' || i.channel.name === 'linio' || i.channel.name === 'liniomx' || i.channel.name === 'walmart' || i.channel.name === 'shopee')){%>
                               <td>
@@ -900,9 +904,12 @@
                                   </select>
                                 </div>
                               </td>
-                              <td style="padding-top:10px;">
+                              <td style="padding-top:10px;text-align: center;">
+                                <span class="icon is-hidden" id="icon<%= i.id %>">
+                                  <i class='bx bx-loader-alt bx-spin bx-md' ></i>
+                                </span>
                                 <input id="<%= i.id %>" type="checkbox" name="productstatus" channelId='<%= i.channel.id %>' nameChannel="<%= i.channel.name %>" <%if(typeof product=='object' && productchannel && productchannel.status){%>checked<%}%> class="switch is-success">
-                                <label for="<%= i.id %>"></label>
+                                <label id="label<%= i.id %>" for="<%= i.id %>"></label>
                               </td>
                             </tr>
                           <%}%>
@@ -937,6 +944,29 @@
         </div>
       </div>
     </div>
+    <div class="is-hidden" id="statusQc">
+      <div class="box">
+        <h6 class="title is-6">Contenido por corregir</h4>
+        <hr>
+        <article class="message is-info is-small">
+          <div class="message-body">
+            Debes corregir o completar los puntos que se especifican, para publicar el producto en las integraciones asociadas.
+          </div>
+        </article>
+        <div class="columns is-gapless">
+          <% details = product.details ? product.details.split(' | ') : [] %>
+          <div class="column content">
+            <ol>
+              <% details.forEach(function(detail){ %>
+                <% if(detail){ %>
+                  <li class="is-uppercase"><span class="tag is-danger is-light"><%= detail %></span></li>
+                <%}%>
+              <%})%>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
     <% if(typeof helper!='undefined' && helper !=null){%>
       <%- partial('../../partials/help.ejs') %>
     <% } %>
@@ -965,17 +995,31 @@
         let channelId = e.target.getAttribute('channelId');
         let price = document.querySelector('select[name="'+integrationId+'price"]').value;
         let reportprocess = document.querySelector('#reportProcess');
+        let labelCheck = document.querySelector(`#label${integrationId}`);
+        let iconCheck = document.querySelector(`#icon${integrationId}`);
         let errors = document.querySelector('#errorsProcess');
         let errorlist = document.querySelector('#error-list-errorsProcess');
         errors.innerHTML=0;
         errorlist.innerHTML='';
         if(!hasClass(reportprocess,'is-hidden')){addClass(reportprocess,'is-hidden');}
+        if(!hasClass(e.target,'is-hidden')){
+          addClass(e.target,'is-hidden');
+          addClass(labelCheck,'is-hidden');
+          removeClass(iconCheck,'is-hidden');
+        }
         io.socket.post('/'+nameChannel+'/add',{product:p, price, status:e.target.checked,integrationId,channelId}, resData =>{
+          removeClass(e.target,'is-hidden');
+          removeClass(labelCheck,'is-hidden');
+          addClass(iconCheck,'is-hidden');
           if(resData.error){
             if(hasClass(reportprocess),'is-hidden'){removeClass(reportprocess,'is-hidden');}
             errors.innerHTML=1;
             let err = document.createElement('li');
-            err.innerHTML = typeof resData.error === 'string' ? resData.error : 'Se generó Error al procesar el producto.';
+            let textError = typeof resData.error === 'string' ? resData.error : 'Se generó Error al procesar el producto.';
+            if (textError.includes('problemas de contenido')) {
+              textError+=` <a href="/product/edit/` + p + `">Ver detalles</a>`
+            }
+            err.innerHTML = textError;
             errorlist.appendChild(err);
             e.target.checked = false;
             document.querySelector('select[name="'+integrationId+'price"]').value = 0;
