@@ -16,12 +16,12 @@ let objectQueue = queue({
 
 objectQueue.on('start', async (result) => {
   let data = await sails.helpers.channel.mercadolibre.orders(result.data.integration.id, result.data.resource);
-  if (data && integration.seller.integrationErp) {
-    if (integration.seller.nameErp === 'siesa') {
+  if (data && result.data.integration.seller.integrationErp) {
+    if (result.data.integration.seller.nameErp === 'siesa') {
       await sails.helpers.integrationsiesa.exportOrder(data);
-    } else if(integration.seller.nameErp === 'busint'){
+    } else if(result.data.integration.seller.nameErp === 'busint'){
       await sails.helpers.integrationbusint.exportOrder(data);
-    } else if(integration.seller.nameErp === 'sap'){
+    } else if(result.data.integration.seller.nameErp === 'sap'){
       await sails.helpers.integrationsap.exportOrder(data);
     }
   }
