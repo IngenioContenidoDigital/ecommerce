@@ -10,10 +10,10 @@ module.exports = {
     },
   },
   fn: async (inputs, exits) => {
-    const probe = require('probe-image-size');
+    // const probe = require('probe-image-size');
     let product = inputs.product;
     let details = '';
-    let sizeImages = false;
+    // let sizeImages = false;
     let stock = 0;
     let images = await ProductImage.find({product:product.id}).sort('position ASC');
     let variations = await ProductVariation.find({product:product.id});
@@ -34,17 +34,18 @@ module.exports = {
     }
     if (images.length === 0) {
       details += 'Producto sin imagenes | ';
-    } else {
-      for (const image of images) {
-        let result = await probe(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
-        if (result.width < 1000 || result.height < 1000) {
-          sizeImages = true;
-        }
-      }
-      if (sizeImages) {
-        details += 'Algunas imagenes del producto no cumplen con el tamaño establecido 1000*1000 | ';
-      }
-    }
+    } 
+    // else {
+    //   for (const image of images) {
+    //     let result = await probe(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
+    //     if (result.width < 1000 || result.height < 1000) {
+    //       sizeImages = true;
+    //     }
+    //   }
+    //   if (sizeImages) {
+    //     details += 'Algunas imagenes del producto no cumplen con el tamaño establecido 1000*1000 | ';
+    //   }
+    // }
 
     if (variations.length === 0) {
       details += 'Producto sin variaciones | ';
