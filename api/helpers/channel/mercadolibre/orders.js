@@ -35,7 +35,7 @@ module.exports = {
       try{
         let customer = await sails.helpers.channel.mercadolibre.findOrder(`orders/${order.id}/billing_info`, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
         orderfilter[0]={channel:'mercadolibre', channelref:order.id, integration: inputs.integration};
-        data = {channel:'mercadolibre', channelref: order.id, seller: integration.seller};
+        data = {channel:'mercadolibre', channelref: order.id, seller: integration.seller, packId: order.pack_id};
         if(order.shipping.id){
           orderfilter[1]={channel:'mercadolibre', shippingMeli:order.shipping.id, integration: inputs.integration};
           orderfilter[2]={channel:'mercadolibre', tracking:order.shipping.id, integration: inputs.integration};
@@ -124,6 +124,7 @@ module.exports = {
           }
 
         }else if(oexists.length > 0 && order.status==='paid'){
+          data = {channel:'mercadolibre', channelref: order.id, seller: integration.seller, packId: null};
           let cartProducts = [];
           let orderItems = await OrderItem.find({externalOrder: order.id});
           const channelref = order.id;
@@ -157,6 +158,7 @@ module.exports = {
             await sails.helpers.channel.orderShipping({cartProducts, channelref, order: oexists[0]});
           }
         }else{
+          data = null;
           for (const ord of oexists) {
             let shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
               return exits.error(err.message);

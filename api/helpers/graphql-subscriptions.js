@@ -2,6 +2,7 @@ const { SHOPIFY_PRODUCTS, SHOPIFY_ORDERS } = require('../../api/graphql/subscrip
 const { WOOCOMMERCE_PRODUCTS, WOOCOMMERCE_ORDERS} = require('../../api/graphql/subscriptions/woocommerce');
 const { VTEX_PRODUCTS, VTEX_ORDERS } = require('../../api/graphql/subscriptions/vtex');
 const { PRESTASHOP_PRODUCTS,  PRESTASHOP_ORDERS} = require('../../api/graphql/subscriptions/prestashop');
+const { NOTIFICATION_MELI } = require('../../api/graphql/subscriptions/mercadolibre');
 
 module.exports = {
   friendlyName: 'Start graphql subscription',
@@ -212,6 +213,15 @@ module.exports = {
                 await sails.helpers.marketplaceswebhooks.order(order, integration).catch((e)=>console.log(e.message));
               }
             }
+          }
+        }
+      }});
+
+      await sails.helpers.subscription({ subscription : NOTIFICATION_MELI, callback : async (response)=>{
+        if (response && response.data) {
+          let result = response.data.NotificationMeli;
+          if (result) {
+            await sails.helpers.notificationMeli(result).catch((e)=>console.log(e.message));
           }
         }
       }});
