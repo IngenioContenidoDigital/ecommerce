@@ -3,6 +3,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://sdk.mercadopago.com/js/v2"></script>
+<link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
+
 <div class="columns is-centered is-gapless">
   <div class="column is-8">
     <div class="container">
@@ -214,7 +216,11 @@
                 <div class="columns">
                   <div class="column">
                     <div class="field">
-                      <label class="label is-size-7">País</label>
+                      <label class="is-size-7 label">País
+                        <span class="icon is-small has-text-info has-tooltip-top has-tooltip-info" data-tooltip="Debes seleccionar el país">
+                          <i class='bx bxs-info-circle'></i>
+                        </span>
+                      </label>
                       <div class="control">
                         <div class="select is-fullwidth is-size-7">
                           <select required class="select is-capitalized" name="country">
@@ -228,7 +234,7 @@
                     </div>
                   </div>
                   <div class="column">
-                    <div class="field is-hidden" id="estados">
+                    <div class="field" id="estados">
                       <label class="label is-size-7">Estado</label>
                       <div class="select control is-size-7 is-fullwidth">
                         <select class="is-capitalized" name="region" required >
@@ -238,7 +244,7 @@
                     </div>
                   </div>
                   <div class="column">
-                    <div class="field is-hidden" id="ciudades">
+                    <div class="field" id="ciudades">
                       <label class="label is-size-7">Ciudad</label>
                       <div class="control select is-size-7 is-fullwidth">
                         <select class="is-capitalized" name="city" required>
