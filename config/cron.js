@@ -386,4 +386,48 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },
+  validateQcProducts: {
+    schedule: '01 05 */12 * * *',
+    onTick: async () => {
+      console.log('Iniciando validacion qc para los productos');
+      try {
+        let sellers = await Seller.find({active: true});
+        let channels = await Channel.find({name: ['dafiti', 'linio']});
+        for (const seller of sellers) {
+          for (const channel of channels) {
+            let integrations = await Integrations.find({seller: seller.id, channel: channel.id}).populate('channel');
+            for (const integration of integrations) {
+              const skus = [];
+              let pageSize = 100;
+              let products = await Product.find({seller: integration.seller})
+              .populate('channels',{
+                where:{
+                  channel: integration.channel.id,
+                  integration: integration.id
+                },
+                limit: 1
+              });
+              products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && (!pro.channels[0].qc || pro.channels[0].reason !== ''));
+              for (const product of products) {
+                const productVariations = await ProductVariation.find({product: product.id});
+                for (const variation of productVariations) {
+                  if(!skus.includes(variation.id)){
+                    skus.push(variation.id);
+                  }
+                }
+              }
+              let number = Math.ceil(skus.length / pageSize);
+              for (let i = 1; i <= number; i++) {
+                const resultSkus = skus.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+                await sails.helpers.channel.productQc(integration, resultSkus);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error.message);
+      }
+    },
+    timezone: 'America/Bogota'
+  },
 };
