@@ -14,7 +14,7 @@
         <%if(features.length>0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="features">Características</a></li><%}%>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
-        <%if(product.details && product.details.length > 0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="statusQc">Detalles de Contenido</a></li><%}%>
+        <%if(product.details && product.details.length > 0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="statusQc" id="contentDetails">Detalles de Contenido</a></li><%}%>
       </ul>
     </div>
     <div id ="basics">
@@ -971,6 +971,20 @@
       <%- partial('../../partials/help.ejs') %>
     <% } %>
     <script>
+      if (window.location.search.includes('details')) {
+        let element = document.querySelector('#contentDetails');
+        let option = element.getAttribute('option');
+        let list = element.parentNode.parentNode.querySelectorAll('li');
+        list.forEach((li)=>{
+          if(hasClass(li,'is-active')){
+            addClass(document.querySelector('#'+li.querySelector('a').getAttribute('option')),'is-hidden');
+          }
+          removeClass(li,'is-active');
+        });
+        removeClass(document.querySelector('#'+option),'is-hidden');
+        addClass(element.parentNode,'is-active');
+
+      }
       <%if(channelErrors.length > 0){%>
         const integrations = <%- JSON.stringify(integra)%>
         const resultErrors = <%- JSON.stringify(channelErrors)%>;
@@ -1017,7 +1031,7 @@
             let err = document.createElement('li');
             let textError = typeof resData.error === 'string' ? resData.error : 'Se generó Error al procesar el producto.';
             if (textError.includes('problemas de contenido')) {
-              textError+=` <a href="/product/edit/` + p + `">Ver detalles</a>`
+              textError+=` <a href="/product/edit/` + p + `?error=details">Ver detalles</a>`
             }
             err.innerHTML = textError;
             errorlist.appendChild(err);

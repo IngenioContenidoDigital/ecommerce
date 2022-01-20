@@ -48,6 +48,8 @@ module.exports = {
       filter.seller = req.param('seller');
       seller = req.param('seller');
     }
+    let integrations = filter.seller ? await Integrations.find({seller: filter.seller}): [];
+    let columnActive = (req.hostname === 'localhost' || req.hostname === '1ecommerce.app') ? false : true;
     const root = await Category.findOne({ name: 'inicio' });
     totalproducts = await Product.count(filter);
     let pages = Math.ceil(totalproducts / perPage);
@@ -60,6 +62,8 @@ module.exports = {
       helper:helper,
       seller:seller,
       moment: moment,
+      integrations,
+      columnActive,
       root
     });
   },
@@ -155,6 +159,10 @@ module.exports = {
     if (paramFilter === 'content') {
       products = products.filter(product => (product.channels.some(channel => channel.reason && channel.reason !== '') || product.details));
     }
+    if (paramFilter.includes('integration')) {
+      let integration = paramFilter.split('-')[1];
+      products = products.filter(product => product.channels.length > 0 && (product.channels.some(channel => channel.integration === integration)));
+    }
 
     const formatter = new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -184,7 +192,9 @@ module.exports = {
       let reason = p.channels.some(channel => channel.reason && channel.reason !== '');
       let price = await ProductVariation.avg('price', { product: p.id }); //p.price ? p.price : 0;
       let isAdmin = rights.name !== 'superadmin' && rights.name !== 'admin' ? false : true;
+      let columnActive = (req.hostname==='1ecommerce.app' || req.hostname==='localhost') ? false : true;
       let options = (p.details || reason) ? `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Editar producto"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Ver producto" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a><a product="` + p.id + `" class="button showDetails has-tooltip-bottom has-tooltip-info" data-tooltip="Errores de contenido"><span class="icon"><i class='bx bxs-detail'></i></span></a></td>` : `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Editar producto"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Ver producto" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`;
+      let resultPublished = published ? published : `<span class="tag is-danger">No Publicado</span>`;
       row = [
         `<td class="align-middle><div class="field">
           <input class="is-checkradio is-small is-info" id="checkboxselect${p.id}" data-product="${p.id}" type="checkbox" name="checkboxselect">
@@ -200,10 +210,13 @@ module.exports = {
         `<td class="align-middle"><span class="action"><i product="` + p.id + `" seller="` + p.seller.id + `" class="state bx ` + cl + ` is-size-5"></i></span></td>`,
         options,
         '<td class="align-middle"><span>' + p.seller.name + '</span></td>',
-        `<td class="align-middle"><ul>` + published + `</ul></td>`,
+        `<td class="align-middle"><ul>` + resultPublished + `</ul></td>`,
       ];
       if (!isAdmin) {
         row.splice(10, 1);
+      }
+      if (columnActive) {
+        row.splice(8, 1);
       }
       if(p.images.length<1){row[1]=`<td class="align-middle is-uppercase">` + p.name + `</td>`;}
       if (paramFilter === 'stock' && p.stock === 0) {

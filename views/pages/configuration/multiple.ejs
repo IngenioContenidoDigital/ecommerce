@@ -46,14 +46,16 @@
         </div>
         <div class="column">
             <div class="loading container is-fluid"></div>
-            <div id="report" class="container is-fluid is-hidden">
-                <h6 class="title is-6">Espera un momento por favor ...</h6>
+            <div id="report" class="container is-fluid">
+                <h6 class="title is-6">Espera un momento por favor...</h6>
                 <hr>
                 <div class="notification is-primary">
 					Se han procesado un total de <span id="items">0</span> registros.
+                    <a id="showProductsSuccess" target="_blank">Ver Productos</a>
 				</div>
                 <div class="notification is-danger">
-                    <p>Hemos identificado <span id="errors">0</span> error(es).</p>
+                    <p>Hemos identificado <span id="errors">0</span> error(es).
+                    <a id="showProductsError" target="_blank">Ver Productos</a></p>
                     <br>
                     <div class="container is-fluid">
                         <ol id="error-list">
@@ -65,6 +67,10 @@
     </div>
 </div>
 <script>
+    let showProductsSuccess = document.querySelector('#showProductsSuccess');
+    let showProductsError = document.querySelector('#showProductsError');
+    showProductsSuccess.href = `/products/<%- seller %>?result=corrects`;
+    showProductsError.href = `/products/<%- seller %>?result=errors`;
     live('#process','click',e=>{
         e.preventDefault();
 		let action = document.querySelector('#action').value
@@ -76,6 +82,8 @@
         let items = document.querySelector('#items');
         let errors = document.querySelector('#errors');
         let errorlist = document.querySelector('#error-list');
+        let showProducts = document.querySelector('#showProducts');
+        showProducts.href = `/products/${seller}`;
         errors.innerHTML=0;
         errorlist.innerHTML='';
         items.innerHTML=0;

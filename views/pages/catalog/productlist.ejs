@@ -23,7 +23,7 @@
   <p style="text-align: right;font-size: 20px; margin-right: 5px;">
     <a href="/product/create" class="button is-primary is-size-7">Crear Producto</a>
   </p>
-  <div class="tabs is-small">
+  <div class="tabs is-toggle is-small is-centered tabs-dropdown-filter">
     <ul>
       <li class="is-active filters"><a filter='all'>Todos</a></li>
       <li class="filters"><a filter='active'>Activos</a></li>
@@ -31,6 +31,27 @@
       <li class="filters"><a filter='image'>Imagen faltante</a></li>
       <li class="filters"><a filter='stock'>Agotado</a></li>
       <li class="filters"><a filter='content'>Mala Calidad</a></li>
+      <%if(integrations.length > 0){%>
+        <li class="dropdown" id="dropdownFilter">
+          <div class="dropdown-trigger">
+            <a aria-haspopup="true" aria-controls="dropdown-menu">
+              <span>Integraciones</span>
+              <span class="icon is-small">
+                <i class='bx bx-chevron-down bx-xs' aria-hidden="true"></i>
+              </span>
+            </a>
+          </div>
+          <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <div class="dropdown-content">
+              <% integrations.forEach(function(integration){ %>
+                <div class="dropdown-item-filter filters">
+                  <span filter='integration-<%= integration.id %>'><%= integration.name %></span>
+                </div>
+              <%})%>
+            </div>
+          </div>
+        </li>
+      <%}%>
     </ul>
   </div>
   <div class="table-container">
@@ -50,10 +71,12 @@
             <th scope="col">Color</th>
             <th scope="col">Categoría Principal</th>
             <th scope="col">Inventario</th>
-            <th scope="col">Activo</th>
+            <%if(columnActive){%>
+              <th scope="col">Activo</th>
+            <%}%>
             <th scope="col">Opciones</th>
             <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.name=='admin'){%>
-            <th scope="col">Seller</th>
+              <th scope="col">Seller</th>
             <%}%>
             <th scope="col">Publicaciones</th>
           </tr>
@@ -112,7 +135,6 @@
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
   </div>
-
   <div id="modal-details" class="modal">
     <div class="modal-background"></div>
     <div class="modal-card">
@@ -159,6 +181,11 @@
         noRows: "No se encontraron datos",
         info: "Mostrando {start} a {end} de {rows} registros",
       }
+    });
+    
+    live('.dropdown', 'click', function(event){
+      let dropdown = document.querySelector('#dropdownFilter');
+      dropdown.classList.toggle('is-active');
     });
 
     live('.state', 'click', function(){ 
@@ -380,7 +407,7 @@
         });
       }
     });
-
+  
     live('.filters','click', e =>{
       e.preventDefault();
       let filter = e.target.getAttribute('filter');

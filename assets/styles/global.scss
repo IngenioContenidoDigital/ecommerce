@@ -694,3 +694,17 @@ article > .content:hover{cursor:pointer;}
 .container-li-categories {
     width: 30%;
 }
+
+.dropdown-item-filter {
+    padding: 3px;
+    text-align: center;
+    white-space: nowrap;
+    width: 100%;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.tabs-dropdown-filter {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
