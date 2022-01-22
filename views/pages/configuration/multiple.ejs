@@ -46,7 +46,7 @@
         </div>
         <div class="column">
             <div class="loading container is-fluid"></div>
-            <div id="report" class="container is-fluid">
+            <div id="report" class="container is-fluid is-hidden">
                 <h6 class="title is-6">Espera un momento por favor...</h6>
                 <hr>
                 <div class="notification is-primary">
@@ -82,8 +82,6 @@
         let items = document.querySelector('#items');
         let errors = document.querySelector('#errors');
         let errorlist = document.querySelector('#error-list');
-        let showProducts = document.querySelector('#showProducts');
-        showProducts.href = `/products/${seller}`;
         errors.innerHTML=0;
         errorlist.innerHTML='';
         items.innerHTML=0;

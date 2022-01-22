@@ -876,18 +876,25 @@ module.exports = {
       const moment = require('moment');
       const getMac = require('getmac');
       let country = await Country.findOne({id:req.body.country});
-      let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
+
+      let filename = null;
+      let sellerData = {
+        name: req.body.name.trim().toLowerCase(),
+        dni: req.body.dni,
+        contact: req.body.contact,
+        email: req.body.email,
+        phone: req.body.phone,
+        active: false,
+        currency: req.body.currency || null
+      };
+      try{
+        filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/sellers');
+        if(filename.length>0){sellerData.logo = filename[0].filename;}
+      }catch(err){
+        console.log(err);
+      }
       if (req.body.seller && req.body.user) {
-        await Seller.updateOne({id: req.body.seller}).set({
-          name: req.body.name.trim().toLowerCase(),
-          dni: req.body.dni,
-          contact: req.body.contact,
-          email: req.body.email,
-          phone: req.body.phone,
-          logo: filename[0].filename,
-          currency: req.body.currency || null,
-          active: false
-        });
+        await Seller.updateOne({id: req.body.seller}).set(sellerData);
         await User.updateOne({id: req.body.user}).set({
           emailAddress: req.body.email,
           password: await sails.helpers.passwords.hashPassword(req.body.password),
@@ -906,17 +913,6 @@ module.exports = {
         });
         return res.send({error: null, seller: req.body.seller, user: req.body.user});
       } else {
-        let sellerData = {
-          name: req.body.name.trim().toLowerCase(),
-          dni: req.body.dni,
-          contact: req.body.contact,
-          email: req.body.email,
-          phone: req.body.phone,
-          active: false,
-          logo: filename[0].filename,
-          currency: req.body.currency || null
-        };
-
         let seller = await Seller.findOrCreate({dni: sellerData.dni}, sellerData);
         let profile = await Profile.findOne({name:'operaciones'});
         let user = await User.findOrCreate({emailAddress: req.body.email},{
