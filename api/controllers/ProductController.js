@@ -3297,15 +3297,14 @@ module.exports = {
           let result = [];
           let  errors = [];
 
-
           try {
-            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
+            let pro = p.externalId ? await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
               where:{
                 to:{'>=':moment().valueOf()}
               },
               sort: 'createdAt DESC'
             })
-            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
+            : await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
               where:{
                 to:{'>=':moment().valueOf()}
               },
