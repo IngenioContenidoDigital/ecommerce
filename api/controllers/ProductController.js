@@ -273,7 +273,9 @@ module.exports = {
     ];
     if (id !== null) {
       product = await Product.findOne({ id: id })
-        .populate('images')
+        .populate('images', {
+          sort: 'cover DESC'
+        })
         .populate('tax')
         .populate('mainCategory')
         .populate('mainColor')
@@ -446,11 +448,11 @@ module.exports = {
       error = err;
     }
     if (error !== null) {
-      return res.send(error);
+      return res.send({error: error});
     } else if (newcover.length > 0) {
-      return res.send(newcover[0].id);
+      return res.send({id: newcover[0].id});
     } else {
-      return res.send('ok');
+      return res.send({success: 'ok'});
     }
   },
   productvariations: async function (req, res) {

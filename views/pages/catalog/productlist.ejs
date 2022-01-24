@@ -30,7 +30,7 @@
       <li class="filters"><a filter='inactive'>Inactivos</a></li>
       <li class="filters"><a filter='image'>Imagen faltante</a></li>
       <li class="filters"><a filter='stock'>Agotado</a></li>
-      <li class="filters"><a filter='content'>Mala Calidad</a></li>
+      <li class="filters"><a filter='content' id="selectContent">Mala Calidad</a></li>
       <%if(integrations.length > 0){%>
         <li class="dropdown" id="dropdownFilter">
           <div class="dropdown-trigger">
@@ -530,14 +530,40 @@
           if(hasClass(loader,'is-active')){
             removeClass(loader,'is-active');
           }
-          datatable.rows().add(p);
+          if (p.length > 0) {
+            datatable.rows().add(p);
+          }
           const currentPage = datatable.currentPage;
           checkCheckbox(currentPage);
           catalogQuery(page+=1,filter);
         });
       }
     };
-    catalogQuery(1, 'all');
+    
+    if (window.location.search.includes('result=errors')) {
+      let liContent = document.querySelector('#selectContent');
+      const filters = document.querySelectorAll('.filters');
+      let loader = document.querySelector('.pageloader');
+      filters.forEach(li =>{
+        removeClass(li, 'is-active');
+      });
+      addClass(liContent.parentElement,'is-active');
+      addClass(loader,'is-active');
+      catalogQuery(1, 'content');
+    } else if(window.location.search.includes('result=corrects&integration')){
+      let integrationId = window.location.search.split('=')[2];
+      let liContent = document.querySelector('#dropdownFilter');
+      const filters = document.querySelectorAll('.filters');
+      let loader = document.querySelector('.pageloader');
+      filters.forEach(li =>{
+        removeClass(li, 'is-active');
+      });
+      addClass(liContent,'is-active');
+      addClass(loader,'is-active');
+      catalogQuery(1, `integration-${integrationId}`);
+    }else {
+      catalogQuery(1, 'all');
+    }
 
     function checkCheckbox(page) {
       const resultCheckbox = checkboxChecked.filter(item => item.page == page);

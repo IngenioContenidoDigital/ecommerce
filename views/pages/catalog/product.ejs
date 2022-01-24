@@ -315,16 +315,17 @@
           let target = this.getAttribute('target');
           io.socket.put(target,function(data, Jwres){
             parent.parentNode.removeChild(parent);
-            if(!isNaN(data)){
+            if(data && data.id){
               let figures = document.querySelectorAll('figure');
-              figures.forEach((f)=>{
-                let im = f.getAttribute('image-id');
-                if(im==data){
-                  addClass(f,'image-cover');
-                }else{
-                  removeClass(f,'image-cover');
+              for (const figure of figures) {
+                let im = figure.getAttribute('image-id');
+                if (im === data.id) {
+                  addClass(figure,'image-cover');
+                } else {
+                  removeClass(figure,'image-cover');
+
                 }
-              });
+              }
             }
           });
         });
