@@ -1,6 +1,7 @@
 <% let printed = []; let flag = false; %>
 <div class="container">
     <% if (error != undefined || error != null) { %><div class="notification is-danger is-light" id="error"><%= error %></div><% } %>
+    <div class="notification is-danger is-light is-hidden" id="mgs-error"></div>
     <div class="columns is-size-7">
       <div class="column">
         <div class="box">
@@ -274,6 +275,7 @@
         let channel='<%- order.channel %>';
         let order= document.getElementById('order').getAttribute('order');
         let state = document.querySelector('select[name="orderState"]');
+        const error = document.querySelector('#mgs-error');
         const nameState = state.options[state.selectedIndex].text;
         state = state.value;
         let tracking= '<%- order.tracking %>';
@@ -297,9 +299,17 @@
                 }
               } else {
                 io.socket.put('/order/update',{id:order,orderState:state}, resData =>{
-                  let colorcode = resData.newstate.color.code;
-                  document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
                   removeClass(e.target, 'is-loading');
+                  if (resData && resData.error) {
+                    error.innerHTML = resData.error;
+                    removeClass(error, 'is-hidden');
+                    setTimeout(function() {
+                      addClass(error,'is-hidden');
+                    }, 10000);
+                  } else {
+                    let colorcode = resData.newstate.color.code;
+                    document.querySelector('#state-color').setAttribute('style','margin-top:8px;background-color:'+colorcode+';border:solid 1px '+colorcode+';');
+                  }
                 });
               }
             }); 

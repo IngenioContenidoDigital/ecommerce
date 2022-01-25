@@ -10,9 +10,6 @@ module.exports = {
   exits: {
     success: {
       description: 'Creación de Guia Exitosa',
-    },
-    error:{
-      description: 'Error en el Proceso',
     }
   },
   fn: async function (inputs, exits) {
@@ -77,7 +74,7 @@ module.exports = {
             'linea' : '',
             'contenido' : 'Paquete con '+oitems.length+' Articulo(s)',
             'referencia' : order.reference,
-            'observaciones' : order.addressDelivery.notes,
+            'observaciones' : order.addressDelivery.notes.slice(0, 99),
             'estado' : 'IMPRESO',
             'detalle' : {
               'Agw_typeGuiaDetalle':[]
@@ -157,8 +154,7 @@ module.exports = {
          *   Guias_liquidacionGuia - Consultar el Valor de la Guía
          */
         let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Guias_generarGuia','prod','guides')
-        .tolerate(() =>{ return; });
-        if(result){
+        if(result && !result.error){
           const order = await Order.updateOne({id:inputs.order}).set({tracking:result.return.codigo_remision.$value});
           await sails.helpers.carrier.costs(result.return.codigo_remision.$value);
           if (order.channel === 'mercadolibre' && order.shippingMeli) {
@@ -182,6 +178,8 @@ module.exports = {
               await sails.helpers.channel.mercadolibre.updateShipment(order.integration, payment);
             }
           }
+        } else {
+          return exits.success({error: result.error});
         }
       }
       if(order.channel==='dafiti'){
@@ -417,7 +415,7 @@ module.exports = {
       }
       return exits.success();
     } catch (error) {
-      return exits.error(error.message);
+      return exits.success({error: error.message});
     }
   }
 

@@ -23,6 +23,9 @@ module.exports = {
     success: {
       description: 'All done.',
     },
+    error:{
+      description: 'Error en el Proceso',
+    }
   },
   fn: async function (inputs,exits) {
     let soap = require('strong-soap').soap;
@@ -37,16 +40,13 @@ module.exports = {
       }
     }
 
-    soap.createClient(routes[inputs.mode][inputs.target], {}, (err, client) =>{
+    await soap.createClient(routes[inputs.mode][inputs.target], {}, (err, client) =>{
       let method = client[inputs.method];
-      if(err){throw err.message;}
+      if(err){return exits.success({error: err.message});}
       method(inputs.requestArgs, async (err, result)=>{
-        if(err){throw err.message;}
+        if(err){return exits.success({error: err.message});}
         return exits.success(result);
       });
     });
   }
-
-
 };
-
