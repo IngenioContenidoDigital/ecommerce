@@ -23,10 +23,6 @@ module.exports = {
     return res.send(article);
   },
   listterms: async (req, res) =>{
-    let rights = await sails.helpers.checkPermissions(req.session.user.profile);
-    if(rights.name!=='superadmin' && !_.contains(rights.permissions,'helpers')){
-      throw 'forbidden';
-    }
     let error= req.param('error') ? req.param('error') : null;
     let article=null;
     let articles = await Help.find({});

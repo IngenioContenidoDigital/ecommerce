@@ -16,6 +16,7 @@ module.exports = {
     let variation=null;
     let sellers = null;
     let brands = [];
+    let helper = 'catalog';
     let genders = await Gender.find();
     let categories = await Category.find({level:2});
     let action = req.param('action') ? req.param('action') : null;
@@ -41,7 +42,7 @@ module.exports = {
         }
       }
     }
-    return res.view('pages/catalog/variations',{layout:'layouts/admin',sellers,variations:variations,categories:categories,action:action,error:error,variation:variation,brands,genders:genders,measures:measures});
+    return res.view('pages/catalog/variations',{layout:'layouts/admin',helper,sellers,variations:variations,categories:categories,action:action,error:error,variation:variation,brands,genders:genders,measures:measures});
   },
   createvariation: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
