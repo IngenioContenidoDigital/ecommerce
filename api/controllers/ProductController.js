@@ -1880,7 +1880,10 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
+
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
@@ -1989,7 +1992,7 @@ module.exports = {
       }
       if (channel === 'linio') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2007,6 +2010,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
         switch (req.body.action) {
           case 'ProductCreate':
@@ -2113,7 +2118,7 @@ module.exports = {
       }
       if (channel === 'liniomx') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2131,6 +2136,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2238,7 +2245,7 @@ module.exports = {
       }
       if (channel === 'mercadolibre' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
-        let products = await Product.find({seller: seller}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2256,6 +2263,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2332,7 +2341,7 @@ module.exports = {
       }
       if (channel === 'mercadolibremx' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
-        let products = await Product.find({seller: seller}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2350,6 +2359,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2433,7 +2444,7 @@ module.exports = {
 
         const intgrationId = integration.id;
 
-        let products = await Product.find({seller: seller, active: true}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, active: true}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2451,6 +2462,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2610,7 +2623,7 @@ module.exports = {
         }
       }
       if(channel ==='iridio' && req.body.action==='ProductCreate'){
-        products = await Product.find({seller: seller}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: integration.id
@@ -2627,6 +2640,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         products = products.filter(pro => pro.channels.length<1);
@@ -2649,7 +2664,7 @@ module.exports = {
       }
       if (channel === 'walmart') {
         const intgrationId = integration.id;
-        let products = await Product.find({seller: seller, active: true}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, active: true}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2667,6 +2682,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         let error;
@@ -2759,7 +2776,7 @@ module.exports = {
       if (channel === 'shopee' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
         let variations = null;
-        let products = await Product.find({seller: seller}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2777,6 +2794,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2860,7 +2879,6 @@ module.exports = {
         }
       }
     } catch (err) {
-      console.log(err);
       response.errors.push(err.message);
     }
     return res.send(response);
