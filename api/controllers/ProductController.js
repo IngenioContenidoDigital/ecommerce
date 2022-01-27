@@ -1882,7 +1882,10 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
+
         switch (req.body.action) {
           case 'ProductCreate':
             action = 'ProductCreate';
@@ -2009,6 +2012,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
         switch (req.body.action) {
           case 'ProductCreate':
@@ -2133,6 +2138,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2258,6 +2265,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2352,6 +2361,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2453,6 +2464,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2629,6 +2642,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         products = products.filter(pro => pro.channels.length<1);
@@ -2669,6 +2684,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         let error;
@@ -2779,6 +2796,8 @@ module.exports = {
               products.push(product);
             }
           }
+        } else {
+          products = resultProducts;
         }
 
         switch (req.body.action) {
@@ -2862,7 +2881,6 @@ module.exports = {
         }
       }
     } catch (err) {
-      console.log(err);
       response.errors.push(err.message);
     }
     return res.send(response);
@@ -3299,15 +3317,14 @@ module.exports = {
           let result = [];
           let  errors = [];
 
-
           try {
-            let pro = p.reference ? await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
+            let pro = p.externalId ? await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
               where:{
                 to:{'>=':moment().valueOf()}
               },
               sort: 'createdAt DESC'
             })
-            : await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
+            : await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
               where:{
                 to:{'>=':moment().valueOf()}
               },
