@@ -13,7 +13,7 @@ module.exports = {
     }
     let error= req.param('error') ? req.param('error') : null;
     let plan=null;
-    let plans = await Plan.find();
+    let plans = await Plan.find().sort('createdAt DESC');
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(id){
@@ -30,22 +30,29 @@ module.exports = {
     try{
       let planData = {
         name: req.body.name.trim().toLowerCase(),
-        pricecop: req.body.pricecop,
-        pricesubscriptioncop: req.body.pricesubscriptioncop,
-        pricemx: req.body.pricemx,
-        pricesubscriptionmx: req.body.pricesubscriptionmx
+        price: req.body.price,
+        pricesubscription: req.body.pricesubscription,
+        trialDays: req.body.trialDays,
+        description: req.body.description,
+        products: req.body.products,
+        channels: req.body.channels,
+        onboarding: req.body.onboarding,
+        erp: req.body.erp,
+        support: req.body.support
       };
       const result = await Plan.create(planData).fetch();
+      let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
+      let price = (parseInt(req.body.pricesubscription)*exchangeRate.result).toFixed(2);
       const planInfo = {
         id_plan: result.id,
         name: req.body.name.trim().toLowerCase(),
         description: `Plan 1Ecommerce ${req.body.name.trim().toLowerCase()}`,
-        amount: req.body.pricesubscriptioncop,
+        amount: price,
         currency: 'cop',
         interval: 'month',
         interval_count: 1,
-        trial_days: 0
-      }
+        trial_days: parseInt(req.body.trialDays)
+      };
       await sails.helpers.payment.plan(planInfo, 'CC');
     }catch(err){
       error = err;
@@ -62,22 +69,32 @@ module.exports = {
       throw 'forbidden';
     }
     let error = null;
-    try{
+    try{ 
       await Plan.updateOne({id: req.param('id')}).set({
         name: req.body.name.trim().toLowerCase(),
-        pricecop: req.body.pricecop,
-        pricesubscriptioncop: req.body.pricesubscriptioncop,
-        pricemx: req.body.pricemx,
-        pricesubscriptionmx: req.body.pricesubscriptionmx
+        price: req.body.price,
+        pricesubscription: req.body.pricesubscription,
+        trialDays: req.body.trialDays,
+        description: req.body.description,
+        products: req.body.products,
+        channels: req.body.channels,
+        onboarding: req.body.onboarding,
+        erp: req.body.erp,
+        support: req.body.support
       });
     }catch(err){
       if(err.code==='badRequest'){
         await Plan.updateOne({id: req.param('id')}).set({
           name: req.body.name.trim().toLowerCase(),
-          pricecop: req.body.pricecop,
-          pricesubscriptioncop: req.body.pricesubscriptioncop,
-          pricemx: req.body.pricemx,
-          pricesubscriptionmx: req.body.pricesubscriptionmx
+          price: req.body.price,
+          pricesubscription: req.body.pricesubscription,
+          description: req.body.description,
+          trialDays: req.body.trialDays,
+          products: req.body.products,
+          channels: req.body.channels,
+          onboarding: req.body.onboarding,
+          erp: req.body.erp,
+          support: req.body.support
         });
       } else {
         error = err;

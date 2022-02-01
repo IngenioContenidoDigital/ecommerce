@@ -11,21 +11,41 @@ module.exports = {
       type:'string',
       required:true
     },
-    pricecop:{
+    price:{
       type:'number',
       required:true
     },
-    pricemx:{
+    pricesubscription:{
       type:'number',
       required:true
     },
-    pricesubscriptioncop:{
+    trialDays:{
       type:'number',
       required:true
     },
-    pricesubscriptionmx:{
-      type:'number',
+    description:{
+      type:'string',
       required:true
-    }
+    },
+    products:{
+      type:'string',
+      required:true
+    },
+    channels:{
+      type:'string',
+      required:true
+    },
+    onboarding:{
+      type:'string',
+      required:true
+    },
+    erp:{
+      type:'string',
+      required:true
+    },
+    support:{
+      type:'string',
+      required:true
+    },
   },
 };

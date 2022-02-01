@@ -956,7 +956,8 @@ module.exports = {
       if (card) {
         if (resultPlan) {
           if (seller.currency.isocode === 'MXN') {
-            let price = resultPlan.pricemx;
+            let exchangeRate = await sails.helpers.currencyConverter('USD', 'MXN');
+            let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
             const subscriptionInfo = {
               auto_recurring: {
                 frequency: 1,
@@ -1013,7 +1014,8 @@ module.exports = {
               }
             }
           } else {
-            let price = resultPlan.pricecop;
+            let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
+            let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
             let subscriptionInfo = {
               id_plan: resultPlan.id,
               customer: card.customerId,
