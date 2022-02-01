@@ -28,24 +28,26 @@ module.exports = {
     //let result = await sails.helpers.channel.mercadolibre.findUser(integration.secret).catch(err =>{return exits.error(err.message);});
     let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
     let order = await sails.helpers.channel.mercadolibre.findOrder(inputs.resource, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
-    
     let shipping = null;
     let data;
+    
     if(order){
       try{
-        let customer = await sails.helpers.channel.mercadolibre.findOrder(`orders/${order.id}/billing_info`, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
         orderfilter[0]={channel:'mercadolibre', channelref:order.id, integration: inputs.integration};
         data = {channel:'mercadolibre', channelref: order.id, seller: integration.seller, packId: order.pack_id};
         if(order.shipping.id){
           orderfilter[1]={channel:'mercadolibre', shippingMeli:order.shipping.id, integration: inputs.integration};
           orderfilter[2]={channel:'mercadolibre', tracking:order.shipping.id, integration: inputs.integration};
+        }
+        if (order.pack_id) {
+          orderfilter[orderfilter.length]={channel:'mercadolibre', packId:order.pack_id, integration: inputs.integration};
+        }
+        let oexists = await Order.find({or:orderfilter});
+        if(oexists.length < 1 && order.status==='paid'){
           shipping = await sails.helpers.channel.mercadolibre.findShipments(integration.secret,order.shipping.id,integration.channel.endpoint).catch(err=>{
             return exits.error(err.message);
           });
-        }
-        let oexists = await Order.find({or:orderfilter});
-
-        if(oexists.length < 1 && order.status==='paid'){
+          let customer = await sails.helpers.channel.mercadolibre.findOrder(`orders/${order.id}/billing_info`, integration.secret, integration.channel.endpoint).catch(err =>{return exits.error(err.message);});
           let user = await User.findOrCreate({emailAddress:order.buyer.email},{
             emailAddress:order.buyer.email,
             emailStatus:'confirmed',
@@ -87,7 +89,8 @@ module.exports = {
               integration:integration.id,
               shipping: order.shipping.id ? order.shipping.id : '',
               mode: shipping ? shipping.mode: '',
-              receiverId: shipping && shipping.mode === 'custom' ? shipping.receiver_id : shipping.service_id
+              receiverId: shipping && shipping.mode === 'custom' ? shipping.receiver_id : shipping.service_id,
+              packId: order.pack_id ? order.pack_id : ''
             }
           };
           payment.data['ref_payco'] = order.id;
