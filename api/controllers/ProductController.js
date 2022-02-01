@@ -127,6 +127,7 @@ module.exports = {
     let seller = req.param('seller') ? req.param('seller') : null;
     let paramFilter = req.param('filter') ? req.param('filter') : 'all';
     const perPage = sails.config.custom.DEFAULTPAGE;
+    filter.delete = false;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       filter.seller = req.session.user.seller;
     }else if(seller!==null){
@@ -273,7 +274,9 @@ module.exports = {
     ];
     if (id !== null) {
       product = await Product.findOne({ id: id })
-        .populate('images')
+        .populate('images', {
+          sort: 'cover DESC'
+        })
         .populate('tax')
         .populate('mainCategory')
         .populate('mainColor')
@@ -446,11 +449,11 @@ module.exports = {
       error = err;
     }
     if (error !== null) {
-      return res.send(error);
+      return res.send({error: error});
     } else if (newcover.length > 0) {
-      return res.send(newcover[0].id);
+      return res.send({id: newcover[0].id});
     } else {
-      return res.send('ok');
+      return res.send({success: 'ok'});
     }
   },
   productvariations: async function (req, res) {
@@ -1861,7 +1864,7 @@ module.exports = {
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
-        let resultProducts = await Product.find({seller: seller})
+        let resultProducts = await Product.find({seller: seller, delete: false})
         .populate('channels',{
           where:{
             channel: integration.channel.id,
@@ -1872,7 +1875,6 @@ module.exports = {
         .populate('gender')
         .populate('manufacturer')
         .populate('seller');
-
         if (req.body.action === 'ProductCreate') {
           for (const product of resultProducts) {
             let checkProduct = await sails.helpers.checkContentProduct(product);
@@ -1992,7 +1994,7 @@ module.exports = {
       }
       if (channel === 'linio') {
         const intgrationId = integration.id;
-        let resultProducts = await Product.find({seller: seller}).populate('channels',{
+        products = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2118,7 +2120,7 @@ module.exports = {
       }
       if (channel === 'liniomx') {
         const intgrationId = integration.id;
-        let resultProducts = await Product.find({seller: seller}).populate('channels',{
+        products = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2245,7 +2247,7 @@ module.exports = {
       }
       if (channel === 'mercadolibre' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
-        let resultProducts = await Product.find({seller: seller}).populate('channels',{
+        let products = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2341,7 +2343,7 @@ module.exports = {
       }
       if (channel === 'mercadolibremx' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
-        let resultProducts = await Product.find({seller: seller}).populate('channels',{
+        let products = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2444,7 +2446,7 @@ module.exports = {
 
         const intgrationId = integration.id;
 
-        let resultProducts = await Product.find({seller: seller, active: true}).populate('channels',{
+        let products = await Product.find({seller: seller, active: true, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2623,7 +2625,7 @@ module.exports = {
         }
       }
       if(channel ==='iridio' && req.body.action==='ProductCreate'){
-        let resultProducts = await Product.find({seller: seller}).populate('channels',{
+        products = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: integration.id
@@ -2664,7 +2666,7 @@ module.exports = {
       }
       if (channel === 'walmart') {
         const intgrationId = integration.id;
-        let resultProducts = await Product.find({seller: seller, active: true}).populate('channels',{
+        let products = await Product.find({seller: seller, active: true, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2776,7 +2778,7 @@ module.exports = {
       if (channel === 'shopee' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
         let variations = null;
-        let resultProducts = await Product.find({seller: seller}).populate('channels',{
+        let products = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -3774,6 +3776,103 @@ module.exports = {
     } catch (err) {
       console.log(err);
       return res.send({error: err.message});
+    }
+  },
+  removeproducts: async (req, res) => {
+    const jsonxml = require('jsontoxml');
+    const productsSelected = req.body.productsSelected;
+    let errors = [];
+    let seller = null;
+    let resultChannel = '';
+    let resultIntegration=null;
+    try {
+      let body={Request:[]};
+      let resultError = '';
+      let productchannels = await ProductChannel.find({product: productsSelected}).populate('product');
+      for (const productchannel of productchannels) {
+        let integration = await Integrations.findOne({id: productchannel.integration}).populate('channel');
+        let productvariations = await ProductVariation.find({product:productchannel.product.id});
+        if(integration.channel.name === 'walmart'){
+          await sails.helpers.channel.walmart.deleteProduct(productvariations, integration)
+          .then(async (resData)=>{
+            if(!resData.errors){
+              await ProductChannel.destroyOne({id: productchannel.id});
+              await Product.updateOne({id: productchannel.product.id}).set({
+                delete: true
+              });
+            }else{
+              errors.push(`Error al eliminar el producto en Walmart: REF. ${productchannel.product.reference} - ${resData.errors}`);
+            }
+          })
+          .catch(err =>{
+            errors.push(`Error al eliminar el producto en Walmart: REF. ${productchannel.product.reference} - ${err.message}`);
+          });
+        }else if(integration.channel.name === 'mercadolibre' || integration.channel.name === 'mercadolibremx') {
+          let result = integration.channel.name === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: 'closed'},'PUT') :
+          await sails.helpers.channel.mercadolibremx.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{status: 'closed'},'PUT');
+          if (result.id) {
+            let resultDelete = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:'true'},'PUT') :
+            await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:'true'},'PUT');
+            if (resultDelete.id) {
+              await ProductChannel.destroyOne({id: productchannel.id});
+              await Product.updateOne({id: productchannel.product.id}).set({
+                delete: true
+              });
+            } else {
+              errors.push(`Error al eliminar el producto en Mercadolibre: REF ${productchannel.product.reference}`);
+            }
+          } else {
+            errors.push(`Error al inactivar el producto en Mercadolibre: REF ${productchannel.product.reference}`);
+          }
+        }else if(integration.channel.name === 'shopee'){
+          let response = await sails.helpers.channel.shopee.request('/api/v2/product/delete_item',integration.channel.endpoint,[`shop_id=${parseInt(integration.shopid)}`,`access_token=${integration.secret}`],{item_id: parseInt(productchannel.channelid)},'POST');
+          if (response && !response.error) {
+            await ProductChannel.destroyOne({id: productchannel.id});
+            await Product.updateOne({id: productchannel.product.id}).set({
+              delete: true
+            });
+          } else {
+            errors.push(`Error al eliminar el producto en Shopee: REF ${productchannel.product.reference} - ${response.message}`);
+          }
+        }else {
+          resultChannel = integration.channel.name;
+          resultIntegration = integration;
+          for(let pv of productvariations){
+            body.Request.push({Product: {SellerSku:pv.id}});
+          }
+        }
+      }
+      if (resultChannel) {
+        let productchannels = await ProductChannel.find({product: productsSelected}).populate('product');
+        const xml = jsonxml(body, true);
+        let sign = resultIntegration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.sign(resultIntegration.id, 'ProductRemove', resultIntegration.seller) :
+        resultIntegration.channel.name === 'liniomx' ? await sails.helpers.channel.liniomx.sign(resultIntegration.id, 'ProductRemove', resultIntegration.seller) :
+        await sails.helpers.channel.linio.sign(resultIntegration.id, 'ProductRemove', resultIntegration.seller);
+        await sails.helpers.request(resultIntegration.channel.endpoint,'/?'+sign,'POST', xml)
+        .then(async (resData)=>{
+          resData = JSON.parse(resData);
+          if(resData.SuccessResponse){
+            for (const productchannel of productchannels) {
+              await ProductChannel.destroyOne({id: productchannel.id});
+              await Product.updateOne({id: productchannel.product.id}).set({
+                delete: true
+              });
+            }
+          }else{
+            errors.push(`Error al eliminar los producto en ${resultIntegration.channel.name.charAt(0).toUpperCase() + resultIntegration.channel.name.slice(1)} - ${resData.ErrorResponse.Head.ErrorMessage}`);
+          }
+        })
+        .catch(err =>{
+          errors.push(`Error al eliminar los producto en ${resultIntegration.channel.name.charAt(0).toUpperCase() + resultIntegration.channel.name.slice(1)} - ${err.message}`);
+        });
+      }
+    } catch (err) {
+      errors.push(err.message);
+    }
+    if (errors.length > 0){
+      return res.send({error: errors, seller});
+    }else{
+      return res.send({error: null, seller});
     }
   },
   updatemultipleproduct: async (req, res) => {

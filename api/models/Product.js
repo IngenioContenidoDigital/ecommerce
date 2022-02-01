@@ -56,6 +56,7 @@ module.exports = {
       via:'products'
     },
     details:{type:'string',defaultsTo:''},
+    delete:{type:'boolean',required:false}
   },
 };
 

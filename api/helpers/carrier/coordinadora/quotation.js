@@ -96,7 +96,9 @@ module.exports = {
         requestArgs.p.detalle.item = items;
         requestArgs.p.valoracion = ((sellervalue/1.19)*0.7).toString();
         let result = await sails.helpers.carrier.coordinadora.soap(requestArgs,'Cotizador_cotizar','prod','tracking');
-        shipping+=result.Cotizador_cotizarResult.flete_total;
+        if(result && !result.error){
+          shipping+=result.Cotizador_cotizarResult.flete_total;
+        }
       }
       await Cart.updateOne({id:cart.id}).set({shipping:shipping});
       return exits.success({cartvalue:cartvalue+shipping,shipping:shipping});

@@ -92,12 +92,13 @@ module.exports = {
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     let questionsSeller = 0;
+    let helper = 'catalog';
     let seller = req.session.user.seller || '';
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
     }
     req.session.questions = questionsSeller;
-    return res.view('pages/homeadmin',{layout:'layouts/admin'});
+    return res.view('pages/homeadmin',{layout:'layouts/admin',helper});
   },
   reportsadmin:async (req, res) =>{
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);

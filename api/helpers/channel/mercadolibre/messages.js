@@ -21,7 +21,7 @@ module.exports = {
     let integration = await sails.helpers.channel.mercadolibre.sign(inputs.integration);
     try{
       let message = await sails.helpers.channel.mercadolibre.request(`messages/${inputs.resource}`, integration.channel.endpoint, integration.secret);
-      let conversation = await Conversation.findOne({identifier: message.resource_id});
+      let conversation = await Conversation.find({identifier: message.resource_id}).limit(1);
       const isFirstMessage = !conversation ? true : false;
       if (!conversation) {
         conversation = await Conversation.create({
@@ -31,8 +31,8 @@ module.exports = {
           integration: integration.id
         }).fetch();
       }
-      const userId = message.from.user_id;
-      const existsQuest = await Question.findOne({idMl: message._id});
+      const userId = message.from && message.from.user_id ? message.from.user_id : '';
+      const existsQuest = await Question.find({idMl: message._id}).limit(1);
       if (!existsQuest) {
         const questi = await Question.create({
           idMl: message._id,

@@ -51,11 +51,11 @@
                 <hr>
                 <div class="notification is-primary">
 					Se han procesado un total de <span id="items">0</span> registros.
-                    <a id="showProductsSuccess" target="_blank">Ver Productos</a>
+                    <button class="button is-default is-small" id="showProductsSuccess" target="_blank">Ver Productos</button>
 				</div>
                 <div class="notification is-danger">
                     <p>Hemos identificado <span id="errors">0</span> error(es).
-                    <a id="showProductsError" target="_blank">Ver Productos</a></p>
+                    <button class="button is-default is-small"  id="showProductsError" target="_blank">Ver Productos</button></p>
                     <br>
                     <div class="container is-fluid">
                         <ol id="error-list">
@@ -67,10 +67,6 @@
     </div>
 </div>
 <script>
-    let showProductsSuccess = document.querySelector('#showProductsSuccess');
-    let showProductsError = document.querySelector('#showProductsError');
-    showProductsSuccess.href = `/products/<%- seller %>?result=corrects`;
-    showProductsError.href = `/products/<%- seller %>?result=errors`;
     live('#process','click',e=>{
         e.preventDefault();
 		let action = document.querySelector('#action').value
@@ -104,6 +100,17 @@
             let mensaje = document.querySelector('#report > .title');
             mensaje.innerHTML='Proceso Finalizado';
         });
+    });
+
+    live('#showProductsSuccess','click',e=>{
+        e.preventDefault();
+        let integrationId = document.querySelector('#selectIntegration').value
+        window.location.href=`/products/<%- seller %>?result=corrects&integration=${integrationId}`;
+    });
+
+    live('#showProductsError','click',e=>{
+        e.preventDefault();
+		window.location.href='/products/<%- seller %>?result=errors';
     });
 
     io.socket.on("reponse_product_created", (resData)=>{

@@ -1,4 +1,7 @@
 <div class="container">
+  <% if(typeof helper != 'undefined' && helper !=null){%>
+    <%- partial('../../partials/help.ejs') %>
+  <% } %>
 <% if (error != undefined || error != null) { %>
     <div class="notification is-danger is-light" id="error">
         <%= error %>

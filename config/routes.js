@@ -253,6 +253,7 @@ module.exports.routes = {
   'POST /iridio/add' : {controller:'ProductController',action:'iridioadd'},
   'POST /shopee/add' : {controller:'ProductController',action:'shopeeadd'},
   'POST /delete/product' : {controller:'ProductController',action:'deleteproduct'},
+  'POST /removemultiple/products' : {controller:'ProductController',action:'removeproducts'},
   'POST /updatemultiple/products' : {controller:'ProductController',action:'updatemultipleproduct'},
   'POST /walmart/add' : {controller:'ProductController',action:'walmartadd'},
   'GET /token' : {action:'security/grant-csrf-token'},

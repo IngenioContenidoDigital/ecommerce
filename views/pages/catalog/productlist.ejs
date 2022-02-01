@@ -30,7 +30,7 @@
       <li class="filters"><a filter='inactive'>Inactivos</a></li>
       <li class="filters"><a filter='image'>Imagen faltante</a></li>
       <li class="filters"><a filter='stock'>Agotado</a></li>
-      <li class="filters"><a filter='content'>Mala Calidad</a></li>
+      <li class="filters"><a filter='content' id="selectContent">Mala Calidad</a></li>
       <%if(integrations.length > 0){%>
         <li class="dropdown" id="dropdownFilter">
           <div class="dropdown-trigger">
@@ -312,6 +312,11 @@
               <span>Editar Categoría</span>
             </button>
           </p>
+          <p class="control">
+            <button id="deleteProducts" class="button is-small">
+              Eliminar Productos
+            </button>
+          </p>
         </div>`;
         divDatatable.prepend(div);
       } else if (cont != 0) {
@@ -530,14 +535,78 @@
           if(hasClass(loader,'is-active')){
             removeClass(loader,'is-active');
           }
-          datatable.rows().add(p);
+          if (p.length > 0) {
+            datatable.rows().add(p);
+          }
           const currentPage = datatable.currentPage;
           checkCheckbox(currentPage);
           catalogQuery(page+=1,filter);
         });
       }
     };
-    catalogQuery(1, 'all');
+
+    live('#deleteProducts','click',e=> {
+      e.preventDefault();
+      addClass(e.target, 'is-loading');
+      if(productsSelected.length > 0){
+        io.socket.post('/removemultiple/products',{productsSelected}, resData => {
+          removeClass(e.target, 'is-loading');
+          if(resData.error && resData.error.length > 0){
+            const el = document.getElementById('notificationmessage');
+            let text = '';
+            for (let i = 0; i < resData.error.length; i++) {
+              const message = resData.error[i];
+              if (message) {
+                text += `${i+1}. ${message}\n`;
+              }
+            }
+            el.textContent = text;
+            addClass(el,'is-danger');
+            removeClass(el,'is-hidden');
+          }
+          datatable.destroy();
+          datatable = new simpleDatatables.DataTable('#products-table', {
+            searchable:true,
+            sortable:true,
+            paging:true,
+            perPageSelect:[5,10,20,30,50],
+            perPage:50,
+            labels: {
+              placeholder: "Buscar...",
+              perPage: "{select} registros por página",
+              noRows: "No se encontraron datos",
+              info: "Mostrando {start} a {end} de {rows} registros",
+            }
+          });
+          catalogQuery(1, 'all');
+        });
+      }
+    });
+    
+    if (window.location.search.includes('result=errors')) {
+      let liContent = document.querySelector('#selectContent');
+      const filters = document.querySelectorAll('.filters');
+      let loader = document.querySelector('.pageloader');
+      filters.forEach(li =>{
+        removeClass(li, 'is-active');
+      });
+      addClass(liContent.parentElement,'is-active');
+      addClass(loader,'is-active');
+      catalogQuery(1, 'content');
+    } else if(window.location.search.includes('result=corrects&integration')){
+      let integrationId = window.location.search.split('=')[2];
+      let liContent = document.querySelector('#dropdownFilter');
+      const filters = document.querySelectorAll('.filters');
+      let loader = document.querySelector('.pageloader');
+      filters.forEach(li =>{
+        removeClass(li, 'is-active');
+      });
+      addClass(liContent,'is-active');
+      addClass(loader,'is-active');
+      catalogQuery(1, `integration-${integrationId}`);
+    }else {
+      catalogQuery(1, 'all');
+    }
 
     function checkCheckbox(page) {
       const resultCheckbox = checkboxChecked.filter(item => item.page == page);

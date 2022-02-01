@@ -412,25 +412,33 @@ module.exports = {
     let newstate = await OrderState.findOne({id:req.body.orderState}).populate('color');
     let seller = await Seller.findOne({id: order.seller});
     let oitems = await OrderItem.find({order:order.id});
-    for(let it of oitems){
-      await OrderItem.updateOne({id: it.id}).set({currentstatus: req.body.orderState});
-    }
-    if (seller && seller.integrationErp && newstate) {
-      if (seller.nameErp === 'siesa') {
-        let resultState = newstate.name === 'en procesamiento' ? 'En procesa' : newstate.name === 'reintegrado' ? 'Reintegrad' : newstate.name.charAt(0).toUpperCase() + newstate.name.slice(1);
-        await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+    try {
+      if(newstate.name==='empacado' && order.tracking===''){
+        let result = await sails.helpers.carrier.shipment(id);
+        if (result && result.error) {
+          return res.send({error: result.error});
+        }
       }
-    }
-    if(newstate.name==='empacado' && order.tracking===''){
-      await sails.helpers.carrier.shipment(id);
-    }
 
-    if(user!==null && user!== undefined){
-      await OrderHistory.create({order:order.id,state:req.body.orderState,user:user.id});
-    }else{
-      await OrderHistory.create({order:order.id,state:req.body.orderState});
+      for(let it of oitems){
+        await OrderItem.updateOne({id: it.id}).set({currentstatus: req.body.orderState});
+      }
+      if (seller && seller.integrationErp && newstate) {
+        if (seller.nameErp === 'siesa') {
+          let resultState = newstate.name === 'en procesamiento' ? 'En procesa' : newstate.name === 'reintegrado' ? 'Reintegrad' : newstate.name.charAt(0).toUpperCase() + newstate.name.slice(1);
+          await sails.helpers.integrationsiesa.updateCargue(order.reference, resultState);
+        }
+      }
+
+      if(user!==null && user!== undefined){
+        await OrderHistory.create({order:order.id,state:req.body.orderState,user:user.id});
+      }else{
+        await OrderHistory.create({order:order.id,state:req.body.orderState});
+      }
+      return res.send({newstate:newstate, order:order});
+    } catch (error) {
+      return res.send({error: error.message});
     }
-    return res.send({newstate:newstate,order:order});
   },
   confirmation: async(req, res)=>{
     let orders = await Order.find({paymentId:req.body.x_ref_payco});
