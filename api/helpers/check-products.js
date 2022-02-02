@@ -60,10 +60,11 @@ module.exports = {
     }
 
     let color = await sails.helpers.tools.findColor(`${pro.color ? (textPredictor + ' ' + pro.color) : textPredictor}`);
+    let defaultColor = await Color.findOne({name: 'blanco'});
     if(color && color.length > 0){
       pro.mainColor = color[0];
     }else{
-      throw new Error(`Ref: ${pro.reference} : ${pro.name} sin color`);
+      pro.mainColor = defaultColor.id;
     }
 
     let gender = await sails.helpers.tools.findGender(textPredictor);
