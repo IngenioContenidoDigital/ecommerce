@@ -43,9 +43,10 @@ module.exports = {
             if(resultStatus){
               let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
               if(city.length>0 && oexists===undefined){
-                let userEmail = order.AddressBilling.CustomerEmail ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).replace(/\s/g,''))+'@linio.com.co'
+
+                let userEmail = order.AddressBilling.CustomerEmail ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).toLowerCase().replace(/[\. ,:-]+/g, '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '') +'@linio.com.co'
                 let user = await User.findOrCreate({emailAddress:userEmail},{
-                  emailAddress:order.AddressBilling.CustomerEmail !=='' ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).replace(/\s/g,''))+'@linio.com.co',
+                  emailAddress:userEmail,
                   emailStatus:'confirmed',
                   password:await sails.helpers.passwords.hashPassword(order.NationalRegistrationNumber),
                   fullName:order.CustomerFirstName+' '+order.CustomerLastName,

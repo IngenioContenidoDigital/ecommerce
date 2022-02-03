@@ -111,6 +111,10 @@ module.exports = {
     receiverId: {
       type:'string',
       defaultsTo:''
+    },
+    packId: {
+      type:'string',
+      defaultsTo:''
     }
   },
   beforeCreate (obj, cb) {

@@ -128,7 +128,7 @@ module.exports = {
               if(productfeatures.length>0){
                 for(let fc of productfeatures){
                   if(fc.value){
-                    let channelfeatures = await FeatureChannel.find({channel:(product.channels)[0].channel,feature:fc.feature});
+                    let channelfeatures = await FeatureChannel.find({channel:inputs.integration.channel.id,feature:fc.feature});
                     for(let cf of channelfeatures){
                       data.Product.ProductData[cf.name] = fc.value.toLowerCase();
                     }

@@ -34,7 +34,6 @@ module.exports = {
         sellers.push(cp.product.seller);
       }
     });
-
     for(let seller of sellers){
       let sellerproducts = cartproducts.filter(cp => cp.product.seller === seller);
       if(sellerproducts.length>0){
@@ -81,7 +80,8 @@ module.exports = {
             integration:payment.data.integration ? payment.data.integration : null,
             modeMeli: payment.data.mode ? payment.data.mode: '',
             shippingMeli: payment.data.shipping ? payment.data.shipping : '',
-            receiverId: payment.data.receiverId ? payment.data.receiverId : ''
+            receiverId: payment.data.receiverId ? payment.data.receiverId : '',
+            packId: payment.data.packId
           }).fetch();
 
           await OrderHistory.create({
