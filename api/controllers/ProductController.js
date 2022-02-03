@@ -1994,7 +1994,7 @@ module.exports = {
       }
       if (channel === 'linio') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2120,7 +2120,7 @@ module.exports = {
       }
       if (channel === 'liniomx') {
         const intgrationId = integration.id;
-        products = await Product.find({seller: seller, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2247,7 +2247,7 @@ module.exports = {
       }
       if (channel === 'mercadolibre' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
-        let products = await Product.find({seller: seller, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2343,7 +2343,7 @@ module.exports = {
       }
       if (channel === 'mercadolibremx' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
-        let products = await Product.find({seller: seller, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2446,7 +2446,7 @@ module.exports = {
 
         const intgrationId = integration.id;
 
-        let products = await Product.find({seller: seller, active: true, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, active: true, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2625,7 +2625,7 @@ module.exports = {
         }
       }
       if(channel ==='iridio' && req.body.action==='ProductCreate'){
-        products = await Product.find({seller: seller, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: integration.id
@@ -2666,7 +2666,7 @@ module.exports = {
       }
       if (channel === 'walmart') {
         const intgrationId = integration.id;
-        let products = await Product.find({seller: seller, active: true, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, active: true, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
@@ -2778,7 +2778,7 @@ module.exports = {
       if (channel === 'shopee' && req.body.action !== 'ProductQcStatus') {
         const intgrationId = integration.id;
         let variations = null;
-        let products = await Product.find({seller: seller, delete: false}).populate('channels',{
+        let resultProducts = await Product.find({seller: seller, delete: false}).populate('channels',{
           where:{
             channel: integration.channel.id,
             integration: intgrationId
