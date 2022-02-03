@@ -1,0 +1,87 @@
+<link href='https://cdn.jsdelivr.net/npm/bulma-pricingtable@0.2.0/dist/css/bulma-pricingtable.min.css' rel='stylesheet'>
+<div class="container">
+  <h4 class="title is-4 center-title">Nuestros planes</h4>
+  <hr>
+  <div class="pricing-table is-comparative">
+    <div class="pricing-plan is-features">
+      <div class="plan-header">Planes</div>
+      <div class="plan-price">
+        <div class="content content-plans">
+          <span class="plan-price-amount">&nbsp;</span>
+        </div>
+      </div>
+      <div class="plan-items">
+        <div class="plan-item text-item-plan">Productos</div>
+        <div class="plan-item text-item-plan">Canales</div>
+        <div class="plan-item text-setup title-setup"><p>Set-up (una vez)</p></div>
+        <div class="plan-item text-item-plan"></div>
+        <div class="plan-item text-item-plan">On-boarding personalizado</div>
+        <div class="plan-item text-item-plan">Integración ERP</div>
+        <div class="plan-item text-item-plan"></div>
+        <div class="plan-item text-item-plan">Soporte</div>
+      </div>
+      <div class="plan-footer">
+      </div>
+    </div>
+    <% i = 0 %>
+    <% plans.forEach(function(plan){ %>
+      <div class="pricing-plan <%=colors[i]%> content-pricing">
+        <div class="plan-header"><%= plan.name.toUpperCase() %></div>
+        <div class="plan-price">
+          <span class="plan-price-amount text-amount"><span class="plan-price-currency">USD</span><%= Math.round(plan.pricesubscription * 2).toLocaleString('es-USD') %></span>/mensual
+          <br>
+          <span class="plan-price-amount"><span class="plan-price-currency">USD</span><%= Math.round(plan.pricesubscription).toLocaleString('es-USD') %></span>/mensual
+          <hr>
+          <div class="content content-description-plan">
+            <p><%= plan.description %></p>
+          </div>
+        </div>
+        <div class="plan-items">
+          <div class="plan-item" data-feature="Productos"><%= plan.products %></div>
+          <div class="plan-item" data-feature="Canales"><%= plan.channels %></div>
+          <div class="plan-item text-item-setup" data-feature="Set-up (Una vez)"><span class="plan-price-amount"><span class="plan-price-currency">USD </span><%= Math.round(plan.price).toLocaleString('es-USD') %></span></div>
+          <div class="plan-item"></div>
+          <div class="plan-item" data-feature="On-boarding personalizado"><%= plan.onboarding %></div>
+          <div class="plan-item" data-feature="Integración ERP"><%= plan.erp %></div>
+          <div class="plan-item"></div>
+          <div class="plan-item" data-feature="Soporte"><%= plan.support %></div>
+        </div>
+        <div class="plan-footer">
+          <button class="button is-fullwidth" plan="<%= plan.name %>"><%= plan.name === 'advanced' ? 'Contactar' : 'Empezar' %></button>
+        </div>
+      </div>
+      <% i += 1 %>
+    <% }); %>
+  </div>
+  <br>
+  <h4 class="title is-4 center-title">Servicios Adicionales</h4>
+  <hr>
+  <div class="pricing-table is-horizontal">
+    <div class="pricing-plan is-active">
+      <div class="plan-header">Edición de fotos</div>
+      <div class="plan-footer">
+        <div class="plan-item">USD 2 por SKU (hasta 6 por sku)</div>
+        <div class="plan-item">USD 1,5 por SKU (hasta 6 por sku)</div>
+        <div class="plan-item">USD 1 por SKU (hasta 6 por sku)</div>
+      </div>
+    </div>
+    <div class="pricing-plan is-active">
+      <div class="plan-header">Apertura de cuentas en marketplaces</div>
+      <div class="plan-footer">
+        <div class="plan-item">USD 99 c/u</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  live('.button','click',e =>{
+    let planName = e.target.getAttribute('plan');
+    io.socket.post(`/generatekey`, {name: planName}, function (resData, jwRes) {
+      if(jwRes.statusCode == 200){
+        if (resData && resData.key) {
+          window.location.href = `/registerseller/${resData.key}`;
+        } 
+      }
+    });
+  });
+</script>

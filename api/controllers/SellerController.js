@@ -1016,6 +1016,7 @@ module.exports = {
           } else {
             let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
             let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
+            // se crea la subscrion en epayco
             let subscriptionInfo = {
               id_plan: resultPlan.id,
               customer: card.customerId,
@@ -1027,13 +1028,7 @@ module.exports = {
             };
             const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
             if (subscription.success) {
-              await Subscription.create({
-                reference: subscription.id,
-                currentPeriodStart: subscription.current_period_start,
-                currentPeriodEnd: subscription.current_period_end,
-                state: subscription.status_subscription,
-                seller: seller.id
-              }).fetch();
+              // se hace el cobro del setup
               const paymentInfo = {
                 token_card: card.token,
                 customer_id: card.customerId,
@@ -1055,10 +1050,8 @@ module.exports = {
               };
               let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
               if(payment.success && payment.data.estado === 'Aceptada'){
-                await User.updateOne({id: user.id}).set({active: true});
-                await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
                 let state = await sails.helpers.orderState(payment.data.estado);
-                await Invoice.create({
+                let invoice = await Invoice.create({
                   reference: payment.data.ref_payco,
                   invoice: payment.data.factura,
                   state: state,
@@ -1067,6 +1060,34 @@ module.exports = {
                   tax: payment.data.iva,
                   seller: seller.id
                 }).fetch();
+                // se activa subscricion en epayco
+                const chargeSubscription = {
+                  id_plan: resultPlan.id,
+                  customer: card.customerId,
+                  token_card: card.token,
+                  url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
+                  doc_type: card.docType,
+                  doc_number: card.docNumber,
+                  ip: require('ip').address()
+                };
+                const epayco = await sails.helpers.payment.init('CC');
+                const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
+                if (resultCharge.success) {
+                  await Subscription.create({
+                    reference: subscription.id,
+                    currentPeriodStart: subscription.current_period_start,
+                    currentPeriodEnd: resultCharge.subscription.periodEnd,
+                    state: resultCharge.subscription.status,
+                    seller: seller.id
+                  }).fetch();
+                  // await Subscription.updateOne({id: resultSubscrition.id}).set({
+                  //   state: resultCharge.subscription.status,
+                  //   currentPeriodEnd: resultCharge.subscription.periodEnd
+                  // });
+                }
+                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase()}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
+                await User.updateOne({id: user.id}).set({active: true});
+                await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
                 req.session.user = user;
                 req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
                 return res.send({});
@@ -1105,6 +1126,65 @@ module.exports = {
       return res.send({error, key});
     } else {
       return res.send({error, key});
+    }
+  },
+  generateInvoice: async(req, res)=>{
+    const {jsPDF} = require('jspdf');
+    require('jspdf-autotable');
+    const axios = require('axios');
+    const moment = require('moment');
+    try {
+      let id = req.param('id') ? req.param('id') : null
+      const doc = new jsPDF({orientation: 'p', unit: 'mm', format: 'a4'});
+      let invoice = await Invoice.findOne({id: id}).populate('seller');
+      let address = await Address.findOne({ id: invoice.seller.mainAddress }).populate('city').populate('country');
+      let response = await axios.get(`https://1ecommerce.app/images/1ecommerce-logo.png`, { responseType: 'arraybuffer' });
+      buffer = Buffer.from(response.data).toString('base64');
+      doc.addImage(buffer, 135, 5, 60, 0);
+      doc.setFontSize(45);
+      doc.setFont("helvetica", "bold");
+      doc.text('FACTURA', 15, 15);
+      doc.setFontSize(15);
+      doc.setFont('times', 'normal');
+      doc.text('1ECOMMERCE', 15, 30);
+      doc.text('NIT. 900.521.885-1', 15, 35);
+      doc.text('CRA 15 No. 91 - 30 PISO 4 Bogotá - Colombia', 15, 45);
+      doc.text('Tel: +57 315 3177477 | +57 1 742 4498', 15, 50);
+      doc.setFont("times", "bold");
+      doc.text('Datos Cliente', 15, 70);
+      doc.text('N° Factura', 120, 70);
+      doc.text(invoice.reference, 120, 77);
+      doc.text('Fecha Factura', 120, 88);
+      doc.text(moment(invoice.createdAt).format('DD-MM-YYYY'), 120, 95);
+      doc.setFont('times', 'normal');
+      doc.text(invoice.seller.name.toUpperCase(), 15, 77);
+      doc.text(`NIT. ${invoice.seller.dni}`, 15, 82);
+      doc.text(address.addressline1, 15, 90);
+      doc.text(invoice.seller.email, 15, 95);
+      doc.autoTable({
+        styles: {
+          fontSize: 15,
+          font: 'times'
+        },
+        margin: { top: 110 },
+        head: [['Descripción', '' ,'Precio']],
+        body: [
+          ['Pago Setup 1Ecommerce', '', `$ ${Math.round(invoice.total).toLocaleString('es-CO')}`],
+          ['', ''],
+          ['', ''],
+          ['', ''],
+          ['', ''],
+          ['', ''],
+          ['', ''],
+          ['', ''],
+        ],
+        foot: [['', 'Total', `$ ${Math.round(invoice.total).toLocaleString('es-CO')}`]]
+      })
+
+      const invoicePDF = Buffer.from(new Uint8Array(doc.output('arraybuffer'))).toString('base64');
+      return res.view('pages/pdf',{guia: invoicePDF, label:null});
+    } catch (error) {
+      return res.view('pages/pdf',{guia: null, label:null});
     }
   }
 };

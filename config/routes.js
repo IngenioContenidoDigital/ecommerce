@@ -283,6 +283,7 @@ module.exports.routes = {
   'POST /message/edit/:id' : {controller:'MessageController',action:'editmessage'},
 
   'GET /registerseller/:key' : {controller:'SellerController',action:'registersellerform'},
+  'GET /pricingpage' : {controller:'IndexController',action:'pricingpage'},
   'POST /registerseller' : {controller:'SellerController',action:'registerseller'},
   'POST /collectregister/:seller' : {controller:'SellerController',action:'collectregister'},
   'POST /generatekey' : {controller:'SellerController',action:'generateKey'},
@@ -292,6 +293,8 @@ module.exports.routes = {
   'GET /plans/:action?/:id?' : {controller:'PlanController',action:'showplans'},
   'POST /plan/create' : {controller:'PlanController',action:'createplan'},
   'POST /plan/edit/:id' : {controller:'PlanController',action:'editplan'},
+
+  'GET /generateInvoice/:id' : {controller:'SellerController', action:'generateInvoice'},
 
   /** INICIO HELP ROUTES */
   'GET /help/:action?/:id?' : {controller:'HelpController',action:'listterms'},

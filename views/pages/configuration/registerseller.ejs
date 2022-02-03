@@ -1,8 +1,8 @@
 <link href='https://cdn.jsdelivr.net/npm/bulma-steps@2.2.1/dist/css/bulma-steps.min.css' rel='stylesheet'>
 <script src="https://cdn.jsdelivr.net/npm/bulma-steps@2.2.1/dist/js/bulma-steps.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://sdk.mercadopago.com/js/v2"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
 <link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
 
 <div class="columns is-centered is-gapless">
@@ -822,7 +822,7 @@
   }
 
   function showTermsAndConditionsCO(section) {
-    section.innerHTML = marked(`## **TÉRMINOS Y CONDICIONES SERVICIO DECENTRALIZADOR DE CANALES 1ECOMMERCE SAS.**
+    section.innerHTML = marked.parse(`## **TÉRMINOS Y CONDICIONES SERVICIO DECENTRALIZADOR DE CANALES 1ECOMMERCE SAS.**
 
 Los presentes términos y condiciones aplican al Servicio de centralizador u optimizador de canales que 1Ecommerce SAS (en adelante “1Ecommerce”) pone a disposición y presta a productores y comercializadores de productos (en adelante, cada uno un “Vendedor”).
 
@@ -973,7 +973,7 @@ Los presentes Términos y Condiciones obligan a las partes en la totalidad de s
   }
 
   function showTermsAndConditionsMX(section) {
-    section.innerHTML = marked(`## **TÉRMINOS Y CONDICIONES DEL SERVICIO DE CENTRALIZADOR DE CANALES 1ECOM  S. DE  R. L  .DE  CV.**
+    section.innerHTML = marked.parse(`## **TÉRMINOS Y CONDICIONES DEL SERVICIO DE CENTRALIZADOR DE CANALES 1ECOM  S. DE  R. L  .DE  CV.**
 
 Los presentes términos y condiciones aplican al Servicio de centralizador u optimizador de canales que 1ECOM S. DE R.L. DE CV (en adelante “1ECOM”) pone a disposición y presta a productores y comercializadores de productos (en adelante, cada uno un “Vendedor”).
 

@@ -1242,5 +1242,10 @@ module.exports = {
     } else {
       return res.send({error, result});
     }
+  },
+  pricingpage: async (req, res) =>{
+    let plans = await Plan.find().sort('createdAt ASC');
+    let colors = ['is-info', 'is-danger', 'is-primary', 'is-warning', 'is-success'];
+    return res.view('pages/configuration/pricingpage',{plans,colors});
   }
 };
