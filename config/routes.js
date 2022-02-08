@@ -237,6 +237,8 @@ module.exports.routes = {
   'POST /commissionchannel/:seller' : {controller:'SellerController',action:'commissionchannel'},
   'PUT /removecommission' : {controller:'SellerController',action:'removecommissionchannel'},
   'POST /createcreditcard/:seller' : {controller:'SellerController',action:'createcreditcard'},
+  'GET /subscriptions/:seller' : {controller:'SellerController',action:'subscriptions'},
+  'POST /cancelsubscription' : {controller:'SellerController',action:'cancelsubscription'},
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
   'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'GET /integrations/liniomx/categories' : {controller:'CategoryController',action:'liniomxcategories'},

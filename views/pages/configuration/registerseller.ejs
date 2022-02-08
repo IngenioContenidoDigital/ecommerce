@@ -4,7 +4,6 @@
 <script src="https://sdk.mercadopago.com/js/v2"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-checkradio@1.1.1/dist/css/bulma-checkradio.min.css">
 <link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
-
 <div class="columns is-centered is-gapless">
   <div class="column is-8">
     <div class="container">
@@ -413,7 +412,8 @@
             <div class="step-content has-text-centered" id="contentfinish">
               <article class="message is-info" id="msg-process">
                 <div class="message-body">
-                  Procesando tu pago...
+                  <p>Por favor espera, estamos procesando tu pago. Tomará unos minutos.</p><br>
+                  <progress class="progress is-small is-primary" max="100">15%</progress>
                 </div>
               </article>
               <article class="message is-success is-hidden" id="msg-success">
@@ -723,38 +723,38 @@
     const country = countries.find(c => c.id === countryId);
     if (country && country.iso === 'MX') {
       try {
-        let cardToken = await mp.createCardToken({
-          cardNumber: form.querySelector('input[name="card"]').value,
-          cardholderName: form.querySelector('input[name="cardname"]').value,
-          cardExpirationMonth: form.querySelector('select[name="month"]').value,
-          cardExpirationYear: form.querySelector('select[name="year"]').value,
-          securityCode: form.querySelector('input[name="cvv"]').value,
-          identificationType:  form.querySelector('select[name="tid"]').value,
-          identificationNumber: form.querySelector('input[name="dni"]').value,
-        })
-        io.socket.post(`${form.action}/${sellerId}`, {
-          type: 'register',
-          country: country.iso,
-          token: cardToken.id,
-          card: form.querySelector('input[name="card"]').value,
-          cardname: form.querySelector('input[name="cardname"]').value,
-          tid: form.querySelector('select[name="tid"]').value,
-          dni: form.querySelector('input[name="dni"]').value
-        }, function (resData, jwRes) {
-          if(jwRes.statusCode == 200){
-            if (resData && resData.error) {
-              showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
-              document.querySelector('#btn-next').removeAttribute('disabled');
-            } else {
-              setTimeout(() => {
-                collectRegister(stepNext);
-              }, 3000);
-            }
-          } else {
-            showError('Error al guardar la tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
-            document.querySelector('#btn-next').removeAttribute('disabled');
-          };
-        });
+        // let cardToken = await mp.createCardToken({
+        //   cardNumber: form.querySelector('input[name="card"]').value,
+        //   cardholderName: form.querySelector('input[name="cardname"]').value,
+        //   cardExpirationMonth: form.querySelector('select[name="month"]').value,
+        //   cardExpirationYear: form.querySelector('select[name="year"]').value,
+        //   securityCode: form.querySelector('input[name="cvv"]').value,
+        //   identificationType:  form.querySelector('select[name="tid"]').value,
+        //   identificationNumber: form.querySelector('input[name="dni"]').value,
+        // })
+        // io.socket.post(`${form.action}/${sellerId}`, {
+        //   type: 'register',
+        //   country: country.iso,
+        //   token: cardToken.id,
+        //   card: form.querySelector('input[name="card"]').value,
+        //   cardname: form.querySelector('input[name="cardname"]').value,
+        //   tid: form.querySelector('select[name="tid"]').value,
+        //   dni: form.querySelector('input[name="dni"]').value
+        // }, function (resData, jwRes) {
+        //   if(jwRes.statusCode == 200){
+        //     if (resData && resData.error) {
+        //       showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+        //       document.querySelector('#btn-next').removeAttribute('disabled');
+        //     } else {
+        //       setTimeout(() => {
+        //         collectRegister(stepNext);
+        //       }, 3000);
+        //     }
+        //   } else {
+        //     showError('Error al guardar la tarjeta', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+        //     document.querySelector('#btn-next').removeAttribute('disabled');
+        //   };
+        // });
       } catch (error) {
         showError(`Error creando el token: ${error.message}`, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
         document.querySelector('#btn-next').removeAttribute('disabled');

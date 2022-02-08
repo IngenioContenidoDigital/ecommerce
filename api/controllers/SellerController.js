@@ -1070,20 +1070,18 @@ module.exports = {
                   doc_number: card.docNumber,
                   ip: require('ip').address()
                 };
+
                 const epayco = await sails.helpers.payment.init('CC');
                 const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
-                if (resultCharge.success) {
+
+                if (resultCharge.periodEnd) {
                   await Subscription.create({
                     reference: subscription.id,
                     currentPeriodStart: subscription.current_period_start,
-                    currentPeriodEnd: resultCharge.subscription.periodEnd,
-                    state: resultCharge.subscription.status,
+                    currentPeriodEnd: resultCharge.periodEnd,
+                    state: resultCharge.status,
                     seller: seller.id
                   }).fetch();
-                  // await Subscription.updateOne({id: resultSubscrition.id}).set({
-                  //   state: resultCharge.subscription.status,
-                  //   currentPeriodEnd: resultCharge.subscription.periodEnd
-                  // });
                 }
                 await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase()}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
                 await User.updateOne({id: user.id}).set({active: true});
@@ -1186,5 +1184,31 @@ module.exports = {
     } catch (error) {
       return res.view('pages/pdf',{guia: null, label:null});
     }
-  }
+  },
+  subscriptions: async(req, res)=>{
+    let seller = req.param('seller');
+    let moment = require('moment');
+    let invoices = await Invoice.find({seller: seller}).populate('state');
+    let subscriptions = await Subscription.find({seller: seller});
+    return res.view('pages/sellers/subscriptions',{layout:'layouts/admin', moment, invoices, subscriptions, seller});
+  },
+  cancelsubscription: async(req, res)=>{
+    try {
+      let seller = req.body.seller;
+      let reference = req.body.reference;
+      const epayco = await sails.helpers.payment.init('CC');
+      let resultCancel = await epayco.subscriptions.cancel(reference);
+      if (resultCancel.success) {
+        await Subscription.updateOne({reference: reference, seller: seller}).set({
+          state: 'inactive'
+        });
+        return res.send({message: resultCancel.menssage});
+      } else {
+        return res.send({error: resultCancel.status ? resultCancel.data.respuesta : resultCancel.data.description});
+      }
+    } catch (err) {
+      console.log(err);
+      return res.send({error: err.menssage});
+    }
+  },
 };
