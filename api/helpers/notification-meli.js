@@ -17,8 +17,9 @@ module.exports = {
     let resource = inputs.body.resource;
     let userId = inputs.body.user_id;
     let topic = inputs.body.topic;
-    let integration = await Integrations.findOne({useridml: userId}).populate('seller');
-    if (integration) {
+    let integration = await Integrations.find({useridml: userId}).populate('seller');
+    if (integration.length > 0) {
+      integration = integration[0];
       let seller = integration.seller.id;
       const address = await Address.findOne({id: integration.seller.mainAddress}).populate('country');
       try {

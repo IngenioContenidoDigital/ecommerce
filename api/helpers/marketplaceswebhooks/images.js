@@ -29,10 +29,10 @@ module.exports = {
               throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
             });
             if (uploaded) {
-              let cover = 1;
+              let isCover =  await ProductImage.count({ product: product.id, cover: 1});
               let totalimg = await ProductImage.count({ product: product.id});
               totalimg += 1;
-              if (totalimg > 1) { cover = 0; }
+              let cover = isCover === 0 ? 1 : 0;
 
               await ProductImage.findOrCreate({product: product.id, file: file},{
                 file: file,
@@ -44,7 +44,6 @@ module.exports = {
                 if(!created){
                   await ProductImage.updateOne({id: record.id}).set({
                     file: file,
-                    position: totalimg,
                     cover: cover
                   });
                 }
