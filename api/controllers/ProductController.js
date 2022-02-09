@@ -1450,7 +1450,10 @@ module.exports = {
         prod.quantity = req.body.product.quantity ? parseInt(req.body.product.quantity) : 0;
         prod.seller = seller;
 
-        let products = await Product.find({ reference: [prod.supplierreference, prod.supplierreference.toUpperCase()], seller: seller })
+        let products = await Product.find({seller: seller, or : [
+          { reference: [prod.supplierreference, prod.supplierreference.toUpperCase()]},
+          { externalId: [prod.supplierreference, prod.supplierreference.toUpperCase()] }
+        ]})
           .populate('categories');
         let categories = [];
 
@@ -1473,7 +1476,7 @@ module.exports = {
             variation = variation.length > 0 ? variation[0] : variation;
             prod.variation = variation.id;
             let pvs = await ProductVariation.find({product:prod.product,supplierreference:[prod.supplierreference, prod.supplierreference.toUpperCase()]}).populate('variation');
-            let pv = pvs.find(pv=> pv.variation.name == variation.name);
+            let pv = pvs.find(pv=> pv.variation.name.toLowerCase() == variation.name.toLowerCase());
             if (!pv) {
               await ProductVariation.create(prod).fetch();
             } else {
@@ -3103,10 +3106,10 @@ module.exports = {
                               throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
                             });
                             if (uploaded) {
-                              let cover = 1;
+                              let isCover =  await ProductImage.count({ product: productColor.id, cover: 1});
                               let totalimg = await ProductImage.count({ product: productColor.id});
                               totalimg += 1;
-                              if (totalimg > 1) { cover = 0; }
+                              let cover = isCover === 0 ? 1 : 0;
 
                               await ProductImage.findOrCreate({product: productColor.id, file: file},{
                                 file: file,
@@ -3118,7 +3121,6 @@ module.exports = {
                                 if(!created){
                                   await ProductImage.updateOne({id: record.id}).set({
                                     file: file,
-                                    position: totalimg,
                                     cover: cover
                                   });
                                 }
@@ -3159,10 +3161,10 @@ module.exports = {
                           throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                         });
                         if (uploaded) {
-                          let cover = 1;
+                          let isCover =  await ProductImage.count({ product: product.id, cover: 1});
                           let totalimg = await ProductImage.count({ product: product.id});
                           totalimg += 1;
-                          if (totalimg > 1) { cover = 0; }
+                          let cover = isCover === 0 ? 1 : 0;
 
                           await ProductImage.findOrCreate({product: product.id, file: file},{
                             file: file,
@@ -3174,7 +3176,6 @@ module.exports = {
                             if(!created){
                               await ProductImage.updateOne({id: record.id}).set({
                                 file: file,
-                                position: totalimg,
                                 cover: cover
                               });
                             }
@@ -3214,10 +3215,10 @@ module.exports = {
                       throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
                     });
                     if (uploaded) {
-                      let cover = 1;
+                      let isCover =  await ProductImage.count({ product: product.id, cover: 1});
                       let totalimg = await ProductImage.count({ product: product.id});
                       totalimg += 1;
-                      if (totalimg > 1) { cover = 0; }
+                      let cover = isCover === 0 ? 1 : 0;
 
                       await ProductImage.findOrCreate({product: product.id, file: file},{
                         file: file,
@@ -3229,7 +3230,6 @@ module.exports = {
                         if(!created){
                           await ProductImage.updateOne({id: record.id}).set({
                             file: file,
-                            position: totalimg,
                             cover: cover
                           });
                         }
