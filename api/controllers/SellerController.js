@@ -1113,7 +1113,8 @@ module.exports = {
                   }).fetch();
                 }
                 let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
-                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[0]}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
+                let position = Math.floor(Math.random() * (2 - 0)) + 0;
+                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
                 await User.updateOne({id: user.id}).set({active: true});
                 await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
                 req.session.user = user;

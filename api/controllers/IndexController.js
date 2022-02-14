@@ -92,12 +92,22 @@ module.exports = {
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     let questionsSeller = 0;
+    let btnCalendar = false;
     let helper = 'catalog';
     let seller = req.session.user.seller || '';
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+      let subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').limit(1);
+      let diferenceDays = moment().diff(moment(subscription[0].currentPeriodStart, 'MM/DD/YYYY'), 'days');
+      if (diferenceDays <= 15) {
+        btnCalendar = true;
+      }
     }
+    let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+    let position = Math.floor(Math.random() * (2 - 0)) + 0;
     req.session.questions = questionsSeller;
+    req.session.linkCalendar = links[position];
+    req.session.btnCalendar = btnCalendar;
     return res.view('pages/homeadmin',{layout:'layouts/admin',helper});
   },
   reportsadmin:async (req, res) =>{
