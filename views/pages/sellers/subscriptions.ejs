@@ -22,7 +22,7 @@
           <tr>
             <td class="align-middle is-capitalized"><%= subscription.reference %></td>
             <td class="align-middle is-capitalized" id="tdStatus"><span class="tag <%= subscription.state === 'active' ? 'is-success' : 'is-danger'%>"><%= subscription.state === 'active' ? 'ACTIVA' : 'CANCELADA' %></span></td>
-            <td class="align-middle is-capitalized"><%= moment(subscription.currentPeriodStart).format('DD-MM-YYYY') %></td>
+            <td class="align-middle is-capitalized"><%= moment(subscription.currentPeriodStart, 'DD/MM/YYYY').format('DD-MM-YYYY') %></td>
             <td class="align-middle is-capitalized"><%= subscription.currentPeriodEnd %></td>
             <%if(req.session.user.rights.name=='superadmin' && subscription.state === 'active'){%>
               <td class="align-middle">

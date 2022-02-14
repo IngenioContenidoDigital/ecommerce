@@ -26,6 +26,7 @@ module.exports = {
     retIca:{type:'number', defaultsTo:0},
     retFte:{type:'number', defaultsTo:0},
     safestock:{type:'number', defaultsTo:0},
+    idSiigo:{type:'string', defaultsTo:''},
     currency:{
       model:'currency'
     },

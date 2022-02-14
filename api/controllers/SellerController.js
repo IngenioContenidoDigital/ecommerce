@@ -836,12 +836,13 @@ module.exports = {
         const resultSubscription = await epayco.subscriptions.get(req.body.x_extra1);
         if (resultSubscription.status) {
           let state = await sails.helpers.orderState(req.body.x_response);
+          let seller = await Seller.findOne({id: subscription.seller});
           await Subscription.updateOne({id: subscription.id}).set({
             state: resultSubscription.status_plan,
             currentPeriodStart: resultSubscription.current_period_start,
             currentPeriodEnd: resultSubscription.current_period_end
           });
-          await Invoice.create({
+          let invoice = await Invoice.create({
             reference: req.body.x_ref_payco,
             invoice: req.body.x_id_factura,
             state: state,
@@ -850,6 +851,16 @@ module.exports = {
             tax: req.body.x_tax,
             seller: subscription.seller
           }).fetch();
+          // se crea factura en Siigo
+          let dataSiigo = {
+            idInvoice: invoice.id,
+            observations: 'Se realiza cobro por suscripción a tu plan',
+            code: '1009',
+            description: 'Suscripción a plan de la plataforma',
+            priceItem: parseFloat(req.body.x_amount),
+            total: (parseFloat(req.body.x_amount) + ((parseFloat(req.body.x_amount)*15)/100)).toFixed(2)
+          };
+          await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
         }
       }
     } else {
@@ -894,6 +905,9 @@ module.exports = {
         console.log(err);
       }
       if (req.body.seller && req.body.user) {
+        if (!seller.idSiigo) {
+          await sails.helpers.siigo.createClient(req.body.seller);
+        }
         await Seller.updateOne({id: req.body.seller}).set(sellerData);
         await User.updateOne({id: req.body.user}).set({
           emailAddress: req.body.email,
@@ -929,7 +943,7 @@ module.exports = {
           profile: profile.id,
           active: false
         });
-        await TermsAndConditions.create({
+        await TermsAndConditions.findOrCreate({seller: seller.id}, {
           date: moment().format('YYYY-MM-DD'),
           hour: moment().format('LTS'),
           mac: getMac.default(),
@@ -937,6 +951,9 @@ module.exports = {
           accept: req.body.terms,
           seller: seller.id
         });
+        if (!seller.idSiigo) {
+          await sails.helpers.siigo.createClient(seller.id);
+        }
         return res.send({error: null, seller: seller.id, user: user.id});
       }
     }catch(err){
@@ -1028,7 +1045,7 @@ module.exports = {
             };
             const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
             if (subscription.success) {
-              // se hace el cobro del setup
+              //se hace el cobro del setup
               const paymentInfo = {
                 token_card: card.token,
                 customer_id: card.customerId,
@@ -1051,6 +1068,7 @@ module.exports = {
               let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
               if(payment.success && payment.data.estado === 'Aceptada'){
                 let state = await sails.helpers.orderState(payment.data.estado);
+
                 let invoice = await Invoice.create({
                   reference: payment.data.ref_payco,
                   invoice: payment.data.factura,
@@ -1060,6 +1078,17 @@ module.exports = {
                   tax: payment.data.iva,
                   seller: seller.id
                 }).fetch();
+                // Se crea factura en siigo
+                let dataSiigo = {
+                  idInvoice: invoice.id,
+                  observations: 'Se realiza cobro por registro de cuenta',
+                  code: '1009',
+                  description: 'Setup de la plataforma',
+                  priceItem: parseFloat(price),
+                  total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                };
+                await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+
                 // se activa subscricion en epayco
                 const chargeSubscription = {
                   id_plan: resultPlan.id,
@@ -1083,7 +1112,8 @@ module.exports = {
                     seller: seller.id
                   }).fetch();
                 }
-                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase()}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
+                let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[0]}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
                 await User.updateOne({id: user.id}).set({active: true});
                 await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
                 req.session.user = user;
@@ -1127,68 +1157,22 @@ module.exports = {
     }
   },
   generateInvoice: async(req, res)=>{
-    const {jsPDF} = require('jspdf');
-    require('jspdf-autotable');
-    const axios = require('axios');
-    const moment = require('moment');
     try {
-      let id = req.param('id') ? req.param('id') : null
-      const doc = new jsPDF({orientation: 'p', unit: 'mm', format: 'a4'});
+      let id = req.param('id') ? req.param('id') : null;
       let invoice = await Invoice.findOne({id: id}).populate('seller');
-      let address = await Address.findOne({ id: invoice.seller.mainAddress }).populate('city').populate('country');
-      let response = await axios.get(`https://1ecommerce.app/images/1ecommerce-logo.png`, { responseType: 'arraybuffer' });
-      buffer = Buffer.from(response.data).toString('base64');
-      doc.addImage(buffer, 135, 5, 60, 0);
-      doc.setFontSize(45);
-      doc.setFont("helvetica", "bold");
-      doc.text('FACTURA', 15, 15);
-      doc.setFontSize(15);
-      doc.setFont('times', 'normal');
-      doc.text('1ECOMMERCE', 15, 30);
-      doc.text('NIT. 900.521.885-1', 15, 35);
-      doc.text('CRA 15 No. 91 - 30 PISO 4 Bogotá - Colombia', 15, 45);
-      doc.text('Tel: +57 315 3177477 | +57 1 742 4498', 15, 50);
-      doc.setFont("times", "bold");
-      doc.text('Datos Cliente', 15, 70);
-      doc.text('N° Factura', 120, 70);
-      doc.text(invoice.reference, 120, 77);
-      doc.text('Fecha Factura', 120, 88);
-      doc.text(moment(invoice.createdAt).format('DD-MM-YYYY'), 120, 95);
-      doc.setFont('times', 'normal');
-      doc.text(invoice.seller.name.toUpperCase(), 15, 77);
-      doc.text(`NIT. ${invoice.seller.dni}`, 15, 82);
-      doc.text(address.addressline1, 15, 90);
-      doc.text(invoice.seller.email, 15, 95);
-      doc.autoTable({
-        styles: {
-          fontSize: 15,
-          font: 'times'
-        },
-        margin: { top: 110 },
-        head: [['Descripción', '' ,'Precio']],
-        body: [
-          ['Pago Setup 1Ecommerce', '', `$ ${Math.round(invoice.total).toLocaleString('es-CO')}`],
-          ['', ''],
-          ['', ''],
-          ['', ''],
-          ['', ''],
-          ['', ''],
-          ['', ''],
-          ['', ''],
-        ],
-        foot: [['', 'Total', `$ ${Math.round(invoice.total).toLocaleString('es-CO')}`]]
-      })
-
-      const invoicePDF = Buffer.from(new Uint8Array(doc.output('arraybuffer'))).toString('base64');
+      let invoicePDF = null;
+      if (invoice.idSiigo) {
+        invoicePDF = await sails.helpers.siigo.getInvoice(invoice.idSiigo);
+      }
       return res.view('pages/pdf',{guia: invoicePDF, label:null});
-    } catch (error) {
+    } catch (err) {
       return res.view('pages/pdf',{guia: null, label:null});
     }
   },
   subscriptions: async(req, res)=>{
     let seller = req.param('seller');
     let moment = require('moment');
-    let invoices = await Invoice.find({seller: seller}).populate('state');
+    let invoices = await Invoice.find({seller: seller}).populate('state').sort('createdAt DESC');
     let subscriptions = await Subscription.find({seller: seller});
     return res.view('pages/sellers/subscriptions',{layout:'layouts/admin', moment, invoices, subscriptions, seller});
   },
