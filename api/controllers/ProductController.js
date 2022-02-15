@@ -144,7 +144,7 @@ module.exports = {
       skip: ((page - 1) * perPage),
       limit: perPage,
     })
-      .populate('images', { cover: 1 })
+      .populate('images')
       .populate('tax')
       .populate('mainColor')
       .populate('manufacturer')
@@ -169,6 +169,11 @@ module.exports = {
     });
 
     for (let p of products) {
+      if (p.images.length > 0 && !(p.images.some(image => image.cover === 1))) {
+        await ProductImage.updateOne({id: p.images[0].id}).set({
+          cover: 1
+        });
+      }
       p.stock = await ProductVariation.sum('quantity', { product: p.id });
       let cl = 'bx-x-circle';
       if (p.active) { cl = 'bx-check-circle'; }
