@@ -105,5 +105,13 @@ module.exports = {
     }else{
       return res.redirect('/plans?error='+error);
     }
+  },
+  upgradesubscription: async (req, res) =>{
+    let seller = req.session.user.seller;
+    let subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').limit(1);
+    let filter = subscription.length > 0 ? {id: { '!=': subscription[0].plan }} : {};
+    let plans = await Plan.find(filter).sort('createdAt ASC');
+    let colors = ['is-info', 'is-danger', 'is-primary', 'is-warning', 'is-success'];
+    return res.view('pages/configuration/upgradesubscription',{layout:'layouts/admin', plans, colors, seller});
   }
 };

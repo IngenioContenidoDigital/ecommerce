@@ -68,12 +68,18 @@
         <div class="navbar-item is-inline-block">
             <div class="buttons">
               <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
+                <a href="/upgradesubscription" class="button is-primary is-light">
+                  <span class="icon has-text-primary">
+                    <i class='bx bx-check-square'></i>
+                  </span>
+                  <span>Subir de plan</span>
+                </a>
                 <%if(session.btnCalendar){%>
                   <a href="<%= session.linkCalendar %>" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Puedes agendar tu cita de soporte">
                     <i class='bx bx-calendar-event bx-tada is-size-4'></i>
                   </a>
                 <%}%>
-                <a href="#" id="addTicket" class="button">
+                <a href="#" id="addTicket" class="button ">
                   <i class='bx bxs-coupon bx-flashing bx-flip-horizontal is-size-4' ></i>
                 </a>
                 <a href="/channelmessages/<%=session.user.seller%>" id="notification-button" class="button">

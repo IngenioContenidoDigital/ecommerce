@@ -1,0 +1,79 @@
+<link href='https://cdn.jsdelivr.net/npm/bulma-pricingtable@0.2.0/dist/css/bulma-pricingtable.min.css' rel='stylesheet'>
+<div class="container">
+  <div class="notification is-danger is-light is-hidden" id="error"></div>
+  <div class="box">
+    <h4 class="title is-4 center-title">CAMBIA TU PLAN</h4>
+    <h6 class="title is-size-7 center-title">Actualiza tu plan para que se adapte a las necesidades de tu negocio.</h6>
+    <hr>
+    <div class="pricing-table is-comparative">
+      <div class="pricing-plan is-features">
+        <div class="plan-header">Planes</div>
+        <div class="plan-price">
+          <div class="content content-plans">
+            <span class="plan-price-amount">&nbsp;</span>
+          </div>
+        </div>
+        <div class="plan-items">
+          <div class="plan-item text-item-plan">Productos</div>
+          <div class="plan-item text-item-plan">Canales</div>
+          <div class="plan-item text-item-plan">Integración ERP</div>
+          <div class="plan-item text-item-plan">Soporte</div>
+        </div>
+        <div class="plan-footer">
+        </div>
+      </div>
+      <% i = 0 %>
+      <% plans.forEach(function(plan){ %>
+        <div class="pricing-plan <%=colors[i]%> content-pricing">
+          <div class="plan-header"><%= plan.name.toUpperCase() %></div>
+          <div class="plan-price">
+            <span class="plan-price-amount text-amount"><span class="plan-price-currency">USD</span><%= Math.round(plan.pricesubscription * 2).toLocaleString('es-USD') %></span>/mensual
+            <br>
+            <span class="plan-price-amount"><span class="plan-price-currency">USD</span><%= Math.round(plan.pricesubscription).toLocaleString('es-USD') %></span>/mensual
+            <hr>
+            <div class="content content-description-plan">
+              <p><%= plan.description %></p>
+            </div>
+          </div>
+          <div class="plan-items">
+            <div class="plan-item" data-feature="Productos"><%= plan.products %></div>
+            <div class="plan-item" data-feature="Canales"><%= plan.channels %></div>
+            <div class="plan-item" data-feature="Integración ERP"><%= plan.erp %></div>
+            <div class="plan-item" data-feature="Soporte"><%= plan.support %></div>
+          </div>
+          <div class="plan-footer">
+            <button class="button is-fullwidth" plan="<%= plan.id %>">Cambiar</button>
+          </div>
+        </div>
+        <% i += 1 %>
+      <% }); %>
+    </div>
+  </div>
+</div>
+<script>
+  live('.button','click', e =>{
+    let planId = e.target.getAttribute('plan');
+    let seller = "<%= seller%>";
+    io.socket.post(`/upgradepayment`, {plan: planId, seller}, function (resData, jwRes) {
+      if(jwRes.statusCode == 200){
+        if (resData && resData.error) {
+          document.querySelector('#error').innerHTML = resData.error;
+          removeClass(document.querySelector('#error'), 'is-hidden');
+          setTimeout(function() {
+            addClass(document.querySelector('#error'),'is-hidden');
+          }, 10000);
+        } else {
+          setTimeout(() => {
+            window.location = '/inicio'
+          }, 1000);
+        }
+      } else {
+        document.querySelector('#error').innerHTML = 'Error al cambiar tu plan, intentalo más tarde';
+        removeClass(document.querySelector('#error'), 'is-hidden');
+        setTimeout(function() {
+          addClass(document.querySelector('#error'),'is-hidden');
+        }, 10000);
+      };
+    });
+  });
+</script>

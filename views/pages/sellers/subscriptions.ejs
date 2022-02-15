@@ -9,6 +9,7 @@
       <thead>
         <tr>
           <th scope="col">Referencia</th>
+          <th scope="col">Plan</th>
           <th scope="col">Estado</th>
           <th scope="col">Fecha de creación</th>
           <th scope="col">Próximo pago</th>
@@ -21,6 +22,7 @@
         <% subscriptions.forEach(function(subscription){ %>
           <tr>
             <td class="align-middle is-capitalized"><%= subscription.reference %></td>
+            <td class="align-middle is-capitalized"><%= subscription.plan.name.toUpperCase() %></td>
             <td class="align-middle is-capitalized" id="tdStatus"><span class="tag <%= subscription.state === 'active' ? 'is-success' : 'is-danger'%>"><%= subscription.state === 'active' ? 'ACTIVA' : 'CANCELADA' %></span></td>
             <td class="align-middle is-capitalized"><%= moment(subscription.currentPeriodStart, 'MM/DD/YYYY').format('DD-MM-YYYY') %></td>
             <td class="align-middle is-capitalized"><%= subscription.currentPeriodEnd %></td>

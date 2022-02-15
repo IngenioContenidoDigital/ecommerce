@@ -286,6 +286,8 @@ module.exports.routes = {
 
   'GET /registerseller/:key' : {controller:'SellerController',action:'registersellerform'},
   'GET /pricingpage' : {controller:'IndexController',action:'pricingpage'},
+  'GET /upgradesubscription' : {controller:'PlanController',action:'upgradesubscription'},
+  'POST /upgradepayment' : {controller:'SellerController',action:'upgradepayment'},
   'POST /registerseller' : {controller:'SellerController',action:'registerseller'},
   'POST /collectregister/:seller' : {controller:'SellerController',action:'collectregister'},
   'POST /generatekey' : {controller:'SellerController',action:'generateKey'},

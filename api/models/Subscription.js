@@ -11,6 +11,7 @@
     currentPeriodStart: {type:'string'},
     currentPeriodEnd: {type:'string'},
     state: {type:'string'},
-    seller: {model:'seller'}
+    seller: {model:'seller'},
+    plan:{model:'plan'},
   }
 };
