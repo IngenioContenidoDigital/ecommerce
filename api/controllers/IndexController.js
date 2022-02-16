@@ -97,10 +97,12 @@ module.exports = {
     let seller = req.session.user.seller || '';
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
-      let subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').limit(1);
-      let diferenceDays = moment().diff(moment(subscription[0].currentPeriodStart, 'MM/DD/YYYY'), 'days');
-      if (diferenceDays <= 15) {
-        btnCalendar = true;
+      subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').populate('plan').limit(1);
+      if (subscription.length > 0) {
+        let diferenceDays = moment().diff(moment(subscription[0].currentPeriodStart, 'MM/DD/YYYY'), 'days');
+        if (diferenceDays <= 15) {
+          btnCalendar = true;
+        }
       }
     }
     let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
@@ -108,6 +110,8 @@ module.exports = {
     req.session.questions = questionsSeller;
     req.session.linkCalendar = links[position];
     req.session.btnCalendar = btnCalendar;
+    req.session.validateChannel = await sails.helpers.validatePlan(seller);
+
     return res.view('pages/homeadmin',{layout:'layouts/admin',helper});
   },
   reportsadmin:async (req, res) =>{

@@ -461,9 +461,10 @@
         </script>
       </div>
       <div class="is-hidden" id="integrations">
-        <p style="text-align: right;font-size: 15px; margin-right: 5px;">            
+        <p style="text-align: right;font-size: 15px; margin-right: 5px;">         
           <a href="#" class="has-text-primary" id="add-row"><i class="is-size-4 bx bxs-plus-square"></i></a>
         </p>
+        
         <table class="table is-hoverable is-size-6 is-mediumwidth">
           <thead>
             <tr>
@@ -557,10 +558,14 @@
 
           live('#add-row','click',function(e){
             e.preventDefault();
-            createColumnImages(false, '');
-            cleanForm();
-            let modal = document.querySelector('#modal-integration');
-            addClass(modal,'is-active');
+            <%if(session.validateChannel){%>
+              createColumnImages(false, '');
+              cleanForm();
+              let modal = document.querySelector('#modal-integration');
+              addClass(modal,'is-active');
+            <%} else {%>
+              window.location.href = '/upgradesubscription';
+            <%}%>
           });
 
           live('#edit-integration','click',function(e){

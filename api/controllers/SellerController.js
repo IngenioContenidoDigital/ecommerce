@@ -57,6 +57,7 @@ module.exports = {
         token.frchimg = frch;
       }
       plans = await Plan.find();
+      req.session.validateChannel = await sails.helpers.validatePlan(id);
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
@@ -586,6 +587,7 @@ module.exports = {
         let sign = await sails.helpers.channel.shopee.sign(path, [`redirect=https://1ecommerce.app/shopeeauth/${integration}/`]);
         return res.redirect(`https://partner.test-stable.shopeemobile.com${path}?${sign}`);
       }else{
+        req.session.validateChannel = await sails.helpers.validatePlan(seller);
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
     });
