@@ -95,6 +95,8 @@ module.exports = {
     let btnCalendar = false;
     let helper = 'catalog';
     let seller = req.session.user.seller || '';
+    let validateChannel = true;
+    let validateProduct = true;
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
       subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').populate('plan').limit(1);
@@ -104,13 +106,17 @@ module.exports = {
           btnCalendar = true;
         }
       }
+
+      validateChannel = await sails.helpers.validatePlanChannels(seller);
+      validateProduct = await sails.helpers.validatePlanProducts(seller);
     }
     let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
     let position = Math.floor(Math.random() * (2 - 0)) + 0;
     req.session.questions = questionsSeller;
     req.session.linkCalendar = links[position];
     req.session.btnCalendar = btnCalendar;
-    req.session.validateChannel = await sails.helpers.validatePlan(seller);
+    req.session.validateChannel = validateChannel;
+    req.session.validateProduct = validateProduct;
 
     return res.view('pages/homeadmin',{layout:'layouts/admin',helper});
   },

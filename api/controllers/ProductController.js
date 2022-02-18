@@ -44,6 +44,7 @@ module.exports = {
     const perPage = sails.config.custom.DEFAULTPAGE;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       filter.seller = req.session.user.seller;
+      req.session.validateProduct = await sails.helpers.validatePlanProducts(req.session.user.seller);
     }else if(req.param('seller')){
       filter.seller = req.param('seller');
       seller = req.param('seller');
@@ -1273,7 +1274,7 @@ module.exports = {
       return res.send({error: err.message});
     }
   },
-  import: async (req, res) => {
+  import: async (req, res) => { 
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -1281,6 +1282,7 @@ module.exports = {
     let seller = req.param('seller') ? req.param('seller') : req.session.user.seller;
     let  integrations = await Integrations.find({ seller: seller }).populate('channel');
     let error = req.param('error') ? req.param('error') : null;
+    req.session.validateProduct = await sails.helpers.validatePlanProducts(seller);
     return res.view('pages/configuration/import', { layout: 'layouts/admin', error: error, resultados: null, rights: rights.name, seller, integrations, pagination: null });
   },
   importexecute: async (req, res) => {
@@ -1298,6 +1300,11 @@ module.exports = {
     let type = req.body.entity ? req.body.entity : null;
     let discount = req.body.discount;
     let asColor = req.body.asColor;
+    let validateProduct = await sails.helpers.validatePlanProducts(seller);
+    if (!validateProduct) {
+      req.session.validateProduct = validateProduct;
+      return res.send({error: 'Superaste el máximo de productos, sube el nivel de tu plan', resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize: 0, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+    }
 
     if (req.body.channel) {
       let page = 1;
@@ -2982,7 +2989,6 @@ module.exports = {
     }
 
     do {
-
       if(req.body.channel == constants.SHOPIFY_CHANNEL || req.body.channel == constants.MAGENTO_CHANNEL){
         if(page === (lastPage + 1)){
           sails.sockets.broadcast(sid, 'product_task_ended', true);
@@ -3006,13 +3012,17 @@ module.exports = {
       isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
 
       if (!isEmpty) {
-        rs = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid, {
+        let result = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid, {
           channel : req.body.channel,
           pk : req.body.pk,
           sk : req.body.sk,
           url : req.body.apiUrl,
           version : req.body.version
         }, req.body.channel, asColor || false ).catch((e)=>console.log(e));
+        if (result === 'finish') {
+          sails.sockets.broadcast(sid, 'product_task_ended', true);
+          break;
+        }
       } else {
         sails.sockets.broadcast(sid, 'product_task_ended', true);
         break;

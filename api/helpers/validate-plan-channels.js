@@ -1,5 +1,5 @@
 module.exports = {
-  friendlyName: 'validate plan',
+  friendlyName: 'validate plan channels',
   description: '',
   inputs: {
     seller:{
@@ -17,7 +17,7 @@ module.exports = {
     let subscription = await Subscription.find({seller: inputs.seller, state: 'active'}).sort('createdAt DESC').populate('plan').limit(1);
     if (subscription.length > 0) {
       let countIntegration = await Integrations.count({seller: inputs.seller});
-      if (countIntegration >= subscription[0].plan.channels) {
+      if (subscription[0].plan.channels.toLowerCase() !== 'ilimitado' && countIntegration >= parseInt(subscription[0].plan.channels)) {
         validateChannel = false;
       }
     } else {

@@ -17,7 +17,7 @@
         <%if(features.length>0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="features">Características</a></li><%}%>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
-        <%if(product.details && product.details.length > 0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="statusQc" id="contentDetails">Detalles de Contenido</a></li><%}%>
+        <%if(product && product.details.length > 0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="statusQc" id="contentDetails">Detalles de Contenido</a></li><%}%>
       </ul>
     </div>
     <div id ="basics">
@@ -958,7 +958,7 @@
           </div>
         </article>
         <div class="columns is-gapless">
-          <% details = product.details ? product.details.split(' | ') : [] %>
+          <% details = product ? product.details.split(' | ') : [] %>
           <div class="column content">
             <ol>
               <% details.forEach(function(detail){ %>

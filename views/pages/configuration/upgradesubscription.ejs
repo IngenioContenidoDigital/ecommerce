@@ -2,8 +2,8 @@
 <div class="container">
   <div class="notification is-danger is-light is-hidden" id="error"></div>
   <div class="box">
-    <h4 class="title is-4 center-title">CAMBIA TU PLAN</h4>
-    <h6 class="title is-size-7 center-title">Actualiza tu plan para que se adapte a las necesidades de tu negocio.</h6>
+    <h4 class="title is-4 center-title">CAMBIA O ACTIVA TU PLAN</h4>
+    <h6 class="title is-size-6 center-title">Actualiza o activa tu plan que se adapte a las necesidades de tu negocio.</h6>
     <hr>
     <div class="pricing-table is-comparative">
       <div class="pricing-plan is-features">
@@ -42,7 +42,7 @@
             <div class="plan-item" data-feature="Soporte"><%= plan.support %></div>
           </div>
           <div class="plan-footer">
-            <button class="button is-fullwidth" plan="<%= plan.id %>">Cambiar</button>
+            <button class="button is-fullwidth" plan="<%= plan.id %>">Activar</button>
           </div>
         </div>
         <% i += 1 %>
@@ -54,7 +54,9 @@
   live('.button','click', e =>{
     let planId = e.target.getAttribute('plan');
     let seller = "<%= seller%>";
+    addClass(e.target, 'is-loading');
     io.socket.post(`/upgradepayment`, {plan: planId, seller}, function (resData, jwRes) {
+      removeClass(e.target, 'is-loading');
       if(jwRes.statusCode == 200){
         if (resData && resData.error) {
           document.querySelector('#error').innerHTML = resData.error;

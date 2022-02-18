@@ -57,7 +57,7 @@ module.exports = {
         token.frchimg = frch;
       }
       plans = await Plan.find();
-      req.session.validateChannel = await sails.helpers.validatePlan(id);
+      req.session.validateChannel = await sails.helpers.validatePlanChannels(id);
     }
     let countries = await Country.find();
     let currencies = await Currency.find();
@@ -587,7 +587,6 @@ module.exports = {
         let sign = await sails.helpers.channel.shopee.sign(path, [`redirect=https://1ecommerce.app/shopeeauth/${integration}/`]);
         return res.redirect(`https://partner.test-stable.shopeemobile.com${path}?${sign}`);
       }else{
-        req.session.validateChannel = await sails.helpers.validatePlan(seller);
         return res.redirect('/sellers/edit/'+seller+'?success='+textResult);
       }
     });
@@ -832,7 +831,7 @@ module.exports = {
   confirmationinvoice: async(req, res)=>{
     let action = req.param('action');
     if (action === 'subscription') {
-      let subscription = await Subscription.findOne({reference: req.body.x_extra1});
+      let subscription = await Subscription.findOne({reference: req.body.x_extra1}).populate('plan');
       if(subscription){
         const epayco = await sails.helpers.payment.init('CC');
         const resultSubscription = await epayco.subscriptions.get(req.body.x_extra1);
@@ -865,6 +864,9 @@ module.exports = {
               total: (parseFloat(req.body.x_amount) + ((parseFloat(req.body.x_amount)*15)/100)).toFixed(2)
             };
             await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+            let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+            let position = Math.floor(Math.random() * (2 - 0)) + 0;
+            await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: subscription.plan.name.toUpperCase(), link: links[position]}, seller.email, 'Cobro por suscripción de tu plan de 1Ecommerce', 'email-notification');
           }
 
         }
@@ -1281,9 +1283,10 @@ module.exports = {
                 // };
   
                 // await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
-                let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
-                let position = Math.floor(Math.random() * (2 - 0)) + 0;
-                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu nuevo cambio de plan de 1Ecommerce', 'email-notification');
+                // let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+                // let position = Math.floor(Math.random() * (2 - 0)) + 0;
+                // await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu nuevo cambio de plan de 1Ecommerce', 'email-notification');
+                  return res.send({});
               }
             } else {
               return res.send({error: subscription.status ? subscription.data.respuesta : subscription.data.description});
