@@ -3,6 +3,24 @@
   <div class="notification is-danger is-light is-hidden" id="error"></div>
   <div class="box">
     <h4 class="title is-4 center-title">CAMBIA O ACTIVA TU PLAN</h4>
+    <% if(currentPlan) {%>
+      <hr>
+      <div class="pricing-table is-horizontal">
+        <div class="pricing-plan is-active">
+          <div class="plan-header"><h6 class="title is-size-6 center-title">Tu plan actual</h6><%= currentPlan.name.toUpperCase() %></div>
+          <div class="plan-items">
+            <div class="plan-item"><%= currentPlan.products %> Productos</div>
+            <div class="plan-item"><%= currentPlan.channels %> Canales</div>
+            <div class="plan-item"><%= currentPlan.erp %> Integración ERP</div>
+            <div class="plan-item"><%= currentPlan.support %> Soporte</div>
+          </div>
+          <div class="plan-footer">
+            <div class="plan-price"><span class="plan-price-amount"><span class="plan-price-currency">USD</span><%= Math.round(currentPlan.pricesubscription).toLocaleString('es-USD') %></span>/month</div>
+          </div>
+        </div>
+      </div>
+      <hr>
+    <%}%>
     <h6 class="title is-size-6 center-title">Actualiza o activa tu plan que se adapte a las necesidades de tu negocio.</h6>
     <hr>
     <div class="pricing-table is-comparative">
@@ -24,7 +42,7 @@
       </div>
       <% i = 0 %>
       <% plans.forEach(function(plan){ %>
-        <div class="pricing-plan <%=colors[i]%> content-pricing">
+        <div class="pricing-plan <%=colors[i]%> content-pricing is-active" >
           <div class="plan-header"><%= plan.name.toUpperCase() %></div>
           <div class="plan-price">
             <span class="plan-price-amount text-amount"><span class="plan-price-currency">USD</span><%= Math.round(plan.pricesubscription * 2).toLocaleString('es-USD') %></span>/mensual

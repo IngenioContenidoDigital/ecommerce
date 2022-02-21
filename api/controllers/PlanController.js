@@ -111,7 +111,11 @@ module.exports = {
     let subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').limit(1);
     let filter = subscription.length > 0 ? {id: { '!=': subscription[0].plan }} : {};
     let plans = await Plan.find(filter).sort('createdAt ASC');
+    let currentPlan = null;
+    if (subscription.length > 0) {
+      currentPlan = await Plan.findOne({id: subscription[0].plan});
+    }
     let colors = ['is-info', 'is-danger', 'is-primary', 'is-warning', 'is-success'];
-    return res.view('pages/configuration/upgradesubscription',{layout:'layouts/admin', plans, colors, seller});
+    return res.view('pages/configuration/upgradesubscription',{layout:'layouts/admin', plans, colors, seller, currentPlan});
   }
 };
