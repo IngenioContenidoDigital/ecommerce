@@ -278,7 +278,7 @@
     addDivReport();
     let report = document.querySelector('#report');
     if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-    for(let p of records){  
+    for(let p of records){
       io.socket.post('/productcheck',{type:type,product:p,seller:sell},resData =>{
           showReportPane();
           if(resData.items.length>=1){
@@ -535,6 +535,13 @@
 			}
 		});
 	})
+
+	setTimeout(function() {
+		var el = document.getElementById('error');
+		if(el){
+			el.style.display='none';
+		}
+  }, 5000);
 
 	document.addEventListener("DOMContentLoaded", function(event) {
     let tabsWithContent = (function () {

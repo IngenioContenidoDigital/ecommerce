@@ -1301,12 +1301,12 @@ module.exports = {
     let discount = req.body.discount;
     let asColor = req.body.asColor;
     let validateProduct = await sails.helpers.validatePlanProducts(seller);
-    if (!validateProduct) {
-      req.session.validateProduct = validateProduct;
-      return res.send({error: 'Superaste el máximo de productos, sube el nivel de tu plan', resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize: 0, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-    }
-
+    
     if (req.body.channel) {
+      if (!validateProduct) {
+        req.session.validateProduct = validateProduct;
+        return res.send({error: 'Superaste el máximo de productos, sube el nivel de tu plan', resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize: 0, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+      }
       let page = 1;
       let pageSize =
         req.body.channel === constants.WOOCOMMERCE_CHANNEL ? constants.WOOCOMMERCE_PAGESIZE :
@@ -1381,6 +1381,10 @@ module.exports = {
     let route = sails.config.views.locals.imgurl;
     let json = [];
     try {
+      if (!validateProduct) {
+        req.session.validateProduct = validateProduct;
+        return res.redirect('/import/'+ seller +'?error=Superaste el máximo de productos, sube el nivel de tu plan');
+      }
       if (req.body.entity === 'ProductImage') {
         let imageslist = await sails.helpers.fileUpload(req, 'file', 200000000, 'images/products/tmp');
         json = imageslist;
@@ -1410,7 +1414,6 @@ module.exports = {
     } else {
       seller = req.body.seller;
     }
-
     let prod = {};
 
     try {
@@ -1549,18 +1552,22 @@ module.exports = {
         } else {
           throw new Error('Categoria No Localizada');
         }
-        Product.findOrCreate({ reference: prod.reference, seller: seller }, prod)
-          .exec(async (err, record, wasCreated) => {
-            if (err) { throw err; }
-            if (!wasCreated) {
-              delete prod.mainCategory;
-              delete prod.categories;
-              await Product.updateOne({ id: record.id }).set(prod)
-                .catch(err => {
-                  throw err;
-                });
-            }
-          });
+        let exists = await Product.findOne({reference: prod.reference, seller: seller});
+        let validateProduct = await sails.helpers.validatePlanProducts(seller);
+        if (!exists) {
+          if (validateProduct) {
+            await Product.create(prod).fetch();
+          } else {
+            throw new Error('Superaste el máximo de productos');
+          }
+        } else {
+          delete prod.mainCategory;
+          delete prod.categories;
+          await Product.updateOne({ id: exists.id }).set(prod)
+            .catch(err => {
+              throw err;
+            });
+        }
         result['items'].push(prod);
       }
       if(req.body.type === 'Discount'){
