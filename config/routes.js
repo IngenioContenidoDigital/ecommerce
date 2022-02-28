@@ -237,6 +237,8 @@ module.exports.routes = {
   'POST /commissionchannel/:seller' : {controller:'SellerController',action:'commissionchannel'},
   'PUT /removecommission' : {controller:'SellerController',action:'removecommissionchannel'},
   'POST /createcreditcard/:seller' : {controller:'SellerController',action:'createcreditcard'},
+  'GET /subscriptions/:seller' : {controller:'SellerController',action:'subscriptions'},
+  'POST /cancelsubscription' : {controller:'SellerController',action:'cancelsubscription'},
   'GET /integrations/dafiti/categories' : {controller:'CategoryController',action:'dafiticategories'},
   'GET /integrations/linio/categories' : {controller:'CategoryController',action:'liniocategories'},
   'GET /integrations/liniomx/categories' : {controller:'CategoryController',action:'liniomxcategories'},
@@ -283,6 +285,9 @@ module.exports.routes = {
   'POST /message/edit/:id' : {controller:'MessageController',action:'editmessage'},
 
   'GET /registerseller/:key' : {controller:'SellerController',action:'registersellerform'},
+  'GET /pricingpage' : {controller:'IndexController',action:'pricingpage'},
+  'GET /upgradesubscription' : {controller:'PlanController',action:'upgradesubscription'},
+  'POST /upgradepayment' : {controller:'SellerController',action:'upgradepayment'},
   'POST /registerseller' : {controller:'SellerController',action:'registerseller'},
   'POST /collectregister/:seller' : {controller:'SellerController',action:'collectregister'},
   'POST /generatekey' : {controller:'SellerController',action:'generateKey'},
@@ -292,6 +297,8 @@ module.exports.routes = {
   'GET /plans/:action?/:id?' : {controller:'PlanController',action:'showplans'},
   'POST /plan/create' : {controller:'PlanController',action:'createplan'},
   'POST /plan/edit/:id' : {controller:'PlanController',action:'editplan'},
+
+  'GET /generateInvoice/:id' : {controller:'SellerController', action:'generateInvoice'},
 
   /** INICIO HELP ROUTES */
   'GET /help/:action?/:id?' : {controller:'HelpController',action:'listterms'},

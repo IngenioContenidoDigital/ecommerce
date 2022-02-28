@@ -709,3 +709,48 @@ article > .content:hover{cursor:pointer;}
     overflow-x: visible !important;
     overflow-y: visible !important;
 }
+
+.center-title {
+    text-align: center;
+}
+
+//estilos para la pricing page
+
+.text-item-plan {
+    font-weight: bold;
+}
+
+.content-plans {
+    height: 280px; 
+    font-size: 13px;
+}
+
+.text-setup {
+    font-weight: bold;
+    height: 62px;
+}
+
+.title-setup {
+    padding: 8px;
+}
+
+.content-description-plan {
+    height: 110px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.text-item-setup {
+    font-weight: bold !important;
+    font-size: 20px !important;
+}
+
+.text-amount {
+    text-decoration: line-through;
+    text-decoration-color: black;
+}
+
+.content-pricing {
+    width: min-content !important;
+}
+

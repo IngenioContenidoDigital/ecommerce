@@ -46,6 +46,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-datatables@2.1.13/dist/style.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/suneditor@2.28.0/dist/css/suneditor.min.css">
     <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+    <link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
   </head>
   <body>
     <nav class="navbar" role="navigation" aria-label="main navigation">
@@ -67,8 +68,19 @@
         <div class="navbar-item is-inline-block">
             <div class="buttons">
               <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%>
-                <a href="#" id="addTicket" class="button">
-                  <i class='is-size-4 bx bx-question-mark bx-tada'></i>
+                <a href="/upgradesubscription" class="button is-primary is-light">
+                  <span class="icon has-text-primary">
+                    <i class='bx bx-check-square'></i>
+                  </span>
+                  <span>Subir de plan</span>
+                </a>
+                <%if(session.btnCalendar){%>
+                  <a href="<%= session.linkCalendar %>" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Puedes agendar tu cita de soporte">
+                    <i class='bx bx-calendar-event bx-tada is-size-4'></i>
+                  </a>
+                <%}%>
+                <a href="#" id="addTicket" class="button ">
+                  <i class='bx bxs-coupon bx-flashing bx-flip-horizontal is-size-4' ></i>
                 </a>
                 <a href="/channelmessages/<%=session.user.seller%>" id="notification-button" class="button">
                   <span title="Badge top right" class="badge"><%if(session.questions !== undefined ){%><%=session.questions%> <%}else{%>0<%}%></span>
@@ -116,7 +128,7 @@
         <div class="container"><%- body %></div>
       </div>
     </div>
-    <div class="modal">
+    <div class="modal" id="modalTicket">
       <div class="modal-background"></div>
       <div class="modal-content">
         <div class="box">
@@ -179,7 +191,7 @@
     </div>
   <script>
     live('#addTicket','click',function(){
-      const modal = document.querySelector('.modal');
+      const modal = document.querySelector('#modalTicket');
       if(!hasClass(modal,'is-active'))
         addClass(modal,'is-active');
     });

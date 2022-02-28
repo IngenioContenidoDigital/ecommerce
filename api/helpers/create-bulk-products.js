@@ -36,6 +36,12 @@ module.exports = {
             const query1 = {externalId: pro.externalId, seller:seller};
             const query2 = {reference: pro.reference, seller:seller};
             let exists = await Product.findOne({or: [query1, query2]});
+            let validateProduct = await sails.helpers.validatePlanProducts(seller);
+            if (!validateProduct) {
+              errors.push({ name:'ERRDATA', message: 'Superaste el máximo de productos, sube de nivel tu plan.' });
+              sails.sockets.broadcast(sid, 'product_processed', { errors, result });
+              return exits.success('finish');
+            }
             if (!exists) {
               if(inputs.provider != sails.config.custom.WOOCOMMERCE_CHANNEL){
                 pr = await Product.create(pro).fetch();
@@ -145,7 +151,6 @@ module.exports = {
               errors.push({ name:'ERRDATA', message:error.message });
               sails.sockets.broadcast(sid, 'product_processed', { errors, result });
             }
-
             result.push(pr);
             sails.sockets.broadcast(sid, 'product_processed', { errors, result });
           }

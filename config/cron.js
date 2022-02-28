@@ -315,46 +315,6 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },
-  chargeSubscription: {
-    schedule: '01 02 */03 * * *',
-    onTick: async () => {
-      console.log('Iniciando cobrar suscripciones');
-      try {
-        let moment = require('moment');
-        let subscriptions = await Subscription.find({state: 'inactive'});
-        for (const subscription of subscriptions) {
-          let dateStart = moment(subscription.currentPeriodStart, 'MM/DD/YYYY');
-          const duration =  moment().diff(dateStart, 'days');
-          if (duration >= 61) {
-            const seller = await Seller.findOne({id: subscription.seller});
-            const card = await Token.findOne({user: seller.id, default: true});
-            if (card && seller.active) {
-              const chargeSubscription = {
-                id_plan: seller.plan,
-                customer: card.customerId,
-                token_card: card.token,
-                url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
-                doc_type: card.docType,
-                doc_number: card.docNumber,
-                ip: require('ip').address()
-              };
-              const epayco = await sails.helpers.payment.init('CC');
-              const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
-              if (resultCharge.success) {
-                await Subscription.updateOne({id: subscription.id}).set({
-                  state: resultCharge.subscription.status,
-                  currentPeriodEnd: resultCharge.subscription.periodEnd
-                });
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.log(error.message);
-      }
-    },
-    timezone: 'America/Bogota'
-  },
   refreshTokenShopee: {
     schedule: '01 05 */1 * * *',
     onTick: async () => {

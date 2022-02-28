@@ -835,7 +835,7 @@
     const channelsConnect = document.querySelector('#channelsConnect');
     const productsDiscount = document.querySelector('#productsDiscount');
     
-    totalProductsPublish.textContent = `${data.productsPublish}%`;
+    totalProductsPublish.textContent = data.productsPublish ? `${data.productsPublish}%` : '0%';
     channelsConnect.textContent = data.channels;
     productsDiscount.textContent = data.productsDiscount;
   }

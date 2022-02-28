@@ -16,6 +16,7 @@ module.exports = {
     paymentMethod: {type:'string'},
     total:{type:'number'},
     tax:{type:'number'},
-    seller: {model:'seller'}
+    seller: {model:'seller'},
+    idSiigo:{type:'string', defaultsTo:''},
   }
 };

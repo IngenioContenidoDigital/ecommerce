@@ -65,6 +65,7 @@ module.exports.policies = {
     'createcreditcard': true,
     'collectregister': true,
     'generateKey': true,
+    'generateInvoice': true,
     '*': 'isLoggedIn'
   },
   ConversationController:{

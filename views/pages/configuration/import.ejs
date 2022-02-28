@@ -278,7 +278,7 @@
     addDivReport();
     let report = document.querySelector('#report');
     if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-    for(let p of records){  
+    for(let p of records){
       io.socket.post('/productcheck',{type:type,product:p,seller:sell},resData =>{
           showReportPane();
           if(resData.items.length>=1){
@@ -402,73 +402,105 @@
 		let box = document.querySelector('.box').parentNode;
 		const entity = document.querySelector('select[name="entity"]').value;
 		const file = document.querySelector('input[name="file"]').value;
-		const seller = '<%- seller %>';
-		if (file && entity) {
-			addClass(box,'is-hidden');
-			document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-			document.querySelector('#divreport').innerHTML = '';
-		} else {
-			document.querySelector('#error-from-cms').innerHTML = 'Debes Seleccionar un tipo de importación o agregar el archivo excel';
+		let validateProduct = <%- session.validateProduct %>;
+		if(!validateProduct && entity === 'Product'){
+			document.querySelector('#error-from-cms').innerHTML = 'Debes subir de plan para agregar mas productos';
 			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
 			setTimeout(() =>{
 				document.querySelector('#error-from-cms').innerHTML = '';
 				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
-			}, 5000)
+				window.location.href = '/upgradesubscription';
+			}, 4000);
+		} else {
+			const seller = '<%- seller %>';
+			if (file && entity) {
+				addClass(box,'is-hidden');
+				document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando el archivo. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+				document.querySelector('#divreport').innerHTML = '';
+			} else {
+				document.querySelector('#error-from-cms').innerHTML = 'Debes Seleccionar un tipo de importación o agregar el archivo excel';
+				removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+				setTimeout(() =>{
+					document.querySelector('#error-from-cms').innerHTML = '';
+					addClass(document.querySelector('#error-from-cms'), 'is-hidden');
+				}, 5000);
+			}
 		}
   });
 
 	live('#process-from-provider','click',e=>{
 		e.preventDefault();
-		let box = document.querySelector('.box').parentNode;
 		const importType = document.querySelector('select[name="importType"]').value;
-    const discount = document.querySelector('input[name="discount"]').checked;
-		const asColor = document.querySelector('input[name="color"]').checked;
-		const channel = document.querySelector('input[name="channel"]').value;
-		const apiUrl = document.querySelector('input[name="apiUrl"]').value;
-		const pk = document.querySelector('input[name="pk"]').value;
-		const sk = document.querySelector('input[name="sk"]').value;
-		const version = document.querySelector('input[name="version"]').value;
-		const seller = '<%- seller %>';
-		addClass(box,'is-hidden');
-		addDivReport();
-		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-		io.socket.post('/import',{importType, discount, asColor, channel, apiUrl, pk, sk, version, seller}, (resData, jwRes) =>{
-			if(jwRes.statusCode==200){
-				removeClass(box,'is-hidden');
-				document.querySelector('.loading').innerHTML='';
-				
-				if(resData.error){
-					document.querySelector('#error-from-cms').innerHTML = resData.error;
-					removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+		let validateProduct = <%- session.validateProduct %>;
+		if(!validateProduct && importType === 'Product'){
+			document.querySelector('#error-from-cms').innerHTML = 'Debes subir de plan para agregar mas productos';
+			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			setTimeout(() =>{
+				document.querySelector('#error-from-cms').innerHTML = '';
+				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
+				window.location.href = '/upgradesubscription';
+			}, 4000);
+		} else {
+			let box = document.querySelector('.box').parentNode;
+			const discount = document.querySelector('input[name="discount"]').checked;
+			const asColor = document.querySelector('input[name="color"]').checked;
+			const channel = document.querySelector('input[name="channel"]').value;
+			const apiUrl = document.querySelector('input[name="apiUrl"]').value;
+			const pk = document.querySelector('input[name="pk"]').value;
+			const sk = document.querySelector('input[name="sk"]').value;
+			const version = document.querySelector('input[name="version"]').value;
+			const seller = '<%- seller %>';
+			addClass(box,'is-hidden');
+			addDivReport();
+			document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+			io.socket.post('/import',{importType, discount, asColor, channel, apiUrl, pk, sk, version, seller}, (resData, jwRes) =>{
+				if(jwRes.statusCode==200){
+					removeClass(box,'is-hidden');
+					document.querySelector('.loading').innerHTML='';
+					
+					if(resData.error){
+						document.querySelector('#error-from-cms').innerHTML = resData.error;
+						removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+					}
+					responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)
 				}
-
-				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)
-			}
-		});
+			});
+		}
 	});
 
 	live('#process-marketplace-provider','click',e=>{
 		e.preventDefault();
-		let box = document.querySelector('.box').parentNode;
 		const importType = document.querySelector('select[name="importTypeMarketplace"]').value;
-		const pk = document.querySelector('input[name="useridml"]').value;
-		const sk = document.querySelector('input[name="secret"]').value;
-		const channel = document.querySelector('input[name="channelTxtMarketplace"]').value;
-		const seller = '<%- seller %>';
-		addClass(box,'is-hidden');
-		addDivReport();
-		document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
-		io.socket.post('/import',{importType, discount: false, asColor: false, channel, apiUrl: '', pk, sk, version: '', seller}, (resData, jwRes) =>{
-			if(jwRes.statusCode==200){
-				removeClass(box,'is-hidden');
-				document.querySelector('.loading').innerHTML='';
-				if(resData.error){
-					document.querySelector('#error-from-cms').innerHTML = resData.error;
-					removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+		let validateProduct = <%- session.validateProduct %>;
+		if(!validateProduct && importType === 'Product'){
+			document.querySelector('#error-from-cms').innerHTML = 'Debes subir de plan para agregar mas productos';
+			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			setTimeout(() =>{
+				document.querySelector('#error-from-cms').innerHTML = '';
+				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
+				window.location.href = '/upgradesubscription';
+			}, 4000);
+		} else {
+			let box = document.querySelector('.box').parentNode;
+			const pk = document.querySelector('input[name="useridml"]').value;
+			const sk = document.querySelector('input[name="secret"]').value;
+			const channel = document.querySelector('input[name="channelTxtMarketplace"]').value;
+			const seller = '<%- seller %>';
+			addClass(box,'is-hidden');
+			addDivReport();
+			document.querySelector('.loading').innerHTML='<br><p>Por favor espera, estamos procesando la importación. Tomará unos minutos.</p><br><progress class="progress is-small is-primary" max="100">15%</progress>';
+			io.socket.post('/import',{importType, discount: false, asColor: false, channel, apiUrl: '', pk, sk, version: '', seller}, (resData, jwRes) =>{
+				if(jwRes.statusCode==200){
+					removeClass(box,'is-hidden');
+					document.querySelector('.loading').innerHTML='';
+					if(resData.error){
+						document.querySelector('#error-from-cms').innerHTML = resData.error;
+						removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+					}
+					responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)
 				}
-				responseIntegration(resData.credentials, seller, resData.importType, resData.pageSize, resData.discount, resData.asColor, resData.pagination)
-			}
-		});
+			});
+		}
 	});
 
 	live('select[name="entity"]','change', e =>{
@@ -503,6 +535,13 @@
 			}
 		});
 	})
+
+	setTimeout(function() {
+		var el = document.getElementById('error');
+		if(el){
+			el.style.display='none';
+		}
+  }, 5000);
 
 	document.addEventListener("DOMContentLoaded", function(event) {
     let tabsWithContent = (function () {

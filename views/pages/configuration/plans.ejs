@@ -18,55 +18,129 @@
             <form action="/plan/edit/<%= plan.id %>" method="POST">
           <% } %>
             <div class="box">
-              <div class="field">
-                <label class="label is-size-7">Nombre</label>
-                <div class="control">
-                  <input class="input is-capitalized is-size-7" type="text" name="name" required="true" placeholder="Nombre del Plan" <% if(action=='edit'){ %>value="<%= plan.name %>"<% }%>/>
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Nombre</label>
+                    <div class="control">
+                      <input class="input is-capitalized is-size-7" type="text" name="name" required="true" placeholder="Nombre del Plan" <% if(action=='edit'){ %>value="<%= plan.name %>"<% }%>/>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Días Gratis</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-size-7" type="number" step="any" name="trialDays" placeholder="Número de días gratis" required <% if(action=='edit'){ %>value="<%= plan.trialDays %>"<% }%>/>
+                      <span class="icon-input-left is-small is-left">
+                        <i class='bx bx-donate-heart'></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Precio Suscripción USD</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-size-7" type="number" step="any" name="pricesubscription" placeholder="Suscripción USD" required <% if(action=='edit'){ %>value="<%= plan.pricesubscription %>"<% }%>/>
+                      <span class="icon-input-left is-small is-left">
+                        <i class="bx bxs-badge-dollar"></i>
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="columns">
                 <div class="column">
                   <div class="field">
-                    <label class="label is-size-7">Precio Setup COP</label>
+                    <label class="label is-size-7">Precio Setup USD</label>
                     <div class="control has-icons-left">
-                      <input class="input is-size-7" type="number" step="any" name="pricecop" placeholder="Setup" required <% if(action=='edit'){ %>value="<%= plan.pricecop %>"<% }%>/>
+                      <input class="input is-size-7" type="number" step="any" name="price" placeholder="Setup USD" required <% if(action=='edit'){ %>value="<%= plan.price %>"<% }%>/>
                       <span class="icon-input-left is-small is-left">
                         <i class="bx bxs-badge-dollar"></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <div class="control">
+                      <label class="label is-size-7">Visible</label>
+                      <input id="visible" type="checkbox" name="visible" class="switch is-success" <% if(action=='edit' && plan.visible){%>checked<%}%>>
+                      <label for="visible"></label>
+                    </div>
+                  </div>
+                </div>
+                <div class="column"> 
+                  <div class="field">
+                    <label class="label is-size-7">Descripción</label>
+                    <div class="control">
+                      <textarea class="textarea is-size-7" name="description" placeholder="Descripción del plan"><%if(action=='edit'){%><%-plan.description%><%}%></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <br>
+              <h6 class="title is-6">Opciones del plan</h4>
+              <hr>
+              <div class="columns">
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Productos</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-size-7" type="text" name="products" placeholder="Agregar solo el número o ilimitado"  required <% if(action=='edit'){ %>value="<%= plan.products %>"<% }%>/>
+                      <span class="icon-input-left is-small is-left">
+                        <i class='bx bxs-package'></i>
                       </span>
                     </div>
                   </div>
                 </div>
                 <div class="column"> 
                   <div class="field">
-                    <label class="label is-size-7">Precio Suscripción COP</label>
+                    <label class="label is-size-7">Canales/Cuentas</label>
                     <div class="control has-icons-left">
-                      <input class="input is-size-7" type="number" step="any" name="pricesubscriptioncop" placeholder="Suscripción" required <% if(action=='edit'){ %>value="<%= plan.pricesubscriptioncop %>"<% }%>/>
+                      <input class="input is-size-7" type="text" name="channels" placeholder="Agregar solo el número o ilimitado" required <% if(action=='edit'){ %>value="<%= plan.channels %>"<% }%>/>
                       <span class="icon-input-left is-small is-left">
-                        <i class="bx bxs-badge-dollar"></i>
+                        <i class='bx bxs-shopping-bags'></i>
                       </span>
                     </div>
                   </div>
                 </div>
+                <div class="column"></div>
               </div>
+              <br>
+              <h6 class="title is-6">Lanzamiento</h4>
+              <hr>
               <div class="columns">
                 <div class="column">
                   <div class="field">
-                    <label class="label is-size-7">Precio Setup MXN</label>
+                    <label class="label is-size-7">On-boarding personalizado</label>
                     <div class="control has-icons-left">
-                      <input class="input is-size-7" type="number" step="any" name="pricemx" placeholder="Setup" required <% if(action=='edit'){ %>value="<%= plan.pricemx %>"<% }%>/>
+                      <input class="input is-size-7" type="text" name="onboarding" placeholder="Días de On-boarding" required <% if(action=='edit'){ %>value="<%= plan.products %>"<% }%>/>
                       <span class="icon-input-left is-small is-left">
-                        <i class="bx bxs-badge-dollar"></i>
+                        <i class='bx bxs-user-badge'></i>
                       </span>
                     </div>
                   </div>
                 </div>
                 <div class="column"> 
                   <div class="field">
-                    <label class="label is-size-7">Precio Suscripción MXN</label>
+                    <label class="label is-size-7">Integración ERP</label>
                     <div class="control has-icons-left">
-                      <input class="input is-size-7" type="number" step="any" name="pricesubscriptionmx" placeholder="Suscripción" required <% if(action=='edit'){ %>value="<%= plan.pricesubscriptionmx %>"<% }%>/>
+                      <input class="input is-size-7" type="text" name="erp" placeholder="Costo Integración ERP" required <% if(action=='edit'){ %>value="<%= plan.channels %>"<% }%>/>
                       <span class="icon-input-left is-small is-left">
-                        <i class="bx bxs-badge-dollar"></i>
+                        <i class='bx bx-window-open'></i>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <label class="label is-size-7">Soporte</label>
+                    <div class="control has-icons-left">
+                      <input class="input is-size-7" type="text" name="support" placeholder="Soporte" required <% if(action=='edit'){ %>value="<%= plan.channels %>"<% }%>/>
+                      <span class="icon-input-left is-small is-left">
+                        <i class='bx bx-support'></i>
                       </span>
                     </div>
                   </div>
@@ -83,7 +157,6 @@
           </form>
         </div>
       </div>
-      <div class="column"></div>
     </div>
   <% } else { %>
     <p style="text-align: right;font-size: 20px; margin-right: 5px;">
@@ -94,10 +167,8 @@
         <thead>
           <tr>
             <th scope="col">Nombre</th>
-            <th scope="col">Precio Setup COP</th>
-            <th scope="col">Precio Suscripción COP</th>
-            <th scope="col">Precio Setup MXN</th>
-            <th scope="col">Precio Suscripción MXN</th>
+            <th scope="col">Precio Setup USD</th>
+            <th scope="col">Precio Suscripción USD</th>
             <th scope="col">Opciones</th>
           </tr>
         </thead>
@@ -105,10 +176,8 @@
           <% plans.forEach(function(plan){ %>
             <tr>
               <td class="align-middle is-capitalized"><%= plan.name %></td>
-              <td class="align-middle"><%= plan.pricecop %></td>
-              <td class="align-middle"><%= plan.pricesubscriptioncop %></td>
-              <td class="align-middle"><%= plan.pricemx %></td>
-              <td class="align-middle"><%= plan.pricesubscriptionmx %></td>
+              <td class="align-middle"><%= plan.price %></td>
+              <td class="align-middle"><%= plan.pricesubscription %></td>
               <td class="align-middle">
                 <a href="/plans/edit/<%= plan.id %>" class="button is-small">
                   <span class="icon">

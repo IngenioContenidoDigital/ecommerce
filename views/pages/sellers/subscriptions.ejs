@@ -1,0 +1,139 @@
+<link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
+<div class="container">
+  <div class="notification is-danger is-light is-hidden" id="mgs-error"></div>
+  <div class="notification is-success is-light is-hidden" id="mgs-success"></div>
+  <h4 class="title is-4">Suscripciones</h4>
+  <hr>
+  <div class="table-container">
+    <table class="table is-hoverable" id="subscriptions-table">
+      <thead>
+        <tr>
+          <th scope="col">Referencia</th>
+          <th scope="col">Plan</th>
+          <th scope="col">Estado</th>
+          <th scope="col">Fecha de creación</th>
+          <th scope="col">Próximo pago</th>
+          <%if(req.session.user.rights.name=='superadmin'){%>
+            <th scope="col">Opciones</th>
+          <%}%>
+        </tr>
+      </thead>
+      <tbody>
+        <% subscriptions.forEach(function(subscription){ %>
+          <tr>
+            <td class="align-middle is-capitalized"><%= subscription.reference %></td>
+            <td class="align-middle is-capitalized"><%= subscription.plan.name.toUpperCase() %></td>
+            <td class="align-middle is-capitalized" id="tdStatus"><span class="tag <%= subscription.state === 'active' ? 'is-success' : 'is-danger'%>"><%= subscription.state === 'active' ? 'ACTIVA' : 'CANCELADA' %></span></td>
+            <td class="align-middle is-capitalized"><%= moment(subscription.currentPeriodStart, 'MM/DD/YYYY').format('DD-MM-YYYY') %></td>
+            <td class="align-middle is-capitalized"><%= subscription.currentPeriodEnd %></td>
+            <%if(req.session.user.rights.name=='superadmin' && subscription.state === 'active'){%>
+              <td class="align-middle">
+                <button class="button is-danger is-small is-outlined btn-cancel" id="btnCancel" reference="<%= subscription.reference %>" >
+                  <span reference="<%= subscription.reference %>">Cancelar</span>
+                  <span class="icon is-small" reference="<%= subscription.reference %>">
+                    <i class='bx bx-x bx-sm' reference="<%= subscription.reference %>"></i>
+                  </span>
+                </button>
+              </td>
+            <%}%>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <br>
+  <h4 class="title is-4">Transacciones</h4>
+  <hr>
+  <div class="table-container">
+    <table class="table is-hoverable" id="payments-table">
+      <thead>
+        <tr>
+          <th scope="col">Referencia</th>
+          <th scope="col">Estado</th>
+          <th scope="col">Total</th>
+          <th scope="col">Fecha</th>
+          <th scope="col">Opciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% invoices.forEach(function(invoice){ %>
+          <tr>
+            <td class="align-middle is-capitalized"><%= invoice.reference %></td>
+            <td class="align-middle is-capitalized"><span class="tag <%= invoice.state.name === 'aceptado' ? 'is-success' : 'is-danger'%>"><%= invoice.state.name %></span></td>
+            <td class="align-middle is-capitalized">$ <%= Math.round(invoice.total).toLocaleString('es-CO') %></td>
+            <td class="align-middle is-capitalized"><%= moment(invoice.createdAt).format('DD-MM-YYYY') %></td>
+            <td class="align-middle">
+              <a href="/generateInvoice/<%= invoice.id %>" target="_blank" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Ver Factura">
+                <span class="icon">
+                  <i class='bx bxs-report'></i>
+                </span>
+              </a>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      let table = new simpleDatatables.DataTable('#subscriptions-table',{
+        searchable:true,
+        sortable:true,
+        paging:true,
+        labels: {
+          placeholder: "Buscar...",
+          perPage: "{select} registros por página",
+          noRows: "No se encontraron datos",
+          info: "Mostrando {start} a {end} de {rows} registros",
+        }
+      });
+      let tablePayment = new simpleDatatables.DataTable('#payments-table',{
+        searchable:true,
+        sortable:true,
+        paging:true,
+        labels: {
+          placeholder: "Buscar...",
+          perPage: "{select} registros por página",
+          noRows: "No se encontraron datos",
+          info: "Mostrando {start} a {end} de {rows} registros",
+        }
+      });  
+    });
+
+    live('.btn-cancel', 'click', function(e){
+      e.preventDefault();
+      const error = document.querySelector('#mgs-error');
+      const success = document.querySelector('#mgs-success');
+      const tdStatus = document.querySelector('#tdStatus');
+      const btnCancel = document.querySelector('#btnCancel');
+      let reference = e.target.getAttribute('reference');
+      let seller = '<%- seller %>';
+      addClass(btnCancel,'is-loading');
+      io.socket.post(`/cancelsubscription`, {reference, seller}, function (resData, jwRes) {
+        removeClass(btnCancel,'is-loading');
+        if(jwRes.statusCode == 200){
+          if (resData && resData.error) {
+            error.innerHTML = resData.error;
+            removeClass(error, 'is-hidden');
+            setTimeout(function() {
+              addClass(error,'is-hidden');
+            }, 10000);
+          } else {
+            success.innerHTML = resData && resData.message ? resData.message : 'Se canceló correctamente la suscripción';
+            removeClass(success, 'is-hidden');
+            tdStatus.innerHTML = `<span class="tag is-danger">CANCELADA</span>`;
+            setTimeout(function() {
+              addClass(success,'is-hidden');
+            }, 10000);
+          }
+        } else {
+          error.innerHTML = 'Error al cancelar la suscripción, intentalo más tarde';
+          removeClass(error, 'is-hidden');
+          setTimeout(function() {
+            addClass(error,'is-hidden');
+          }, 10000);
+        };
+      });
+    });
+  </script>
+</div>

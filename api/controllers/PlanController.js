@@ -13,7 +13,7 @@ module.exports = {
     }
     let error= req.param('error') ? req.param('error') : null;
     let plan=null;
-    let plans = await Plan.find();
+    let plans = await Plan.find().sort('createdAt DESC');
     let action = req.param('action') ? req.param('action') : null;
     let id = req.param('id') ? req.param('id') : null;
     if(id){
@@ -30,23 +30,42 @@ module.exports = {
     try{
       let planData = {
         name: req.body.name.trim().toLowerCase(),
-        pricecop: req.body.pricecop,
-        pricesubscriptioncop: req.body.pricesubscriptioncop,
-        pricemx: req.body.pricemx,
-        pricesubscriptionmx: req.body.pricesubscriptionmx
+        price: req.body.price,
+        pricesubscription: req.body.pricesubscription,
+        trialDays: req.body.trialDays,
+        description: req.body.description,
+        products: req.body.products,
+        channels: req.body.channels,
+        onboarding: req.body.onboarding,
+        erp: req.body.erp,
+        support: req.body.support,
+        visible: (req.body.visible ==='on') ? true : false
       };
       const result = await Plan.create(planData).fetch();
+      let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
+      let price = (parseInt(req.body.pricesubscription)*exchangeRate.result).toFixed(2);
       const planInfo = {
         id_plan: result.id,
         name: req.body.name.trim().toLowerCase(),
         description: `Plan 1Ecommerce ${req.body.name.trim().toLowerCase()}`,
-        amount: req.body.pricesubscriptioncop,
+        amount: price,
+        currency: 'cop',
+        interval: 'month',
+        interval_count: 1,
+        trial_days: parseInt(req.body.trialDays)
+      };
+      const planInfoTrial = {
+        id_plan: `${result.id}trialdays`,
+        name: req.body.name.trim().toLowerCase() + ' trialdays',
+        description: `Plan 1Ecommerce ${req.body.name.trim().toLowerCase()} sin días de prueba`,
+        amount: price,
         currency: 'cop',
         interval: 'month',
         interval_count: 1,
         trial_days: 0
-      }
+      };
       await sails.helpers.payment.plan(planInfo, 'CC');
+      await sails.helpers.payment.plan(planInfoTrial, 'CC');
     }catch(err){
       error = err;
     }
@@ -65,19 +84,31 @@ module.exports = {
     try{
       await Plan.updateOne({id: req.param('id')}).set({
         name: req.body.name.trim().toLowerCase(),
-        pricecop: req.body.pricecop,
-        pricesubscriptioncop: req.body.pricesubscriptioncop,
-        pricemx: req.body.pricemx,
-        pricesubscriptionmx: req.body.pricesubscriptionmx
+        price: req.body.price,
+        pricesubscription: req.body.pricesubscription,
+        trialDays: req.body.trialDays,
+        description: req.body.description,
+        products: req.body.products,
+        channels: req.body.channels,
+        onboarding: req.body.onboarding,
+        erp: req.body.erp,
+        support: req.body.support,
+        visible: (req.body.visible ==='on') ? true : false
       });
     }catch(err){
       if(err.code==='badRequest'){
         await Plan.updateOne({id: req.param('id')}).set({
           name: req.body.name.trim().toLowerCase(),
-          pricecop: req.body.pricecop,
-          pricesubscriptioncop: req.body.pricesubscriptioncop,
-          pricemx: req.body.pricemx,
-          pricesubscriptionmx: req.body.pricesubscriptionmx
+          price: req.body.price,
+          pricesubscription: req.body.pricesubscription,
+          description: req.body.description,
+          trialDays: req.body.trialDays,
+          products: req.body.products,
+          channels: req.body.channels,
+          onboarding: req.body.onboarding,
+          erp: req.body.erp,
+          support: req.body.support,
+          visible: (req.body.visible ==='on') ? true : false
         });
       } else {
         error = err;
@@ -88,5 +119,17 @@ module.exports = {
     }else{
       return res.redirect('/plans?error='+error);
     }
+  },
+  upgradesubscription: async (req, res) =>{
+    let seller = req.session.user.seller;
+    let subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').limit(1);
+    let filter = subscription.length > 0 ? {id: { '!=': subscription[0].plan }, visible: true} : {visible: true};
+    let plans = await Plan.find(filter).sort('createdAt ASC');
+    let currentPlan = null;
+    if (subscription.length > 0) {
+      currentPlan = await Plan.findOne({id: subscription[0].plan});
+    }
+    let colors = ['is-info', 'is-danger', 'is-primary', 'is-warning', 'is-success'];
+    return res.view('pages/configuration/upgradesubscription',{layout:'layouts/admin', plans, colors, seller, currentPlan});
   }
 };

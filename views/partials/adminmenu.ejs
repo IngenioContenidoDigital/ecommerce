@@ -89,6 +89,7 @@
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showsellers')){%><li><a href="/sellers">Sellers</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || session.user.rights.name == 'admin'){%><li><a href="/generatelink">Link de Registro</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showplans')){%><li><a href="/plans">Planes</a></li><%}%>
+      <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/subscriptions/<%=session.user.seller%>">Mi plan y Facturación</a></li><%}%>
       <li><a href="/help">Ayuda</a></li>
       <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/showreports/<%=session.user.seller%>">Reportes</a></li><%}%>
     </ul>

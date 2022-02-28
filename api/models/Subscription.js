@@ -5,12 +5,14 @@
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
  */
 
- module.exports = {
+module.exports = {
   attributes: {
     reference:{type:'string', required : true},
     currentPeriodStart: {type:'string'},
     currentPeriodEnd: {type:'string'},
     state: {type:'string'},
-    seller: {model:'seller'}
+    seller: {model:'seller'},
+    plan:{model:'plan'},
+    daysPastdue: {type:'number',defaultsTo:0}
   }
 };

@@ -92,12 +92,32 @@ module.exports = {
   admin: async function(req, res){
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     let questionsSeller = 0;
+    let btnCalendar = false;
     let helper = 'catalog';
     let seller = req.session.user.seller || '';
+    let validateChannel = true;
+    let validateProduct = true;
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
       questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+      subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').populate('plan').limit(1);
+      if (subscription.length > 0) {
+        let diferenceDays = moment().diff(moment(subscription[0].currentPeriodStart, 'MM/DD/YYYY'), 'days');
+        if (diferenceDays <= 15) {
+          btnCalendar = true;
+        }
+      }
+
+      validateChannel = await sails.helpers.validatePlanChannels(seller);
+      validateProduct = await sails.helpers.validatePlanProducts(seller);
     }
+    let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+    let position = Math.floor(Math.random() * (2 - 0)) + 0;
     req.session.questions = questionsSeller;
+    req.session.linkCalendar = links[position];
+    req.session.btnCalendar = btnCalendar;
+    req.session.validateChannel = validateChannel;
+    req.session.validateProduct = validateProduct;
+
     return res.view('pages/homeadmin',{layout:'layouts/admin',helper});
   },
   reportsadmin:async (req, res) =>{
@@ -1242,5 +1262,10 @@ module.exports = {
     } else {
       return res.send({error, result});
     }
+  },
+  pricingpage: async (req, res) =>{
+    let plans = await Plan.find({visible: true}).sort('createdAt ASC');
+    let colors = ['is-info', 'is-danger', 'is-primary', 'is-warning', 'is-success'];
+    return res.view('pages/configuration/pricingpage',{plans,colors});
   }
 };
