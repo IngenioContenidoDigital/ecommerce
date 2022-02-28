@@ -11,27 +11,27 @@
       <div class="notification is-danger is-light is-hidden" id="error"></div>
       <div class="box">
         <div class="steps" id="stepsDemo">
-          <div class="step-item is-info is-active" id="infobasics">
-            <div class="step-marker">
-              <span class="icon">
-                <i class='bx bx-user' ></i>
-              </span>
+          <% if(!existsSeller){%>
+            <div class="step-item is-info is-active" id="infobasics">
+              <div class="step-marker">
+                <span class="icon">
+                  <i class='bx bx-user' ></i>
+                </span>
+              </div>
+              <div class="step-details">
+                <p class="step-title">Información Básica</p>
+              </div>
             </div>
-            <div class="step-details">
-              <p class="step-title">Información Básica</p>
+            <div class="step-item is-info" id="address">
+              <div class="step-marker">
+                <span class="icon">
+                  <i class='bx bxs-map'></i>
+                </span>
+              </div>
+              <div class="step-details">
+                <p class="step-title">Dirección</p>
+              </div>
             </div>
-          </div>
-          <div class="step-item is-info" id="address">
-            <div class="step-marker">
-              <span class="icon">
-                <i class='bx bxs-map'></i>
-              </span>
-            </div>
-            <div class="step-details">
-              <p class="step-title">Dirección</p>
-            </div>
-          </div>
-          <% if(existsSeller === 'false'){%>
             <div class="step-item is-info" id="documents">
               <div class="step-marker">
                 <span class="icon">
@@ -64,218 +64,218 @@
             </div>
           </div>
           <div class="steps-content">
-            <div class="step-content has-text-centered is-active" id="contentinfo">
-              <br>
-              <form action="/registerseller" method="post" id='form-seller' enctype="multipart/form-data">
-                <div class="columns">
-                  <div class="column">
-                    <div class="columns">
-                      <div class="column">
-                        <div class="field">
-                          <label class="label is-size-7">Nombre del Comercio</label>
-                          <div class="control">
-                            <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" />
+            <% if(!existsSeller){%>
+              <div class="step-content has-text-centered is-active" id="contentinfo">
+                <br>
+                <form action="/registerseller" method="post" id='form-seller' enctype="multipart/form-data">
+                  <div class="columns">
+                    <div class="column">
+                      <div class="columns">
+                        <div class="column">
+                          <div class="field">
+                            <label class="label is-size-7">Nombre del Comercio</label>
+                            <div class="control">
+                              <input class="input is-size-7" type="text" name="name" required="true" placeholder="Nombre del Seller" />
+                            </div>
+                          </div>
+                        </div>
+                        <div class="column">
+                          <div class="field">
+                            <label class="label is-size-7">Identificación</label>
+                            <div class="control">
+                              <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" />
+                            </div>
+                          </div>
+                        </div>
+                        <div class="column">
+                          <div class="field">
+                            <label class="label is-size-7">Nombre del Contacto</label>
+                            <div class="control">
+                              <input class="input is-size-7" type="text" name="contact" required="true" placeholder="Nombre del contacto principal"/>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div class="column">
-                        <div class="field">
-                          <label class="label is-size-7">Identificación</label>
-                          <div class="control">
-                            <input class="input is-size-7" type="text" name="dni" required="true" placeholder="NIT del Comercio" />
+                      <div class="columns">
+                        <div class="column">
+                          <div class="field">
+                            <label class="label is-size-7">Email de Contacto</label>
+                            <div class="control">
+                              <input class="input is-size-7" type="text" name="email" required="true" placeholder="Email del contacto principal"/>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div class="column">
-                        <div class="field">
-                          <label class="label is-size-7">Nombre del Contacto</label>
-                          <div class="control">
-                            <input class="input is-size-7" type="text" name="contact" required="true" placeholder="Nombre del contacto principal"/>
+                        <div class="column">
+                          <label class="label is-size-7">Contraseña</label>
+                          <div class="field has-addons">
+                            <p class="control has-icons-left is-expanded">
+                              <input class="input pass is-size-7" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
+                              <span class="icon is-size-7 is-left">
+                                <i class='bx bxs-lock-alt'></i>
+                              </span>
+                            </p>
+                            <p class="control" id="ojo">
+                              <a class="button is-size-7" id="eye">
+                                <i class='bx bx-low-vision'></i>
+                              </a>
+                            </p>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                    <div class="columns">
-                      <div class="column">
-                        <div class="field">
-                          <label class="label is-size-7">Email de Contacto</label>
-                          <div class="control">
-                            <input class="input is-size-7" type="text" name="email" required="true" placeholder="Email del contacto principal"/>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="column">
-                        <label class="label is-size-7">Contraseña</label>
-                        <div class="field has-addons">
-                          <p class="control has-icons-left is-expanded">
-                            <input class="input pass is-size-7" name="password" type="password" minlength="6" required placeholder="Contraseña Ver / Ocultar" autocomplete="no-fill">
-                            <span class="icon is-size-7 is-left">
-                              <i class='bx bxs-lock-alt'></i>
+                        <div class="column">
+                          <label class="label is-size-7">Número Celular</label>
+                          <div class="field has-addons">
+                            <p class="control">
+                            <span class="select is-size-7">
+                              <select required name="country">
+                              <% countries.forEach((country) =>{ %>
+                                <% if(country.active){ %>
+                                <option class="is-uppercase" value="<%=country.id%>">+<%=country.prefix%></option>
+                                <%}%>
+                              <% })%>
+                              </select>
                             </span>
-                          </p>
-                          <p class="control" id="ojo">
-                            <a class="button is-size-7" id="eye">
-                              <i class='bx bx-low-vision'></i>
-                            </a>
-                          </p>
-                        </div>
-                      </div>
-                      <div class="column">
-                        <label class="label is-size-7">Número Celular</label>
-                        <div class="field has-addons">
-                          <p class="control">
-                          <span class="select is-size-7">
-                            <select required name="country">
-                            <% countries.forEach((country) =>{ %>
-                              <% if(country.active){ %>
-                              <option class="is-uppercase" value="<%=country.id%>">+<%=country.prefix%></option>
-                              <%}%>
-                            <% })%>
-                            </select>
-                          </span>
-                          </p>
-                          <p class="control has-icons-left is-expanded">
-                            <input class="input is-size-7" required name="phone" type="number" placeholder="Número Móvil">
-                            <span class="icon is-small is-left is-size-7">
-                              <i class='bx bx-mobile'></i>
-                            </span>
-                          </p>
+                            </p>
+                            <p class="control has-icons-left is-expanded">
+                              <input class="input is-size-7" required name="phone" type="number" placeholder="Número Móvil">
+                              <span class="icon is-small is-left is-size-7">
+                                <i class='bx bx-mobile'></i>
+                              </span>
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Logotipo</label>
-                      <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
-                        <label class="file-label">
-                          <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
-                          <span class="file-cta">
-                            <span class="file-icon">
-                              <i class="bx bx-upload"></i>
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">Logotipo</label>
+                        <div id="file-loader" class="file is-size-7 has-name is-fullwidth">
+                          <label class="file-label">
+                            <input class="file-input" accept="image/*" type="file" id="logo" name="logo" />
+                            <span class="file-cta">
+                              <span class="file-icon">
+                                <i class="bx bx-upload"></i>
+                              </span>
+                              <span class="file-label">
+                                Logotipo 281*63
+                              </span>
                             </span>
-                            <span class="file-label">
-                              Logotipo 281*63
+                            <span class="file-name" id="spanlogo">
+                              No ha cargado ningún archivo.
                             </span>
-                          </span>
-                          <span class="file-name" id="spanlogo">
-                            No ha cargado ningún archivo.
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">Moneda</label>
+                        <div class="control">
+                          <div class="select is-fullwidth is-size-7">
+                            <select required class="select is-capitalized" name="currency">
+                              <option value="">Elegir Moneda</option>
+                              <% currencies.forEach((currency) =>{ %>
+                                <option class="is-capitalized" value="<%=currency.id%>"><%=currency.name%></option>
+                              <%})%>
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="columns is-mobile">
+                    <div class="column is-three-fifths is-offset-one-fifth">
+                      <div class="field">
+                        <input class="is-checkradio is-small is-info" required id="checkboxterms" type="checkbox" name="checkboxterms">
+                        <label for="checkboxterms"><strong>Acepto los <a href="#" id="accept-terms">Términos y Condiciones</a></strong></label>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+              <div class="step-content has-text-centered" id="contentaddress">
+                <br>
+                <form method="POST" action="/setaddress" id="form-address">
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">Dirección (Línea 1)</label>
+                        <div class="control">
+                          <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..." />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">Dirección (Línea 2)</label>
+                        <div class="control">
+                          <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="is-size-7 label">País
+                          <span class="icon is-small has-text-info has-tooltip-top has-tooltip-info" data-tooltip="Debes seleccionar el país">
+                            <i class='bx bxs-info-circle'></i>
                           </span>
                         </label>
+                        <div class="control">
+                          <div class="select is-fullwidth is-size-7">
+                            <select required class="select is-capitalized" name="country">
+                              <option value="">-- Elegir País --</option>
+                              <% countries.forEach((country) =>{ %>
+                                <option class="is-capitalized" value="<%=country.id%>"><%=country.name%></option>
+                              <%})%>
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Moneda</label>
-                      <div class="control">
-                        <div class="select is-fullwidth is-size-7">
-                          <select required class="select is-capitalized" name="currency">
-                            <option value="">Elegir Moneda</option>
-                            <% currencies.forEach((currency) =>{ %>
-                              <option class="is-capitalized" value="<%=currency.id%>"><%=currency.name%></option>
-                            <%})%>
+                    <div class="column">
+                      <div class="field" id="estados">
+                        <label class="label is-size-7">Estado</label>
+                        <div class="select control is-size-7 is-fullwidth">
+                          <select class="is-capitalized" name="region" required >
+                            <option value="">-- Elegir Región --</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="column">
+                      <div class="field" id="ciudades">
+                        <label class="label is-size-7">Ciudad</label>
+                        <div class="control select is-size-7 is-fullwidth">
+                          <select class="is-capitalized" name="city" required>
+                            <option value="">-- Elegir Ciudad --</option>
                           </select>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="columns is-mobile">
-                  <div class="column is-three-fifths is-offset-one-fifth">
-                    <div class="field">
-                      <input class="is-checkradio is-small is-info" required id="checkboxterms" type="checkbox" name="checkboxterms">
-                      <label for="checkboxterms"><strong>Acepto los <a href="#" id="accept-terms">Términos y Condiciones</a></strong></label>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="step-content has-text-centered" id="contentaddress">
-              <br>
-              <form method="POST" action="/setaddress" id="form-address">
-                <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Dirección (Línea 1)</label>
-                      <div class="control">
-                        <input class="input is-size-7" required name="addressline1" type="text" placeholder="Calle, Carrera, Avenida, etc..." />
+                  <div class="columns">
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">Código Postal</label>
+                        <div class="control">
+                          <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Dirección (Línea 2)</label>
-                      <div class="control">
-                        <input class="input is-size-7" name="addressline2" type="text" placeholder="Torre, Casa, Piso, Puerta, Edificio..." />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="is-size-7 label">País
-                        <span class="icon is-small has-text-info has-tooltip-top has-tooltip-info" data-tooltip="Debes seleccionar el país">
-                          <i class='bx bxs-info-circle'></i>
-                        </span>
-                      </label>
-                      <div class="control">
-                        <div class="select is-fullwidth is-size-7">
-                          <select required class="select is-capitalized" name="country">
-                            <option value="">-- Elegir País --</option>
-                            <% countries.forEach((country) =>{ %>
-                              <option class="is-capitalized" value="<%=country.id%>"><%=country.name%></option>
-                            <%})%>
-                          </select>
+                    <div class="column">
+                      <div class="field">
+                        <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
+                        <div class="control">
+                          <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."></textarea>
                         </div>
                       </div>
                     </div>
                   </div>
-                  <div class="column">
-                    <div class="field" id="estados">
-                      <label class="label is-size-7">Estado</label>
-                      <div class="select control is-size-7 is-fullwidth">
-                        <select class="is-capitalized" name="region" required >
-                          <option value="">-- Elegir Región --</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="column">
-                    <div class="field" id="ciudades">
-                      <label class="label is-size-7">Ciudad</label>
-                      <div class="control select is-size-7 is-fullwidth">
-                        <select class="is-capitalized" name="city" required>
-                          <option value="">-- Elegir Ciudad --</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="columns">
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Código Postal</label>
-                      <div class="control">
-                        <input class="input is-size-7" name="zipcode" type="text" placeholder="Código Postal de la Dirección" />
-                      </div>
-                    </div>
-                  </div>
-                  <div class="column">
-                    <div class="field">
-                      <label class="label is-size-7">Detalles adicionales para ubicar la dirección</label>
-                      <div class="control">
-                        <textarea class="textarea is-size-7" name="notes" placeholder="Detalles adicionales que puedan ser de utilidad para localizar esta dirección."></textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </form>
-            </div>
-            <% if(existsSeller === 'false'){%>
+                </form>
+              </div>
               <div class="step-content has-text-centered" id="contentdocuments">
                 <article class="message is-info is-small">
                   <div class="message-header">
@@ -453,7 +453,7 @@
   bulmaSteps.attach();
   let sellerId = '';
   let userId = '';
-  <% if(existsSeller === 'false'){%>
+  <% if(!existsSeller){%>
     let fmanager = document.querySelector('input[name="document"]');
     fmanager.onchange = createDocuments;
     const fileInput = document.querySelector('#file-loader input[type=file]');
@@ -542,18 +542,14 @@
 
   live('#btn-next','click',function(e){
     e.preventDefault();
-    const existSeller = '<%-existsSeller%>';
+    const existSeller = <%- JSON.stringify(existsSeller) %>;
     const stepNext = document.querySelector('.step-item.is-info.is-active');
     const stepId = stepNext.getAttribute('data-step-id') - 1;
-    if (existSeller === 'true') {
+    if (existSeller) {
       if (stepId === 0) {
-        createSeller(stepNext);
-      } else if(stepId === 1) {
-        createAddress(stepNext);
-      } else if(stepId === 2) {
         let form = document.querySelector('#form-suscription');
         let validate = validateForm(form);
-        if (validate && sellerId) {
+        if (validate && existSeller) {
           createCreditCard(stepNext, form);
         } else {
           showError('Complete los campos requeridos', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
@@ -740,11 +736,17 @@
   }
 
   async function createCreditCard(stepNext, form) {
-    let formAdress = document.querySelector('#form-address');
+    const existSeller = <%- JSON.stringify(existsSeller) %>;
+    const addressSeller = <%- JSON.stringify(addressSeller) %>;
     const mp = new MercadoPago('APP_USR-17a0df06-739d-40de-95df-c51536da1070');
     const countries = <%- JSON.stringify(countries) %>;
-    const countryId = formAdress.querySelector('select[name="country"]').value;
-    const country = countries.find(c => c.id === countryId);
+    let countryId = '';
+    if (!existSeller) {
+      let formAdress = document.querySelector('#form-address');
+      countryId = formAdress.querySelector('select[name="country"]').value;
+    }
+    const country = existSeller ? addressSeller.country : countries.find(c => c.id === countryId);
+    let seller = existSeller ? existSeller.id : sellerId;
     if (country && country.iso === 'MX') {
       try {
         // let cardToken = await mp.createCardToken({
@@ -756,7 +758,7 @@
         //   identificationType:  form.querySelector('select[name="tid"]').value,
         //   identificationNumber: form.querySelector('input[name="dni"]').value,
         // })
-        // io.socket.post(`${form.action}/${sellerId}`, {
+        // io.socket.post(`${form.action}/${seller}`, {
         //   type: 'register',
         //   country: country.iso,
         //   token: cardToken.id,
@@ -784,7 +786,7 @@
         document.querySelector('#btn-next').removeAttribute('disabled');
       }
     } else if (country && country.iso === 'CO') {
-      io.socket.post(`${form.action}/${sellerId}`, {
+      io.socket.post(`${form.action}/${seller}`, {
         type: 'register',
         card: form.querySelector('input[name="card"]').value,
         month: form.querySelector('select[name="month"]').value,
@@ -813,7 +815,9 @@
 
   function collectRegister(stepNext) {
     const resultKey = '<%-key%>';
-    io.socket.post(`/collectregister/${sellerId}`, {key: resultKey}, function (resData, jwRes) {
+    const existSeller = <%- JSON.stringify(existsSeller) %>;
+    let seller = existSeller ? existSeller.id : sellerId;
+    io.socket.post(`/collectregister/${seller}`, {key: resultKey}, function (resData, jwRes) {
       if(jwRes.statusCode == 200){
         if (resData && resData.error) {
           showError(resData.error, stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));

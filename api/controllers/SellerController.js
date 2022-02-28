@@ -898,9 +898,15 @@ module.exports = {
     let key = req.param('key');
     let resultDecrypt = await sails.helpers.encryptDecryptKey(key, 'decrypt');
     let existsSeller = resultDecrypt.split('_')[1];
+    let seller = null;
+    let addressSeller = null;
+    if (existsSeller) {
+      seller = await Seller.findOne({id: existsSeller})
+      addressSeller = await Address.findOne({id: seller.mainAddress}).populate('country')
+    }
     let countries = await Country.find();
     let currencies = await Currency.find();
-    return res.view('pages/configuration/registerseller',{countries, currencies, key, existsSeller});
+    return res.view('pages/configuration/registerseller',{countries, currencies, key, existsSeller: seller, addressSeller});
   },
   registerseller: async(req, res)=>{
     try{
@@ -996,7 +1002,7 @@ module.exports = {
         if (resultPlan) {
           let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
           let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
-          if (existsSeller === 'true') {
+          if (existsSeller) {
             let subscriptionInfo = {
               id_plan: `${resultPlan.id}trialdays`,
               customer: card.customerId,
@@ -1238,7 +1244,7 @@ module.exports = {
       if (req.body.name) {
         const seller = await Seller.findOne({id: req.body.seller});
         const plan = await Plan.findOne({name: req.body.name});
-        const existSeller = seller ? 'true' : 'false';
+        const existSeller = seller ? seller.id : '';
         key = await sails.helpers.encryptDecryptKey(`${plan.id}_${existSeller}`, 'encrypt');
       } else{
         key = await sails.helpers.encryptDecryptKey(req.body.text, 'encrypt');
