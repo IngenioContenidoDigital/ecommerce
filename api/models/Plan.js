@@ -47,5 +47,6 @@ module.exports = {
       type:'string',
       required:true
     },
+    visible:{type:'boolean',required:true}
   },
 };

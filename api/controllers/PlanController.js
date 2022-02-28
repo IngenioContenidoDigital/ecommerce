@@ -38,7 +38,8 @@ module.exports = {
         channels: req.body.channels,
         onboarding: req.body.onboarding,
         erp: req.body.erp,
-        support: req.body.support
+        support: req.body.support,
+        visible: (req.body.visible ==='on') ? true : false
       };
       const result = await Plan.create(planData).fetch();
       let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
@@ -53,7 +54,18 @@ module.exports = {
         interval_count: 1,
         trial_days: parseInt(req.body.trialDays)
       };
+      const planInfoTrial = {
+        id_plan: `${result.id}trialdays`,
+        name: req.body.name.trim().toLowerCase() + ' trialdays',
+        description: `Plan 1Ecommerce ${req.body.name.trim().toLowerCase()} sin días de prueba`,
+        amount: price,
+        currency: 'cop',
+        interval: 'month',
+        interval_count: 1,
+        trial_days: 0
+      };
       await sails.helpers.payment.plan(planInfo, 'CC');
+      await sails.helpers.payment.plan(planInfoTrial, 'CC');
     }catch(err){
       error = err;
     }
@@ -69,7 +81,7 @@ module.exports = {
       throw 'forbidden';
     }
     let error = null;
-    try{ 
+    try{
       await Plan.updateOne({id: req.param('id')}).set({
         name: req.body.name.trim().toLowerCase(),
         price: req.body.price,
@@ -80,7 +92,8 @@ module.exports = {
         channels: req.body.channels,
         onboarding: req.body.onboarding,
         erp: req.body.erp,
-        support: req.body.support
+        support: req.body.support,
+        visible: (req.body.visible ==='on') ? true : false
       });
     }catch(err){
       if(err.code==='badRequest'){
@@ -94,7 +107,8 @@ module.exports = {
           channels: req.body.channels,
           onboarding: req.body.onboarding,
           erp: req.body.erp,
-          support: req.body.support
+          support: req.body.support,
+          visible: (req.body.visible ==='on') ? true : false
         });
       } else {
         error = err;
@@ -109,7 +123,7 @@ module.exports = {
   upgradesubscription: async (req, res) =>{
     let seller = req.session.user.seller;
     let subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').limit(1);
-    let filter = subscription.length > 0 ? {id: { '!=': subscription[0].plan }} : {};
+    let filter = subscription.length > 0 ? {id: { '!=': subscription[0].plan }, visible: true} : {visible: true};
     let plans = await Plan.find(filter).sort('createdAt ASC');
     let currentPlan = null;
     if (subscription.length > 0) {

@@ -31,16 +31,18 @@
               <p class="step-title">Dirección</p>
             </div>
           </div>
-          <div class="step-item is-info" id="documents">
-            <div class="step-marker">
-              <span class="icon">
-                <i class='bx bxs-file-doc'></i>
-              </span>
+          <% if(existsSeller === 'false'){%>
+            <div class="step-item is-info" id="documents">
+              <div class="step-marker">
+                <span class="icon">
+                  <i class='bx bxs-file-doc'></i>
+                </span>
+              </div>
+              <div class="step-details">
+                <p class="step-title">Documentos</p>
+              </div>
             </div>
-            <div class="step-details">
-              <p class="step-title">Documentos</p>
-            </div>
-          </div>
+          <%}%>
           <div class="step-item is-info" id="suscriptions">
             <div class="step-marker">
               <span class="icon">
@@ -273,39 +275,41 @@
                 </div>
               </form>
             </div>
-            <div class="step-content has-text-centered" id="contentdocuments">
-              <article class="message is-info is-small">
-                <div class="message-header">
-                  <p>Información</p>
-                </div>
-                <div class="message-body">
-                  Adjunte tus documentos legales en pdf con los siguientes nombres <strong>RUT, Cámara de comercio, Cédula representante legal.</strong>
-                </div>
-              </article>
-              <div class="columns">
-                <div class="column is-centered">
-                  <input type="hidden" name="seller-data" id="seller-data"/>
-                  <div class="file is-boxed">
-                    <label class="file-label">
-                      <input class="file-input" type="file" name="document" multiple accept="application/pdf" />
-                      <span class="file-cta">
-                        <span class="file-icon">
-                          <i class='bx bxs-cloud-upload bx-sm'></i>
-                        </span>
-                        <span class="file-label">
-                          Escoge tus archivos…
-                        </span>
-                      </span>
-                    </label>
+            <% if(existsSeller === 'false'){%>
+              <div class="step-content has-text-centered" id="contentdocuments">
+                <article class="message is-info is-small">
+                  <div class="message-header">
+                    <p>Información</p>
                   </div>
-                </div>
-                <div class="column is-two-thirds">
-                  <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
-                  <div class="preview">
+                  <div class="message-body">
+                    Adjunte tus documentos legales en pdf con los siguientes nombres <strong>RUT, Cámara de comercio, Cédula representante legal.</strong>
+                  </div>
+                </article>
+                <div class="columns">
+                  <div class="column is-centered">
+                    <input type="hidden" name="seller-data" id="seller-data"/>
+                    <div class="file is-boxed">
+                      <label class="file-label">
+                        <input class="file-input" type="file" name="document" multiple accept="application/pdf" />
+                        <span class="file-cta">
+                          <span class="file-icon">
+                            <i class='bx bxs-cloud-upload bx-sm'></i>
+                          </span>
+                          <span class="file-label">
+                            Escoge tus archivos…
+                          </span>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="column is-two-thirds">
+                    <progress class="progress is-small is-primary is-hidden" max="100">15%</progress>
+                    <div class="preview">
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            <%}%>
             <div class="step-content has-text-centered" id="contentsuscriptions">
               <article class="message is-warning is-small">
                 <div class="message-header">
@@ -449,15 +453,17 @@
   bulmaSteps.attach();
   let sellerId = '';
   let userId = '';
-  let fmanager = document.querySelector('input[name="document"]');
-  fmanager.onchange = createDocuments;
-  const fileInput = document.querySelector('#file-loader input[type=file]');
-  fileInput.onchange = () => {
-    if (fileInput.files.length > 0) {
-      const fileName = document.querySelector('#file-loader .file-name');
-      fileName.textContent = fileInput.files[0].name;
-    }
-  };
+  <% if(existsSeller === 'false'){%>
+    let fmanager = document.querySelector('input[name="document"]');
+    fmanager.onchange = createDocuments;
+    const fileInput = document.querySelector('#file-loader input[type=file]');
+    fileInput.onchange = () => {
+      if (fileInput.files.length > 0) {
+        const fileName = document.querySelector('#file-loader .file-name');
+        fileName.textContent = fileInput.files[0].name;
+      }
+    };
+  <%}%>
 
   live('#logo','change', e =>{
     const input = document.querySelector('#logo');
@@ -536,25 +542,43 @@
 
   live('#btn-next','click',function(e){
     e.preventDefault();
+    const existSeller = '<%-existsSeller%>';
     const stepNext = document.querySelector('.step-item.is-info.is-active');
     const stepId = stepNext.getAttribute('data-step-id') - 1;
-    if (stepId === 0) {
-      createSeller(stepNext);
-    } else if(stepId === 1) {
-      createAddress(stepNext);
-    } else if(stepId === 2) {
-      let numChildren = document.querySelector('.preview').children.length;
-      if (numChildren < 3) {
-        showError('Debe subir los documentos requeridos', stepNext, document.querySelector('#documents'), document.querySelector('#contentsuscriptions'), document.querySelector('#contentdocuments'));
+    if (existSeller === 'true') {
+      if (stepId === 0) {
+        createSeller(stepNext);
+      } else if(stepId === 1) {
+        createAddress(stepNext);
+      } else if(stepId === 2) {
+        let form = document.querySelector('#form-suscription');
+        let validate = validateForm(form);
+        if (validate && sellerId) {
+          createCreditCard(stepNext, form);
+        } else {
+          showError('Complete los campos requeridos', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+          document.querySelector('#btn-next').removeAttribute('disabled');
+        }
       }
-    } else if (stepId === 3) {
-      let form = document.querySelector('#form-suscription');
-      let validate = validateForm(form);
-      if (validate && sellerId) {
-        createCreditCard(stepNext, form);
-      } else {
-        showError('Complete los campos requeridos', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
-        document.querySelector('#btn-next').removeAttribute('disabled');
+    } else {
+      if (stepId === 0) {
+        createSeller(stepNext);
+      } else if(stepId === 1) {
+        createAddress(stepNext);
+      } else if(stepId === 2) {
+        let numChildren = document.querySelector('.preview').children.length;
+        if (numChildren < 3) {
+          showError('Debe subir los documentos requeridos', stepNext, document.querySelector('#documents'), document.querySelector('#contentsuscriptions'), document.querySelector('#contentdocuments'));
+        }
+      } else if (stepId === 3) {
+        let form = document.querySelector('#form-suscription');
+        let validate = validateForm(form);
+        if (validate && sellerId) {
+          createCreditCard(stepNext, form);
+        } else {
+          showError('Complete los campos requeridos', stepNext, document.querySelector('#suscriptions'), document.querySelector('#contentfinish'), document.querySelector('#contentsuscriptions'));
+          document.querySelector('#btn-next').removeAttribute('disabled');
+        }
       }
     }
   });

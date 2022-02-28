@@ -1264,7 +1264,7 @@ module.exports = {
     }
   },
   pricingpage: async (req, res) =>{
-    let plans = await Plan.find().sort('createdAt ASC');
+    let plans = await Plan.find({visible: true}).sort('createdAt ASC');
     let colors = ['is-info', 'is-danger', 'is-primary', 'is-warning', 'is-success'];
     return res.view('pages/configuration/pricingpage',{plans,colors});
   }

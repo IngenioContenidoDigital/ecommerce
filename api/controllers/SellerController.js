@@ -835,15 +835,18 @@ module.exports = {
       if(subscription){
         const epayco = await sails.helpers.payment.init('CC');
         const resultSubscription = await epayco.subscriptions.get(req.body.x_extra1);
-        if (resultSubscription.status) {
+        if (resultSubscription.sucess) {
           let state = await sails.helpers.orderState(req.body.x_response);
           let seller = await Seller.findOne({id: subscription.seller});
+          
           await Subscription.updateOne({id: subscription.id}).set({
             state: resultSubscription.status_plan,
-            currentPeriodStart: resultSubscription.current_period_start,
             currentPeriodEnd: resultSubscription.current_period_end
           });
           if (req.body.x_response === 'Aceptada') {
+            await Subscription.updateOne({id: subscription.id}).set({
+              daysPastdue: 0,
+            });
             let invoice = await Invoice.create({
               reference: req.body.x_ref_payco,
               invoice: req.body.x_id_factura,
@@ -867,8 +870,15 @@ module.exports = {
             let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
             let position = Math.floor(Math.random() * (2 - 0)) + 0;
             await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: subscription.plan.name.toUpperCase(), link: links[position]}, seller.email, 'Cobro por suscripción de tu plan de 1Ecommerce', 'email-notification');
+          } else if (req.body.x_response === 'Rechazada'){
+            await Subscription.updateOne({id: subscription.id}).set({daysPastdue: subscription.daysPastdue + 1});
+            if (subscription.daysPastdue < 2) {
+              await sails.helpers.sendEmail('email-subscription',{seller: seller, type: 'normal'}, seller.email, 'Tu pago ha sido Rechazado', 'email-notification');
+            } else {
+              await sails.helpers.inactiveAccount(seller);
+              await sails.helpers.sendEmail('email-subscription',{seller: seller, type: 'reactive'}, seller.email, 'Tu pago ha sido Rechazado', 'email-notification');
+            }
           }
-
         }
       }
     } else {
@@ -886,9 +896,11 @@ module.exports = {
   },
   registersellerform: async(req, res)=>{
     let key = req.param('key');
+    let resultDecrypt = await sails.helpers.encryptDecryptKey(key, 'decrypt');
+    let existsSeller = resultDecrypt.split('_')[1];
     let countries = await Country.find();
     let currencies = await Currency.find();
-    return res.view('pages/configuration/registerseller',{countries, currencies, key});
+    return res.view('pages/configuration/registerseller',{countries, currencies, key, existsSeller});
   },
   registerseller: async(req, res)=>{
     try{
@@ -976,74 +988,17 @@ module.exports = {
       const seller = await Seller.findOne({id: id}).populate('currency');
       const user = await User.findOne({seller: id, emailAddress: seller.email});
       const card = await Token.findOne({user: id, default: true});
-      let resultPlan = await sails.helpers.encryptDecryptKey(key, 'decrypt');
+      let resultDecrypt = await sails.helpers.encryptDecryptKey(key, 'decrypt');
+      let existsSeller = resultDecrypt.split('_')[1];
+      let resultPlan = resultDecrypt.split('_')[0];
       resultPlan = await Plan.findOne({id: resultPlan});
       if (card) {
         if (resultPlan) {
-          if (seller.currency.isocode === 'MXN') {
-            let exchangeRate = await sails.helpers.currencyConverter('USD', 'MXN');
-            let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
-            const subscriptionInfo = {
-              auto_recurring: {
-                frequency: 1,
-                frequency_type: "months",
-                transaction_amount: resultPlan.pricesubscriptionmx,
-                currency_id: "MXN",
-                start_date: new Date(moment().add(2, 'month').format()),
-                end_date: new Date(moment().add(3, 'month').format()),
-              },
-              back_url: "https://1ecommerce.app",
-              reason: 'Suscripcion Seller',
-              payer_email: seller.email
-            }
-            let responseSubscription = await sails.helpers.payment.mercadopago.request(`/preapproval`, subscriptionInfo, 'POST');
-            if (responseSubscription.id) {
-              await Subscription.create({
-                reference: responseSubscription.id,
-                currentPeriodStart: moment(responseSubscription.auto_recurring.start_date).format('DD-MM-YYYY'),
-                currentPeriodEnd: moment(responseSubscription.auto_recurring.end_date).format('DD-MM-YYYY'),
-                state: responseSubscription.status,
-                seller: seller.id
-              }).fetch();
-              const paymentInfo = {
-                description: "Cobro por registro de cuenta",
-                transaction_amount: price,
-                token: card.token,
-                installments: 1,
-                payer: {
-                  type: 'customer',
-                  id: card.customerId
-                }
-              };
-              let responsePayment = await sails.helpers.payment.mercadopago.request(`/v1/payments`, paymentInfo, 'POST');
-              if (responsePayment.id) {
-                if(responsePayment.status === 'approved'){
-                  await User.updateOne({id: user.id}).set({active: true});
-                  await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
-                  let state = await sails.helpers.orderState(responsePayment.status);
-                  await Invoice.create({
-                    reference: responsePayment.id,
-                    invoice: 'CR-Register',
-                    state: state,
-                    paymentMethod: responsePayment.payment_method_id,
-                    total: responsePayment.transaction_amount,
-                    tax: responsePayment.taxes_amount,
-                    seller: seller.id
-                  }).fetch();
-                  req.session.user = user;
-                  req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
-                  return res.send({});
-                } else {
-                  return res.send({error: 'La transacción no fue aprobada'});
-                }
-              }
-            }
-          } else {
-            let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
-            let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
-            // se crea la subscrion en epayco
+          let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
+          let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
+          if (existsSeller === 'true') {
             let subscriptionInfo = {
-              id_plan: resultPlan.id,
+              id_plan: `${resultPlan.id}trialdays`,
               customer: card.customerId,
               token_card: card.token,
               doc_type: card.docType,
@@ -1053,88 +1008,216 @@ module.exports = {
             };
             const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
             if (subscription.success) {
-              //se hace el cobro del setup
-              const paymentInfo = {
+                // se activa subscricion en epayco
+              const chargeSubscription = {
+                id_plan: `${resultPlan.id}trialdays`,
+                customer: card.customerId,
                 token_card: card.token,
-                customer_id: card.customerId,
+                url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
                 doc_type: card.docType,
                 doc_number: card.docNumber,
-                name: card.name,
-                last_name: ' ',
-                email: seller.email,
-                bill: `CR-Register-${seller.name}`,
-                description: `Cobro por registro de cuenta`,
-                value: price,
-                tax: ((price/1.19)*0.19).toString(),
-                tax_base: (price/1.19).toString(),
-                currency: 'COP',
-                dues: '1',
-                ip:require('ip').address(),
-                url_confirmation: 'https://1ecommerce.app/confirmationinvoice/payment',
-                method_confirmation: 'POST',
+                ip: require('ip').address()
               };
-              let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
-              if(payment.success && payment.data.estado === 'Aceptada'){
-                let state = await sails.helpers.orderState(payment.data.estado);
+              const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
+              if (resultCharge.subscription.periodEnd) {
+                let state = await sails.helpers.orderState(resultCharge.data.estado);
+                await Subscription.create({
+                  reference: subscription.id,
+                  currentPeriodStart: subscription.current_period_start,
+                  currentPeriodEnd: resultCharge.subscription.periodEnd,
+                  state: resultCharge.subscription.status,
+                  seller: seller.id,
+                  plan: resultPlan.id
+                }).fetch();
+  
                 let invoice = await Invoice.create({
-                  reference: payment.data.ref_payco,
-                  invoice: payment.data.factura,
+                  reference: resultCharge.data.ref_payco,
+                  invoice: resultCharge.data.factura,
                   state: state,
-                  paymentMethod: payment.data.franquicia,
-                  total: payment.data.valor,
-                  tax: payment.data.iva,
+                  paymentMethod: resultCharge.data.franquicia,
+                  total: resultCharge.data.valor,
+                  tax: resultCharge.data.iva,
                   seller: seller.id
                 }).fetch();
-
-                // Se crea factura en siigo
+  
+                // // Se crea factura en siigo
                 let dataSiigo = {
                   idInvoice: invoice.id,
-                  observations: 'Se realiza cobro por registro de cuenta',
+                  observations: 'Se realiza cobro por reactivación de cuenta',
                   code: '1009',
-                  description: 'Setup de la plataforma',
+                  description: 'Reactivación de cuenta en la plataforma',
                   priceItem: parseFloat(price),
                   total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
                 };
-
                 await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
-
-                // se activa subscricion en epayco
-                const chargeSubscription = {
-                  id_plan: resultPlan.id,
-                  customer: card.customerId,
-                  token_card: card.token,
-                  url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
-                  doc_type: card.docType,
-                  doc_number: card.docNumber,
-                  ip: require('ip').address()
-                };
-
-                const epayco = await sails.helpers.payment.init('CC');
-                const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
-
-                if (resultCharge.periodEnd) {
-                  await Subscription.create({
-                    reference: subscription.id,
-                    currentPeriodStart: subscription.current_period_start,
-                    currentPeriodEnd: resultCharge.periodEnd,
-                    state: resultCharge.status,
-                    seller: seller.id,
-                    plan: resultPlan.id
-                  }).fetch();
-                }
+  
                 let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
                 let position = Math.floor(Math.random() * (2 - 0)) + 0;
-                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
+                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu reactivación de cuenta en 1Ecommerce', 'email-notification');
                 await User.updateOne({id: user.id}).set({active: true});
                 await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
                 req.session.user = user;
                 req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
                 return res.send({});
-              } else {
-                return res.send({error: payment.status ? payment.data.respuesta : payment.data.description});
               }
             } else {
               return res.send({error: subscription.status ? subscription.data.respuesta : subscription.data.description});
+            }
+          } else {
+            if (seller.currency.isocode === 'MXN') {
+              let exchangeRate = await sails.helpers.currencyConverter('USD', 'MXN');
+              let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
+              const subscriptionInfo = {
+                auto_recurring: {
+                  frequency: 1,
+                  frequency_type: "months",
+                  transaction_amount: resultPlan.pricesubscriptionmx,
+                  currency_id: "MXN",
+                  start_date: new Date(moment().add(2, 'month').format()),
+                  end_date: new Date(moment().add(3, 'month').format()),
+                },
+                back_url: "https://1ecommerce.app",
+                reason: 'Suscripcion Seller',
+                payer_email: seller.email
+              }
+              let responseSubscription = await sails.helpers.payment.mercadopago.request(`/preapproval`, subscriptionInfo, 'POST');
+              if (responseSubscription.id) {
+                await Subscription.create({
+                  reference: responseSubscription.id,
+                  currentPeriodStart: moment(responseSubscription.auto_recurring.start_date).format('DD-MM-YYYY'),
+                  currentPeriodEnd: moment(responseSubscription.auto_recurring.end_date).format('DD-MM-YYYY'),
+                  state: responseSubscription.status,
+                  seller: seller.id
+                }).fetch();
+                const paymentInfo = {
+                  description: "Cobro por registro de cuenta",
+                  transaction_amount: price,
+                  token: card.token,
+                  installments: 1,
+                  payer: {
+                    type: 'customer',
+                    id: card.customerId
+                  }
+                };
+                let responsePayment = await sails.helpers.payment.mercadopago.request(`/v1/payments`, paymentInfo, 'POST');
+                if (responsePayment.id) {
+                  if(responsePayment.status === 'approved'){
+                    await User.updateOne({id: user.id}).set({active: true});
+                    await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
+                    let state = await sails.helpers.orderState(responsePayment.status);
+                    await Invoice.create({
+                      reference: responsePayment.id,
+                      invoice: 'CR-Register',
+                      state: state,
+                      paymentMethod: responsePayment.payment_method_id,
+                      total: responsePayment.transaction_amount,
+                      tax: responsePayment.taxes_amount,
+                      seller: seller.id
+                    }).fetch();
+                    req.session.user = user;
+                    req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+                    return res.send({});
+                  } else {
+                    return res.send({error: 'La transacción no fue aprobada'});
+                  }
+                }
+              }
+            } else {
+              // se crea la subscrion en epayco
+              let subscriptionInfo = {
+                id_plan: resultPlan.id,
+                customer: card.customerId,
+                token_card: card.token,
+                doc_type: card.docType,
+                doc_number: card.docNumber,
+                url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
+                method_confirmation: 'POST'
+              };
+              const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
+              if (subscription.success) {
+                //se hace el cobro del setup
+                const paymentInfo = {
+                  token_card: card.token,
+                  customer_id: card.customerId,
+                  doc_type: card.docType,
+                  doc_number: card.docNumber,
+                  name: card.name,
+                  last_name: ' ',
+                  email: seller.email,
+                  bill: `CR-Register-${seller.name}`,
+                  description: `Cobro por registro de cuenta`,
+                  value: price,
+                  tax: ((price/1.19)*0.19).toString(),
+                  tax_base: (price/1.19).toString(),
+                  currency: 'COP',
+                  dues: '1',
+                  ip:require('ip').address(),
+                  url_confirmation: 'https://1ecommerce.app/confirmationinvoice/payment',
+                  method_confirmation: 'POST',
+                };
+                let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
+                if(payment.success && payment.data.estado === 'Aceptada'){
+                  let state = await sails.helpers.orderState(payment.data.estado);
+                  let invoice = await Invoice.create({
+                    reference: payment.data.ref_payco,
+                    invoice: payment.data.factura,
+                    state: state,
+                    paymentMethod: payment.data.franquicia,
+                    total: payment.data.valor,
+                    tax: payment.data.iva,
+                    seller: seller.id
+                  }).fetch();
+  
+                  // Se crea factura en siigo
+                  let dataSiigo = {
+                    idInvoice: invoice.id,
+                    observations: 'Se realiza cobro por registro de cuenta',
+                    code: '1009',
+                    description: 'Setup de la plataforma',
+                    priceItem: parseFloat(price),
+                    total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                  };
+  
+                  await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+  
+                  // se activa subscricion en epayco
+                  const chargeSubscription = {
+                    id_plan: resultPlan.id,
+                    customer: card.customerId,
+                    token_card: card.token,
+                    url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
+                    doc_type: card.docType,
+                    doc_number: card.docNumber,
+                    ip: require('ip').address()
+                  };
+  
+                  const epayco = await sails.helpers.payment.init('CC');
+                  const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
+  
+                  if (resultCharge.periodEnd) {
+                    await Subscription.create({
+                      reference: subscription.id,
+                      currentPeriodStart: subscription.current_period_start,
+                      currentPeriodEnd: resultCharge.periodEnd,
+                      state: resultCharge.status,
+                      seller: seller.id,
+                      plan: resultPlan.id
+                    }).fetch();
+                  }
+                  let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+                  let position = Math.floor(Math.random() * (2 - 0)) + 0;
+                  await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
+                  await User.updateOne({id: user.id}).set({active: true});
+                  await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
+                  req.session.user = user;
+                  req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+                  return res.send({});
+                } else {
+                  return res.send({error: payment.status ? payment.data.respuesta : payment.data.description});
+                }
+              } else {
+                return res.send({error: subscription.status ? subscription.data.respuesta : subscription.data.description});
+              }
             }
           }
         } else {
@@ -1153,8 +1236,10 @@ module.exports = {
     let key = '';
     try {
       if (req.body.name) {
+        const seller = await Seller.findOne({id: req.body.seller});
         const plan = await Plan.findOne({name: req.body.name});
-        key = await sails.helpers.encryptDecryptKey(plan.id, 'encrypt');
+        const existSeller = seller ? 'true' : 'false';
+        key = await sails.helpers.encryptDecryptKey(`${plan.id}_${existSeller}`, 'encrypt');
       } else{
         key = await sails.helpers.encryptDecryptKey(req.body.text, 'encrypt');
       }
@@ -1184,7 +1269,7 @@ module.exports = {
     let seller = req.param('seller');
     let moment = require('moment');
     let invoices = await Invoice.find({seller: seller}).populate('state').sort('createdAt DESC');
-    let subscriptions = await Subscription.find({seller: seller}).populate('plan');
+    let subscriptions = await Subscription.find({seller: seller}).populate('plan').sort('createdAt DESC');
     return res.view('pages/sellers/subscriptions',{layout:'layouts/admin', moment, invoices, subscriptions, seller});
   },
   cancelsubscription: async(req, res)=>{
@@ -1211,88 +1296,91 @@ module.exports = {
   },
   upgradepayment: async(req, res)=>{
     try {
+      const moment = require('moment');
       let plan = req.body.plan;
       const seller = await Seller.findOne({id: req.body.seller}).populate('currency');
       const user = await User.findOne({seller: seller.id, emailAddress: seller.email});
       const card = await Token.findOne({user: seller.id, default: true});
       let resultPlan = await Plan.findOne({id: plan});
-      let subscriptionsActive = await Subscription.find({seller: seller.id, state: 'active'});
+      let subscriptionsActive = await Subscription.find({seller: seller.id, state: 'active'}).limit(1);
 
       if (card) {
         if (resultPlan) {
           const epayco = await sails.helpers.payment.init('CC');
-          let resultCancel = await epayco.subscriptions.cancel(reference);
-          if (resultCancel.success) {
-            let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
-            let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
-            let subscriptionInfo = {
-              id_plan: resultPlan.id,
+          if (subscriptionsActive.length > 0) {
+            let resultCancel = await epayco.subscriptions.cancel(subscriptionsActive[0].reference);
+            if (!resultCancel.success) {
+              return res.send({error: resultCancel.status ? resultCancel.data.respuesta : resultCancel.data.description});
+            } else {
+              for (const subscrit of subscriptionsActive) {
+                await Subscription.updateOne({id: subscrit.id}).set({state: 'inactive'});
+              }
+            }
+          }
+          let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
+          let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
+          let subscriptionInfo = {
+            id_plan: `${resultPlan.id}trialdays`,
+            customer: card.customerId,
+            token_card: card.token,
+            doc_type: card.docType,
+            doc_number: card.docNumber,
+            url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
+            method_confirmation: 'POST'
+          };
+          const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
+          if (subscription.success) {
+              // se activa subscricion en epayco
+            const chargeSubscription = {
+              id_plan: `${resultPlan.id}trialdays`,
               customer: card.customerId,
               token_card: card.token,
+              url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
               doc_type: card.docType,
               doc_number: card.docNumber,
-              url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
-              method_confirmation: 'POST'
+              ip: require('ip').address()
             };
-            const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
-            if (subscription.success) {
-               // se activa subscricion en epayco
-               const chargeSubscription = {
-                id_plan: resultPlan.id,
-                customer: card.customerId,
-                token_card: card.token,
-                url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
-                doc_type: card.docType,
-                doc_number: card.docNumber,
-                ip: require('ip').address()
+            const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
+            if (resultCharge.subscription.periodEnd) {
+              let state = await sails.helpers.orderState(resultCharge.data.estado);
+              await Subscription.create({
+                reference: subscription.id,
+                currentPeriodStart: subscription.current_period_start,
+                currentPeriodEnd: resultCharge.subscription.periodEnd,
+                state: resultCharge.subscription.status,
+                seller: seller.id,
+                plan: resultPlan.id
+              }).fetch();
+
+              let invoice = await Invoice.create({
+                reference: resultCharge.data.ref_payco,
+                invoice: resultCharge.data.factura,
+                state: state,
+                paymentMethod: resultCharge.data.franquicia,
+                total: resultCharge.data.valor,
+                tax: resultCharge.data.iva,
+                seller: seller.id
+              }).fetch();
+
+              // // Se crea factura en siigo
+              let dataSiigo = {
+                idInvoice: invoice.id,
+                observations: 'Se realiza cobro por cambio de plan',
+                code: '1009',
+                description: 'Cambio de plan en la plataforma',
+                priceItem: parseFloat(price),
+                total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
               };
-              const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
-  
-              if (resultCharge.periodEnd) {
-                for (const subscrit of subscriptionsActive) {
-                  await Subscription.updateOne({id: subscrit.id}).set({state: 'inactive'});
-                }
-  
-                await Subscription.create({
-                  reference: subscription.id,
-                  currentPeriodStart: subscription.current_period_start,
-                  currentPeriodEnd: resultCharge.periodEnd,
-                  state: resultCharge.status,
-                  seller: seller.id,
-                  plan: resultPlan.id
-                }).fetch();
-  
-                // let invoice = await Invoice.create({
-                //   reference: payment.data.ref_payco,
-                //   invoice: payment.data.factura,
-                //   state: state,
-                //   paymentMethod: payment.data.franquicia,
-                //   total: payment.data.valor,
-                //   tax: payment.data.iva,
-                //   seller: seller.id
-                // }).fetch();
-  
-                // // Se crea factura en siigo
-                // let dataSiigo = {
-                //   idInvoice: invoice.id,
-                //   observations: 'Se realiza cobro por cambio de plan',
-                //   code: '1009',
-                //   description: 'Cambio de plan en la plataforma',
-                //   priceItem: parseFloat(price),
-                //   total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
-                // };
-  
-                // await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
-                // let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
-                // let position = Math.floor(Math.random() * (2 - 0)) + 0;
-                // await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu nuevo cambio de plan de 1Ecommerce', 'email-notification');
-                  return res.send({});
-              }
-            } else {
-              return res.send({error: subscription.status ? subscription.data.respuesta : subscription.data.description});
+              await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+
+              let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+              let position = Math.floor(Math.random() * (2 - 0)) + 0;
+              await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu nuevo cambio de plan de 1Ecommerce', 'email-notification');
+              await Seller.updateOne({id: seller.id}).set({plan: resultPlan.id});
+              return res.send({});
             }
           } else {
-            return res.send({error: resultCancel.status ? resultCancel.data.respuesta : resultCancel.data.description});
+            return res.send({error: subscription.status ? subscription.data.respuesta : subscription.data.description});
           }
         } else {
           return res.send({error: 'No existe un Plan'});
@@ -1302,7 +1390,7 @@ module.exports = {
       }
     } catch (err) {
       console.log(err);
-      return res.send({error: err.menssage});
+      return res.send({error: "Fallo al procesar tu cambio de plan, Intentalo más tarde."});
     }
   },
 };

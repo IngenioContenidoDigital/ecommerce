@@ -27,7 +27,6 @@
                     </div>
                   </div>
                 </div>
-                
                 <div class="column">
                   <div class="field">
                     <label class="label is-size-7">Días Gratis</label>
@@ -60,6 +59,15 @@
                       <span class="icon-input-left is-small is-left">
                         <i class="bx bxs-badge-dollar"></i>
                       </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="column">
+                  <div class="field">
+                    <div class="control">
+                      <label class="label is-size-7">Visible</label>
+                      <input id="visible" type="checkbox" name="visible" class="switch is-success" <% if(action=='edit' && plan.visible){%>checked<%}%>>
+                      <label for="visible"></label>
                     </div>
                   </div>
                 </div>

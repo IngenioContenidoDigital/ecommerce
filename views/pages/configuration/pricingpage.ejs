@@ -47,7 +47,7 @@
           <div class="plan-item" data-feature="Soporte"><%= plan.support %></div>
         </div>
         <div class="plan-footer">
-          <button class="button is-fullwidth" plan="<%= plan.name %>"><%= plan.name === 'advanced' ? 'Contactar' : 'Empezar' %></button>
+          <button class="button is-fullwidth" plan="<%= plan.name %>">Empezar</button>
         </div>
       </div>
       <% i += 1 %>
@@ -75,8 +75,9 @@
 </div>
 <script>
   live('.button','click',e =>{
+    let seller = window.location.search ? window.location.search.split("=")[1] : '';
     let planName = e.target.getAttribute('plan');
-    io.socket.post(`/generatekey`, {name: planName}, function (resData, jwRes) {
+    io.socket.post(`/generatekey`, {name: planName, seller}, function (resData, jwRes) {
       if(jwRes.statusCode == 200){
         if (resData && resData.key) {
           window.location.href = `/registerseller/${resData.key}`;
