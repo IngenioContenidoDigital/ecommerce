@@ -1303,10 +1303,6 @@ module.exports = {
     let validateProduct = await sails.helpers.validatePlanProducts(seller);
     
     if (req.body.channel) {
-      if (!validateProduct) {
-        req.session.validateProduct = validateProduct;
-        return res.send({error: 'Superaste el máximo de productos, sube el nivel de tu plan', resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize: 0, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
-      }
       let page = 1;
       let pageSize =
         req.body.channel === constants.WOOCOMMERCE_CHANNEL ? constants.WOOCOMMERCE_PAGESIZE :
@@ -1319,8 +1315,11 @@ module.exports = {
 
       switch (importType) {
         case constants.PRODUCT_TYPE:
-
           try {
+            if (!validateProduct) {
+              req.session.validateProduct = validateProduct;
+              return res.send({error: 'Superaste el máximo de productos, sube el nivel de tu plan', resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize: 0, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            }
             let pagination = await sails.helpers.commerceImporter(
               req.body.channel,
               req.body.pk,
@@ -1381,7 +1380,7 @@ module.exports = {
     let route = sails.config.views.locals.imgurl;
     let json = [];
     try {
-      if (!validateProduct) {
+      if (!validateProduct && req.body.entity === 'Product') {
         req.session.validateProduct = validateProduct;
         return res.redirect('/import/'+ seller +'?error=Superaste el máximo de productos, sube el nivel de tu plan');
       }
