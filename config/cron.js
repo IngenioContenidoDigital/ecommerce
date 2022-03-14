@@ -149,11 +149,7 @@ module.exports.cron = {
               } else {
                 await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
               }
-            }
-            let integrations = await Integrations.find({seller: seller.id}).populate('channel');
-            integrations = integrations.filter(data => data.channel.type === 'marketplace');
-            for (const inte of integrations) {
-              await sails.helpers.syncProductsMarketplaces(inte, inte.channel);
+              await sails.helpers.functionChannelSync(prod.id);
             }
           }
         }
