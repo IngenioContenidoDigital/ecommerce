@@ -1,5 +1,5 @@
 module.exports = {
-    PAGINATION :
+  PAGINATION :
     `query WooCommercePaginationQuery($pagination: PaginationInput) {
         WooCommercePagination(listing: { pagination: $pagination}) {
         totalRecords
@@ -7,7 +7,7 @@ module.exports = {
       }
     }`,
 
-    CATALOG :`
+  CATALOG :`
             query WooCommerceProductListQuery($pagination: PaginationInput) {
                 WooCommerceProduct(listing: { pagination: $pagination}) {
                 totalRecords
@@ -38,7 +38,7 @@ module.exports = {
                 
 `,
 
-IMAGES : `
+  IMAGES : `
         query WooCommerceProductListQuery($pagination: PaginationInput) {
                 WooCommerceProduct(listing: { pagination: $pagination}) {
                 totalRecords
@@ -57,7 +57,7 @@ IMAGES : `
         }
 `,
 
-VARIATIONS : `
+  VARIATIONS : `
         query WooCommerceProductListQuery($pagination: PaginationInput) {
                 WooCommerceProduct(listing: { pagination: $pagination}) {
                 totalRecords
@@ -86,7 +86,8 @@ VARIATIONS : `
             }
         }
 `,
-PRODUCT_VARIATION_ID :
+
+  PRODUCT_VARIATION_ID :
 `query WooCommerceProductVariationQuery($id: String) {
     WooCommerceProductVariation(productId: $id) {
             data{
@@ -104,7 +105,8 @@ PRODUCT_VARIATION_ID :
             }
         }
     }`,
-PRODUCTID :
+
+  PRODUCTID :
 `query WooCommerceProductIdQuery($id: String) {
     WooCommerceProductId(productId: $id) {
             product{
@@ -149,8 +151,8 @@ PRODUCTID :
             }
         }
     }`,
-    
-    ORDERID :
+
+  ORDERID :
     `query WoocommerceOrderIdQuery($id: String) {
         WooCommerceOrderId(orderId: $id) {
             channelref,
@@ -186,7 +188,7 @@ PRODUCTID :
             }
         }
     }`,
-    ADD_WEBHOOK :
+  ADD_WEBHOOK :
         `mutation addWebHook ($webhook :WebHookInputType){
                 createWoocommerceWebHook(input:$webhook){
                     id
@@ -198,7 +200,7 @@ PRODUCTID :
             }
         `,
 
-    UPDATE_WEBHOOK :
+  UPDATE_WEBHOOK :
         `mutation updateWebHook ($webhook :WebHookInputType, $id:ID){
                 updateWoocommerceWebHook(input:$webhook, webhookId:$id){
                     name
@@ -208,4 +210,4 @@ PRODUCTID :
                 }
         }
     `
-}
+};

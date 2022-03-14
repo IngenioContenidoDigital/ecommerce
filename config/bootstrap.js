@@ -11,9 +11,10 @@
 
 module.exports.bootstrap = async function() {
 
- /* sails.on('lifted', async ()=>{
+  sails.on('lifted', async ()=>{
     await sails.helpers.graphqlSubscriptions().tolerate(()=>{return;});
-  });*/
+  });
+
   // By convention, this is a good place to set up fake data during development.
   if (await Profile.count() < 1) {
     await Profile.createEach([

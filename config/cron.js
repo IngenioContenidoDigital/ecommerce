@@ -122,7 +122,7 @@ module.exports.cron = {
   //   timezone: 'America/Bogota'
   // },
   stockProducts:{
-    schedule: '01 05 */6 * * *',
+    schedule: '01 05 */4 * * *',
     onTick: async () =>{
       console.log('Iniciando Sincronizacion de Stock');
       try {
@@ -134,22 +134,33 @@ module.exports.cron = {
           const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
           if (integration) {
             for(const prod of products){
-              let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                integration.channel.name,
-                integration.key,
-                integration.secret,
-                integration.url,
-                integration.version,
-                'PRODUCTID',
-                prod.externalId
-              ).catch((e) => console.log(e));
-              if (product) {
-                let variations = product.productVariations;
-                await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
-              } else {
-                await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
+              if (prod.delete === false) {
+                let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                  integration.channel.name,
+                  integration.key,
+                  integration.secret,
+                  integration.url,
+                  integration.version,
+                  'PRODUCTID',
+                  prod.externalId
+                ).catch((e) => console.log(e));
+                if (product) {
+                  let pro = await sails.helpers.checkProducts(product, seller);
+                  let variations = product.productVariations;
+                  if(typeof(pro) === 'object'){
+                    delete pro.mainCategory;
+                    delete pro.categories;
+                    const updatedProduct = await Product.updateOne({id: prod.id}).set(pro);
+                    if (updatedProduct) {
+                      await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
+                      await sails.helpers.marketplaceswebhooks.images(images, prod.id, seller).tolerate(() =>{return;});
+                    }
+                  }
+                } else {
+                  await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
+                }
+                await sails.helpers.channel.channelSync(prod);
               }
-              await sails.helpers.functionChannelSync(prod.id);
             }
           }
         }
@@ -385,5 +396,5 @@ module.exports.cron = {
       }
     },
     timezone: 'America/Bogota'
-  },
+  }
 };

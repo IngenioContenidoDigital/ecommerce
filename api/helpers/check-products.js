@@ -1,24 +1,15 @@
 module.exports = {
-
-
   friendlyName: 'Product checker service',
-
-
   description: 'Check and validate a product list',
-
-
   inputs: {
     product: { type: 'ref' },
-    seller: { type: 'string' },
-    asColor : { type: 'boolean', required:false }
+    seller: { type: 'string' }
   },
-
   exits: {
     success: {
       description: 'All done.',
     },
   },
-
   fn: async (inputs, exits) => {
     let pro = {};
     let gen = null;
@@ -104,7 +95,5 @@ module.exports = {
     pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : (inputs.seller === '60c144f4c90e3d77c4bc0e13' || inputs.seller === '5fdb7430710aa6e66628adf5' || inputs.seller === '612e67c526e3fa4772e1bde7') ? ((inputs.product.weight/1000) < 1 ? 1 : (inputs.product.weight/1000)) : inputs.product.weight;
 
     return exits.success(pro);
-
   }
-
 };
