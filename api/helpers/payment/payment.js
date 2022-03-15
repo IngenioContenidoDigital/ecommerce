@@ -66,6 +66,12 @@ module.exports = {
         .then(cash => {return exits.success(cash);})
         .catch(err => {return exits.error(err);});
         break;
+      case 'SUB':
+        epayco = await sails.helpers.payment.init('SUB');
+        epayco.charge.create(inputs.data.info)
+                .then(charge => {return exits.success(charge);})
+                .catch(err => {return exits.error(err);});
+        break;
     }
     /* Respuesta de Pago CASH
     {

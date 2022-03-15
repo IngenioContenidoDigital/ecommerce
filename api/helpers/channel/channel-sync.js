@@ -1,5 +1,4 @@
 let queue = require('queue');
-let axios = require('axios');
 
 let objectQueue = queue({
   timeout: 30000,

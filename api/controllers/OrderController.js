@@ -128,7 +128,7 @@ module.exports = {
               'card[exp_month]': req.body.month,
               'card[cvc]': req.body.cvv
             };
-            let token = await sails.helpers.payment.tokenize(creditInfo);
+            let token = await sails.helpers.payment.tokenize(creditInfo, 'CC');
 
             let customerInfo = {
               token_card: token.id,

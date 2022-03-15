@@ -1,11 +1,14 @@
 module.exports = {
-
   friendlyName: 'Tokenize',
   description: 'Tokenize something.',
   inputs: {
     creditInfo:{
       type: 'ref',
       required:true
+    },
+    method:{
+      type:'string',
+      required:true,
     }
   },
   exits: {
@@ -14,8 +17,7 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-
-    const epayco = await sails.helpers.payment.init('CC');
+    const epayco = await sails.helpers.payment.init(inputs.method);
 
     epayco.token.create(inputs.creditInfo)
         .then(token => { return exits.success(token);})

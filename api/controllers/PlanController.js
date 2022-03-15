@@ -64,8 +64,8 @@ module.exports = {
         interval_count: 1,
         trial_days: 0
       };
-      await sails.helpers.payment.plan(planInfo, 'CC');
-      await sails.helpers.payment.plan(planInfoTrial, 'CC');
+      await sails.helpers.payment.plan(planInfo, 'SUB');
+      await sails.helpers.payment.plan(planInfoTrial, 'SUB');
     }catch(err){
       error = err;
     }

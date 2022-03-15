@@ -772,7 +772,7 @@ module.exports = {
           'card[exp_month]': req.body.month,
           'card[cvc]': req.body.cvv
         };
-        let token = await sails.helpers.payment.tokenize(creditInfo);
+        let token = await sails.helpers.payment.tokenize(creditInfo, 'SUB');
         if (tokens.length > 0) {
           const addDefaultCardCustomer = {
             franchise: token.card.name,
@@ -780,7 +780,7 @@ module.exports = {
             mask: token.card.mask,
             customer_id: tokens[0].customerId
           };
-          const epayco = await sails.helpers.payment.init('CC');
+          const epayco = await sails.helpers.payment.init('SUB');
           await epayco.customers.addDefaultCard(addDefaultCardCustomer);
           await Token.create({
             token:token.id,
@@ -808,7 +808,7 @@ module.exports = {
             address: seller.mainAddress.addressline1+' '+seller.mainAddress.addressline2,
             cell_phone: seller.phone.toString()
           };
-          let customer = await sails.helpers.payment.customer(customerInfo, 'CC');
+          let customer = await sails.helpers.payment.customer(customerInfo, 'SUB');
           await Token.create({
             token:token.id,
             customerId:customer.data.customerId,
@@ -833,7 +833,7 @@ module.exports = {
     if (action === 'subscription') {
       let subscription = await Subscription.findOne({reference: req.body.x_extra1}).populate('plan');
       if(subscription){
-        const epayco = await sails.helpers.payment.init('CC');
+        const epayco = await sails.helpers.payment.init('SUB');
         const resultSubscription = await epayco.subscriptions.get(req.body.x_extra1);
         if (resultSubscription.sucess) {
           let state = await sails.helpers.orderState(req.body.x_response);
@@ -1012,7 +1012,7 @@ module.exports = {
               url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
               method_confirmation: 'POST'
             };
-            const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
+            const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'SUB');
             if (subscription.success) {
                 // se activa subscricion en epayco
               const chargeSubscription = {
@@ -1139,7 +1139,7 @@ module.exports = {
                 url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
                 method_confirmation: 'POST'
               };
-              const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
+              const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'SUB');
               if (subscription.success) {
                 //se hace el cobro del setup
                 const paymentInfo = {
@@ -1161,7 +1161,7 @@ module.exports = {
                   url_confirmation: 'https://1ecommerce.app/confirmationinvoice/payment',
                   method_confirmation: 'POST',
                 };
-                let payment = await sails.helpers.payment.payment({mode:'CC', info:paymentInfo});
+                let payment = await sails.helpers.payment.payment({mode:'SUB', info:paymentInfo});
                 if(payment.success && payment.data.estado === 'Aceptada'){
                   let state = await sails.helpers.orderState(payment.data.estado);
                   let invoice = await Invoice.create({
@@ -1197,7 +1197,7 @@ module.exports = {
                     ip: require('ip').address()
                   };
   
-                  const epayco = await sails.helpers.payment.init('CC');
+                  const epayco = await sails.helpers.payment.init('SUB');
                   const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
   
                   if (resultCharge.periodEnd) {
@@ -1283,7 +1283,7 @@ module.exports = {
       let reference = req.body.reference;
       const seller = await Seller.findOne({id: req.body.seller});
       const user = await User.findOne({seller: seller.id, emailAddress: seller.email});
-      const epayco = await sails.helpers.payment.init('CC');
+      const epayco = await sails.helpers.payment.init('SUB');
       let resultCancel = await epayco.subscriptions.cancel(reference);
       if (resultCancel.success) {
         await User.updateOne({id: user.id}).set({active: false});
@@ -1312,7 +1312,7 @@ module.exports = {
 
       if (card) {
         if (resultPlan) {
-          const epayco = await sails.helpers.payment.init('CC');
+          const epayco = await sails.helpers.payment.init('SUB');
           if (subscriptionsActive.length > 0) {
             let resultCancel = await epayco.subscriptions.cancel(subscriptionsActive[0].reference);
             if (!resultCancel.success) {
@@ -1334,7 +1334,7 @@ module.exports = {
             url_confirmation: 'https://1ecommerce.app/confirmationinvoice/subscription',
             method_confirmation: 'POST'
           };
-          const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'CC');
+          const subscription = await sails.helpers.payment.subscription(subscriptionInfo, 'SUB');
           if (subscription.success) {
               // se activa subscricion en epayco
             const chargeSubscription = {
