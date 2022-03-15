@@ -26,7 +26,7 @@ module.exports = {
     let city;
     const integration = inputs.integration;
     try{
-      let oexists = await Order.find({channel:order.channel, channelref:order.channelref,seller:integration.seller, integration: integration.id});
+      let oexists = await Order.find({channel:order.channel, channelref:order.channelref,seller:integration.seller.id, integration: integration.id});
       if (order.status === 'paid') {
         if(order.address.region==='bogota, d.c.' || order.address.region ==='bogota d.c.' || order.address.region ==='bogota'){order.address.region='bogotá dc';}
         if(order.address.city==='bogota d.c.' ||  order.address.city==='bogota, d.c.' || order.address.city==='bogota'){order.address.city='bogota';}
@@ -62,7 +62,7 @@ module.exports = {
           let cart = await Cart.create().fetch();
           for(let item of order.items){
             let productvariation = await ProductVariation.find({
-              seller: integration.seller,
+              seller: integration.seller.id,
               or : [
                 { reference: item.skuId },
                 { skuId: item.skuId }
