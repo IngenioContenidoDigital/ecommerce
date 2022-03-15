@@ -92,6 +92,7 @@
       <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/subscriptions/<%=session.user.seller%>">Mi plan y Facturación</a></li><%}%>
       <li><a href="/help">Ayuda</a></li>
       <%if(session.user.rights.name !== 'superadmin' && session.user.rights.name !== 'admin'){%><li><a href="/showreports/<%=session.user.seller%>">Reportes</a></li><%}%>
+      <%if(req.session.user.rights.name=='superadmin' || session.user.rights.name == 'admin'){%><li><a href="/emailsellers">Enviar Correo</a></li><%}%>
     </ul>
     <%}%>
     <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcountries') || req.session.user.rights.permissions.includes('showregions') || req.session.user.rights.permissions.includes('showtaxes') || req.session.user.rights.permissions.includes('showchannels') || req.session.user.rights.permissions.includes('showCurrency')){%>

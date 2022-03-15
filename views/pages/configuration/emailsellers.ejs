@@ -1,0 +1,73 @@
+<link href='https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/css/selectize.min.css' rel='stylesheet'>
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.12.1/js/standalone/selectize.min.js"></script>
+<div class="container">
+  <div class="notification is-success is-light is-hidden" id="success">
+  </div>
+  <h4 class="title is-4">Enviar Correo Clientes</h4>
+  <hr>
+  <div class="columns is-gapless">
+    <div class="column">
+      <div class="box">
+        <div class="field">
+          <label class="label is-size-7">Seleccione Sellers</label>
+          <div class="control">
+            <div class="is-fullwidth is-size-7">
+              <select name="sellers" multiple>
+                <option value="">-- Elegir --</option>
+                <% sellers.forEach((seller) =>{ %>
+                  <option class="is-capitalized" value="<%=seller.id%>"><%= seller.name %></option>
+                <%})%>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="field">
+          <label class="label is-size-7">Asunto</label>
+          <div class="field">
+            <p class="control has-icons-right">
+              <input class="input is-size-7" type="text" name="subject" required="true" placeholder="Asunto del correo" />
+            </p>
+          </div>                      
+        </div>
+        <div class="field">
+          <label class="label is-size-7">Mensaje</label>
+          <div class="control">
+            <textarea class="textarea is-size-7" name="description" placeholder="Descripción del Correo"></textarea>
+          </div>
+        </div>
+        <br>
+        <div class="buttons is-right is-fixed-bottom">
+          <br><br>
+          <button id="process" type="submit" class="button is-primary is-size-7"><i class='bx bx-send is-size-5'></i>&nbsp;&nbsp;Enviar Correo</button>
+        </div>
+      </div>
+    </div>
+    <div class="column">
+    </div>
+  </div>
+</div>
+<script>
+  $(function() {
+    $('select').selectize();
+  });
+
+  live('#process','click', e =>{
+    e.preventDefault();
+    let sellers = document.querySelector('select[name="sellers"]').selectedOptions;
+    let description = document.querySelector('textarea[name="description"]').value
+    let subject = document.querySelector('input[name="subject"]').value
+    sellers = Array.from(sellers).map(({ value }) => value);
+    addClass(e.target, 'is-loading');
+    io.socket.post('/sendemailsellers', {sellers,description,subject}, (resData, jwRes) =>{
+      if(jwRes.statusCode == 200) {
+        document.querySelector('#success').innerHTML = 'Se envio los correos correctamente';
+        removeClass(document.querySelector('#success'), 'is-hidden');
+        setTimeout(function() {
+          addClass(document.querySelector('#success'),'is-hidden');
+        }, 10000);
+        removeClass(e.target, 'is-loading');
+      }
+    });
+  });
+</script>

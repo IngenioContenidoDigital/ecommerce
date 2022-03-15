@@ -1267,5 +1267,19 @@ module.exports = {
     let plans = await Plan.find({visible: true}).sort('createdAt ASC');
     let colors = ['is-info', 'is-danger', 'is-primary', 'is-warning', 'is-success'];
     return res.view('pages/configuration/pricingpage',{plans,colors});
+  },
+  emailsellers: async (req, res) =>{
+    let sellers = await Seller.find({}).sort('createdAt ASC');
+    return res.view('pages/configuration/emailsellers',{layout:'layouts/admin', sellers});
+  },
+  sendemailsellers: async (req, res) =>{
+    let sellers = req.body.sellers;
+    let subject = req.body.subject;
+    let description = req.body.description;
+    for (const id of sellers) {
+      const seller = await Seller.findOne({id: id});
+      await sails.helpers.sendEmail('email-sellers',{name: seller.name.toUpperCase(), id:seller.id, subject, description}, seller.email, subject, 'email-notification');
+    }
+    return res.ok();
   }
 };

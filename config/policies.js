@@ -26,6 +26,8 @@ module.exports.policies = {
     'showreport': 'isLoggedIn',
     'reportsadmin': 'isLoggedIn',
     'generatelink': 'isLoggedIn',
+    'emailsellers': 'isLoggedIn',
+    'sendemailsellers': 'isLoggedIn',
     '*': true
   },
   FrontController:{'*':'isLoggedIn'},

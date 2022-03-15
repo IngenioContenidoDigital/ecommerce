@@ -30,6 +30,8 @@ module.exports.routes = {
   'POST /generateinvoice': {controller:'IndexController', action:'generateinvoice'},
   'POST /createticket': {controller:'IndexController', action:'createticket'},
   'GET /showreport/:seller': {controller:'IndexController', action:'showreport'},
+  'GET /emailsellers': {controller:'IndexController', action:'emailsellers'},
+  'POST /sendemailsellers': {controller:'IndexController', action:'sendemailsellers'},
   'GET /login' : {view:'pages/configuration/login', locals:{error:null}},
   'POST /login' : {action:'login'},
   '/logout' : {action:'logout'},
