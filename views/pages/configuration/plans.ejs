@@ -116,7 +116,7 @@
                   <div class="field">
                     <label class="label is-size-7">On-boarding personalizado</label>
                     <div class="control has-icons-left">
-                      <input class="input is-size-7" type="text" name="onboarding" placeholder="Días de On-boarding" required <% if(action=='edit'){ %>value="<%= plan.products %>"<% }%>/>
+                      <input class="input is-size-7" type="text" name="onboarding" placeholder="Días de On-boarding" required <% if(action=='edit'){ %>value="<%= plan.onboarding %>"<% }%>/>
                       <span class="icon-input-left is-small is-left">
                         <i class='bx bxs-user-badge'></i>
                       </span>
@@ -127,7 +127,7 @@
                   <div class="field">
                     <label class="label is-size-7">Integración ERP</label>
                     <div class="control has-icons-left">
-                      <input class="input is-size-7" type="text" name="erp" placeholder="Costo Integración ERP" required <% if(action=='edit'){ %>value="<%= plan.channels %>"<% }%>/>
+                      <input class="input is-size-7" type="text" name="erp" placeholder="Costo Integración ERP" required <% if(action=='edit'){ %>value="<%= plan.erp %>"<% }%>/>
                       <span class="icon-input-left is-small is-left">
                         <i class='bx bx-window-open'></i>
                       </span>
@@ -138,7 +138,7 @@
                   <div class="field">
                     <label class="label is-size-7">Soporte</label>
                     <div class="control has-icons-left">
-                      <input class="input is-size-7" type="text" name="support" placeholder="Soporte" required <% if(action=='edit'){ %>value="<%= plan.channels %>"<% }%>/>
+                      <input class="input is-size-7" type="text" name="support" placeholder="Soporte" required <% if(action=='edit'){ %>value="<%= plan.support %>"<% }%>/>
                       <span class="icon-input-left is-small is-left">
                         <i class='bx bx-support'></i>
                       </span>
