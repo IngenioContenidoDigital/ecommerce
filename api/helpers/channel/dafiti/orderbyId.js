@@ -41,7 +41,7 @@ module.exports = {
           let oexists = await Order.findOne({channel:'dafiti',channelref:order.OrderId,seller:inputs.seller, integration : integration.id});
           data = {channel: 'dafiti', channelref: order.OrderId, seller: inputs.seller};
           if(order.Statuses.Status==='pending'){
-            let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim()}).populate('region');
+            let city = await City.find({name:order.AddressShipping.City.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}).populate('region');
             if(city.length>0 && oexists===undefined){
               let user = await User.findOrCreate({emailAddress:order.AddressBilling.CustomerEmail},{
                 emailAddress:order.AddressBilling.CustomerEmail,

@@ -37,7 +37,7 @@ module.exports = {
           let oexists = await Order.findOne({channel:'liniomx',channelref:order.OrderId,seller:inputs.seller});
           data = {channel: 'liniomx', channelref: order.OrderId, seller: inputs.seller};
           if(order.Statuses.Status==='pending'){
-            let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim()}).populate('region');
+            let city = await City.find({name:(order.AddressShipping.City.split(','))[0].toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}).populate('region');
             if(city.length>0 && oexists===undefined){
               let userEmail = order.AddressBilling.CustomerEmail ? order.AddressBilling.CustomerEmail : ((order.AddressBilling.FirstName+order.AddressBilling.LastName).toLowerCase().replace(/[\. ,:-]+/g, '')).normalize('NFD').replace(/[\u0300-\u036f]/g, '') +'@linio.com.mx'
               let user = await User.findOrCreate({emailAddress:userEmail},{
