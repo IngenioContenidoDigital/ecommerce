@@ -3,6 +3,14 @@
 <link href='https://cdn.jsdelivr.net/npm/bulma-tooltip@3.0.2/dist/css/bulma-tooltip.min.css' rel='stylesheet'>
 
 <div class="container">
+  <% if (totalproducts != undefined && totalproducts > 0) { %>
+    <div class="notification is-info" id="infomessage">
+      Cantidad de productos aun no creados en tus integraciones <strong><%= totalproducts %></strong>
+      <br><br>
+      <button id="exportProducts" class="button is-default is-small"><i class='bx bx-export'></i>&nbsp;Sincronizar productos</button>
+    </div>
+  <% } %>
+
 <div class="notification is-hidden" id="notificationmessage">
 </div>
 <% if (error != undefined || error != null) { %>

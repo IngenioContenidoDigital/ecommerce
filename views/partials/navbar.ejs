@@ -4,7 +4,7 @@
       <%if(req.hostname==='iridio.co' || req.hostname==='localhost'){%>
         <a class="navbar-item" href="/"><img src="<%=cdnurl%>/iridio.png"></a>
       <%}else if(req.hostname==='1ecommerce.app'){%>
-        <a class="navbar-item" href="/"><img src="/images/1ecommerce-logo.png"></a>
+        <a class="navbar-item" href="/"><img class="logo-principal" src="https://1ecommerce.io/wp-content/uploads/2021/11/color.png"></a>
       <%}else{%>
         <%if(typeof seller === 'object' && seller!==null){%><a href="/"><img async src="<%=imgurl%>/images/sellers/<%=seller.logo%>" width="130"></a>&nbsp;&nbsp;&nbsp;<%}%>
       <%}%>

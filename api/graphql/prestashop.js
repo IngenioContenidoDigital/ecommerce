@@ -19,7 +19,7 @@ module.exports = {
         reference
         descriptionShort
         active
-        price
+        color
         manufacturer
         tax{
             name
@@ -84,7 +84,7 @@ module.exports = {
         reference
         descriptionShort
         active
-        price
+        color
         tax{
           name
           rate

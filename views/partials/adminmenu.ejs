@@ -32,6 +32,7 @@
       </span>
     </p>
     <ul class="menu-list">
+      <%if(req.session.user.rights.name !== 'superadmin' && req.session.user.rights.name !== 'admin'){%><li><a class="navbar-item" href="/import/<%=session.user.seller%>">Importar Productos</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showproducts')){%><li><a class="navbar-item" href="/products">Productos</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showcolors')){%><li><a class="navbar-item" href="/colors">Colores</a></li><%}%>
       <%if(req.session.user.rights.name=='superadmin' || req.session.user.rights.permissions.includes('showvariations')){%><li><a class="navbar-item" href="/variations">Variaciones</a></li><%}%>

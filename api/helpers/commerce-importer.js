@@ -89,19 +89,12 @@ let fetch = async (data) => {
     }else{
       reject(new Error(`Error en la peticion con el servidor : ${data.apiUrl} obteniendo el recurso ${data.resource}`));
     }
-
   });
 };
 
 module.exports = {
-
-
   friendlyName: 'Commerce importer',
-
-
   description: 'Import data from marketplaces providers',
-
-
   inputs: {
     channel: { type: 'string' },
     pk: {
@@ -123,15 +116,11 @@ module.exports = {
   },
 
   exits: {
-
     success: {
       description: 'All done.',
     },
-
   },
-
   fn: function (inputs) {
     return fetch(inputs);
   }
-
 };

@@ -41,6 +41,7 @@ module.exports = {
     let products = null;
     let seller = null;
     let helper = 'catalog';
+    let totalproductsNotPublic = [];
     const perPage = sails.config.custom.DEFAULTPAGE;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       filter.seller = req.session.user.seller;
@@ -49,10 +50,15 @@ module.exports = {
       filter.seller = req.param('seller');
       seller = req.param('seller');
     }
-    let integrations = filter.seller ? await Integrations.find({seller: filter.seller}): [];
+    let integrations = filter.seller ? await Integrations.find({seller: filter.seller}).populate('channel') : [];
     let columnActive = (req.hostname === 'localhost' || req.hostname === '1ecommerce.app') ? false : true;
     const root = await Category.findOne({ name: 'inicio' });
-    totalproducts = await Product.count(filter);
+    let totalproducts = await Product.count(filter);
+    let integrationCms = integrations.filter(inte => inte.channel.type === 'marketplace');
+    if (integrationCms.length > 0) {
+      let resultProducts = await Product.find({seller: filter.seller}).populate('channels');
+      totalproductsNotPublic = resultProducts.filter(pro => pro.channels.length === 0 || (pro.channels.length < integrationCms.length));
+    }
     let pages = Math.ceil(totalproducts / perPage);
     let moment = require('moment');
     return res.view('pages/catalog/productlist', {
@@ -65,7 +71,8 @@ module.exports = {
       moment: moment,
       integrations,
       columnActive,
-      root
+      root,
+      totalproducts: totalproductsNotPublic.length
     });
   },
   downloadproducts: async function (req, res) {
@@ -384,7 +391,7 @@ module.exports = {
         await Product.replaceCollection(product.id, 'categories').members(JSON.parse(req.body.categories));
         await sails.helpers.tools.productState(product.id,product.active,true,seller.active);
       }
-      
+
     } catch (err) {
       error = err.message;
     }
@@ -1276,7 +1283,7 @@ module.exports = {
       return res.send({error: err.message});
     }
   },
-  import: async (req, res) => { 
+  import: async (req, res) => {
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
@@ -1301,9 +1308,8 @@ module.exports = {
     let imageItems = [];
     let type = req.body.entity ? req.body.entity : null;
     let discount = req.body.discount;
-    let asColor = req.body.asColor;
     let validateProduct = await sails.helpers.validatePlanProducts(seller);
-    
+
     if (req.body.channel) {
       let page = 1;
       let pageSize =
@@ -1320,7 +1326,7 @@ module.exports = {
           try {
             if (!validateProduct) {
               req.session.validateProduct = validateProduct;
-              return res.send({error: 'Superaste el máximo de productos, sube el nivel de tu plan', resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize: 0, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+              return res.send({error: 'Superaste el máximo de productos, sube el nivel de tu plan', resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize: 0, discount, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
             }
             let pagination = await sails.helpers.commerceImporter(
               req.body.channel,
@@ -1332,10 +1338,10 @@ module.exports = {
               { page, pageSize, next: next || null }
             );
 
-            return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.send({error: null, resultados: [], integrations: integrations, rights: rights.name, pagination, pageSize, discount, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
 
           } catch (error) {
-            return res.send({error: error.message, resultados: [], integrations: integrations, rights: rights.name, pagination : null, pageSize : null, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.send({error: error.message, resultados: [], integrations: integrations, rights: rights.name, pagination : null, pageSize : null, discount, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           }
 
           break;
@@ -1350,9 +1356,9 @@ module.exports = {
               'PAGINATION',
               { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
-            return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, asColor, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationVariation, pageSize, discount, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           } catch (error) {
-            return res.send({error: error.message, resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize, discount, asColor, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.send({error: error.message, resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize, discount, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           }
           break;
         case constants.IMAGE_TYPE:
@@ -1367,9 +1373,9 @@ module.exports = {
               { page, pageSize, next: next || null }
             ).catch((e) => console.log(e));
 
-            return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.send({error: null, resultados: null, integrations: integrations, rights: rights.name, pagination: paginationImage, pageSize, discount, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           } catch (error) {
-            return res.send({error: error.message, resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize, discount, asColor, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
+            return res.send({error: error.message, resultados: null, integrations: integrations, rights: rights.name, pagination: null, pageSize, discount, seller, importType : importType, credentials : { channel : req.body.channel, pk : req.body.pk, sk : req.body.sk, apiUrl : req.body.apiUrl, version : req.body.version}});
           }
 
           break;
@@ -1379,7 +1385,6 @@ module.exports = {
       return res.send({error: null, resultados: { items: result, errors: (errors.length > 0) ? errors : [], imageErrors: imageErrors, imageItems: imageItems }, integrations: integrations, seller, rights: rights.name, type});
     }
 
-    let route = sails.config.views.locals.imgurl;
     let json = [];
     try {
       if (!validateProduct && req.body.entity === 'Product') {
@@ -2964,11 +2969,9 @@ module.exports = {
     };
     csd.uploadDocuments(params, (err, data) => {
       if (err) { console.log(err, err.stack); } // an error occurred
-      console.log(data);
       let index = new AWS.CloudSearch();
       index.indexDocuments({ DomainName: 'predictor-1ecommerce' }, (err, data) => {
         if (err) { console.log(err); }
-        console.log(data);
         return res.redirect('/inicio');
       });
     });
@@ -2987,7 +2990,6 @@ module.exports = {
     let lastPage;
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
-    let asColor = req.body.asColor;
 
     let next;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
@@ -2997,12 +2999,11 @@ module.exports = {
     }
 
     do {
-      if(req.body.channel == constants.SHOPIFY_CHANNEL || req.body.channel == constants.MAGENTO_CHANNEL){
-        if(page === (lastPage + 1)){
-          sails.sockets.broadcast(sid, 'product_task_ended', true);
-          break;
-        }
+      if(page === (lastPage + 1)){
+        sails.sockets.broadcast(sid, 'product_task_ended', true);
+        break;
       }
+
       let importedProducts = await sails.helpers.commerceImporter(
         req.body.channel,
         req.body.pk,
@@ -3013,11 +3014,9 @@ module.exports = {
         { page: page, pageSize: pageSize, next: next|| null }
       ).catch((e) => console.log(e));
       lastPage = importedProducts.pagesCount;
-
       if (importedProducts && importedProducts.pagination)
       {next = importedProducts.pagination;}
-
-      isEmpty = (!importedProducts || !importedProducts.data || importedProducts.data.length == 0) ? true : false;
+      isEmpty = (!importedProducts || !importedProducts.data) ? true : false;
 
       if (!isEmpty) {
         let result = await sails.helpers.createBulkProducts(importedProducts.data, seller, sid, {
@@ -3026,7 +3025,7 @@ module.exports = {
           sk : req.body.sk,
           url : req.body.apiUrl,
           version : req.body.version
-        }, req.body.channel, asColor || false ).catch((e)=>console.log(e));
+        }, req.body.channel).catch((e)=>console.log(e));
         if (result === 'finish') {
           sails.sockets.broadcast(sid, 'product_task_ended', true);
           break;
@@ -3063,12 +3062,9 @@ module.exports = {
     }
 
     do {
-
-      if(req.body.channel == constants.SHOPIFY_CHANNEL || req.body.channel == constants.MAGENTO_CHANNEL){
-        if(page === (lastPage + 1)){
-          sails.sockets.broadcast(sid, 'image_task_ended', true);
-          break;
-        }
+      if(page === (lastPage + 1)){
+        sails.sockets.broadcast(sid, 'image_task_ended', true);
+        break;
       }
 
       let importedProductsImages = await sails.helpers.commerceImporter(
@@ -3086,199 +3082,69 @@ module.exports = {
 
       lastPage = importedProductsImages.pagesCount;
 
-      isEmpty = (!importedProductsImages || !importedProductsImages.data || importedProductsImages.data.length == 0) ? true : false;
+      isEmpty = (!importedProductsImages || !importedProductsImages.data) ? true : false;
 
       if (!isEmpty) {
         for(p of importedProductsImages.data){
           let errors = [];
           let result = [];
 
-          if(p.color && p.color.length > 0 && !p.simple && req.body.channel === constants.WOOCOMMERCE_CHANNEL){
-            let product_variables = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                req.body.channel,
-                req.body.pk,
-                req.body.sk,
-                req.body.apiUrl,
-                req.body.version,
-                'PRODUCT_VARIATION_ID',
-                p.externalId);
+          try {
+            let product = p.externalId ? await Product.findOne({externalId: p.externalId, seller: seller}).populate('images').catch((e)=>{
+              throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
+            }) : await Product.findOne({reference: p.reference.toUpperCase(), seller: seller}).populate('images').catch((e)=>{
+              throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
+            });
+            if(product){
+              for (let im of p.images) {
+                if (im.file && im.src) {
+                  let url = (im.src.split('?'))[0];
+                  let file = (im.file.split('?'))[0];
+                  let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
+                    throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
+                  });
+                  if (uploaded) {
+                    let isCover =  await ProductImage.count({ product: product.id, cover: 1});
+                    let totalimg = await ProductImage.count({ product: product.id});
+                    totalimg += 1;
+                    let cover = isCover === 0 ? 1 : 0;
 
-            if(product_variables && product_variables.data){
-
-              let colors = product_variables.data.filter((pr)=>{
-                return pr.color != null;
-              });
-
-              if(colors.length > 0){
-                for (let index = 0; index < colors.length; index++) {
-                  const pcolor = colors[index];
-                  try {
-                    let productColor =  await Product.findOne({externalId :pcolor.externalId, seller : seller, reference:pcolor.reference}).catch((e)=>{
-                      throw new Error(`Ref: ${pcolor.reference} y externalId : ${pcolor.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
+                    await ProductImage.findOrCreate({product: product.id, file: file},{
+                      file: file,
+                      position: totalimg,
+                      cover: cover,
+                      product: product.id
+                    }).exec(async (err, record, created)=>{
+                      if(err){return new Error(err.message);}
+                      if(!created){
+                        await ProductImage.updateOne({id: record.id}).set({
+                          file: file,
+                          cover: cover
+                        });
+                      }
+                      if(typeof(record) === 'object'){
+                        result.push(record);
+                      }
                     });
-
-                    if(productColor){
-                      for (let im of pcolor.images) {
-                        try {
-                          if (im.file && im.src) {
-                            let url = (im.src.split('?'))[0];
-                            let file = (im.file.split('?'))[0];
-                            let uploaded = await sails.helpers.uploadImageUrl(url, file, productColor.id).catch((e)=>{
-                              throw new Error(`Ref: ${productColor.reference} : ${productColor.name} ocurrio un error obteniendo la imagen`);
-                            });
-                            if (uploaded) {
-                              let isCover =  await ProductImage.count({ product: productColor.id, cover: 1});
-                              let totalimg = await ProductImage.count({ product: productColor.id});
-                              totalimg += 1;
-                              let cover = isCover === 0 ? 1 : 0;
-
-                              await ProductImage.findOrCreate({product: productColor.id, file: file},{
-                                file: file,
-                                position: totalimg,
-                                cover: cover,
-                                product: productColor.id
-                              }).exec(async (err, record, created)=>{
-                                if(err){return new Error(err.message);}
-                                if(!created){
-                                  await ProductImage.updateOne({id: record.id}).set({
-                                    file: file,
-                                    cover: cover
-                                  });
-                                }
-                                if(typeof(record) === 'object'){
-                                  result.push(record);
-                                }
-                              });
-                              sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                            }
-                          }
-                        } catch (err) {
-                          errors.push({ name:'ERRDATA', message:err.message });
-                          sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                        }
-                      }
-                    }else{
-                      if(typeof(productColor) === 'object'){
-                        result.push(productColor);
-                        sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                      }
-                    }
-                  } catch (error) {
-                    errors.push({ name:'ERRDATA', message:error.message });
                     sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
                   }
                 }
-              }else{
-                try {
-                  let product = await Product.findOne({externalId : p.externalId, seller : seller}).catch((e)=>{
-                    throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
-                  });
-                  if(product){
-                    for (let im of p.images) {
-                      if (im.file && im.src) {
-                        let url = (im.src.split('?'))[0];
-                        let file = (im.file.split('?'))[0];
-                        let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                          throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                        });
-                        if (uploaded) {
-                          let isCover =  await ProductImage.count({ product: product.id, cover: 1});
-                          let totalimg = await ProductImage.count({ product: product.id});
-                          totalimg += 1;
-                          let cover = isCover === 0 ? 1 : 0;
-
-                          await ProductImage.findOrCreate({product: product.id, file: file},{
-                            file: file,
-                            position: totalimg,
-                            cover: cover,
-                            product: product.id
-                          }).exec(async (err, record, created)=>{
-                            if(err){return new Error(err.message);}
-                            if(!created){
-                              await ProductImage.updateOne({id: record.id}).set({
-                                file: file,
-                                cover: cover
-                              });
-                            }
-                            if(typeof(record) === 'object'){
-                              result.push(record);
-                            }
-                          });
-                          sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                        }
-                      }
-                    }
-                  }else{
-                    if(typeof(product) === 'object'){
-                      result.push(product);
-                      sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                    }
-                  }
-                } catch (error) {
-                  errors.push({ name:'ERRDATA', message:error.message });
-                  sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                }
+              }
+            }else{
+              if(typeof(product) === 'object'){
+                result.push(product);
+                sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
               }
             }
-          }else{
-            try {
-              let product = p.externalId ? await Product.findOne({externalId: p.externalId, seller: seller}).populate('images').catch((e)=>{
-                throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
-              }) : await Product.findOne({reference: p.reference.toUpperCase(), seller: seller}).populate('images').catch((e)=>{
-                throw new Error(`Ref: ${p.reference} y externalId : ${p.externalId} : existe mas de un producto con el mismo id externo y la misma referencia`);
-              });
-              if(product){
-                for (let im of p.images) {
-                  if (im.file && im.src) {
-                    let url = (im.src.split('?'))[0];
-                    let file = (im.file.split('?'))[0];
-                    let uploaded = await sails.helpers.uploadImageUrl(url, file, product.id).catch((e)=>{
-                      throw new Error(`Ref: ${product.reference} : ${product.name} ocurrio un error obteniendo la imagen`);
-                    });
-                    if (uploaded) {
-                      let isCover =  await ProductImage.count({ product: product.id, cover: 1});
-                      let totalimg = await ProductImage.count({ product: product.id});
-                      totalimg += 1;
-                      let cover = isCover === 0 ? 1 : 0;
-
-                      await ProductImage.findOrCreate({product: product.id, file: file},{
-                        file: file,
-                        position: totalimg,
-                        cover: cover,
-                        product: product.id
-                      }).exec(async (err, record, created)=>{
-                        if(err){return new Error(err.message);}
-                        if(!created){
-                          await ProductImage.updateOne({id: record.id}).set({
-                            file: file,
-                            cover: cover
-                          });
-                        }
-                        if(typeof(record) === 'object'){
-                          result.push(record);
-                        }
-                      });
-                      sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                    }
-                  }
-                }
-              }else{
-                if(typeof(product) === 'object'){
-                  result.push(product);
-                  sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-                }
-              }
-            } catch (error) {
-              errors.push({ name:'ERRDATA', message:error.message });
-              sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
-            }
+          } catch (error) {
+            errors.push({ name:'ERRDATA', message:error.message });
+            sails.sockets.broadcast(sid, 'product_images_processed', {errors, result});
           }
         }
       } else {
         sails.sockets.broadcast(sid, 'image_task_ended', true);
         break;
       }
-
       page++;
 
     } while ((!isEmpty));
@@ -3298,7 +3164,6 @@ module.exports = {
     let pageSize = req.body.pageSize;
     let sid = sails.sockets.getId(req);
     let discount = req.body.discount;
-    let asProduct = req.body.asProduct;
     let lastPage;
     let next;
 
@@ -3309,12 +3174,9 @@ module.exports = {
     }
 
     do {
-
-      if(req.body.channel == constants.SHOPIFY_CHANNEL || req.body.channel == constants.MAGENTO_CHANNEL){
-        if(page === (lastPage + 1)){
-          sails.sockets.broadcast(sid, 'variation_task_ended', true);
-          break;
-        }
+      if(page === (lastPage + 1)){
+        sails.sockets.broadcast(sid, 'variation_task_ended', true);
+        break;
       }
 
       let importedProductsVariations= await sails.helpers.commerceImporter(
@@ -3331,7 +3193,7 @@ module.exports = {
       {next = importedProductsVariations.pagination;}
       lastPage = importedProductsVariations.pagesCount;
 
-      isEmpty = (!importedProductsVariations || !importedProductsVariations.data || importedProductsVariations.data.length == 0) ? true : false;
+      isEmpty = (!importedProductsVariations || !importedProductsVariations.data) ? true : false;
 
       if (!isEmpty) {
         for(let p of importedProductsVariations.data){
@@ -3351,214 +3213,11 @@ module.exports = {
               },
               sort: 'createdAt DESC'
             });
-            if(!pro &&  req.body.channel != sails.config.custom.WOOCOMMERCE_CHANNEL){
+            if(!pro){
               throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
-            }else{
-              if( req.body.channel == sails.config.custom.WOOCOMMERCE_CHANNEL){
-                if(p.variations && p.variations.length > 0){
-                  let pvrs = require('lodash').uniqBy(p.variations.filter((p)=>p.color && p.color[0]), p=>p.color[0]);
-                  if(pvrs.length > 0){
-                    for (let index = 0; index < pvrs.length; index++) {
-                      pvrs[index].variations = p.variations.filter((v)=>v.color[0] == pvrs[index].color[0]).map((v)=>{
-                        return {
-                          talla : v.size || v.talla,
-                          stock : v.quantity,
-                          price : v.price
-                        };
-                      });
-                    }
-
-                    for (let index = 0; index < pvrs.length; index++) {
-                      let vr = pvrs[index];
-                      let reference;
-                      let color = await sails.helpers.tools.findColor(`${vr.color[0]}`);
-
-                      if(color && color.length > 0){
-                        color = await Color.findOne({id : color[0]});
-                      }
-
-                      if(color){
-                        reference = `${vr.reference}-${color.name}`;
-                      }else{
-                        throw new Error(`Ref : ${vr.reference} no pudimos identificar este color ${vr.color[0]}.`);
-                      }
-
-                      let prc= await Product.findOne({reference:reference.toUpperCase(), seller:seller}).populate('categories', {level:2 }).populate('discount',{
-                        where:{
-                          to:{'>=':moment().valueOf()}
-                        },
-                        sort: 'createdAt DESC'
-                      });
-
-                      if(!prc){
-                        throw new Error(`Ref : ${vr.reference} no pudimos encontrar este producto.`);
-                      }
-
-                      if(discount && vr.discount && vr.discount.length > 0){
-                        for (const disc of vr.discount) {
-                          let exists = prc.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
-                          if (exists) {
-                            await CatalogDiscount.updateOne({ id: exists.id }).set({
-                              from: moment(new Date(disc.from)).valueOf(),
-                              to: moment(new Date(disc.to)).valueOf()
-                            });
-                          } else {
-                            const discountresult = await CatalogDiscount.create({
-                              name: disc.name ? disc.name.trim().toLowerCase() : prc.name,
-                              from: moment(new Date(disc.from)).valueOf(),
-                              to: moment(new Date(disc.to)).valueOf(),
-                              type: disc.type,
-                              value: parseFloat(disc.value),
-                              seller: prc.seller
-                            }).fetch();
-
-                            await CatalogDiscount.addToCollection(discountresult.id,'products').members([prc.id]);
-                            let intlist = [];
-                            let integrations = await Integrations.find({where:{seller:prc.seller},select:['id']});
-                            for(let integration of integrations){
-                              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
-                            }
-                            await CatalogDiscount.addToCollection(discountresult.id,'integrations').members(intlist);
-                          }
-                        }
-
-                      }
-
-                      if(vr.variations && vr.variations.length > 0){
-                        for (let index = 0; index < vr.variations.length; index++) {
-                          let pdv = vr.variations[index];
-                          let vt_name;
-
-                          if(pdv.talla){
-                            vt_name = pdv.talla.toLowerCase().replace(',','.');
-                          }
-
-                          let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id});
-                          let productVariation;
-
-                          if(!variation || variation.length == 0){
-                            variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id}).fetch();
-                          }
-
-                          variation = variation.length ? variation[0] : variation;
-                          let pvs = await ProductVariation.find({ product:prc.id,supplierreference:`${prc.reference}-${color.name}`}).populate('variation');
-                          let pv = pvs.find(pv=> pv.variation.name == variation.name);
-                          if (!pv) {
-                            productVariation = await ProductVariation.create({
-                              product:prc.id,
-                              variation:variation.id,
-                              reference: vr.reference ? vr.reference : '',
-                              supplierreference:`${prc.reference}-${color.name}`,
-                              ean13: vr.ean13 ? vr.ean13.toString() : '',
-                              upc: vr.upc ? vr.upc : 0,
-                              skuId:  vr.variationId ? vr.variationId : '',
-                              price:pdv.price,
-                              quantity: pdv.stock ? pdv.stock : 0,
-                              seller:prc.seller
-                            }).fetch();
-                          } else {
-                            productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                              price: pdv.price,
-                              variation: variation.id,
-                              quantity: pdv.stock ? pdv.stock : 0,
-                            });
-                          }
-
-                          if(typeof(productVariation) === 'object' ){
-                            result.push(productVariation);
-                            sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                          }
-                        }
-                      }
-                    }
-                  }else{
-                    for (let index = 0; index < p.variations.length; index++) {
-                      let pdv =  p.variations[index];
-                      let vt_name;
-
-                      if(pdv.talla){
-                        vt_name = pdv.size || pdv.talla.toLowerCase().replace(',','.');
-                      }
-
-                      let prc= await Product.findOne({reference:p.reference.toUpperCase(), seller:seller}).populate('categories', {level:2 });
-
-                      if(!prc){
-                        throw new Error(`Ref o externalId: ${p.reference} no pudimos encontrar este producto.`);
-                      }
-
-                      let variation = await Variation.find({ name:vt_name, gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id});
-                      let productVariation;
-
-                      if(!variation || variation.length == 0){
-                        variation = await Variation.create({name:vt_name,gender:prc.gender,seller:prc.seller,manufacturer:prc.manufacturer,category:prc.categories[0].id}).fetch();
-                      }
-
-                      variation = variation.length ? variation[0] : variation;
-                      let pvs = await ProductVariation.find({ product:prc.id,supplierreference:prc.reference}).populate('variation');
-                      let pv = pvs.find(pv=> pv.variation.name == variation.name);
-
-                      if (!pv) {
-                        productVariation = await ProductVariation.create({
-                          product:prc.id,
-                          variation:variation.id,
-                          reference: pdv.reference ? pdv.reference : '',
-                          supplierreference:`${prc.reference}`,
-                          ean13: pdv.ean13 ? pdv.ean13.toString() : '',
-                          upc: pdv.upc ? pdv.upc : 0,
-                          skuId: pdv.skuId ? pdv.skuId : '',
-                          price: pdv.price,
-                          quantity: pdv.quantity || 0,
-                          seller:prc.seller
-                        }).fetch();
-                      } else {
-                        productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                          price: pdv.price,
-                          variation: variation.id,
-                          quantity: pdv.quantity || 0,
-                        });
-                      }
-
-                      if(discount && pdv.discount && pdv.discount.length > 0){
-                        for (const disc of pdv.discount) {
-                          let exists = prc.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
-                          if (exists) {
-                            await CatalogDiscount.updateOne({ id: exists.id }).set({
-                              from: moment(new Date(disc.from)).valueOf(),
-                              to: moment(new Date(disc.to)).valueOf()
-                            });
-                          } else {
-                            const discountresult = await CatalogDiscount.create({
-                              name: disc.name ? disc.name.trim().toLowerCase() : prc.name,
-                              from: moment(new Date(disc.from)).valueOf(),
-                              to: moment(new Date(disc.to)).valueOf(),
-                              type: disc.type,
-                              value: parseFloat(disc.value),
-                              seller: prc.seller
-                            }).fetch();
-
-                            await CatalogDiscount.addToCollection(discountresult.id,'products').members([prc.id]);
-                            let intlist = [];
-                            let integrations = await Integrations.find({where:{seller:prc.seller},select:['id']});
-                            for(let integration of integrations){
-                              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
-                            }
-                            await CatalogDiscount.addToCollection(discountresult.id,'integrations').members(intlist);
-                          }
-                        }
-
-                      }
-                      if(typeof(productVariation) === 'object' ){
-                        result.push(productVariation);
-                        sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                      }
-                    }
-                  }
-
-                }
-              }
             }
 
-            if(pro && req.body.channel != sails.config.custom.WOOCOMMERCE_CHANNEL){
+            if(pro){
               if (discount && p.discount && p.discount.length > 0) {
                 for (const disc of p.discount) {
                   let exists = pro.discount.find(dis => dis.value == disc.value && dis.type == disc.type);
@@ -3587,111 +3246,43 @@ module.exports = {
                 }
               }
               try {
-                let pr = await Product.findOne({reference:pro.reference, seller:pro.seller});
                 if (!pro.categories[0]) {
                   throw new Error(`El producto Ref ${pro.reference} no tiene categoría.`);
                 }
-                if( p.variations && p.variations.length > 0){
+                if(p.variations && p.variations.length > 0){
                   for(let vr of p.variations){
-                    if(vr.color && vr.color.length > 0){
-                      let prc= await Product.findOne({reference:vr.reference, seller:pro.seller});
-                      let vt =  vr.size ? vr.size.toLowerCase() : ( vr.talla ? vr.talla.toLowerCase().replace(',','.') : 'única');
-                      let variation = await Variation.find({ name:vt, gender:pro.gender,seller:pro.seller,manufacturer:pro.manufacturer,category:pro.categories[0].id});
-                      let productVariation;
-                      let discountHandled = false;
+                    let productVariation;
+                    let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,manufacturer:pro.manufacturer,category:pro.categories[0].id});
+                    if(!variation || variation.length == 0){
+                      variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,seller:pro.seller,manufacturer:pro.manufacturer,category:pro.categories[0].id}).fetch();
+                    }
+                    variation = variation.length ? variation[0] : variation;
+                    let pvs = await ProductVariation.find({ product: pro.id,supplierreference: pro.reference}).populate('variation');
+                    let pv = pvs.find(pv=> pv.variation.name == variation.name);
+                    if (!pv) {
+                      productVariation = await ProductVariation.create({
+                        product: pro.id,
+                        variation: variation.id,
+                        reference: vr.reference ? vr.reference : '',
+                        supplierreference: pro.reference,
+                        ean13: vr.ean13 ? vr.ean13.toString() : '',
+                        upc: vr.upc ? vr.upc : 0,
+                        skuId: vr.skuId ? vr.skuId : '',
+                        price: vr.price ? vr.price : 0,
+                        quantity: vr.quantity ? vr.quantity : 0,
+                        seller: pro.seller
+                      }).fetch();
+                    } else {
+                      productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
+                        price: vr.price,
+                        variation: variation.id,
+                        quantity: vr.quantity ? vr.quantity : 0,
+                      });
+                    }
 
-                      if(!variation || variation.length == 0){
-                        variation = await Variation.create({name:vt,gender:pro.gender,seller:pro.seller,manufacturer:pro.manufacturer,category:pro.categories[0].id}).fetch();
-                      }
-
-                      variation = variation.length ? variation[0] : variation;
-                      let pvs = await ProductVariation.find({ product:prc.id,supplierreference:vr.reference}).populate('variation');
-                      let pv = pvs.find(pv=> pv.variation.name == variation.name);
-
-                      if (!pv) {
-                        productVariation = await ProductVariation.create({
-                          product:prc.id,
-                          variation:variation.id,
-                          reference: vr.reference ? vr.reference : '',
-                          supplierreference:prc.reference,
-                          ean13: vr.ean13 ? vr.ean13.toString() : '',
-                          upc: vr.upc ? vr.upc : 0,
-                          skuId: vr.skuId ? vr.skuId : '',
-                          price: vr.price,
-                          quantity: vr.quantity ? vr.quantity : 0,
-                          seller:prc.seller
-                        }).fetch();
-                      } else {
-                        productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                          price: vr.price,
-                          variation: variation.id,
-                          quantity: vr.quantity ? vr.quantity : 0,
-                        });
-                      }
-                    }else{
-                      let variation = await Variation.find({ name:vr.talla.toLowerCase().replace(',','.'), gender:pro.gender,seller:pro.seller,manufacturer:pro.manufacturer,category:pro.categories[0].id});
-                      let productVariation;
-                      let discountHandled = false;
-
-                      if(!variation || variation.length == 0){
-                        variation = await Variation.create({name:vr.talla.toLowerCase().replace(',','.'),gender:pro.gender,seller:pro.seller,manufacturer:pro.manufacturer,category:pro.categories[0].id}).fetch();
-                      }
-                      variation = variation.length ? variation[0] : variation;
-                      let pvs = await ProductVariation.find({ product:pr.id,supplierreference:pr.reference}).populate('variation');
-                      let pv = pvs.find(pv=> pv.variation.name == variation.name);
-                      if (!pv) {
-                        productVariation = await ProductVariation.create({
-                          product:pr.id,
-                          variation:variation.id,
-                          reference: vr.reference ? vr.reference : '',
-                          supplierreference:pr.reference,
-                          ean13: vr.ean13 ? vr.ean13.toString() : '',
-                          upc: vr.upc ? vr.upc : 0,
-                          skuId: vr.skuId ? vr.skuId : '',
-                          price: vr.price,
-                          quantity: vr.quantity ? vr.quantity : 0,
-                          seller:pr.seller
-                        }).fetch();
-                      } else {
-                        productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
-                          price: vr.price,
-                          variation: variation.id,
-                          quantity: vr.quantity ? vr.quantity : 0,
-                        });
-                      }
-
-                      if(!discountHandled){
-                        if (discount && vr.discount && vr.discount.length > 0) {
-                          if (pro.discount.length > 0 && pro.discount[0].value == vr.discount[0].value
-                            && pro.discount[0].type == vr.discount[0].type) {
-                            await CatalogDiscount.updateOne({ id: pro.discount[0].id }).set({
-                              from: moment(new Date(vr.discount[0].from)).valueOf(),
-                              to: moment(new Date(vr.discount[0].to)).valueOf()
-                            });
-                          } else {
-                            const discountresult = await CatalogDiscount.create({
-                              name: (vr.discount && vr.discount[0].name) ? vr.discount[0].name.trim().toLowerCase() : pro.name,
-                              from: moment(new Date(vr.discount[0].from)).valueOf(),
-                              to: moment(new Date(vr.discount[0].to)).valueOf(),
-                              type: vr.discount[0].type,
-                              value: parseFloat(vr.discount[0].value),
-                              seller: pro.seller
-                            }).fetch();
-                            await CatalogDiscount.addToCollection(discountresult.id,'products').members([pro.id]);
-                            let intlist = [];
-                            let integrations = await Integrations.find({where:{seller:pro.seller},select:['id']});
-                            for(let integration of integrations){
-                              if(!intlist.includes(integration.id)){intlist.push(integration.id);}
-                            }
-                            await CatalogDiscount.addToCollection(discountresult.id,'integrations').members(intlist);
-                          }
-                        }
-
-                        if(typeof(productVariation)=== 'object'){
-                          result.push(productVariation);
-                          sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
-                        }
-                      }
+                    if(typeof(productVariation)=== 'object'){
+                      result.push(productVariation);
+                      sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
                     }
                   }
                 } else {

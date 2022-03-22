@@ -7,100 +7,68 @@ module.exports = {
       }
     }`,
 
-  CATALOG :`
-            query WooCommerceProductListQuery($pagination: PaginationInput) {
-                WooCommerceProduct(listing: { pagination: $pagination}) {
-                totalRecords
-                pagesCount
-                data{
-                    name
-                    simple
-                    externalId
-                    description
-                    reference
-                    descriptionShort
-                    active
-                    manufacturer
-                    quantity
-                    color
-                    tax{
-                        name
-                        rate
-                    }
-                    product_weight
-                    width
-                    weight
-                    height
-                    length
-                    }
-                }
-            }
-                
-`,
-
-  IMAGES : `
-        query WooCommerceProductListQuery($pagination: PaginationInput) {
-                WooCommerceProduct(listing: { pagination: $pagination}) {
-                totalRecords
-                pagesCount
-                data{
-                        externalId
-                        simple
-                        color
-                        reference
-                        images{
-                            file
-                            src
-                        }
-                    }
-            }
-        }
-`,
-
-  VARIATIONS : `
-        query WooCommerceProductListQuery($pagination: PaginationInput) {
-                WooCommerceProduct(listing: { pagination: $pagination}) {
-                totalRecords
-                pagesCount
-                data{
-                        externalId
-                        reference
-                        variations{
-                            quantity
-                            reference
-                            variationId
-                            talla
-                            price
-                            color
-                            size
-                            weight
-                            discount{
-                                name
-                                from
-                                to
-                                type
-                                value
-                            }
-                        }
-                    }
-            }
-        }
-`,
-
-  PRODUCT_VARIATION_ID :
-`query WooCommerceProductVariationQuery($id: String) {
-    WooCommerceProductVariation(productId: $id) {
+  CATALOG :
+  `query WooCommerceProductListQuery($pagination: PaginationInput) {
+        WooCommerceProduct(listing: { pagination: $pagination}) {
+            totalRecords
+            pagesCount
             data{
-                quantity
-                price
-                reference
-                externalId
+                name
                 simple
-                color
-                size
+                externalId
+                description
+                reference
+                descriptionShort
+                active
+                manufacturer
+                tax{
+                    name
+                    rate
+                }
+                width
+                weight
+                height
+                length
+            }
+        }
+    }`,
+
+  IMAGES :
+  `query WoocommerceProductImageListQuery($pagination: PaginationInput) {
+        WoocommerceProductImage(listing: { pagination: $pagination}) {
+            totalRecords
+            pagesCount
+            data{
+                externalId
                 images{
                     file
                     src
+                }
+            }
+        }
+    }`,
+
+  VARIATIONS :
+    `query WoocommerceProductVariationListQuery($pagination: PaginationInput) {
+        WoocommerceProductVariation(listing: { pagination: $pagination}) {
+            totalRecords
+            pagesCount
+            data{
+                externalId
+                reference
+                discount{
+                    name
+                    from
+                    to
+                    type
+                    value
+                }
+                variations{
+                    reference
+                    talla
+                    price
+                    quantity
+                    ean13
                 }
             }
         }

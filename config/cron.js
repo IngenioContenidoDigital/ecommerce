@@ -228,10 +228,10 @@ module.exports.cron = {
       let axios = require('axios');
 
       let channel = await Channel.findOne({name: 'woocommerce'});
-      let integrations = await Integrations.find({channel: channel.id}).populate('channel');
+      let integrations = await Integrations.find({channel: channel.id}).populate('channel').populate('seller');
 
       integrations.forEach(async integration =>{
-        if(integration.order_webhook_status){
+        if(integration.order_webhook_status && integration.seller.active){
           try{
 
             let statuses = ['pending','proccesing','completed','on-hold','canceled','refunded','failed'];
@@ -246,7 +246,7 @@ module.exports.cron = {
               }
 
               let orders  = await axios.get(`${integration.url}wp-json/${integration.version}/orders?consumer_key=${integration.key}&consumer_secret=${integration.secret}&${parameters}`).catch((e)=>{
-                console.log(`No se pudieron recuperar las ordenes del seller ${integration.url}`, e);
+                console.log(`No se pudieron recuperar las ordenes del seller ${integration.url}`);
               });
 
               if(orders && (orders.status == 200)  && orders.data.length > 0){
