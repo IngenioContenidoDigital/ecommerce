@@ -28,24 +28,7 @@ module.exports = {
       if (responseData.SuccessResponse && responseData.SuccessResponse.Body.FeedDetail.FeedErrors) {
         const errors = responseData.SuccessResponse.Body.FeedDetail.FeedErrors.Error;
         let resultErrors = [];
-        if (typeof(errors) === 'object') {
-          const productVariation = await ProductVariation.findOne({id: errors.SellerSku}).populate('product');
-          const msg = errors.Message.split(' | ')[0];
-          if (productVariation) {
-            const product = productVariation.product.id;
-            const ref = productVariation.product.reference;
-            if(!resultErrors.some(e => e.product === product)){
-              resultErrors.push({product: product, reference: ref, message: msg});
-            } else {
-              resultErrors = resultErrors.map(err => {
-                if (err.product === product && !err.message.includes(msg)) {
-                  err.message = err.message + ' | ' + msg;
-                }
-                return err;
-              });
-            }
-          }
-        } else {
+        if (Array.isArray(errors)) {
           for (const error of errors) {
             const productVariation = await ProductVariation.findOne({id: error.SellerSku}).populate('product');
             const msg = error.Message.split(' | ')[0];
@@ -62,6 +45,23 @@ module.exports = {
                   return err;
                 });
               }
+            }
+          }
+        } else {
+          const productVariation = await ProductVariation.findOne({id: errors.SellerSku}).populate('product');
+          const msg = errors.Message.split(' | ')[0];
+          if (productVariation) {
+            const product = productVariation.product.id;
+            const ref = productVariation.product.reference;
+            if(!resultErrors.some(e => e.product === product)){
+              resultErrors.push({product: product, reference: ref, message: msg});
+            } else {
+              resultErrors = resultErrors.map(err => {
+                if (err.product === product && !err.message.includes(msg)) {
+                  err.message = err.message + ' | ' + msg;
+                }
+                return err;
+              });
             }
           }
         }
