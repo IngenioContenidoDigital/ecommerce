@@ -137,8 +137,7 @@ module.exports = {
               data.Product.Description= jsonxml.cdata(await textClean(product.description));
               data.Product.Brand=brand;
               data.Product.Condition='new';
-              data.Product.Variation= pv.variation.col ? pv.variation.col.replace(/\.5/,'½').toString() : pv.variation.name;
-
+              data.Product.Variation = pv.variation.col ? (pv.variation.col.replace(/\.5/,'½').toString() === 'U' || pv.variation.col.replace(/\.5/,'½').toString() === 'Único' || pv.variation.col.replace(/\.5/,'½').toString() === 'único' || pv.variation.col.replace(/\.5/,'½').toString() === 'Única' || pv.variation.col.replace(/\.5/,'½').toString() === 'única') ? 'Talla Única' : pv.variation.col.replace(/\.5/,'½').toString() : (pv.variation.name.toString() === 'Único' || pv.variation.name.toString() === 'único' || pv.variation.name.toString() === 'Única' || pv.variation.name.toString() === 'única' || pv.variation.col.replace(/\.5/,'½').toString() === 'U') ? 'Talla Única' : pv.variation.name;
               data.Product.ProductData = {};
 
               if(product.gender && product.gender.name){

@@ -88,8 +88,10 @@ module.exports = {
                     'PRODUCTID',
                     result.productId
               ).catch((e) => console.log(e));
-              if (response) {
-                await sails.helpers.marketplaceswebhooks.woocommerceProduct(response.product, integration.seller.id, integration, result.separate_product_by_color ).catch((e)=>console.log(e.message));
+              if (response && response.data.length > 0) {
+                for (const product of response.data) {
+                  await sails.helpers.marketplaceswebhooks.product(product, integration.seller.id, true).catch((e)=>console.log(e.message));
+                }
               }
             }
           }

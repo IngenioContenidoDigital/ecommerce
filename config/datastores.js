@@ -14,9 +14,7 @@
  */
 
 module.exports.datastores = {
-
-
-    /***************************************************************************
+/***************************************************************************
     *                                                                          *
     * Your app's default datastore.                                            *
     *                                                                          *
@@ -31,10 +29,9 @@ module.exports.datastores = {
     * (For production configuration, see `config/env/production.js`.)          *
     *                                                                          *
     ***************************************************************************/
-  
-    default: {
-  
-      /***************************************************************************
+
+  default: {
+    /***************************************************************************
       *                                                                          *
       * Want to use a different database during development?                     *
       *                                                                          *
@@ -48,12 +45,8 @@ module.exports.datastores = {
       *    (See https://sailsjs.com/config/datastores for help.)                 *
       *                                                                          *
       ***************************************************************************/
-      adapter: 'sails-mongo',
-      url: 'mongodb://localhost:27017/iridio',
-      //url: 'mongodb://iridioDb:mhfPOxZB8V69zW8z@1ecommerce-shard-00-00.olidk.mongodb.net:27017,1ecommerce-shard-00-01.olidk.mongodb.net:27017,1ecommerce-shard-00-02.olidk.mongodb.net:27017/iridio?replicaSet=atlas-23sosy-shard-0&ssl=true&authSource=admin',
-  
-    },
-  
-  
-  };
-  
+    adapter: 'sails-mongo',
+    url: 'mongodb://localhost:27017/iridio',
+    //url: 'mongodb://iridioDb:mhfPOxZB8V69zW8z@1ecommerce-shard-00-00.olidk.mongodb.net:27017,1ecommerce-shard-00-01.olidk.mongodb.net:27017,1ecommerce-shard-00-02.olidk.mongodb.net:27017/iridio?replicaSet=atlas-23sosy-shard-0&ssl=true&authSource=admin',
+  },
+};

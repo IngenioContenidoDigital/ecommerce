@@ -21,7 +21,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     let integration = inputs.integration;
-    let sign = integration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integration.id, 'FeedStatus', integration.seller, ['FeedID='+inputs.feed]) : await sails.helpers.channel.linio.sign(integration.id, 'FeedStatus', integration.seller, ['FeedID='+inputs.feed]);
+    let sign = integration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integration.id, 'FeedStatus', integration.seller.id, ['FeedID='+inputs.feed]) : await sails.helpers.channel.linio.sign(integration.id, 'FeedStatus', integration.seller.id, ['FeedID='+inputs.feed]);
     await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET')
     .then(async (resData)=>{
       const responseData = JSON.parse(resData);
