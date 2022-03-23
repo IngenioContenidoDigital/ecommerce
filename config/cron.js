@@ -145,7 +145,7 @@ module.exports.cron = {
                   prod.externalId
                 ).catch((e) => console.log(e));
                 if (product) {
-                  let pro = await sails.helpers.checkProducts(product, seller);
+                  let pro = await sails.helpers.checkProducts(product, seller.id);
                   let variations = product.productVariations;
                   if(typeof(pro) === 'object'){
                     delete pro.mainCategory;

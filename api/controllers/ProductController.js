@@ -476,7 +476,7 @@ module.exports = {
     if (!req.isSocket) {return res.badRequest();}
     let error = false;
     let product = await Product.findOne({ id: req.body[0].product }).populate('seller').populate('categories',{level:2});
-    const channels = await ProductChannel.find({product: product.id}).populate('channel');
+    // const channels = await ProductChannel.find({product: product.id}).populate('channel');
     for (let list of req.body) {
       let pv = await ProductVariation.findOne({id: list.productvariation}).populate('variation');
       if(pv){
@@ -521,6 +521,7 @@ module.exports = {
     let product = await Product.findOne({ id: req.param('id') }).populate('categories', { level: 2 });
     let level2 = product.categories.map(c => c.id);
     let variations = await Variation.find({ where: { manufacturer: product.manufacturer, gender: product.gender, seller: product.seller, category: { in: level2 } } });
+    console.log(variations);
     return res.send(variations);
   },
   findproductvariations: async (req, res) => {
@@ -623,6 +624,7 @@ module.exports = {
         .then(async (resData)=>{
           resData = JSON.parse(resData);
           if(resData.SuccessResponse){
+            let feedId = resData.SuccessResponse.Head.RequestId;
             await ProductChannel.findOrCreate({id: productChannelId},{
               product:product.id,
               integration:integrationId,
@@ -632,7 +634,8 @@ module.exports = {
               qc:false,
               price:req.body.price ? parseFloat(req.body.price) : 0,
               iscreated:false,
-              socketid:sid
+              socketid:sid,
+              feed: feedId
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
               if(!created){
@@ -640,7 +643,8 @@ module.exports = {
                   status: record.iscreated ? req.body.status : false,
                   price:req.body.price ? parseFloat(req.body.price) : 0,
                   reason: '',
-                  socketid:sid
+                  socketid:sid,
+                  feed: feedId
                 });
               }
             });
@@ -837,6 +841,7 @@ module.exports = {
         .then(async (resData)=>{
           resData = JSON.parse(resData);
           if(resData.SuccessResponse){
+            let feedId = resData.SuccessResponse.Head.RequestId;
             await ProductChannel.findOrCreate({id: productChannelId},{
               product:product.id,
               integration:integrationId,
@@ -846,7 +851,8 @@ module.exports = {
               qc:false,
               price:req.body.price ? parseFloat(req.body.price) : 0,
               iscreated:false,
-              socketid:sid
+              socketid:sid,
+              feed: feedId
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
               if(!created){
@@ -854,7 +860,8 @@ module.exports = {
                   status: record.iscreated ? req.body.status : false,
                   price:req.body.price ? parseFloat(req.body.price) : 0,
                   reason: '',
-                  socketid:sid
+                  socketid:sid,
+                  feed: feedId
                 });
               }
             });
@@ -905,6 +912,7 @@ module.exports = {
         .then(async (resData)=>{
           resData = JSON.parse(resData);
           if(resData.SuccessResponse){
+            let feedId = resData.SuccessResponse.Head.RequestId;
             await ProductChannel.findOrCreate({id: productChannelId},{
               product:product.id,
               integration:integrationId,
@@ -914,7 +922,8 @@ module.exports = {
               qc:false,
               price:req.body.price ? parseFloat(req.body.price) : 0,
               iscreated:false,
-              socketid:sid
+              socketid:sid,
+              feed: feedId
             }).exec(async (err, record, created)=>{
               if(err){return new Error(err.message);}
               if(!created){
@@ -922,7 +931,8 @@ module.exports = {
                   status: record.iscreated ? req.body.status : false,
                   price:req.body.price ? parseFloat(req.body.price) : 0,
                   reason: '',
-                  socketid:sid
+                  socketid:sid,
+                  feed: feedId
                 });
               }
             });

@@ -17,6 +17,7 @@ module.exports = {
         price:{ type:'number', defaultsTo:0 },
         iscreated:{ type:'boolean' },
         socketid:{ type:'string', defaultsTo:'' },
-        reason:{ type:'string', defaultsTo:'' }
+        reason:{ type:'string', defaultsTo:'' },
+        feed:{ type:'string', defaultsTo:'' }
     }
 };

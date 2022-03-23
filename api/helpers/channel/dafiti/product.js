@@ -42,7 +42,8 @@ module.exports = {
       text=text.replace(/&/g,'y'); //Caracteres Especiales
       text=text.replace(/[\/\\#,+()$~%.'":*?<>{} ]/g,''); //Caracteres Especiales
       text=text.trim(); //Espacios Extra
-      return JSON.stringify(text);
+      let result = JSON.stringify(text);
+      return result.replace(/['"]+/g, '');
     };
 
     for(let p of inputs.products){

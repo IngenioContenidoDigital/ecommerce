@@ -44,6 +44,7 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     objectQueue.push(await sails.helpers.makeJob({product: inputs.productid}));
+    return exits.success();
   }
 };
 

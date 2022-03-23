@@ -27,11 +27,32 @@ module.exports = {
       const responseData = JSON.parse(resData);
       if (responseData.SuccessResponse && responseData.SuccessResponse.Body.FeedDetail.FeedErrors) {
         const errors = responseData.SuccessResponse.Body.FeedDetail.FeedErrors.Error;
+        const status = responseData.SuccessResponse.Body.FeedDetail.Status;
+        const feed = responseData.SuccessResponse.Body.FeedDetail.Feed;
         let resultErrors = [];
-        if (Array.isArray(errors)) {
-          for (const error of errors) {
-            const productVariation = await ProductVariation.findOne({id: error.SellerSku}).populate('product');
-            const msg = error.Message.split(' | ')[0];
+        if (status === 'Finished') {
+          if (Array.isArray(errors)) {
+            for (const error of errors) {
+              const productVariation = await ProductVariation.findOne({id: error.SellerSku}).populate('product');
+              const msg = error.Message.split(' | ')[0];
+              if (productVariation) {
+                const product = productVariation.product.id;
+                const ref = productVariation.product.reference;
+                if(!resultErrors.some(e => e.product === product)){
+                  resultErrors.push({product: product, reference: ref, message: msg});
+                } else {
+                  resultErrors = resultErrors.map(err => {
+                    if (err.product === product && !err.message.includes(msg)) {
+                      err.message = err.message + ' | ' + msg;
+                    }
+                    return err;
+                  });
+                }
+              }
+            }
+          } else {
+            const productVariation = await ProductVariation.findOne({id: errors.SellerSku}).populate('product');
+            const msg = errors.Message.split(' | ')[0];
             if (productVariation) {
               const product = productVariation.product.id;
               const ref = productVariation.product.reference;
@@ -47,22 +68,12 @@ module.exports = {
               }
             }
           }
-        } else {
-          const productVariation = await ProductVariation.findOne({id: errors.SellerSku}).populate('product');
-          const msg = errors.Message.split(' | ')[0];
-          if (productVariation) {
-            const product = productVariation.product.id;
-            const ref = productVariation.product.reference;
-            if(!resultErrors.some(e => e.product === product)){
-              resultErrors.push({product: product, reference: ref, message: msg});
-            } else {
-              resultErrors = resultErrors.map(err => {
-                if (err.product === product && !err.message.includes(msg)) {
-                  err.message = err.message + ' | ' + msg;
-                }
-                return err;
-              });
-            }
+        } else if(status === 'Queued' || status === 'Processing'){
+          const productChannel = await ProductChannel.find({feed: feed}).populate('product');
+          if (productChannel.length > 0) {
+            const product = productChannel[0].product.id;
+            const ref = productChannel[0].product.reference;
+            sails.sockets.broadcast(productChannel[0].socketid, 'reponse_product_created', {errors: [{product: product, reference: ref, message: 'La peticiónn se esta procesando en el marketplace...'}], integration: integration.id});
           }
         }
 
