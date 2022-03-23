@@ -69,7 +69,7 @@ module.exports = {
       helper:helper,
       seller:seller,
       moment: moment,
-      integrations,
+      integrations: integrationCms,
       columnActive,
       root,
       totalproducts: totalproductsNotPublic.length
