@@ -23,13 +23,13 @@ module.exports = {
       if(response.id){
         if (response.status === 'under_review') {
           await ProductChannel.updateOne({channelid: response.id}).set({
-            reason: 'Se debe corregir la infracción reportada en Mercadolibre',
+            reason: 'Producto Inactivo para revisar, elimine el producto en el marketplace, modifique y envie de nuevo.',
             qc: false,
             status: false
           });
         } else {
           await ProductChannel.updateOne({channelid: response.id}).set({
-            reason: '',
+            reason: response.status === 'active' ? '' : 'El producto se inactivo en mercadolbre, verificar en el marketplace',
             qc: true,
             status: response.status === 'active' ? true : false
           });

@@ -725,6 +725,7 @@ module.exports = {
                   });
                 }
               });
+              sleep(2000);
               await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
             }
           }
@@ -734,7 +735,11 @@ module.exports = {
         return res.send({error: 'El producto tiene problemas de contenido, verificar los detalles y corregirlos.'});
       }
     } catch (err) {
-      return res.send({error: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'});
+      if (typeof err.message === 'string' && err.message.includes('status is not modifiable')) {
+        return res.send({error: 'Producto Inactivo para revisar, elimine el producto en el marketplace, modifique y envie de nuevo.'});
+      } else {
+        return res.send({error: typeof err.message === 'string' ? err.message : 'Error al procesar el producto.'});
+      }
     }
   },
   mercadolibremxadd: async (req, res) => {
@@ -2334,7 +2339,7 @@ module.exports = {
             if(body){
               if(action==='Update'){
                 result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
-                .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No creado en Mercadolibre: '+ err.message);});
+                .tolerate((err)=>{response.errors.push('REF: '+pl.reference+' No actualizado en Mercadolibre: '+ err.message);});
                 if(result){
                   response.items.push(body);
                   await ProductChannel.updateOne({ id: productChannelId }).set({
@@ -2369,6 +2374,7 @@ module.exports = {
                       });
                     }
                   });
+                  sleep(2000);
                   await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
                   response.items.push(body);
                 }
@@ -3350,9 +3356,9 @@ module.exports = {
     const productchannelId = req.body.productchannel;
     const channel = req.body.nameChannel;
     let body={Request:[]};
+    let integration = await Integrations.findOne({id: integrationId}).populate('channel');
+    let productchannel = await ProductChannel.findOne({id: productchannelId});
     try {
-      let integration = await Integrations.findOne({id: integrationId}).populate('channel');
-      let productchannel = await ProductChannel.findOne({id: productchannelId});
       let productvariations = await ProductVariation.find({product:productchannel.product});
       if(channel === 'walmart'){
         await sails.helpers.channel.walmart.deleteProduct(productvariations, integration)
@@ -3408,15 +3414,24 @@ module.exports = {
           }else{
             return res.send({error: resData.ErrorResponse.Head.ErrorMessage});
           }
-        })
-        .catch(err =>{
-          console.log(err);
+        }).catch(err =>{
           return res.send({error: err.message});
         });
       }
     } catch (err) {
-      console.log(err);
-      return res.send({error: err.message});
+      let errorMessage = err.message;
+      if (errorMessage.includes('status is not modifiable') && channel === 'mercadolibre' || channel === 'mercadolibremx') {
+        let resultDelete = channel === 'mercadolibre' ? await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:'true'},'PUT') :
+        await sails.helpers.channel.mercadolibre.request('items/'+productchannel.channelid,integration.channel.endpoint,integration.secret,{deleted:'true'},'PUT');
+        if (resultDelete.id) {
+          await ProductChannel.destroyOne({id: productchannelId});
+          return res.send({error: null});
+        } else {
+          return res.send({error: 'No se puede eliminar el producto en mercadolibre'});
+        }
+      } else {
+        return res.send({error: err.message});
+      }
     }
   },
   removeproducts: async (req, res) => {
