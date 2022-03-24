@@ -122,7 +122,7 @@ module.exports.cron = {
   //   timezone: 'America/Bogota'
   // },
   stockProducts:{
-    schedule: '01 05 */4 * * *',
+    schedule: '01 05 */7 * * *',
     onTick: async () =>{
       console.log('Iniciando Sincronizacion de Stock');
       try {

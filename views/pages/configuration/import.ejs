@@ -250,6 +250,14 @@
 	io.socket.on("product_task_ended", (resData)=>{
 		let mensaje = document.querySelector('#report > .title');
 		mensaje.innerHTML='Proceso Finalizado';
+		if (resData.errors && resData.errors.length>=1) {
+			document.querySelector('#error-from-cms').innerHTML = resData.errors[0].message;
+			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			setTimeout(() =>{
+				document.querySelector('#error-from-cms').innerHTML = '';
+				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			}, 10000);
+		}
 	});
 
 	io.socket.on("image_task_ended", (resData)=>{
@@ -260,6 +268,14 @@
 	io.socket.on("variation_task_ended", (resData)=>{
 		let mensaje = document.querySelector('#report > .title');
 		mensaje.innerHTML='Proceso Finalizado';
+		if (resData.errors && resData.errors.length>=1) {
+			document.querySelector('#error-from-cms').innerHTML = resData.errors[0].message;
+			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			setTimeout(() =>{
+				document.querySelector('#error-from-cms').innerHTML = '';
+				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			}, 10000);
+		}
 	});
 
   <% if(typeof resultados ==='object' && resultados!==null && resultados.length>0){ %>
@@ -393,7 +409,8 @@
 		const entity = document.querySelector('select[name="entity"]').value;
 		const file = document.querySelector('input[name="file"]').value;
 		let validateProduct = <%- session.validateProduct %>;
-		if(!validateProduct && entity === 'Product'){
+		let cantProducts = <%- cantProducts %>;
+		if(!validateProduct && entity === 'Product' && cantProducts === 0){
 			document.querySelector('#error-from-cms').innerHTML = 'Debes subir de plan para agregar mas productos';
 			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
 			setTimeout(() =>{
@@ -422,7 +439,8 @@
 		e.preventDefault();
 		const importType = document.querySelector('select[name="importType"]').value;
 		let validateProduct = <%- session.validateProduct %>;
-		if(!validateProduct && importType === 'Product'){
+		let cantProducts = <%- cantProducts %>;
+		if(!validateProduct && importType === 'Product' && cantProducts === 0){
 			document.querySelector('#error-from-cms').innerHTML = 'Debes subir de plan para agregar mas productos';
 			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
 			setTimeout(() =>{
@@ -461,7 +479,8 @@
 		e.preventDefault();
 		const importType = document.querySelector('select[name="importTypeMarketplace"]').value;
 		let validateProduct = <%- session.validateProduct %>;
-		if(!validateProduct && importType === 'Product'){
+		let cantProducts = <%- cantProducts %>;
+		if(!validateProduct && importType === 'Product' && cantProducts === 0){
 			document.querySelector('#error-from-cms').innerHTML = 'Debes subir de plan para agregar mas productos';
 			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
 			setTimeout(() =>{
