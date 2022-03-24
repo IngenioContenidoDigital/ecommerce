@@ -301,6 +301,7 @@ module.exports.routes = {
   'POST /plan/edit/:id' : {controller:'PlanController',action:'editplan'},
 
   'GET /generateInvoice/:id' : {controller:'SellerController', action:'generateInvoice'},
+  'GET /bitpointpage': {controller:'IndexController', action:'bitpointpage'},
 
   /** INICIO HELP ROUTES */
   'GET /help/:action?/:id?' : {controller:'HelpController',action:'listterms'},

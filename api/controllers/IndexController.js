@@ -1281,5 +1281,8 @@ module.exports = {
       await sails.helpers.sendEmail('email-sellers',{name: seller.name.toUpperCase(), id:seller.id, subject, description}, seller.email, subject, 'email-notification');
     }
     return res.ok();
-  }
+  },
+  bitpointpage: async (req, res) =>{
+    res.view('pages/configuration/bitpointpage', {layout:'layouts/admin'});
+  },
 };

@@ -28,6 +28,7 @@ module.exports.policies = {
     'generatelink': 'isLoggedIn',
     'emailsellers': 'isLoggedIn',
     'sendemailsellers': 'isLoggedIn',
+    'bitpointpage': 'isLoggedIn',
     '*': true
   },
   FrontController:{'*':'isLoggedIn'},
