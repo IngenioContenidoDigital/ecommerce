@@ -31,7 +31,7 @@ module.exports = {
     if(rights.name!=='superadmin' && rights.name!=='admin'){
       sellers = await Seller.find({id:req.session.user.seller});
     }else{
-      sellers = await Seller.find();
+      sellers = await Seller.find().sort('active DESC');
     }
     if(id){
       seller = await Seller.findOne({id:id}).populate('documents').populate('mainAddress').populate('currency');

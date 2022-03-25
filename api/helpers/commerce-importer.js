@@ -82,7 +82,7 @@ let fetch = async (data) => {
       headers: {
         'ips-api-token': `Bearer ${request.token}`
       }
-    }).catch(e => reject(new Error(`Error en la peticion con el servidor : ${data.apiUrl} obteniendo el recurso ${data.resource}, Intente más tarde`)));
+    }).catch(e => reject(new Error(`Error en la peticion con el servidor : ${e}`)));
 
     if (response && response.data && response.data.data[Object.keys(response.data.data)[0]] != null) {
       return resolve(response.data.data[Object.keys(response.data.data)[0]]);

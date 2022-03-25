@@ -5,9 +5,9 @@
 <div class="container">
   <% if (totalproducts != undefined && totalproducts > 0) { %>
     <div class="notification is-info" id="infomessage">
-      Cantidad de productos aun no creados en tus integraciones <strong><%= totalproducts %></strong>
+      Cantidad de productos aun no publicados en tus canales <strong><%= totalproducts %></strong>
       <br><br>
-      <button id="exportProducts" class="button is-default is-small"><i class='bx bx-export'></i>&nbsp;Sincronizar productos</button>
+      <a href="/multiple/<%= seller %>" class="button is-default is-small"><i class='bx bx-export'></i>&nbsp;Publicar productos</a>
     </div>
   <% } %>
 

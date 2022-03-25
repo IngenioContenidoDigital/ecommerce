@@ -45,6 +45,7 @@ module.exports = {
     const perPage = sails.config.custom.DEFAULTPAGE;
     if (rights.name !== 'superadmin' && rights.name !== 'admin') {
       filter.seller = req.session.user.seller;
+      seller = req.session.user.seller;
       req.session.validateProduct = await sails.helpers.validatePlanProducts(req.session.user.seller);
     }else if(req.param('seller')){
       filter.seller = req.param('seller');
