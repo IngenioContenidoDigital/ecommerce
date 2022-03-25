@@ -16,7 +16,7 @@
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="variations">Variaciones</a></li>
         <%if(features.length>0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="features">Características</a></li><%}%>
         <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="discounts">Descuentos</a></li>
-        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
+        <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Canales</a></li>
         <%if(product && product.details && product.details.length > 0){%><li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="statusQc" id="contentDetails">Detalles de Contenido</a></li><%}%>
       </ul>
     </div>
@@ -841,11 +841,11 @@
             <table class="table">
               <thead>
                 <tr>
-                  <th><small>Marketplace</small></th>
+                  <th><small>Canales</small></th>
                   <th><small>Nombre</small></th>
                   <th><small>Ajuste Precio</small></th>
                   <th><small>Activo</small></th>
-                  <th><small>Eliminar Marketplace</small></th>
+                  <th><small>Eliminar en Canal</small></th>
                 </tr>
               </thead>
               <tbody>
@@ -954,7 +954,7 @@
         <hr>
         <article class="message is-info is-small">
           <div class="message-body">
-            Debes corregir o completar los puntos que se especifican, para publicar el producto en las integraciones asociadas.
+            Debes corregir o completar los puntos que se especifican, para publicar el producto en los canales asociadas.
           </div>
         </article>
         <div class="columns is-gapless">

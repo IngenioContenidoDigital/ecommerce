@@ -27,7 +27,7 @@
           <li class="is-active"><a option="infobasics" >Información General</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="address">Dirección</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="documents">Documentos</a></li>
-          <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Integraciones</a></li>
+          <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="integrations">Canales</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="commissions">Comisiones</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="taxes">Impuestos</a></li>
           <li <%if(action!='edit'){%>class="is-hidden"<%}%>><a option="suscriptions">Mis Tarjetas</a></li>
@@ -181,11 +181,11 @@
             </div>
             <div class="column">
               <div class="field">
-                <label class="label is-size-7">Integración</label>
+                <label class="label is-size-7">Integración<label>
                 <div class="control">
                   <div class="select is-fullwidth is-size-7">
                     <select required class="select is-capitalized" name="nameErp">
-                      <option value="">--Seleccionar integración--</option>
+                      <option value="">--Seleccionar Integración<--</option>
                       <option class="is-capitalized" value="siesa" <% if(action=='edit' && seller.nameErp === 'siesa'){%>selected="selected"<%}%>>SIESA</option>
                       <option class="is-capitalized" value="busint" <% if(action=='edit' && seller.nameErp === 'busint'){%>selected="selected"<%}%>>BUSINT</option>
                       <option class="is-capitalized" value="sap" <% if(action=='edit' && seller.nameErp === 'sap'){%>selected="selected"<%}%>>SAP</option>
@@ -468,7 +468,7 @@
         <table class="table is-hoverable is-size-6 is-mediumwidth">
           <thead>
             <tr>
-              <th><small>Integración</small></th>
+              <th><small>Canales</small></th>
               <th><small>Nombre</small></th>
               <th><small>Ajustar Precio</small></th>
               <th><small>Ajustar Descuento</small></th>
@@ -526,7 +526,7 @@
             <section class="modal-card-body">
               <div class="box">
                 <div class="field">
-                  <label class="label">Integración</label>
+                  <label class="label">Canales</label>
                   <div id="img-integrations"></div>
                 </div>
                 <div class="setup is-hidden" id="form-integration"></div>
@@ -686,7 +686,7 @@
                     </div>
                     <br>
                     <div class="control is-left">
-                      <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
+                      <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Canal' : 'Guardar Canal'}</button>
                     </div>
                   </div>
                 </form>`
@@ -756,7 +756,7 @@
                     </div> 
                     <br>
                     <div class="control is-left">
-                      <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
+                      <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Canal' : 'Guardar Canal'}</button>
                     </div>
                   </div>
                 </form>`
@@ -813,7 +813,7 @@
                   </div>
                   <br>
                   <div class="control is-right">
-                    <button type="submit" class="button is-info is-small">${edit ? 'Actualizar Integración' : 'Autorizar Acceso'}</button>
+                    <button type="submit" class="button is-info is-small">${edit ? 'Actualizar Canal' : 'Autorizar Acceso'}</button>
                   </div>
                 </div>
               </form>`: nameChannel.includes('shopee') ? 
@@ -849,7 +849,7 @@
                   </div>
                   <br>
                   <div class="control is-right">
-                    <button type="submit" class="button is-info is-small">${edit ? 'Actualizar Integración' : 'Autorizar Acceso'}</button>
+                    <button type="submit" class="button is-info is-small">${edit ? 'Actualizar Canal' : 'Autorizar Acceso'}</button>
                   </div>
                 </div>
               </form>`:
@@ -885,7 +885,7 @@
                   </div>
                   <br>
                   <div class="control is-right">
-                    <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Integración' : 'Guardar Integración'}</button>
+                    <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Canal' : 'Guardar Canal'}</button>
                   </div>
                 </div>
               </form>`
@@ -930,7 +930,7 @@
                       </div>
                     </div>
                     <div class="control is-right">
-                      <button type="submit" class="button is-primary is-small">Guardar Integración</button>
+                      <button type="submit" class="button is-primary is-small">Guardar Canal</button>
                     </div>` : ''
                   }
                 </div>
@@ -1723,7 +1723,7 @@
                           <i class='bx bxs-file-export'></i>
                         </span>
                       </a>
-                      <a href="/multiple/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Procesar productos">
+                      <a href="/multiple/<%= seller.id %>" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Publicar productos">
                         <span class="icon">
                           <i class='bx bx-cloud-upload'></i>
                         </span>

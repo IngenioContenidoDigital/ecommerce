@@ -4,7 +4,7 @@
             <%= error %>
         </div>
     <% } %>
-    <h4 class="title is-4">Procesamiento Multiple de Productos</h4>
+    <h4 class="title is-4">Publicar Productos en Canales</h4>
     <hr>
     <div class="columns is-gapless">
         <div class="column">
@@ -26,10 +26,10 @@
 				<% integra = integrations.filter(data => data.channel.type === 'marketplace');%>
 				<% if(integra.length > 0){%>
 					<div class="field">
-						<label class="label is-size-7">Elegir Integración</label>
+						<label class="label is-size-7">Elegir Canal</label>
 						<div class="select is-fullwidth">
 							<select class="is-capitalized" name="integration" id="selectIntegration" required>
-							<option class="is-capitalized" value="">-- Elegir Integración --</option>
+							<option class="is-capitalized" value="">-- Elegir Canal --</option>
 							<% integra.forEach(function(inte){ %>
 								<option class="is-capitalized" value="<%=inte.id%>"><%= inte.name %></option>
 							<%})%>
