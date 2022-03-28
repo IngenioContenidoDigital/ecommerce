@@ -444,7 +444,7 @@ module.exports = {
             let product_creation_response = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', product_created);
             let product_updated = {};
             product_updated.name = "1Ecommerce Update Creation Sync v2";
-            product_updated.delivery_url = `https://import.1ecommerce.app/api/updated_product/woocommerce/${record.key}/true`
+            product_updated.delivery_url = `https://sync.1ecommerce.app/woocommerce/product/updateproduct/processproduct/${record.key}`
             product_updated.status = "active",
             product_updated.topic = "product.updated";
             product_updated.version  = req.body.version
@@ -506,12 +506,12 @@ module.exports = {
           if (getProductUpdates && !record.product_creation_webhookId) {
             let webhookProductCreate = {
               topic: 'products/create',
-              address: `https://import.1ecommerce.app/api/shopify/createproduct/${record.key}/false`,
+              address: `https://import.1ecommerce.app/api/shopify/createproduct/${record.key}/true`,
               format: 'json'
             };
             let webhookProductUpdate = {
               topic: 'products/update',
-              address: `https://import.1ecommerce.app/api/shopify/updateproduct/${record.key}/false`,
+              address: `https://sync.1ecommerce.app/shopify/product/updateproduct/processproduct/${record.key}`,
               format: 'json'
             };
 
@@ -1003,6 +1003,9 @@ module.exports = {
           let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
           let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
           if (existsSeller) {
+            if (!seller.idSiigo) {
+              await sails.helpers.siigo.createClient(seller.id);
+            }
             let subscriptionInfo = {
               id_plan: `${resultPlan.id}trialdays`,
               customer: card.customerId,
@@ -1046,7 +1049,7 @@ module.exports = {
                   seller: seller.id
                 }).fetch();
   
-                // // Se crea factura en siigo
+                // Se crea factura en siigo
                 let dataSiigo = {
                   idInvoice: invoice.id,
                   observations: 'Se realiza cobro por reactivación de cuenta',

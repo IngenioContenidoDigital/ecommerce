@@ -34,7 +34,10 @@ module.exports = {
     }
     if (images.length === 0) {
       details += 'Producto sin imagenes | ';
-    } 
+    }
+    if (!product.mainCategory) {
+      details += 'Producto sin categoría | ';
+    }
     // else {
     //   for (const image of images) {
     //     let result = await probe(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);

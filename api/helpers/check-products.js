@@ -18,16 +18,16 @@ module.exports = {
     if(!inputs.product.reference){
       throw new Error(`${pro.name} sin referencia`);
     }
-    
+
     pro.reference = inputs.product.reference.toUpperCase().trim();
     pro.description = inputs.product.description.trim();
     pro.descriptionShort = inputs.product.descriptionShort.trim();
-    pro.color  = inputs.product.color || '';
+    pro.color = inputs.product.color || '';
     let textPredictor = inputs.product.textLink ? inputs.product.textLink : inputs.product.name+' '+inputs.product.reference;
 
     pro.description = pro.description.replace(/\¿\w+\s\w+\?\s.*\s\w+\s\(\+(\d|\s)*\)\sext\.\s\d+/g,'');
     pro.description = pro.description.replace(/(\w+\s\w+){1}\s*\?(\s\w+\s\w+\s\w+\s){1}\(\+(\d|\s)*\)/g,'');
-    
+
     pro.descriptionShort = pro.descriptionShort.replace(/\¿\w+\s\w+\?\s.*\s\w+\s\(\+(\d|\s)*\)\sext\.\s\d+/g,'');
     pro.descriptionShort = pro.descriptionShort.replace(/(\w+\s\w+){1}\s*\?(\s\w+\s\w+\s\w+\s){1}\(\+(\d|\s)*\)/g,'');
 
@@ -72,9 +72,9 @@ module.exports = {
       let main = await Category.find({id:cats}).sort('level DESC');
       pro.mainCategory = main[0].id;
     }else{
-      throw new Error(`Ref: ${pro.reference} : ${inputs.product.manufacturer.toLowerCase()} no se pudo identificar la categoria`);
+      pro.mainCategory = undefined;
     }
-    
+
     if (inputs.product.tax) {
       tax = (await Tax.findOne({ value: inputs.product.tax.rate }));
       if(tax)
