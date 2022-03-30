@@ -23,7 +23,7 @@
           <tr>
             <td class="align-middle is-capitalized"><%= subscription.reference %></td>
             <td class="align-middle is-capitalized"><%=  subscription.plan ? subscription.plan.name.toUpperCase() : '' %></td>
-            <td class="align-middle is-capitalized" id="tdStatus"><span class="tag <%= subscription.state === 'active' ? 'is-success' : 'is-danger'%>"><%= subscription.state === 'active' ? 'ACTIVA' : 'CANCELADA' %></span></td>
+            <td class="align-middle is-capitalized" id="tdStatus"><span class="tag <%= subscription.state === 'active' ? 'is-success' : subscription.state === 'inactive' ? 'is-warning' : 'is-danger'%>"><%= subscription.state === 'active' ? 'ACTIVA' : subscription.state === 'inactive' ? 'INACTIVA' : 'CANCELADA' %></span></td>
             <td class="align-middle is-capitalized"><%= moment(subscription.currentPeriodStart, 'MM/DD/YYYY').format('DD-MM-YYYY') %></td>
             <td class="align-middle is-capitalized"><%= subscription.currentPeriodEnd %></td>
             <%if(req.session.user.rights.name=='superadmin' && subscription.state === 'active'){%>
@@ -59,15 +59,17 @@
         <% invoices.forEach(function(invoice){ %>
           <tr>
             <td class="align-middle is-capitalized"><%= invoice.reference %></td>
-            <td class="align-middle is-capitalized"><span class="tag <%= invoice.state.name === 'aceptado' ? 'is-success' : 'is-danger'%>"><%= invoice.state.name %></span></td>
+            <td class="align-middle is-capitalized"><span class="tag <%= invoice.state.name === 'aceptado' ? 'is-success' : invoice.state.name === 'aceptado' ? 'is-warning' : 'is-danger'%>"><%= invoice.state.name %></span></td>
             <td class="align-middle is-capitalized">$ <%= Math.round(invoice.total).toLocaleString('es-CO') %></td>
             <td class="align-middle is-capitalized"><%= moment(invoice.createdAt).format('DD-MM-YYYY') %></td>
             <td class="align-middle">
-              <a href="/generateInvoice/<%= invoice.id %>" target="_blank" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Ver Factura">
-                <span class="icon">
-                  <i class='bx bxs-report'></i>
-                </span>
-              </a>
+              <% if(invoice.idSiigo) {%>
+                <a href="/generateInvoice/<%= invoice.id %>" target="_blank" class="button is-small has-tooltip-bottom has-tooltip-info" data-tooltip="Ver Factura">
+                  <span class="icon">
+                    <i class='bx bxs-report'></i>
+                  </span>
+                </a>
+              <% }%>
             </td>
           </tr>
         <% }); %>

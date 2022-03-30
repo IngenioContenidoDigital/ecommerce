@@ -3300,6 +3300,7 @@ module.exports = {
                         }).fetch();
                       } else {
                         productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
+                          skuId: vr.skuId ? vr.skuId : '',
                           price: vr.price,
                           variation: variation.id,
                           quantity: vr.quantity ? vr.quantity : 0,

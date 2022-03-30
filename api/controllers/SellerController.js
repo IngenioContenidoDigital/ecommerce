@@ -843,35 +843,62 @@ module.exports = {
             state: resultSubscription.status_plan,
             currentPeriodEnd: resultSubscription.current_period_end
           });
+
+          let resultInvoice =  await Invoice.findOne({reference: req.body.x_ref_payco});
+
+          // si no se a creado el seller en sigo se crea
+          if (!seller.idSiigo) {
+            await sails.helpers.siigo.createClient(seller.id);
+          }
           if (req.body.x_response === 'Aceptada') {
             await Subscription.updateOne({id: subscription.id}).set({
               daysPastdue: 0,
             });
-            let invoice = await Invoice.create({
-              reference: req.body.x_ref_payco,
-              invoice: req.body.x_id_factura,
-              state: state,
-              paymentMethod: req.body.x_franchise,
-              total: req.body.x_amount,
-              tax: req.body.x_tax,
-              seller: subscription.seller
-            }).fetch();
 
-            // se crea factura en Siigo
-            let dataSiigo = {
-              idInvoice: invoice.id,
-              observations: 'Se realiza cobro por suscripción de tu plan',
-              code: '1009',
-              description: 'Suscripción a plan de la plataforma',
-              priceItem: parseFloat(req.body.x_amount),
-              total: (parseFloat(req.body.x_amount) + ((parseFloat(req.body.x_amount)*15)/100)).toFixed(2)
-            };
-            await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
-            let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
-            let position = Math.floor(Math.random() * (2 - 0)) + 0;
-            await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: subscription.plan.name.toUpperCase(), link: links[position]}, seller.email, 'Cobro por suscripción de tu plan de 1Ecommerce', 'email-notification');
-          } else if (req.body.x_response === 'Rechazada'){
+            if (!resultInvoice) {
+              const invoice = await Invoice.create({
+                reference: req.body.x_ref_payco,
+                invoice: req.body.x_id_factura,
+                state: state,
+                paymentMethod: req.body.x_franchise,
+                total: req.body.x_amount,
+                tax: req.body.x_tax,
+                seller: subscription.seller
+              }).fetch();
+              // se crea factura en Siigo
+              let dataSiigo = {
+                idInvoice: invoice.id,
+                observations: 'Se realiza cobro por suscripción de tu plan',
+                code: '1009',
+                description: 'Suscripción a plan de la plataforma',
+                priceItem: parseFloat(req.body.x_amount),
+                total: (parseFloat(req.body.x_amount) + ((parseFloat(req.body.x_amount)*15)/100)).toFixed(2)
+              };
+              await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+              let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+              let position = Math.floor(Math.random() * (2 - 0)) + 0;
+              await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: subscription.plan.name.toUpperCase(), link: links[position]}, seller.email, 'Cobro por suscripción de tu plan de 1Ecommerce', 'email-notification');
+            } else {
+              await Invoice.updateOne({reference: req.body.x_ref_payco}).set({
+                state: state
+              });
+              if (!resultInvoice.idSiigo) {
+                let dataSiigo = {
+                  idInvoice: resultInvoice.id,
+                  observations: 'Se realiza cobro por suscripción de tu plan',
+                  code: '1009',
+                  description: 'Suscripción a plan de la plataforma',
+                  priceItem: parseFloat(req.body.x_amount),
+                  total: (parseFloat(req.body.x_amount) + ((parseFloat(req.body.x_amount)*15)/100)).toFixed(2)
+                };
+                await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+              }
+            }
+          } else if (req.body.x_response === 'Rechazada' || req.body.x_response === 'Fallida' || req.body.x_response === 'Expirada'){
             await Subscription.updateOne({id: subscription.id}).set({daysPastdue: subscription.daysPastdue + 1});
+            await Invoice.updateOne({reference: req.body.x_ref_payco}).set({
+              state: state
+            });
             if (subscription.daysPastdue < 2) {
               await sails.helpers.sendEmail('email-subscription',{seller: seller, type: 'normal'}, seller.email, 'Tu pago ha sido Rechazado', 'email-notification');
             } else {
@@ -1048,23 +1075,25 @@ module.exports = {
                   tax: resultCharge.data.iva,
                   seller: seller.id
                 }).fetch();
+
+                if (resultCharge.data.estado === 'Aceptada') {
+                  // Se crea factura en siigo
+                  let dataSiigo = {
+                    idInvoice: invoice.id,
+                    observations: 'Se realiza cobro por reactivación de cuenta',
+                    code: '1009',
+                    description: 'Reactivación de cuenta en la plataforma',
+                    priceItem: parseFloat(price),
+                    total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                  };
+                  await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+                  let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+                  let position = Math.floor(Math.random() * (2 - 0)) + 0;
+                  await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu reactivación de cuenta en 1Ecommerce', 'email-notification');
+                  await User.updateOne({id: user.id}).set({active: true});
+                  await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
+                }
   
-                // Se crea factura en siigo
-                let dataSiigo = {
-                  idInvoice: invoice.id,
-                  observations: 'Se realiza cobro por reactivación de cuenta',
-                  code: '1009',
-                  description: 'Reactivación de cuenta en la plataforma',
-                  priceItem: parseFloat(price),
-                  total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
-                };
-                await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
-  
-                let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
-                let position = Math.floor(Math.random() * (2 - 0)) + 0;
-                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu reactivación de cuenta en 1Ecommerce', 'email-notification');
-                await User.updateOne({id: user.id}).set({active: true});
-                await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
                 req.session.user = user;
                 req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
                 return res.send({});
