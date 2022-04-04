@@ -41,15 +41,15 @@ let signRequest = (data, query) => {
         }, 'secret'),
         query: rootQuery
       };
-      case 'prestashop':
-        rootQuery = prestashop[query];
-        return {
-          token: jwt.sign({
-            url: data.apiUrl,
-            apiKey: data.pk,
-          }, 'secret'),
-          query: rootQuery
-        };
+    case 'prestashop':
+      rootQuery = prestashop[query];
+      return {
+        token: jwt.sign({
+          url: data.apiUrl,
+          apiKey: data.pk,
+        }, 'secret'),
+        query: rootQuery
+      };
     default:
       break;
   }
@@ -65,8 +65,9 @@ let fetch = async (data) => {
     }).catch((e) => console.log(e));
 
     if (response && response.data) {
-        return resolve(response.data.data[Object.keys(response.data.data)[0]]);
+      return resolve(response.data.data[Object.keys(response.data.data)[0]]);
     }
+    return resolve(null);
   });
 };
 
@@ -98,7 +99,7 @@ module.exports = {
       type : 'ref'
     },
     webhookId: {
-        type: 'string'
+      type: 'string'
     },
   },
 

@@ -44,7 +44,6 @@ module.exports = {
         method(requestArgs, async (err, result)=>{
           if(err){return exits.error(err);}
           if(result){
-            console.log(result.EjecutarConsultaXMLResult.diffgram.NewDataSet.Resultado['U.Inventario']);
             return exits.success(result.EjecutarConsultaXMLResult.diffgram ? result.EjecutarConsultaXMLResult.diffgram.NewDataSet.Resultado['U.Inventario'] : 'UND');
           }
         });

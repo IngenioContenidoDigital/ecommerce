@@ -1057,14 +1057,24 @@ module.exports = {
               const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
               if (resultCharge.subscription.periodEnd) {
                 let state = await sails.helpers.orderState(resultCharge.data.estado);
-                await Subscription.create({
+
+                await Subscription.findOrCreate({reference: subscription.id, seller: seller.id},{
                   reference: subscription.id,
                   currentPeriodStart: subscription.current_period_start,
                   currentPeriodEnd: resultCharge.subscription.periodEnd,
                   state: resultCharge.subscription.status,
                   seller: seller.id,
                   plan: resultPlan.id
-                }).fetch();
+                }).exec(async (err, record, created)=>{
+                  if(err){return new Error(err.message);}
+                  if(!created){
+                    await Subscription.updateOne({id: record.id}).set({
+                      currentPeriodStart: subscription.current_period_start,
+                      currentPeriodEnd: resultCharge.subscription.periodEnd,
+                      state: resultCharge.subscription.status
+                    });
+                  }
+                });
   
                 let invoice = await Invoice.create({
                   reference: resultCharge.data.ref_payco,
@@ -1233,14 +1243,23 @@ module.exports = {
                   const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
   
                   if (resultCharge.periodEnd) {
-                    await Subscription.create({
+                    await Subscription.findOrCreate({reference: subscription.id, seller: seller.id},{
                       reference: subscription.id,
                       currentPeriodStart: subscription.current_period_start,
-                      currentPeriodEnd: resultCharge.periodEnd,
-                      state: resultCharge.status,
+                      currentPeriodEnd: resultCharge.subscription.periodEnd,
+                      state: resultCharge.subscription.status,
                       seller: seller.id,
                       plan: resultPlan.id
-                    }).fetch();
+                    }).exec(async (err, record, created)=>{
+                      if(err){return new Error(err.message);}
+                      if(!created){
+                        await Subscription.updateOne({id: record.id}).set({
+                          currentPeriodStart: subscription.current_period_start,
+                          currentPeriodEnd: resultCharge.subscription.periodEnd,
+                          state: resultCharge.subscription.status
+                        });
+                      }
+                    });
                   }
                   let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
                   let position = Math.floor(Math.random() * (2 - 0)) + 0;

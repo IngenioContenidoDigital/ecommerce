@@ -42,14 +42,14 @@ let signRequest = (data, query) => {
         query: rootQuery
       };
     case 'prestashop':
-        rootQuery = prestashop[query];
-        return {
-          token: jwt.sign({
-            url: data.apiUrl,
-            apiKey: data.pk,
-          }, 'secret'),
-          query: rootQuery
-        };
+      rootQuery = prestashop[query];
+      return {
+        token: jwt.sign({
+          url: data.apiUrl,
+          apiKey: data.pk,
+        }, 'secret'),
+        query: rootQuery
+      };
     default:
       break;
   }
@@ -67,6 +67,7 @@ let fetch = async (data) => {
     if (response && response.data) {
       return resolve(response.data.data[Object.keys(response.data.data)[0]]);
     }
+    return resolve(null);
   });
 };
 
