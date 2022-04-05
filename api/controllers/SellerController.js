@@ -911,11 +911,39 @@ module.exports = {
     } else {
       let invoice = await Invoice.findOne({reference:req.body.x_ref_payco});
       let state = await sails.helpers.orderState(req.body.x_response);
-      if(invoice){
-        if(invoice.state !== state){
-          await Invoice.updateOne({id:invoice.id}).set({
-            state: state
-          });
+
+      if (invoice && req.body.x_response === 'Aceptada') {
+        let seller = await Seller.findOne({id: invoice.seller});
+
+        await Invoice.updateOne({id:invoice.id}).set({
+          state: state
+        });
+        
+        // si no se a creado el seller en sigo se crea
+        if (!seller.idSiigo) {
+          await sails.helpers.siigo.createClient(seller.id);
+        }
+
+        if (!invoice.idSiigo) {
+          // se crea factura en Siigo
+          const IVA = Math.round((((parseFloat(req.body.x_amount)*15)/100) + Number.EPSILON) * 100) / 100
+          let dataSiigo = {
+            idInvoice: invoice.id,
+            observations: 'Se realiza cobro por registro de cuenta',
+            code: '1009',
+            description: 'Setup de la plataforma',
+            priceItem: parseFloat(req.body.x_amount.toFixed(2)),
+            total: Math.round(((parseFloat(req.body.x_amount.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
+          };
+          await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+        }
+      } else {
+        if(invoice){
+          if(invoice.state !== state){
+            await Invoice.updateOne({id:invoice.id}).set({
+              state: state
+            });
+          }
         }
       }
     }
@@ -1204,7 +1232,7 @@ module.exports = {
                   method_confirmation: 'POST',
                 };
                 let payment = await sails.helpers.payment.payment({mode:'SUB', info:paymentInfo});
-                if(payment.success && payment.data.estado === 'Aceptada'){
+                if(payment.success && (payment.data.estado === 'Aceptada' || payment.data.estado === 'Pendiente')){
                   let state = await sails.helpers.orderState(payment.data.estado);
                   let invoice = await Invoice.create({
                     reference: payment.data.ref_payco,
@@ -1215,18 +1243,20 @@ module.exports = {
                     tax: payment.data.iva,
                     seller: seller.id
                   }).fetch();
-  
-                  // Se crea factura en siigo
-                  let dataSiigo = {
-                    idInvoice: invoice.id,
-                    observations: 'Se realiza cobro por registro de cuenta',
-                    code: '1009',
-                    description: 'Setup de la plataforma',
-                    priceItem: parseFloat(price),
-                    total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
-                  };
-  
-                  await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+                  
+                  if (payment.data.estado === 'Aceptada') {
+                    // Se crea factura en siigo
+                    let dataSiigo = {
+                      idInvoice: invoice.id,
+                      observations: 'Se realiza cobro por registro de cuenta',
+                      code: '1009',
+                      description: 'Setup de la plataforma',
+                      priceItem: parseFloat(price),
+                      total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                    };
+    
+                    await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+                  }
   
                   // se activa subscricion en epayco
                   const chargeSubscription = {
@@ -1261,13 +1291,17 @@ module.exports = {
                       }
                     });
                   }
-                  let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
-                  let position = Math.floor(Math.random() * (2 - 0)) + 0;
-                  await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
-                  await User.updateOne({id: user.id}).set({active: true});
-                  await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
-                  req.session.user = user;
-                  req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+
+                  if (payment.data.estado === 'Aceptada') {
+                    let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+                    let position = Math.floor(Math.random() * (2 - 0)) + 0;
+                    await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'),invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación cobro Setup de 1Ecommerce', 'email-notification');
+                    await User.updateOne({id: user.id}).set({active: true});
+                    await Seller.updateOne({id: seller.id}).set({active: true, plan: resultPlan.id});
+                    req.session.user = user;
+                    req.session.user.rights = await sails.helpers.checkPermissions(user.profile);
+                  }
+
                   return res.send({});
                 } else {
                   return res.send({error: payment.status ? payment.data.respuesta : payment.data.description});
