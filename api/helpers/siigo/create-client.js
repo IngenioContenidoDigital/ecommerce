@@ -51,7 +51,7 @@ module.exports = {
         'phones': [
           {
             'indicative': String(address.country.prefix),
-            'number': String(seller.phone),
+            'number': String(seller.phone).slice(0,10),
           }
         ],
         'contacts': [

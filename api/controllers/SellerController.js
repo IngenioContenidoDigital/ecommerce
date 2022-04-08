@@ -830,6 +830,9 @@ module.exports = {
   },
   confirmationinvoice: async(req, res)=>{
     let action = req.param('action');
+    let totalAmount = Math.round(parseFloat(req.body.x_amount));
+    const IVA = Math.round((((totalAmount*15)/100) + Number.EPSILON) * 100) / 100;
+
     if (action === 'subscription') {
       let subscription = await Subscription.findOne({reference: req.body.x_extra1}).populate('plan');
       if(subscription){
@@ -871,8 +874,8 @@ module.exports = {
                 observations: 'Se realiza cobro por suscripción de tu plan',
                 code: '1009',
                 description: 'Suscripción a plan de la plataforma',
-                priceItem: parseFloat(req.body.x_amount),
-                total: (parseFloat(req.body.x_amount) + ((parseFloat(req.body.x_amount)*15)/100)).toFixed(2)
+                priceItem: parseFloat(totalAmount.toFixed(2)),
+                total: Math.round(((parseFloat(totalAmount.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
               };
               await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
               let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
@@ -888,8 +891,8 @@ module.exports = {
                   observations: 'Se realiza cobro por suscripción de tu plan',
                   code: '1009',
                   description: 'Suscripción a plan de la plataforma',
-                  priceItem: parseFloat(req.body.x_amount),
-                  total: (parseFloat(req.body.x_amount) + ((parseFloat(req.body.x_amount)*15)/100)).toFixed(2)
+                  priceItem: parseFloat(totalAmount.toFixed(2)),
+                  total: Math.round(((parseFloat(totalAmount.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
                 };
                 await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
               }
@@ -926,14 +929,13 @@ module.exports = {
 
         if (!invoice.idSiigo) {
           // se crea factura en Siigo
-          const IVA = Math.round((((parseFloat(req.body.x_amount)*15)/100) + Number.EPSILON) * 100) / 100
           let dataSiigo = {
             idInvoice: invoice.id,
             observations: 'Se realiza cobro por registro de cuenta',
             code: '1009',
             description: 'Setup de la plataforma',
-            priceItem: parseFloat(req.body.x_amount.toFixed(2)),
-            total: Math.round(((parseFloat(req.body.x_amount.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
+            priceItem: parseFloat(totalAmount.toFixed(2)),
+            total: Math.round(((parseFloat(totalAmount.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
           };
           await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
         }
@@ -1056,7 +1058,7 @@ module.exports = {
       if (card) {
         if (resultPlan) {
           let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
-          let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
+          let price = Math.round((parseInt(resultPlan.price)*exchangeRate.result).toFixed(2));
           if (existsSeller) {
             if (!seller.idSiigo) {
               await sails.helpers.siigo.createClient(seller.id);
@@ -1116,13 +1118,15 @@ module.exports = {
 
                 if (resultCharge.data.estado === 'Aceptada') {
                   // Se crea factura en siigo
+                  const IVA = Math.round((((parseFloat(price)*15)/100) + Number.EPSILON) * 100) / 100
+
                   let dataSiigo = {
                     idInvoice: invoice.id,
                     observations: 'Se realiza cobro por reactivación de cuenta',
                     code: '1009',
                     description: 'Reactivación de cuenta en la plataforma',
-                    priceItem: parseFloat(price),
-                    total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                    priceItem: parseFloat(price.toFixed(2)),
+                    total: Math.round(((parseFloat(price.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
                   };
                   await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
                   let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
@@ -1246,13 +1250,15 @@ module.exports = {
                   
                   if (payment.data.estado === 'Aceptada') {
                     // Se crea factura en siigo
+                    const IVA = Math.round((((parseFloat(price)*15)/100) + Number.EPSILON) * 100) / 100
+
                     let dataSiigo = {
                       idInvoice: invoice.id,
                       observations: 'Se realiza cobro por registro de cuenta',
                       code: '1009',
                       description: 'Setup de la plataforma',
-                      priceItem: parseFloat(price),
-                      total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                      priceItem: parseFloat(price.toFixed(2)),
+                      total: Math.round(((parseFloat(price.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
                     };
     
                     await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
