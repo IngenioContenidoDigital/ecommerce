@@ -57,7 +57,7 @@ module.exports = {
     let totalproducts = await Product.count(filter);
     let integrationCms = integrations.filter(inte => inte.channel.type === 'marketplace');
     if (integrationCms.length > 0) {
-      let resultProducts = await Product.find({seller: filter.seller}).populate('channels');
+      let resultProducts = await Product.find({seller: filter.seller, delete: false}).populate('channels');
       totalproductsNotPublic = resultProducts.filter(pro => pro.channels.length === 0 || (pro.channels.length < integrationCms.length));
     }
     let pages = Math.ceil(totalproducts / perPage);
@@ -478,6 +478,9 @@ module.exports = {
     let error = false;
     let product = await Product.findOne({ id: req.body[0].product }).populate('seller').populate('categories',{level:2});
     // const channels = await ProductChannel.find({product: product.id}).populate('channel');
+    const integrations = await Integrations.find({seller: product.seller.id}).populate('channel');
+    let integrationCms = integrations.filter(inte => inte.channel.type === 'cms');
+
     for (let list of req.body) {
       let pv = await ProductVariation.findOne({id: list.productvariation}).populate('variation');
       if(pv){
@@ -487,29 +490,55 @@ module.exports = {
           v = await Variation.create(vFilter).fetch();
         }
         await ProductVariation.updateOne({id:list.productvariation}).set({product: list.product, variation:v.id, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
+        if (integrationCms.length > 0) {
+          if (integrationCms[0].channel.name === 'woocommerce') {
+            await sails.helpers.updateVariationCms(
+              integrationCms[0].channel.name,
+              integrationCms[0].key,
+              integrationCms[0].secret,
+              integrationCms[0].url,
+              integrationCms[0].version,
+              'UPDATE_VARIATION',
+              {
+                'data': {'quantity': list.quantity,'price': list.price },
+                'productId': product.externalId,
+                'variationId': pv.skuId
+              }
+            );
+          } else if(integrationCms[0].channel.name === 'shopify'|| integrationCms[0].channel.name === 'vtex'){
+            await sails.helpers.updateVariationCms(
+              integrationCms[0].channel.name,
+              integrationCms[0].key,
+              integrationCms[0].secret,
+              integrationCms[0].url,
+              integrationCms[0].version,
+              'UPDATE_VARIATION_PRICE',
+              {
+                'data': {'price': list.price},
+                'productId': product.externalId,
+                'variationId': pv.skuId
+              }
+            );
+            await sails.helpers.updateVariationCms(
+              integrationCms[0].channel.name,
+              integrationCms[0].key,
+              integrationCms[0].secret,
+              integrationCms[0].url,
+              integrationCms[0].version,
+              'UPDATE_VARIATION_STOCK',
+              {
+                'data': {'quantity': list.quantity},
+                'productId': product.externalId,
+                'variationId': pv.skuId
+              }
+            );
+          }
+        }
       }else{
         await ProductVariation.create({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
       }
     }
-    await sails.helpers.functionChannelSync(product.id);
-    // if (channels.length > 0) {
-    //   let productchannel = channels.find(item => item.channel.name === 'mercadolibre' || item.channel.name === 'mercadolibremx');
-    //   if (productchannel) {
-    //     let integration = await Integrations.findOne({id: productchannel.integration}).populate('channel');
-    //     const channelPrice = productchannel ? productchannel.price : 0;
-    //     if (productchannel.channel.name === 'mercadolibre') {
-    //       let body = await sails.helpers.channel.mercadolibre.product(product.id, 'Update', integration.id, channelPrice);
-    //       if(body){
-    //         await sails.helpers.channel.mercadolibre.request(`items/${productchannel.channelid}`,integration.channel.endpoint,integration.secret,body,'PUT');
-    //       }
-    //     } else {
-    //       let body = await sails.helpers.channel.mercadolibremx.product(product.id, 'Update', integration.id, channelPrice);
-    //       if(body){
-    //         await sails.helpers.channel.mercadolibremx.request(`items/${productchannel.channelid}`,integration.channel.endpoint,integration.secret,body,'PUT');
-    //       }
-    //     }
-    //   }
-    // }
+    // await sails.helpers.functionChannelSync(product.id);
     if(!error){
       await sails.helpers.tools.productState(product.id,product.active,true,product.seller.active);
       return res.send('ok');
@@ -522,7 +551,6 @@ module.exports = {
     let product = await Product.findOne({ id: req.param('id') }).populate('categories', { level: 2 });
     let level2 = product.categories.map(c => c.id);
     let variations = await Variation.find({ where: { manufacturer: product.manufacturer, gender: product.gender, seller: product.seller, category: { in: level2 } } });
-    console.log(variations);
     return res.send(variations);
   },
   findproductvariations: async (req, res) => {
@@ -3225,7 +3253,7 @@ module.exports = {
           for(let p of importedProductsVariations.data){
             let result = [];
             let  errors = [];
-  
+
             try {
               let pro = p.externalId ? await Product.findOne({externalId: p.externalId, seller:seller}).populate('categories', {level:2 }).populate('discount',{
                 where:{
@@ -3242,7 +3270,7 @@ module.exports = {
               if(!pro){
                 throw new Error(`Ref o externalId: ${p.reference ? p.reference : p.externalId} no pudimos encontrar este producto.`);
               }
-  
+
               if(pro){
                 if (discount && p.discount && p.discount.length > 0) {
                   for (const disc of p.discount) {
@@ -3294,19 +3322,19 @@ module.exports = {
                           ean13: vr.ean13 ? vr.ean13.toString() : '',
                           upc: vr.upc ? vr.upc : 0,
                           skuId: vr.skuId ? vr.skuId : '',
-                          price: vr.price ? vr.price : 0,
+                          price: vr.price ? parseFloat(vr.price) : 0,
                           quantity: vr.quantity ? vr.quantity : 0,
                           seller: pro.seller
                         }).fetch();
                       } else {
                         productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
                           skuId: vr.skuId ? vr.skuId : '',
-                          price: vr.price,
+                          price: parseFloat(vr.price),
                           variation: variation.id,
                           quantity: vr.quantity ? vr.quantity : 0,
                         });
                       }
-  
+
                       if(typeof(productVariation)=== 'object'){
                         result.push(productVariation);
                         sails.sockets.broadcast(sid, 'variation_processed', {result, errors});
@@ -3343,7 +3371,7 @@ module.exports = {
         errors.push({message: err.message});
         result = 'finish';
       }
-     
+
       if (result && result === 'finish') {
         sails.sockets.broadcast(sid, 'product_task_ended', {errors});
         break;

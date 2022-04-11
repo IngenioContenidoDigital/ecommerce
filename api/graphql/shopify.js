@@ -66,6 +66,7 @@ module.exports = {
             price
             quantity
             ean13
+            skuId
           }
           discount{
             name
@@ -179,6 +180,22 @@ module.exports = {
       deleteShopifyWebHook(webhookId: $id){
         id
       }
+    }`,
+
+  UPDATE_VARIATION_PRICE :
+    `mutation updateVariationShopify($data: UpdateVariationInputType, $productId: ID, $variationId: ID){
+      updateVariationShopify(productId: $productId, variationId: $variationId, input: $data){
+          name
+          externalId
+          reference
+      }
+    }`,
+
+  UPDATE_VARIATION_STOCK :
+    `mutation updateVariationShopifyStock($data: UpdateVariationInputType, $productId: ID, $variationId: ID){
+      updateVariationShopifyStock(productId: $productId, variationId: $variationId, input: $data){
+          inventoryId
+          quantity
+      }
     }`
-    
 };

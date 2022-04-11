@@ -172,5 +172,19 @@ module.exports = {
       deleteVtexWebHook(webhookId: $id){
         id
       }
-    }`
+    }`,
+
+  UPDATE_VARIATION_PRICE :
+    `mutation updateVariationPriceVtex($data: UpdateVariationInputType, $productId: ID, $variationId: ID){
+      updateVariationPriceVtex(productId: $productId, variationId: $variationId, input: $data){
+        skuId
+      }
+    }`,
+
+  UPDATE_VARIATION_STOCK :
+    `mutation updateVariationVtexStock($data: UpdateVariationInputType, $productId: ID, $variationId: ID){
+      updateVariationVtexStock(productId: $productId, variationId: $variationId, input: $data){
+        warehouseName
+      }
+    }`,
 };

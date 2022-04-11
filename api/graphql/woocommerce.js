@@ -69,6 +69,7 @@ module.exports = {
                     price
                     quantity
                     ean13
+                    skuId
                 }
             }
         }
@@ -177,5 +178,15 @@ module.exports = {
                     topic
                 }
         }
-    `
+    `,
+
+  UPDATE_VARIATION :
+    `mutation updateVariation($data: UpdateVariationInputType, $productId: ID, $variationId: ID){
+        updateVariationWoocommerce(productId: $productId, variationId: $variationId, input: $data){
+            name
+            externalId
+            simple
+            reference
+        }
+    }`
 };

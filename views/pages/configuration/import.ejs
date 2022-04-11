@@ -253,6 +253,7 @@
 		if (resData.errors && resData.errors.length>=1) {
 			document.querySelector('#error-from-cms').innerHTML = resData.errors[0].message;
 			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			addClass(document.querySelector('#loading-block'), 'is-hidden');
 			setTimeout(() =>{
 				document.querySelector('#error-from-cms').innerHTML = '';
 				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
@@ -271,6 +272,7 @@
 		if (resData.errors && resData.errors.length>=1) {
 			document.querySelector('#error-from-cms').innerHTML = resData.errors[0].message;
 			removeClass(document.querySelector('#error-from-cms'), 'is-hidden');
+			addClass(document.querySelector('#loading-block'), 'is-hidden');
 			setTimeout(() =>{
 				document.querySelector('#error-from-cms').innerHTML = '';
 				addClass(document.querySelector('#error-from-cms'), 'is-hidden');
