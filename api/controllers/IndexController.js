@@ -98,7 +98,9 @@ module.exports = {
     let validateChannel = true;
     let validateProduct = true;
     if(rights.name !== 'superadmin' && rights.name !== 'admin'){
-      questionsSeller = await Question.count({status: 'UNANSWERED', seller: seller});
+      let resultQuetions = await Question.find({status: 'UNANSWERED', seller: seller});
+      resultQuetions = resultQuetions.filter(q => q.product);
+      questionsSeller = resultQuetions.length;
       subscription = await Subscription.find({seller: seller, state: 'active'}).sort('createdAt DESC').populate('plan').limit(1);
       if (subscription.length > 0) {
         let diferenceDays = moment().diff(moment(subscription[0].currentPeriodStart, 'MM/DD/YYYY'), 'days');

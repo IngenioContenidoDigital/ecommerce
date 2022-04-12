@@ -62,8 +62,9 @@ module.exports = {
       } else {
         channel = inte.channel.id;
       }
-      const count = await Question.count({status: 'UNANSWERED', seller: seller.id, integration: inte.id});
-      questionsChannel.push({channel, count, integration: inte.id});
+      let resultQuetions = await Question.find({status: 'UNANSWERED', seller: seller.id, integration: inte.id});
+      resultQuetions = resultQuetions.filter(q => q.product);
+      questionsChannel.push({channel, count: resultQuetions.length, integration: inte.id});
     }
     res.view('pages/sellers/showmessages',{layout:'layouts/admin',channels, questionsChannel, seller: seller.id});
   },
@@ -78,8 +79,8 @@ module.exports = {
     let questions = await Question.find({seller: seller, status: 'UNANSWERED', integration: integrations}).sort('createdAt DESC')
       .populate('product').populate('conversation');
     for(let q of questions){
-      const identifier = q.product ? q.product.id : q.conversation.id;
-      if(!messages.some(m => m.id === identifier)){
+      const identifier = q.product ? q.product.id : q.conversation ? q.conversation.id : '';
+      if(identifier && !messages.some(m => m.id === identifier)){
         const questi = q.product ? questions.filter(item => item.product && item.product.id === identifier) : questions.filter(item => item.conversation && item.conversation.id === identifier);
         messages.push({
           id: identifier,
