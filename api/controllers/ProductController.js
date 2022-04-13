@@ -490,50 +490,50 @@ module.exports = {
           v = await Variation.create(vFilter).fetch();
         }
         await ProductVariation.updateOne({id:list.productvariation}).set({product: list.product, variation:v.id, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
-        if (integrationCms.length > 0) {
-          if (integrationCms[0].channel.name === 'woocommerce') {
-            await sails.helpers.updateVariationCms(
-              integrationCms[0].channel.name,
-              integrationCms[0].key,
-              integrationCms[0].secret,
-              integrationCms[0].url,
-              integrationCms[0].version,
-              'UPDATE_VARIATION',
-              {
-                'data': {'quantity': list.quantity,'price': list.price },
-                'productId': product.externalId,
-                'variationId': pv.skuId
-              }
-            );
-          } else if(integrationCms[0].channel.name === 'shopify'|| integrationCms[0].channel.name === 'vtex'){
-            await sails.helpers.updateVariationCms(
-              integrationCms[0].channel.name,
-              integrationCms[0].key,
-              integrationCms[0].secret,
-              integrationCms[0].url,
-              integrationCms[0].version,
-              'UPDATE_VARIATION_PRICE',
-              {
-                'data': {'price': list.price},
-                'productId': product.externalId,
-                'variationId': pv.skuId
-              }
-            );
-            await sails.helpers.updateVariationCms(
-              integrationCms[0].channel.name,
-              integrationCms[0].key,
-              integrationCms[0].secret,
-              integrationCms[0].url,
-              integrationCms[0].version,
-              'UPDATE_VARIATION_STOCK',
-              {
-                'data': {'quantity': list.quantity},
-                'productId': product.externalId,
-                'variationId': pv.skuId
-              }
-            );
-          }
-        }
+        // if (integrationCms.length > 0) {
+        //   if (integrationCms[0].channel.name === 'woocommerce') {
+        //     await sails.helpers.updateVariationCms(
+        //       integrationCms[0].channel.name,
+        //       integrationCms[0].key,
+        //       integrationCms[0].secret,
+        //       integrationCms[0].url,
+        //       integrationCms[0].version,
+        //       'UPDATE_VARIATION',
+        //       {
+        //         'data': {'quantity': list.quantity,'price': list.price },
+        //         'productId': product.externalId,
+        //         'variationId': pv.skuId
+        //       }
+        //     );
+        //   } else if(integrationCms[0].channel.name === 'shopify'|| integrationCms[0].channel.name === 'vtex'){
+        //     await sails.helpers.updateVariationCms(
+        //       integrationCms[0].channel.name,
+        //       integrationCms[0].key,
+        //       integrationCms[0].secret,
+        //       integrationCms[0].url,
+        //       integrationCms[0].version,
+        //       'UPDATE_VARIATION_PRICE',
+        //       {
+        //         'data': {'price': list.price},
+        //         'productId': product.externalId,
+        //         'variationId': pv.skuId
+        //       }
+        //     );
+        //     await sails.helpers.updateVariationCms(
+        //       integrationCms[0].channel.name,
+        //       integrationCms[0].key,
+        //       integrationCms[0].secret,
+        //       integrationCms[0].url,
+        //       integrationCms[0].version,
+        //       'UPDATE_VARIATION_STOCK',
+        //       {
+        //         'data': {'quantity': list.quantity},
+        //         'productId': product.externalId,
+        //         'variationId': pv.skuId
+        //       }
+        //     );
+        //   }
+        // }
       }else{
         await ProductVariation.create({ product: list.product, variation: list.variation, reference: list.reference, supplierreference: list.supplierreference, ean13: list.ean13, upc: list.upc, price: list.price, quantity: list.quantity, seller: product.seller.id });
       }
