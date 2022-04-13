@@ -112,10 +112,12 @@ module.exports = {
     worksheet.getRow(1).font = { bold: true };
 
     for (const variation of productsVariations) {
-      variation.name = variation.product.name;
-      variation.variation = variation.variation.name;
-      variation.safestock = variation.seller.safestock;
-      products.push(variation);
+      if (!variation.product.delete) {
+        variation.name = variation.product.name;
+        variation.variation = variation.variation.name;
+        variation.safestock = variation.seller.safestock;
+        products.push(variation);
+      }
     }
 
     worksheet.addRows(products);
@@ -1443,7 +1445,7 @@ module.exports = {
       } else {
         json = await sails.helpers.convertExcel(req, 'file', 2000000);
       }
-      return res.view('pages/configuration/import', { layout: 'layouts/admin', error: null, seller: seller, integrations: integrations, resultados: json, rights: rights.name, type: type });
+      return res.view('pages/configuration/import', { layout: 'layouts/admin', cantProducts, error: null, seller: seller, integrations: integrations, resultados: json, rights: rights.name, type: type });
     } catch (err) {
       return res.redirect('/import/'+ seller +'?error=' + err.message);
     }
