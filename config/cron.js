@@ -123,14 +123,14 @@ module.exports.cron = {
   //   timezone: 'America/Bogota'
   // },
   stockProducts:{
-    schedule: '01 05 */5 * * *',
+    schedule: '01 05 */7 * * *',
     onTick: async () =>{
       console.log('Iniciando Sincronizacion de Stock');
       try {
         const sellers = await Seller.find({active: true});
         for (const seller of sellers) {
           const products = await Product.find({seller: seller.id});
-          let channels = await Channel.find({type: 'cms'});
+          let channels = await Channel.find({type: 'cms', name: ['woocommerce','shopify','vtex','magento']});
           channels = channels.map(chann => chann.id);
           const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
           if (integration) {
@@ -161,6 +161,32 @@ module.exports.cron = {
                   await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
                 }
                 await sails.helpers.channel.channelSync(prod);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.log(`Se produjo un error. ${err.message}`);
+      }
+      console.log('Sincronizacion de Stock Finalizada');
+    },
+    timezone: 'America/Bogota'
+  },
+  stockProductsPrestashop:{
+    schedule: '01 05 */3 * * *',
+    onTick: async () =>{
+      console.log('Iniciando Sincronizacion de Stock Prestashop');
+      try {
+        const sellers = await Seller.find({active: true});
+        for (const seller of sellers) {
+          const products = await Product.find({seller: seller.id});
+          let channels = await Channel.find({type: 'cms', name: 'prestashop'});
+          channels = channels.map(chann => chann.id);
+          const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
+          if (integration) {
+            for(const prod of products){
+              if (prod.delete === false) {
+                await sails.helpers.functionProductSync(prod.externalId.split('-')[0], integration.key);
               }
             }
           }
