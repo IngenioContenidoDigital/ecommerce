@@ -27,11 +27,17 @@ module.exports = {
       text=text.trim();
       return JSON.stringify(text);
     };
-    let description = await textClean(product.description) + await textClean(product.descriptionShort);
+    let description = await textClean(product.description);
+    let name = await textClean(product.name);
 
-    if (description<=30) {
-      details += 'Producto sin descripcion | ';
+    if (description.split(' ').length < 50) {
+      details += 'Descripcion debe ser mayor o igual a 50 palabras | ';
     }
+
+    if (name.length < 20 || name.length > 60) {
+      details += 'El Nombre del producto debe estar entre 20 y 60 caracteres | ';
+    }
+
     if (images.length === 0) {
       details += 'Producto sin imagenes | ';
     }

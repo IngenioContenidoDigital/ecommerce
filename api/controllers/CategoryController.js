@@ -329,9 +329,10 @@ module.exports = {
     }
     try{
       let channel = await Channel.find({name: 'dafiti'});
-      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
-      if(integration.length>0){
-        let route = await sails.helpers.channel.dafiti.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
+      let integration = await Integrations.find({where:{channel: channel[0].id}}).populate('seller');
+      integration = integration.find(int => int.seller && int.seller.active);
+      if(integration){
+        let route = await sails.helpers.channel.dafiti.sign(integration.id,'GetCategoryTree',integration.seller.id);
         let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
       }else{
@@ -347,9 +348,10 @@ module.exports = {
     }
     try{
       let channel = await Channel.find({name: 'linio'});
-      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
-      if(integration.length>0){
-        let route = await sails.helpers.channel.linio.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
+      let integration = await Integrations.find({where:{channel: channel[0].id}}).populate('seller');
+      integration = integration.find(int => int.seller && int.seller.active);
+      if(integration){
+        let route = await sails.helpers.channel.linio.sign(integration.id,'GetCategoryTree',integration.seller.id);
         let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
       }else{
@@ -365,9 +367,10 @@ module.exports = {
     }
     try{
       let channel = await Channel.find({name: 'liniomx'});
-      let integration = await Integrations.find({where:{channel:channel[0].id},limit:1});
-      if(integration.length>0){
-        let route = await sails.helpers.channel.liniomx.sign(integration[0].id,'GetCategoryTree',integration[0].seller);
+      let integration = await Integrations.find({where:{channel: channel[0].id}}).populate('seller');
+      integration = integration.find(int => int.seller && int.seller.active);
+      if(integration){
+        let route = await sails.helpers.channel.liniomx.sign(integration.id,'GetCategoryTree',integration.seller.id);
         let response = await sails.helpers.request(channel[0].endpoint,'/?'+route,'GET');
         return res.ok(JSON.parse(response));
       }else{

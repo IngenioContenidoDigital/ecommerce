@@ -2022,6 +2022,7 @@ module.exports = {
                 if (resData) {
                   resData = JSON.parse(resData);
                   if(resData.SuccessResponse){
+                    let feedId = resData.SuccessResponse.Head.RequestId;
                     for (const pro of products) {
                       const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
                       if(action === 'ProductCreate'){
@@ -2034,13 +2035,15 @@ module.exports = {
                           qc:false,
                           price:priceAdjust,
                           iscreated:false,
-                          socketid:sid
+                          socketid:sid,
+                          feed: feedId
                         }).exec(async (err, record, created)=>{
                           if(err){return new Error(err.message);}
                           if(!created){
                             await ProductChannel.updateOne({id: record.id}).set({
                               price:priceAdjust,
-                              socketid:sid
+                              socketid:sid,
+                              feed: feedId
                             });
                           }
                         });
@@ -2151,6 +2154,7 @@ module.exports = {
               .then(async (resData)=>{
                 resData = JSON.parse(resData);
                 if(resData.SuccessResponse){
+                  let feedId = resData.SuccessResponse.Head.RequestId;
                   for (const pro of products) {
                     const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
                     if(action === 'ProductCreate'){
@@ -2163,13 +2167,15 @@ module.exports = {
                         qc:false,
                         price:priceAdjust,
                         iscreated:false,
-                        socketid:sid
+                        socketid:sid,
+                        feed: feedId
                       }).exec(async (err, record, created)=>{
                         if(err){return new Error(err.message);}
                         if(!created){
                           await ProductChannel.updateOne({id: record.id}).set({
                             price:priceAdjust,
-                            socketid:sid
+                            socketid:sid,
+                            feed: feedId
                           });
                         }
                       });
@@ -3609,7 +3615,20 @@ module.exports = {
       }
       return res.send({error: null,seller});
     } catch (err) {
-      return res.send({error: err.message,seller});
+      return res.send({error: err.message, seller});
+    }
+  },
+  publishproducts: async (req, res) => {
+    const productsSelected = req.body.productsSelected;
+    try {
+      let seller = null;
+      for (const id of productsSelected) {
+        
+        seller = product.seller;
+      }
+      return res.send({error: null,seller});
+    } catch (err) {
+      return res.send({error: err.message, seller});
     }
   }
 };

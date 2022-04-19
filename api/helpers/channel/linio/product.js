@@ -98,11 +98,11 @@ module.exports = {
             };
 
             if(inputs.alldata){
-              data.Product.Name= await textClean(product.name.toUpperCase());
-              data.Product.Variation= pv.variation.col ? (pv.variation.col.replace(/\.5/,'½').toString() === 'U' || pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString() : (pv.variation.col.replace(/\.5/,'½').toString() === 'U' || pv.variation.name.toString() === 'Único' || pv.variation.name.toString() === 'único' || pv.variation.name.toString() === 'Única' || pv.variation.name.toString() === 'única') ? 'Talla Única' : pv.variation.name;
+              data.Product.Name = await textClean(product.name.toUpperCase());
+              data.Product.Variation = pv.variation.col ? (pv.variation.col.replace(/\.5/,'½').toString() === 'U' || pv.variation.col.toString() === 'Único' || pv.variation.col.toString() === 'único' || pv.variation.col.toString() === 'Única' || pv.variation.col.toString() === 'única') ? 'Talla Única' : pv.variation.col.toString() : (pv.variation.col.replace(/\.5/,'½').toString() === 'U' || pv.variation.name.toString() === 'Único' || pv.variation.name.toString() === 'único' || pv.variation.name.toString() === 'Única' || pv.variation.name.toString() === 'única') ? 'Talla Única' : pv.variation.name;
               data.Product.PrimaryCategory= product.mainCategory.linio.split(',')[0];
               //data.Product.Categories= categories.join(',');
-              data.Product.Description= jsonxml.cdata(await textClean(product.description));
+              data.Product.Description= jsonxml.cdata(`<strong>Producto: </strong><br/>${await textClean(product.description)}`);
               data.Product.Brand= product.manufacturer.linioname ? product.manufacturer.linioname : product.manufacturer.name;
               data.Product.TaxClass= product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%';
               data.Product.ProductData= {
@@ -119,7 +119,7 @@ module.exports = {
 
               //if(categories.length<2){delete data.Product.Categories;}
               if(categories.includes('13984')/** Belleza y Cuidado*/ || categories.includes('10253')/** Salud y Bienestar*/){ 
-                delete data.Product.ProductData.Gender; 
+                delete data.Product.ProductData.Gender;
                 data.Product.ProductData.UnitMeasure= pv.variation.measure ? pv.variation.measure : 'unidad';
                 data.Product.ProductData.Volume= pv.variation.unit ? pv.variation.unit : 1;
                 if(categories.includes('14444')/** Perfumes */){
