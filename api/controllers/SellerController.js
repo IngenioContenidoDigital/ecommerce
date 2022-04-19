@@ -1440,14 +1440,24 @@ module.exports = {
             const resultCharge = await epayco.subscriptions.charge(chargeSubscription);
             if (resultCharge.subscription.periodEnd) {
               let state = await sails.helpers.orderState(resultCharge.data.estado);
-              await Subscription.create({
+
+              await Subscription.findOrCreate({reference: subscription.id, seller: seller.id},{
                 reference: subscription.id,
                 currentPeriodStart: subscription.current_period_start,
                 currentPeriodEnd: resultCharge.subscription.periodEnd,
                 state: resultCharge.subscription.status,
                 seller: seller.id,
                 plan: resultPlan.id
-              }).fetch();
+              }).exec(async (err, record, created)=>{
+                if(err){return new Error(err.message);}
+                if(!created){
+                  await Subscription.updateOne({id: record.id}).set({
+                    currentPeriodStart: subscription.current_period_start,
+                    currentPeriodEnd: resultCharge.subscription.periodEnd,
+                    state: resultCharge.subscription.status
+                  });
+                }
+              });
 
               let invoice = await Invoice.create({
                 reference: resultCharge.data.ref_payco,
@@ -1459,21 +1469,24 @@ module.exports = {
                 seller: seller.id
               }).fetch();
 
-              // // Se crea factura en siigo
-              let dataSiigo = {
-                idInvoice: invoice.id,
-                observations: 'Se realiza cobro por cambio de plan',
-                code: '1009',
-                description: 'Cambio de plan en la plataforma',
-                priceItem: parseFloat(price),
-                total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
-              };
-              await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+              if (resultCharge.data.estado === 'Aceptada') {
+                // Se crea factura en siigo
+                let dataSiigo = {
+                  idInvoice: invoice.id,
+                  observations: 'Se realiza cobro por cambio de plan',
+                  code: '1009',
+                  description: 'Cambio de plan en la plataforma',
+                  priceItem: parseFloat(price),
+                  total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                };
+                await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+  
+                let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
+                let position = Math.floor(Math.random() * (2 - 0)) + 0;
+                await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu nuevo cambio de plan de 1Ecommerce', 'email-notification');
+                await Seller.updateOne({id: seller.id}).set({plan: resultPlan.id});
+              }
 
-              let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
-              let position = Math.floor(Math.random() * (2 - 0)) + 0;
-              await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: resultPlan.name.toUpperCase(), link: links[position]}, seller.email, 'Comfirmación de tu nuevo cambio de plan de 1Ecommerce', 'email-notification');
-              await Seller.updateOne({id: seller.id}).set({plan: resultPlan.id});
               return res.send({});
             }
           } else {

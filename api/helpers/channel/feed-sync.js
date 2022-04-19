@@ -34,16 +34,18 @@ module.exports = {
           if (Array.isArray(errors)) {
             for (const error of errors) {
               const productVariation = await ProductVariation.findOne({id: error.SellerSku}).populate('product');
-              const msg = error.Message.split(' | ')[0];
+              let msg = error.Message.split(' | ')[0];
               if (productVariation) {
                 const product = productVariation.product.id;
                 const ref = productVariation.product.reference;
+                const text = msg.inclides('not found') ? `No se creo la SKU ${ref} vuelve a publicar`  : msg;
+
                 if(!resultErrors.some(e => e.product === product)){
-                  resultErrors.push({product: product, reference: ref, message: msg});
+                  resultErrors.push({product: product, reference: ref, message: text});
                 } else {
                   resultErrors = resultErrors.map(err => {
-                    if (err.product === product && !err.message.includes(msg)) {
-                      err.message = err.message + ' | ' + msg;
+                    if (err.product === product && !err.message.includes(text)) {
+                      err.message = err.message + ' | ' + text;
                     }
                     return err;
                   });
@@ -52,16 +54,18 @@ module.exports = {
             }
           } else {
             const productVariation = await ProductVariation.findOne({id: errors.SellerSku}).populate('product');
-            const msg = errors.Message.split(' | ')[0];
+            let msg = errors.Message.split(' | ')[0];
             if (productVariation) {
               const product = productVariation.product.id;
               const ref = productVariation.product.reference;
+              const text = msg.inclides('not found') ? `No se creo la SKU ${ref} vuelve a publicar`  : msg;
+
               if(!resultErrors.some(e => e.product === product)){
-                resultErrors.push({product: product, reference: ref, message: msg});
+                resultErrors.push({product: product, reference: ref, message: text});
               } else {
                 resultErrors = resultErrors.map(err => {
-                  if (err.product === product && !err.message.includes(msg)) {
-                    err.message = err.message + ' | ' + msg;
+                  if (err.product === product && !err.message.includes(text)) {
+                    err.message = err.message + ' | ' + text;
                   }
                   return err;
                 });
