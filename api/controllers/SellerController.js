@@ -1118,15 +1118,16 @@ module.exports = {
 
                 if (resultCharge.data.estado === 'Aceptada') {
                   // Se crea factura en siigo
-                  const IVA = Math.round((((parseFloat(price)*15)/100) + Number.EPSILON) * 100) / 100
+                  const resultPrice = Math.round(parseInt(resultCharge.data.valor)).toFixed(2);
+                  const IVA = Math.round((((parseFloat(resultPrice)*15)/100) + Number.EPSILON) * 100) / 100
 
                   let dataSiigo = {
                     idInvoice: invoice.id,
                     observations: 'Se realiza cobro por reactivación de cuenta',
                     code: '1009',
                     description: 'Reactivación de cuenta en la plataforma',
-                    priceItem: parseFloat(price.toFixed(2)),
-                    total: Math.round(((parseFloat(price.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
+                    priceItem: parseFloat(resultPrice.toFixed(2)),
+                    total: Math.round(((parseFloat(resultPrice.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
                   };
                   await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
                   let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
@@ -1415,7 +1416,7 @@ module.exports = {
             }
           }
           let exchangeRate = await sails.helpers.currencyConverter('USD', 'COP');
-          let price = (parseInt(resultPlan.price)*exchangeRate.result).toFixed(2);
+
           let subscriptionInfo = {
             id_plan: `${resultPlan.id}trialdays`,
             customer: card.customerId,
@@ -1471,13 +1472,16 @@ module.exports = {
 
               if (resultCharge.data.estado === 'Aceptada') {
                 // Se crea factura en siigo
+                const resultPrice = Math.round(parseInt(resultCharge.data.valor)).toFixed(2);
+                const IVA = Math.round((((parseFloat(resultPrice)*15)/100) + Number.EPSILON) * 100) / 100
+
                 let dataSiigo = {
                   idInvoice: invoice.id,
                   observations: 'Se realiza cobro por cambio de plan',
                   code: '1009',
                   description: 'Cambio de plan en la plataforma',
-                  priceItem: parseFloat(price),
-                  total: (parseFloat(price) + ((parseFloat(price)*15)/100)).toFixed(2)
+                  priceItem: parseFloat(resultPrice.toFixed(2)),
+                  total: Math.round(((parseFloat(resultPrice.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
                 };
                 await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
   
