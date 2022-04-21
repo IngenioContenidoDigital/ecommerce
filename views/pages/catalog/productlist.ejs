@@ -175,6 +175,44 @@
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
   </div>
+  <div id="modal-publish" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <section class="modal-card-body">
+        <div class="box">
+          <div class="field">
+            <label class="label is-size-7">Tipo de Proceso</label>
+            <div class="select is-fullwidth is-size-7">
+              <select name="action" id="action" required>
+                <option value="ProductCreate">Publicar Productos</option>
+                <option value="ProductUpdate">Actualizar Cambios</option>
+              </select>
+            </div>
+          </div>
+          <br>
+          <%if(integrations.length > 0){%>
+            <div class="field">
+              <label class="label is-size-7">Elegir Canal</label>
+              <div class="select is-fullwidth is-size-7">
+                <select class="is-capitalized" name="integration" id="selectIntegration" required>
+                <option class="is-capitalized" value="">--Elegir Canal--</option>
+                <% integrations.forEach(function(integration){ %>
+                  <option class="is-capitalized" value="<%=integration.id%>"><%= integration.name %></option>
+                <%})%>
+                </select>
+              </div>
+            </div>
+          <%}%>
+          <br>
+        </div>
+        <div class="control buttons is-right">
+          <button id="publishProducts" class="button is-primary is-small"><i class="bx bx-cloud-upload"></i>&nbsp;Publicar Productos</button>
+        </div>
+      </section>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+
   <script>
     let cont = 0;
     let productsSelected = [];
@@ -327,6 +365,11 @@
               Eliminar Productos
             </button>
           </p>
+          <p class="control">
+            <button id="btnPublishProducts" class="button is-small">
+              Publicar Productos
+            </button>
+          </p>
         </div>`;
         divDatatable.prepend(div);
       } else if (cont != 0) {
@@ -339,6 +382,11 @@
     live('#editCategory','click',e=> {
       childTree(document.querySelectorAll('a.panel-block'));
       let modal = document.querySelector('#modal-address');
+      addClass(modal,'is-active');
+    });
+
+    live('#btnPublishProducts','click',e=> {
+      let modal = document.querySelector('#modal-publish');
       addClass(modal,'is-active');
     });
 
@@ -421,6 +469,30 @@
           };
         });
       }
+    });
+
+    live('#publishProducts','click', e =>{
+      e.preventDefault();
+      let action = document.querySelector('select[name="action"]').value;
+      let selectIntegration = document.querySelector('select[name="integration"]').value
+      let modal = document.querySelector('#modal-publish');
+      let seller = '<%- seller %>';
+     
+      io.socket.post('/publish/products',{action, seller, integrationId: selectIntegration, productsSelected}, resData => {
+        removeClass(modal,'is-active');
+        if(resData.error){
+          const el = document.getElementById('notificationmessage');
+          el.textContent = resData.error;
+          addClass(el,'is-danger');
+          removeClass(el,'is-hidden');
+          setTimeout(function() {
+            addClass(el,'is-hidden');
+            removeClass(el,'is-danger');
+          }, 10000);
+        } else {
+          window.location.href='/products/'+resData.seller;
+        };
+      });
     });
   
     live('.filters','click', e =>{

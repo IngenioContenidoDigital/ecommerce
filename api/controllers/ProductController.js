@@ -2099,7 +2099,7 @@ module.exports = {
             break;
           case 'ProductUpdate':
             action = 'ProductUpdate';
-            products = products.filter(pro => pro.channels.length > 0 /*&& pro.channels[0].iscreated*/);
+            products = products.filter(pro => pro.channels.length > 0 );
             break;
           case 'Image':
             action = 'Image';
@@ -2181,7 +2181,7 @@ module.exports = {
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, feed: feedId});
                     }
                     response.items.push(pro);
                   }
@@ -3620,13 +3620,200 @@ module.exports = {
   },
   publishproducts: async (req, res) => {
     const productsSelected = req.body.productsSelected;
+    let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
     try {
-      let seller = null;
-      for (const id of productsSelected) {
-        
-        seller = product.seller;
+      let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
+      let priceAdjust = integration.priceAdjustment || 0;
+      let channel = integration.channel.name;
+      let products = [];
+      const pageSize = req.body.action === 'ProductCreate' ? 4000 : 1500;
+
+      if (channel === 'dafiti') {
+        const intgrationId = integration.id;
+        let resultProducts = await Product.find({id: productsSelected, seller: seller, delete: false}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        }).populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        } else {
+          products = resultProducts;
+        }
+
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'ProductCreate';
+            products = products.filter(pro => pro.channels.length === 0 || (pro.channels.length > 0 && pro.channels[0].iscreated === false));
+            break;
+          case 'ProductUpdate':
+            action = 'ProductUpdate';
+            products = products.filter(pro => pro.channels.length > 0);
+            break;
+        }
+
+        if (products.length > 0) {
+          let result = [];
+          if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
+          if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active', false);}
+
+          let pageNumber = Math.ceil(result.Request.length / pageSize);
+          for (let i = 1; i <= pageNumber; i++) {
+            body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
+            const xml = jsonxml(body,true);
+            let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
+            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+            .then(async (resData)=>{
+              if (resData) {
+                resData = JSON.parse(resData);
+                if(resData.SuccessResponse){
+                  let feedId = resData.SuccessResponse.Head.RequestId;
+                  for (const pro of products) {
+                    const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                    if(action === 'ProductCreate'){
+                      await ProductChannel.findOrCreate({id: productChannelId},{
+                        product:pro.id,
+                        integration:integration.id,
+                        channel:integration.channel.id,
+                        channelid:'',
+                        status:false,
+                        qc:false,
+                        price:priceAdjust,
+                        iscreated:false,
+                        socketid:sid,
+                        feed: feedId
+                      }).exec(async (err, record, created)=>{
+                        if(err){return new Error(err.message);}
+                        if(!created){
+                          await ProductChannel.updateOne({id: record.id}).set({
+                            price:priceAdjust,
+                            socketid:sid,
+                            feed: feedId
+                          });
+                        }
+                      });
+                    }
+                    if(action === 'ProductUpdate'){
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price: priceAdjust, feed: feedId});
+                    }
+                  }
+                }else{
+                  throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+                }
+              } else {
+                throw new Error ('Error en el proceso, Intenta de nuevo más tarde.');
+              }
+            }).catch(err =>{
+              throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
+            });
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar, verifica el contenido de los productos');
+        }
       }
-      return res.send({error: null,seller});
+
+      if (channel === 'linio') {
+        const intgrationId = integration.id;
+        let resultProducts = await Product.find({id: productsSelected, seller: seller, delete: false}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        }).populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        } else {
+          products = resultProducts;
+        }
+                       
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'ProductCreate';
+            products = products.filter(pro => pro.channels.length === 0 || (pro.channels.length > 0 && pro.channels[0].iscreated === false));
+            break;
+          case 'ProductUpdate':
+            action = 'ProductUpdate';
+            products = products.filter(pro => pro.channels.length > 0 );
+            break;
+        }
+
+        if (products.length > 0) {
+          let result = [];
+          if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
+          if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active',false);}
+
+          let pageNumber = Math.ceil(result.Request.length / pageSize);
+          for (let i = 1; i <= pageNumber; i++) {
+            body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
+            const xml = jsonxml(body,true);
+            let sign = await sails.helpers.channel.linio.sign(intgrationId, action, seller);
+            await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
+            .then(async (resData)=>{
+              resData = JSON.parse(resData);
+              if(resData.SuccessResponse){
+                let feedId = resData.SuccessResponse.Head.RequestId;
+                for (const pro of products) {
+                  const productChannelId = pro.channels.length > 0 ? pro.channels[0].id : '';
+                  if(action === 'ProductCreate'){
+                    await ProductChannel.findOrCreate({id: productChannelId},{
+                      product:pro.id,
+                      integration:integration.id,
+                      channel:integration.channel.id,
+                      channelid:'',
+                      status:false,
+                      qc:false,
+                      price:priceAdjust,
+                      iscreated:false,
+                      socketid:sid,
+                      feed: feedId
+                    }).exec(async (err, record, created)=>{
+                      if(err){return new Error(err.message);}
+                      if(!created){
+                        await ProductChannel.updateOne({id: record.id}).set({
+                          price:priceAdjust,
+                          socketid:sid,
+                          feed: feedId
+                        });
+                      }
+                    });
+                  }
+                  if(action === 'ProductUpdate'){
+                    await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, feed: feedId});
+                  }
+                }
+              }else{
+                throw new Error (resData.ErrorResponse.Head.ErrorMessage || 'Error en el proceso, Intenta de nuevo más tarde.');
+              }
+            })
+            .catch(err =>{
+              throw new Error (err || 'Error en el proceso, Intenta de nuevo más tarde.');
+            });
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar, verifica el contenido de los productos');
+        }
+      }
+
+      return res.send({error: null, seller});
     } catch (err) {
       return res.send({error: err.message, seller});
     }
