@@ -30,8 +30,8 @@ module.exports = {
     let description = await textClean(product.description);
     let name = await textClean(product.name);
 
-    if (description.split(' ').length < 50) {
-      details += 'Descripcion debe ser mayor o igual a 50 palabras | ';
+    if (description.length < 30) {
+      details += 'Descripcion debe ser mayor o igual a 30 palabras | ';
     }
 
     if (name.length < 20 || name.length > 60) {
