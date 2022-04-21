@@ -2010,7 +2010,7 @@ module.exports = {
           }else{
             let result = [];
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
-            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active',false);}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
 
             let pageNumber = Math.ceil(result.Request.length / pageSize);
             for (let i = 1; i <= pageNumber; i++) {
@@ -2143,7 +2143,7 @@ module.exports = {
           }else{
             let result = [];
             if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
-            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active',false);}
+            if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
 
             let pageNumber = Math.ceil(result.Request.length / pageSize);
             for (let i = 1; i <= pageNumber; i++) {
@@ -3669,7 +3669,7 @@ module.exports = {
         if (products.length > 0) {
           let result = [];
           if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
-          if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active', false);}
+          if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.dafiti.product(products, integration, priceAdjust, 'active');}
 
           let pageNumber = Math.ceil(result.Request.length / pageSize);
           for (let i = 1; i <= pageNumber; i++) {
@@ -3763,7 +3763,7 @@ module.exports = {
         if (products.length > 0) {
           let result = [];
           if(req.body.action === 'ProductCreate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
-          if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active',false);}
+          if(req.body.action === 'ProductUpdate'){ result = await sails.helpers.channel.linio.product(products, integration, priceAdjust, 'active');}
 
           let pageNumber = Math.ceil(result.Request.length / pageSize);
           for (let i = 1; i <= pageNumber; i++) {
