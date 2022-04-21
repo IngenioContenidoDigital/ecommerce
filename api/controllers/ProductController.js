@@ -3619,14 +3619,18 @@ module.exports = {
     }
   },
   publishproducts: async (req, res) => {
+    var jsonxml = require('jsontoxml');
     const productsSelected = req.body.productsSelected;
     let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
     try {
+      let sid = sails.sockets.getId(req);
       let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
       let priceAdjust = integration.priceAdjustment || 0;
       let channel = integration.channel.name;
       let products = [];
       const pageSize = req.body.action === 'ProductCreate' ? 4000 : 1500;
+      let action = '';
+      let body={Request:[]};
 
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
@@ -3670,7 +3674,7 @@ module.exports = {
           let pageNumber = Math.ceil(result.Request.length / pageSize);
           for (let i = 1; i <= pageNumber; i++) {
             body.Request = result.Request.slice((pageNumber - i) * pageSize, (pageNumber - (i-1)) * pageSize);
-            const xml = jsonxml(body,true);
+            const xml = jsonxml(body, true);
             let sign = await sails.helpers.channel.dafiti.sign(intgrationId, action, seller);
             await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'POST', xml)
             .then(async (resData)=>{
