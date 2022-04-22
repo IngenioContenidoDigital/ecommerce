@@ -48,7 +48,6 @@ module.exports = {
         }
       }catch(err){
         console.log(err);
-        //result.errors.push('Ref:'+p.reference+' - '+err.message);
       }
     }
     return exits.success(imagebody);
