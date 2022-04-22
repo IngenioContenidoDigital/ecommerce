@@ -309,6 +309,17 @@ module.exports = {
 
     for(let o of orders){
       let track = '';
+      let image = '/images/not-available.png';
+      let item = await OrderItem.find({
+        where: {order:o.id},
+        sort: 'createdAt DESC',
+        limit: 1,
+      });
+      if (item.length > 0) {
+        let cover = await ProductImage.find({ product: item[0].product, cover: 1 });
+        image = cover.length > 0 ? sails.config.views.locals.imgurl + '/images/products/' + cover[0].product + '/' + cover[0].file : '/images/not-available.png';
+      }
+
       const currency = await Currency.findOne({id: o.seller.currency});
       o.currentstatus = await OrderState.findOne({id:o.currentstatus}).populate('color');
 
@@ -321,7 +332,16 @@ module.exports = {
           <input class="is-checkradio is-small is-info" id="checkboxselect${o.id}" data-product="${o.id}" type="checkbox" name="checkboxselect">
           <label for="checkboxselect${o.id}"></label>
         </div></td>`,
-        '<td scope="row" class="align-middle">'+o.reference+'</td>',
+        `<td scope="row" class="align-middle">
+          <div class="popover is-popover-right">
+            <a class="popover-trigger">${o.reference}</a>
+            <div class="popover-content">
+              <figure class="image is-128x128">
+                <img style="height: 128px;" src=${image}>
+              </figure>
+            </div>
+          </div>
+        </td>`,
         '<td scope="row" class="align-middle">'+o.channel+'</td>',
         '<td scope="row" class="align-middle">'+o.paymentId ? o.paymentId : ''+'</td>',
         `<td class="align-middle"><ul>${o.manifest}</ul></td>`,

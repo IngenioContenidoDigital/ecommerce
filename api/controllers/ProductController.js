@@ -210,12 +210,24 @@ module.exports = {
       let columnActive = (req.hostname==='1ecommerce.app' || req.hostname==='localhost') ? false : true;
       let options = (p.details || reason) ? `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Editar producto"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Ver producto" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a><a product="` + p.id + `" class="button showDetails has-tooltip-bottom has-tooltip-info" data-tooltip="Errores de contenido"><span class="icon"><i class='bx bxs-detail'></i></span></a></td>` : `<td class="align-middle"><a href="/product/edit/` + p.id + `" target="_blank" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Editar producto"><span class="icon"><i class="bx bx-edit"></i></span></a><a href="/list/product/` + encodeURIComponent((p.name).replace(/\./g, '%2E')) + `/` + encodeURIComponent(p.reference) + `" class="button has-tooltip-bottom has-tooltip-info" data-tooltip="Ver producto" target="_blank"><span class="icon"><i class='bx bx-link' ></i></span></a></td>`;
       let resultPublished = published ? published : `<span class="tag is-danger">No Publicado</span>`;
+      let resultImage = p.images.find(image => image.cover === 1);
+      resultImage = resultImage ? sails.config.views.locals.imgurl + '/images/products/' + p.id + '/' + resultImage.file : '/images/not-available.png';
+
       row = [
         `<td class="align-middle><div class="field">
           <input class="is-checkradio is-small is-info" id="checkboxselect${p.id}" data-product="${p.id}" type="checkbox" name="checkboxselect">
           <label for="checkboxselect${p.id}"></label>
         </div></td>`,
-        `<td class="align-middle is-uppercase"><a href="#" class="product-image" data-product="` + p.id + `">` + p.name + `</a></td>`,
+        `<td class="align-middle is-uppercase">
+          <div class="popover is-popover-right">
+            <a class="popover-trigger">${p.name}</a>
+            <div class="popover-content">
+              <figure class="image is-128x128">
+                <img style="height: 128px;" src=${resultImage}>
+              </figure>
+            </div>
+          </div>
+        </td>`,
         `<td class="align-middle">` + p.reference + `</td>`,
         `<td class="align-middle is-capitalized">` + (p.manufacturer ? p.manufacturer.name : '') + `</td>`,
         `<td class="align-middle"> ` + (price ? formatter.format(price) : formatter.format(0)) + `</td>`,
