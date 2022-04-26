@@ -21,6 +21,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     try {
+      const jsonxml = require('jsontoxml');
       let sellerSkus = inputs.skus;
       let integration = inputs.integration;
       let listproducts = [];
