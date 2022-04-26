@@ -389,11 +389,11 @@ module.exports.cron = {
         let channels = await Channel.find({name: ['dafiti', 'linio']});
         for (const seller of sellers) {
           for (const channel of channels) {
-            let integrations = await Integrations.find({seller: seller.id, channel: channel.id}).populate('channel');
+            let integrations = await Integrations.find({seller: seller.id, channel: channel.id}).populate('channel').populate('seller');
             for (const integration of integrations) {
               const skus = [];
               let pageSize = 100;
-              let products = await Product.find({seller: integration.seller})
+              let products = await Product.find({seller: integration.seller.id})
               .populate('channels',{
                 where:{
                   channel: integration.channel.id,

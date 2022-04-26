@@ -1938,7 +1938,7 @@ module.exports = {
     var jsonxml = require('jsontoxml');
     let sid = sails.sockets.getId(req);
     let seller = (req.body.seller && req.body.seller !== null || req.body.seller !== '' || req.body.seller !== undefined) ? req.body.seller : req.session.user.seller;
-    let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel');
+    let integration = await Integrations.findOne({id: req.body.integrationId}).populate('channel').populate('seller');
     let priceAdjust = integration.priceAdjustment || 0;
     let channel = integration.channel.name;
     let result = null;
