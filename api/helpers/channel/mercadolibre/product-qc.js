@@ -23,13 +23,25 @@ module.exports = {
       if(response.id){
         if (response.status === 'under_review') {
           await ProductChannel.updateOne({channelid: response.id}).set({
-            reason: 'Producto Inactivo para revisar, elimine el producto en el marketplace, modifique y envie de nuevo.',
+            reason: `Producto Inactivo para revisar ${response.id}, elimine la publicacion, modifique y envie de nuevo.`,
             qc: false,
+            status: false
+          });
+        } else if(response.status === 'paused'){
+          await ProductChannel.updateOne({channelid: response.id}).set({
+            reason: `El producto ${response.id} fue pausado por falta de stock y será activado automáticamente cuando sea repuesto`,
+            qc: true,
+            status: false
+          });
+        } else if('closed') {
+          await ProductChannel.updateOne({channelid: response.id}).set({
+            reason: `El producto ${response.id} fue cerrado en mercadolibre, elimine la publicacion, modifique y envie de nuevo.`,
+            qc: true,
             status: false
           });
         } else {
           await ProductChannel.updateOne({channelid: response.id}).set({
-            reason: response.status === 'active' ? '' : 'El producto se inactivo en mercadolbre, verificar en el marketplace',
+            reason: response.status === 'active' ? '' : `El producto ${response.id} se inactivo en mercadolibre`,
             qc: true,
             status: response.status === 'active' ? true : false
           });

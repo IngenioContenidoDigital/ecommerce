@@ -3905,7 +3905,6 @@ module.exports = {
             const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
             let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
             .tolerate(async (err) => {
-              console.log(err.message);
               await ProductChannel.updateOne({id: productChannelId}).set({
                 reason: 'No se pudo generar el producto, revise su contenido',
                 qc: false,
