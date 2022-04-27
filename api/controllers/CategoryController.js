@@ -402,13 +402,20 @@ module.exports = {
       return res.badrequest();
     }
     try{
-      let body = await sails.helpers.channel.mercadolibre.findCategory(req.body.category_name)
-      .intercept((err)=>{
-        return new Error(err.message);
-      });
-      return res.ok(body);
+      let channel = await Channel.find({name: 'mercadolibre'});
+      let integration = await Integrations.find({where:{channel: channel[0].id}}).populate('seller');
+      integration = integration.find(int => int.seller && int.seller.active);
+      if (integration) {
+        let body = await sails.helpers.channel.mercadolibre.findCategory(req.body.category_name, integration.secret)
+        .intercept((err)=>{
+          return new Error(err.message);
+        });
+        return res.ok(body);
+      } else {
+        return res.serverError(err);
+      }
     }catch(err){
-      return res.serverError(err);
+      return res.serverError(err.message);
     }
   },
   mercadolibremxcategories: async (req,res)=>{

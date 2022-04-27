@@ -342,15 +342,15 @@
         if(mercadolibre.includes(c['category_id'])){
           removeClass(elm,'is-hidden');
           if(c['category_name']=='Otros'){
-            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
           }else{
-            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'"checked />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
           }
         }else{
           if(c['category_name']=='Otros'){
-            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
           }else{
-            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+            op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
           }            
         }
       } else if (marketplace === 'mercadolibremx') {
@@ -484,9 +484,9 @@
             for(let c of resData){
               let op = document.createElement('li');
               if(c['category_name']=='Otros'){
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
               }else{
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
               }
               meli.appendChild(op);
             }
@@ -500,9 +500,9 @@
             for(let c of resData){
               let op = document.createElement('li');
               if(c['category_name']=='Otros'){
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'-'+c['domain_name']+'</label></span>';
+                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
               }else{
-                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+'</label></span>';
+                op.innerHTML='<span><input type="checkbox" name="mercadolibre[]" value="'+c['category_id']+'" />'+'<i class="bx bxs-folder"></i><label class="tree-toggler">&nbsp;'+c['category_name']+' - '+c['domain_name']+'</label></span>';
               }
               melimx.appendChild(op);
             }

@@ -3859,6 +3859,111 @@ module.exports = {
         }
       }
 
+      if (channel === 'mercadolibre') {
+        const intgrationId = integration.id;
+        let resultProducts = await Product.find({id: productsSelected, seller: seller, delete: false}).populate('channels',{
+          where:{
+            channel: integration.channel.id,
+            integration: intgrationId
+          },
+          limit: 1
+        })
+        .populate('gender')
+        .populate('manufacturer')
+        .populate('seller');
+
+        if (req.body.action === 'ProductCreate') {
+          for (const product of resultProducts) {
+            let checkProduct = await sails.helpers.checkContentProduct(product);
+            if (checkProduct) {
+              products.push(product);
+            }
+          }
+        } else {
+          products = resultProducts;
+        }
+
+        switch (req.body.action) {
+          case 'ProductCreate':
+            action = 'Post';
+            products = products.filter(pro => pro.channels.length === 0 || pro.channels[0].channelid === '');
+            break;
+          case 'ProductUpdate':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].channelid !== '');
+            break;
+          case 'Image':
+            action = 'Update';
+            products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].status === true && pro.channels[0].channelid !== '');
+            break;
+        }
+        if (products.length > 0) {
+          let integration = await sails.helpers.channel.mercadolibre.sign(intgrationId);
+          for (let pl of products) {
+            const mlprice = priceAdjust;
+            const mlid = pl.channels.length > 0 ? pl.channels[0].channelid : '';
+            const productChannelId = pl.channels.length > 0 ? pl.channels[0].id : '';
+            let body = await sails.helpers.channel.mercadolibre.product(pl.id,action,integration.id, mlprice)
+            .tolerate(async (err) => {
+              console.log(err.message);
+              await ProductChannel.updateOne({id: productChannelId}).set({
+                reason: 'No se pudo generar el producto, revise su contenido',
+                qc: false,
+                status: false
+              });
+            });
+            if(body){
+              if(action==='Update'){
+                result = await sails.helpers.channel.mercadolibre.request('items/'+mlid,integration.channel.endpoint,integration.secret, body,'PUT')
+                .tolerate((err)=> console.log(err.message));
+                if(result){
+                  await ProductChannel.updateOne({ id: productChannelId }).set({
+                    status:true,
+                    price:mlprice,
+                    qc:true,
+                    reason: ''
+                  });
+                }
+              }
+              if(action==='Post'){
+                result = await sails.helpers.channel.mercadolibre.request('items',integration.channel.endpoint,integration.secret, body,'POST')
+                .tolerate(async (err)=>{
+                  await ProductChannel.updateOne({id: productChannelId}).set({
+                    reason: 'No se pudo crear el producto en Mercadolibre, '+ err.message,
+                    qc: false,
+                    status: false
+                  });
+                });
+                if(result && result.id){
+                  await ProductChannel.findOrCreate({id: productChannelId},{
+                    product:pl.id,
+                    channel:integration.channel.id,
+                    integration:integration.id,
+                    channelid:result.id,
+                    status:true,
+                    qc:true,
+                    iscreated: true,
+                    price:mlprice
+                  }).exec(async (err, record, created)=>{
+                    if(err){return new Error(err.message);}
+                    if(!created){
+                      await ProductChannel.updateOne({id: record.id}).set({
+                        channelid:result.id,
+                        price:mlprice
+                      });
+                    }
+                  });
+                  sleep(2000);
+                  await sails.helpers.channel.mercadolibre.request(`items/${result.id}/description`,integration.channel.endpoint,integration.secret, body.description,'POST');
+                }
+              }
+            }
+          }
+        } else {
+          throw new Error('Sin Productos para Procesar, verifica el contenido de los productos');
+        }
+      }
+
       return res.send({error: null, seller});
     } catch (err) {
       return res.send({error: err.message, seller});

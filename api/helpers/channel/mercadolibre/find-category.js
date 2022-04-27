@@ -5,7 +5,11 @@ module.exports = {
     categories:{
       type:'string',
       required:true
-    }
+    },
+    token:{
+      type:'string',
+      required:true
+    },
   },
   exits: {
     success: {
@@ -16,12 +20,16 @@ module.exports = {
     }
   },
   fn: async function (inputs,exits) {
-    const meli = require('mercadolibre-nodejs-sdk');
-    let mercadolibre = new meli.CategoriesApi();
-    mercadolibre.sitesSiteIdDomainDiscoverySearchGet('MCO', encodeURIComponent(inputs.categories), 10, (error, data, response) => {
-      if(error || response.body.length<1){ return exits.noCategory(); }
-      return exits.success(response.body);
-    });
+    try{
+      let response = await sails.helpers.channel.mercadolibre.request(`sites/MCO/domain_discovery/search?limit=8&q=${inputs.categories}`, 'https://api.mercadolibre.com/', inputs.token);
+      if(response && response.length > 0){
+        return exits.success(response);
+      } else {
+        return exits.noCategory();
+      }
+    }catch(err){
+      return exits.noCategory();
+    }
   }
 };
 
