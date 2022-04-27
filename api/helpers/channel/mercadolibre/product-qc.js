@@ -33,7 +33,7 @@ module.exports = {
             qc: true,
             status: false
           });
-        } else if('closed') {
+        } else if(response.status === 'closed') {
           await ProductChannel.updateOne({channelid: response.id}).set({
             reason: `El producto ${response.id} fue cerrado en mercadolibre, elimine la publicacion, modifique y envie de nuevo.`,
             qc: true,
