@@ -21,7 +21,7 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     try{
-      let response = await sails.helpers.channel.mercadolibre.request(`sites/MCO/domain_discovery/search?limit=8&q=${inputs.categories}`, 'https://api.mercadolibre.com/', inputs.token);
+      let response = await sails.helpers.channel.mercadolibre.request(`sites/MCO/domain_discovery/search?limit=8&q=${encodeURIComponent(inputs.categories)}`, 'https://api.mercadolibre.com/', inputs.token);
       if(response && response.length > 0){
         return exits.success(response);
       } else {

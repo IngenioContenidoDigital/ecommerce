@@ -29,6 +29,12 @@
                 <input class="input is-capitalized" type="text" name="nombre" required="true" placeholder="Nombre de la categoría" <% if(action=='edit'){ %>value="<%= current.name %>"<% }%>/>
               </div>
             </div>
+            <div class="field">
+              <label class="label">Nombre Mercadolibre</label>
+              <div class="control">
+                <input class="input is-capitalized" type="text" name="nameMercadolibre" placeholder="Nombre de la categoría en mercadolibre" <% if(action=='edit'){ %>value="<%= current.nameMercadolibre %>"<% }%>/>
+              </div>
+            </div>
             <div class="columns">
               <div class="column">
                 <% if((action=='edit') && (current.logo!= "")){ %>
@@ -221,10 +227,10 @@
               <ul class="cattree tree" id="mercadolibre">
               </ul>
               <% if(action=='edit'){ %> 
-                <ul class="cattree tree is-hidden" id="predictor"> Modifique el campo nombre de categoría.
+                <ul class="cattree tree is-hidden" id="predictor"> Modifique el campo nombre mercadolibre de categoría.
                 </ul>
               <%}else{%> 
-                <ul class="cattree tree" id="predictor"> Modifique el campo nombre de categoría.
+                <ul class="cattree tree" id="predictor"> Modifique el campo nombre mercadolibre de categoría.
                 </ul>
               <%}%> 
             </div>
@@ -233,10 +239,10 @@
               <ul class="cattree tree" id="mercadolibremx">
               </ul>
               <% if(action=='edit'){ %> 
-                <ul class="cattree tree is-hidden" id="predictormx"> Modifique el campo nombre de categoría.
+                <ul class="cattree tree is-hidden" id="predictormx"> Modifique el campo nombre mercadolibre de categoría.
                 </ul>
               <%}else{%> 
-                <ul class="cattree tree" id="predictormx"> Modifique el campo nombre de categoría.
+                <ul class="cattree tree" id="predictormx"> Modifique el campo nombre mercadolibre de categoría.
                 </ul>
               <%}%> 
             </div>
@@ -395,7 +401,7 @@
       let ObjMelimx = document.querySelector('#mercadolibremx');
       let objWalmart = document.querySelector('#walmart');
       let objShopee = document.querySelector('#shopee');
-      let category_name =document.querySelector('input[name=nombre]');
+      let category_name =document.querySelector('input[name=nameMercadolibre]');
       let predictor = document.querySelector('#predictor');
       let predictormx = document.querySelector('#predictormx');
       category_name = category_name.value;
@@ -511,7 +517,7 @@
       }else {melimx.innerHTML=''; meli.innerHTML=''; addClass(progress,'is-hidden'); removeClass(predictormx,'is-hidden');removeClass(predictor,'is-hidden');}
     }
     
-    live('input[name=nombre]','input', e=>{
+    live('input[name=nameMercadolibre]','input', e=>{
       addClass(predictor,'is-hidden');
       removeClass(progress,'is-hidden');
       let category_name = e.target.value;

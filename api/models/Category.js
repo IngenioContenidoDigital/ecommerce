@@ -18,6 +18,7 @@ module.exports = {
     level:{type:'number'},
     hasChildren:{type:'boolean'},
     dafiti:{type:'string'},
+    nameMercadolibre:{type:'string'},
     mercadolibre:{type:'string'},
     mercadolibremx:{type:'string'},
     linio:{type:'string'},

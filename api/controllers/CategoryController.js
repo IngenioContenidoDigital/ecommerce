@@ -104,6 +104,7 @@ module.exports = {
       let filename = await sails.helpers.fileUpload(req,'logo',2000000,'images/categories');
       await Category.create({
         name:req.body.nombre.trim().toLowerCase(),
+        nameMercadolibre: req.body.nameMercadolibre.trim().toLowerCase(),
         logo:filename[0].filename,
         description:req.body.descripcion,
         tags: req.body.tags ? req.body.tags : '',
@@ -124,6 +125,7 @@ module.exports = {
       if(err.code==='badRequest'){
         await Category.create({
           name:req.body.nombre.trim().toLowerCase(),
+          nameMercadolibre: req.body.nameMercadolibre.trim().toLowerCase(),
           description:req.body.descripcion,
           tags: req.body.tags ? req.body.tags : '',
           parent:current.id,
@@ -218,6 +220,7 @@ module.exports = {
     if(req.body.activo==='on'){isActive=true;}
     let body = {
       name:req.body.nombre,
+      nameMercadolibre: req.body.nameMercadolibre.trim().toLowerCase(),
       description:req.body.descripcion,
       tags: req.body.tags ? req.body.tags : '',
       parent:parent.id,

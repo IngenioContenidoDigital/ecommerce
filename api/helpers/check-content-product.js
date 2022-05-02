@@ -30,12 +30,27 @@ module.exports = {
     let description = await textClean(product.description);
     let name = await textClean(product.name);
 
-    if (description.length < 30) {
-      details += 'Descripcion debe ser mayor o igual a 30 palabras | ';
+    if (name.length < 20 || name.length > 60) {
+      let resultName = name.length > 60 ? name.split(' ').slice(0, -1).join(' ') : name.length < 20 ? `${name} ${product.manufacturer.name}` : name;
+      await Product.updateOne({id: product.id}).set({
+        name: resultName
+      });
     }
 
-    if (name.length < 20 || name.length > 60) {
-      details += 'El Nombre del producto debe estar entre 20 y 60 caracteres | ';
+    if (description.length < 30) {
+      let resultDescription = `
+        <ul>
+          <li>Marca: ${product.manufacturer.name.toUpperCase()}</li>
+          <li>Referencia: ${product.reference}</li>
+          <li>Color: ${product.mainColor.name.toUpperCase()}</li>
+          <li>Genero: ${product.gender.name.toUpperCase()}</li>
+          <li>Nombre: ${product.name}</li>
+        </ul>
+        <br/> ${description}
+      `;
+      await Product.updateOne({id: product.id}).set({
+        description: resultDescription
+      });
     }
 
     if (images.length === 0) {
