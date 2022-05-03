@@ -483,8 +483,9 @@
       let selectIntegration = document.querySelector('select[name="integration"]').value
       let modal = document.querySelector('#modal-publish');
       let seller = '<%- seller %>';
-     
+      addClass(e.target,'is-loading');
       io.socket.post('/publish/products',{action, seller, integrationId: selectIntegration, productsSelected}, resData => {
+        removeClass(e.target,'is-loading');
         removeClass(modal,'is-active');
         if(resData.error){
           const el = document.getElementById('notificationmessage');
