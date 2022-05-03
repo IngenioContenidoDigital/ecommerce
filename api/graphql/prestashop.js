@@ -34,8 +34,8 @@ module.exports = {
   }`,
 
   IMAGES :
-  `query PrestashopProductListQuery($pagination: PaginationInput) {
-    PrestashopProducts(listing: { pagination: $pagination}) {
+  `query PrestashopProductImageListQuery($pagination: PaginationInput) {
+    PrestashopProductImage(listing: {pagination: $pagination}) {
       totalRecords
       pagesCount
       data{
@@ -77,47 +77,45 @@ module.exports = {
   PRODUCTID :
   `query PrestashopProductIdQuery($id: String) {
     PrestashopProductId(productId: $id) {
-      product{
-        name
-        externalId
-        description
-        reference
-        descriptionShort
-        active
-        color
-        tax{
+      data{
+        product{
           name
-          rate
-        }
-        manufacturer
-        width
-        weight
-        height
-        length
-        images{
-          file
-          src
-        }
-      }
-      productVariations{
-        discount{
-          name
-          from
-          to
-          type
-          value
-        }
-        variations{
+          externalId
+          description
           reference
-          talla
-          price
-          quantity
+          descriptionShort
+          active
+          color
+          tax{
+            name
+            rate
+          }
+          manufacturer
+          width
+          weight
+          height
+          length
         }
-      }
-      productImages{
-        images{
-          file
-          src
+        productVariations{
+          discount{
+            name
+            from
+            to
+            type
+            value
+          }
+          variations{
+            reference
+            talla
+            price
+            quantity
+          }
+        }
+        productImages{
+          images{
+            file
+            src
+          }
         }
       }
     }
