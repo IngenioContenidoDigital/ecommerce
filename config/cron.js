@@ -413,7 +413,9 @@ module.exports.cron = {
               let number = Math.ceil(skus.length / pageSize);
               for (let i = 1; i <= number; i++) {
                 const resultSkus = skus.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
-                await sails.helpers.channel.productQc(integration, resultSkus);
+                if (resultSkus.length > 0) {
+                  await sails.helpers.channel.productQc(integration, resultSkus);
+                }
               }
             }
           }

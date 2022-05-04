@@ -76,7 +76,7 @@ module.exports = {
           vimages.push(sails.config.views.locals.imgurl+'/images/products/'+product.id+'/'+image.file);
         });
         let productvariations = await ProductVariation.find({product:product.id}).populate('variation');
-      
+
         let promotions = null;
         if (inputs.action==='ProductUpdate' || inputs.action==='Update') {
           let pchannel = await ProductChannel.findOne({product:inputs.product,integration:inputs.integration});
@@ -119,14 +119,17 @@ module.exports = {
             ],
             'available_quantity': pvstock < 0 ? 0 : pvstock,
             'price':parseInt(price), //Crear función para validar precio específico de la variación
-            'attributes':[{
-              'id':'SELLER_SKU',
-              'value_name':variation.id
-            }],
+            'attributes': [
+              { 'id':'SELLER_SKU', 'value_name':variation.id },
+              { 'id': 'GTIN', 'value_name': variation.ean13 }
+            ],
             'picture_ids':vimages
           };
           if (promotions && promotions.length > 0) {
             delete v.price;
+          }
+          if (!variation.ean13 || variation.ean13 === '0') {
+            delete v.attributes[1];
           }
           stock+=parseInt(pvstock);
           variations.push(v);
@@ -208,14 +211,6 @@ module.exports = {
           }
         }
 
-        /*body['variations']=[];
-        response.variations.forEach(mlv =>{
-          for(let v in variations){
-            if(variations[v].attribute_combinations[0].value_name===mlv.attribute_combinations[0].value_name){
-              body.variations.push({id:mlv.id,price:variations[v].price});
-            }
-          }
-        });*/
         let category = await Category.findOne({id:product.mainCategory});
         body['category_id']= category.mercadolibre;
         let storeid = await sails.helpers.channel.mercadolibre.officialStore(integration, brand);

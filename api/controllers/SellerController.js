@@ -868,6 +868,7 @@ module.exports = {
                 tax: req.body.x_tax,
                 seller: subscription.seller
               }).fetch();
+
               // se crea factura en Siigo
               let dataSiigo = {
                 idInvoice: invoice.id,
@@ -878,6 +879,7 @@ module.exports = {
                 total: Math.round(((parseFloat(totalAmount.toFixed(2)) + parseFloat(IVA.toFixed(2))) + Number.EPSILON) * 100) / 100
               };
               await sails.helpers.siigo.createInvoice(seller.dni, dataSiigo);
+              
               let links = ['https://meetings.hubspot.com/juan-pinzon', 'https://meetings.hubspot.com/alejandra-vaquiro-acuna'];
               let position = Math.floor(Math.random() * (2 - 0)) + 0;
               await sails.helpers.sendEmail('email-payments',{seller: seller, date: moment().format('DD-MM-YYYY'), invoice: invoice, plan: subscription.plan.name.toUpperCase(), link: links[position]}, seller.email, 'Cobro por suscripción de tu plan de 1Ecommerce', 'email-notification');

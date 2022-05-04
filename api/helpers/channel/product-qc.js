@@ -37,6 +37,7 @@ module.exports = {
       await sails.helpers.channel.linio.sign(integration.id, 'GetQcStatus', integration.seller.id, ['SkuSellerList='+JSON.stringify(sellerSkus)]);
       await sails.helpers.request(integration.channel.endpoint,'/?'+sign,'GET').then(async (resData)=>{
         resData = JSON.parse(resData);
+
         if (resData.SuccessResponse.Body.Status) {
           const status = resData.SuccessResponse.Body.Status.State;
           let resultProducts = [];
@@ -88,39 +89,7 @@ module.exports = {
         }
       });
     } catch (error) {
-      console.log(error);
       return exits.error(error.message);
-
     }
-
-    //     console.log(listProducts);
-    //     // for (const prod of listProducts) {
-    //     //   const product = await Product.findOne({id: prod.product}).populate('channels',{integration: integration.id});
-    //     //   const productChannelId = product.channels.length > 0 ? product.channels[0].id : '';
-    //     //   if (prod.status === 'rejected') {
-    //     //     if (prod.message === 'Images Missing: Automatically rejected') {
-    //     //       let imgresult = integration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.images([product], integration.id) : await sails.helpers.channel.linio.images([product], integration.id);
-    //     //       const imgxml = jsonxml(imgresult,true);
-    //     //       let imgsign = integration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integration.id, 'Image', product.seller) : await sails.helpers.channel.linio.sign(integration.id, 'Image', product.seller);
-    //     //       await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);
-    //     //     }
-    //     //     await ProductChannel.updateOne({id: productChannelId}).set({
-    //     //       reason: prod.message,
-    //     //       qc: false,
-    //     //       status: false
-    //     //     });
-    //     //   } else if(prod.status === 'approved'){
-    //     //     await ProductChannel.updateOne({id: productChannelId}).set({
-    //     //       reason: '',
-    //     //       qc: true,
-    //     //       status: true
-    //     //     });
-    //     //   }
-    //     // }
-    //   }
-    // }).catch(err =>{
-    //   console.log(err);
-    //   return exits.error(err.message);
-    // });
   }
 };
