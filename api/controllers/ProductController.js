@@ -643,6 +643,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -713,6 +714,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -791,6 +793,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -865,6 +868,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -936,6 +940,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -1009,6 +1014,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -1136,6 +1142,7 @@ module.exports = {
     .populate('channels', {integration:integrationId,channel:channelId})
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     try {
       let checkProduct = await sails.helpers.checkContentProduct(product);
@@ -1174,6 +1181,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -1261,6 +1269,7 @@ module.exports = {
     .populate('channels')
     .populate('gender')
     .populate('manufacturer')
+    .populate('mainColor')
     .populate('seller');
     const integrationId = req.body.integrationId;
     const channelId = req.body.channelId;
@@ -1960,6 +1969,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
         if (req.body.action === 'ProductCreate') {
           for (const product of resultProducts) {
@@ -2092,6 +2102,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -2221,6 +2232,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -2348,6 +2360,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -2445,6 +2458,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -2548,6 +2562,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -2726,6 +2741,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -2768,6 +2784,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -2880,6 +2897,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -3654,6 +3672,7 @@ module.exports = {
           limit: 1
         }).populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -3763,6 +3782,7 @@ module.exports = {
           limit: 1
         }).populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
@@ -3870,6 +3890,7 @@ module.exports = {
         })
         .populate('gender')
         .populate('manufacturer')
+        .populate('mainColor')
         .populate('seller');
 
         if (req.body.action === 'ProductCreate') {
