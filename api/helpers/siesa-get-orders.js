@@ -1,28 +1,26 @@
-const { exists } = require('grunt');
-const moment = require('moment');
 let soap = require('strong-soap').soap;
 
 module.exports = {
-    friendlyName: 'Get siesa orders',
-    description: 'Helper usado para obtener ordenes en Siesa',
-    inputs: {
-      data:{
-        type:'ref',
-        required:true,
-      }
+  friendlyName: 'Get siesa orders',
+  description: 'Helper usado para obtener ordenes en Siesa',
+  inputs: {
+    data:{
+      type:'ref',
+      required:true,
+    }
+  },
+  exits: {
+    success: {
+      description: 'All done.',
     },
-    exits: {
-      success: {
-        description: 'All done.',
-      },
-      error: {
-        description: 'Ocurrio un error al procesar la solicitud.',
-      },
+    error: {
+      description: 'Ocurrio un error al procesar la solicitud.',
     },
-    fn: async function (inputs, exits) {
-        let url = 'http://wscnadar.siesacloud.com:8043/wsunoee/WSUNOEE.asmx?wsdl';
-        let requestArgs={
-            'pvstrxmlParametros':
+  },
+  fn: async function (inputs, exits) {
+    let url = 'http://wscnadar.siesacloud.com:8043/wsunoee/WSUNOEE.asmx?wsdl';
+    let requestArgs={
+      'pvstrxmlParametros':
                 `<![CDATA[
                     <Consulta>
                         <NombreConexion>UnoEE_Cnadar_Real</NombreConexion>
@@ -40,46 +38,44 @@ module.exports = {
                         </Parametros>
                     </Consulta>
                 ]]>`
-        };
+    };
 
-        let options = {};
+    let options = {};
 
-        try {
-            soap.createClient(url, options, (err, client) =>{
-                let method = client['EjecutarConsultaXML'];
-                if(err){return exits.error(err);}
-      
-                method(requestArgs, async (err, result)=>{
-                  if(err){return exits.error(err);}
-                  
-                  if(result){
-                      let mapper = (order)=>{
-                          return {
-                              cia : order.cia,
-                              co : order.co,
-                              estado : order.estado,
-                              fecha : order.fecha,
-                              numDoc : order.numDoc,
-                              oc_referencia : order.oc_referencia,
-                              tipoDoc : order.tipoDoc
-                          }
-                      }
+    try {
+      soap.createClient(url, options, (err, client) =>{
+        let method = client['EjecutarConsultaXML'];
+        if(err){return exits.error(err);}
 
-                      try {
-                        return exits.success(result.EjecutarConsultaXMLResult.diffgram ? result.EjecutarConsultaXMLResult.diffgram.NewDataSet.Resultado.map(mapper) : []);
-                        
-                      } catch (error) {
-                        exits.error(error);
-                      }
-                      
-                  }
-      
-                });
-              });
-        } catch (e) {
-            exits.error(e);
-        } 
+        method(requestArgs, async (err, result)=>{
+          if(err){return exits.error(err);}
+
+          if(result){
+            let mapper = (order)=>{
+              return {
+                cia : order.cia,
+                co : order.co,
+                estado : order.estado,
+                fecha : order.fecha,
+                numDoc : order.numDoc,
+                oc_referencia : order.oc_referencia,
+                tipoDoc : order.tipoDoc
+              };
+            };
+
+            try {
+              return exits.success(result.EjecutarConsultaXMLResult.diffgram ? result.EjecutarConsultaXMLResult.diffgram.NewDataSet.Resultado.map(mapper) : []);
+
+            } catch (error) {
+              exits.error(error);
+            }
+
+          }
+
+        });
+      });
+    } catch (e) {
+      exits.error(e);
     }
-  };
-  
-  
+  }
+};

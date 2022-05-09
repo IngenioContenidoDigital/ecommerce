@@ -21,7 +21,6 @@ module.exports = {
   },
   fn: async function (inputs,exits) {
     try {
-      const jsonxml = require('jsontoxml');
       let sellerSkus = inputs.skus;
       let integration = inputs.integration;
       let listproducts = [];
@@ -67,16 +66,14 @@ module.exports = {
             const productChannelId = product.channels.length > 0 ? product.channels[0].id : '';
             if (prod.status === 'rejected') {
               if (prod.message === 'Images Missing: Automatically rejected') {
-                let imgresult = integration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.images([product], integration.id) : await sails.helpers.channel.linio.images([product], integration.id);
-                const imgxml = jsonxml(imgresult,true);
-                let imgsign = integration.channel.name === 'dafiti' ? await sails.helpers.channel.dafiti.sign(integration.id, 'Image', product.seller) : await sails.helpers.channel.linio.sign(integration.id, 'Image', product.seller);
-                await sails.helpers.request(integration.channel.endpoint,'/?'+imgsign,'POST',imgxml);
+                await sails.helpers.channel.syncImages(integration, product);
+              } else {
+                await ProductChannel.updateOne({id: productChannelId}).set({
+                  reason: prod.message,
+                  qc: false,
+                  status: false
+                });
               }
-              await ProductChannel.updateOne({id: productChannelId}).set({
-                reason: prod.message,
-                qc: false,
-                status: false
-              });
             } else if(prod.status === 'approved'){
               await ProductChannel.updateOne({id: productChannelId}).set({
                 reason: '',
