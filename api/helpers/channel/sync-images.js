@@ -25,11 +25,11 @@ module.exports = {
   friendlyName: 'Function Image Sync',
   description: 'funcion para enviar imagenes a dafiti y linio',
   inputs: {
-    product: {
+    integration: {
       type:'ref',
       required: true,
     },
-    integration: {
+    product: {
       type:'ref',
       required: true,
     },
