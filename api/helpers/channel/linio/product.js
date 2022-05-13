@@ -106,7 +106,7 @@ module.exports = {
               data.Product.Brand= product.manufacturer.linioname ? product.manufacturer.linioname : product.manufacturer.name;
               data.Product.TaxClass= product.tax.value === 19 ? 'IVA 19%' : 'IVA excluido 0%';
               data.Product.ProductData= {
-                ShortDescription: jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>'+product.descriptionShort)/*.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))*/,
+                ShortDescription: jsonxml.cdata('<ul><li>Marca:'+product.manufacturer.name+'</li><li>Referencia:'+product.reference+'</li><li>Estado: Nuevo</li><li>Color:'+product.mainColor.name+'</li><li>Nombre:'+product.name+'</li></ul><br/>')/*.replace(/(<[^>]+>|<[^>]>|<\/[^>]>)/gi,''))*/,
                 PackageHeight: product.height,
                 PackageLength: product.length,
                 PackageWidth: product.width,
