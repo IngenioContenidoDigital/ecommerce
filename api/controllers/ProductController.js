@@ -2071,7 +2071,7 @@ module.exports = {
                         });
                       }
                       if(action === 'ProductUpdate'){
-                        await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
+                        await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, reason: ''});
                       }
                       response.items.push(pro);
                     }
@@ -2204,7 +2204,7 @@ module.exports = {
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, feed: feedId});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, feed: feedId, reason: ''});
                     }
                     response.items.push(pro);
                   }
@@ -2332,7 +2332,7 @@ module.exports = {
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, reason: ''});
                     }
                     response.items.push(pro);
                   }
@@ -3753,7 +3753,7 @@ module.exports = {
                         });
                       }
                       if(action === 'ProductUpdate'){
-                        await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price: priceAdjust, feed: feedId});
+                        await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price: priceAdjust, feed: feedId, reason: ''});
                       }
                     }
                   }else{
@@ -3862,7 +3862,7 @@ module.exports = {
                       });
                     }
                     if(action === 'ProductUpdate'){
-                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, feed: feedId});
+                      await ProductChannel.updateOne({ product: pro.id, integration:integration.id }).set({ status: true, price:priceAdjust, feed: feedId, reason: ''});
                     }
                   }
                 }else{
