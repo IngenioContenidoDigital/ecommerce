@@ -30,6 +30,10 @@ module.exports = {
 
     pro.descriptionShort = pro.descriptionShort.replace(/\¿\w+\s\w+\?\s.*\s\w+\s\(\+(\d|\s)*\)\sext\.\s\d+/g,'');
     pro.descriptionShort = pro.descriptionShort.replace(/(\w+\s\w+){1}\s*\?(\s\w+\s\w+\s\w+\s){1}\(\+(\d|\s)*\)/g,'');
+    pro.descriptionShort = pro.descriptionShort.toLowerCase().replace('envio',' ');
+    pro.descriptionShort = pro.descriptionShort.toLowerCase().replace('envios',' ');
+    pro.descriptionShort = pro.descriptionShort.toLowerCase().replace('envío',' ');
+    pro.descriptionShort = pro.descriptionShort.toLowerCase().replace('licencia',' ');
 
     if(inputs.product.manufacturer){
       let brand = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() }));
