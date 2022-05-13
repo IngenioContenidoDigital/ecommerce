@@ -83,21 +83,29 @@
         pdf.innerHTML = '';
         if(!hasClass(report,'is-hidden')){addClass(report,'is-hidden');}
         if(!hasClass(notifi,'is-hidden')){addClass(notifi,'is-hidden');}
-        io.socket.post('/multipleguides',{numbers,startDate,endDate}, resData =>{
+        addClass(e.target,'is-loading');
+        if (numbers || dateRange) {
+            io.socket.post('/multipleguides',{numbers,startDate,endDate}, resData =>{
+                loading.innerHTML= '';
+                if (resData.guia) {
+                    pdf.innerHTML =
+                    `<div class="box">
+                        <p class="container has-text-centered">
+                            <embed src="data:application/pdf;base64,`+ resData.guia +`" width="100%" height="500">
+                        </p>
+                    </div>`;
+                    if(hasClass(notifi,'is-hidden')){removeClass(notifi,'is-hidden');}
+                } else {
+                    if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+                    errors.innerHTML = resData.error ? resData.error : 'Error al procesar guias';
+                }
+                removeClass(e.target, 'is-loading');
+            });
+        } else {
             loading.innerHTML= '';
-            if (resData.guia) {
-                pdf.innerHTML =
-                `<div class="box">
-                    <p class="container has-text-centered">
-                        <embed src="data:application/pdf;base64,`+ resData.guia +`" width="100%" height="500">
-                    </p>
-                </div>`;
-                if(hasClass(notifi,'is-hidden')){removeClass(notifi,'is-hidden');}
-            } else {
-                if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
-                errors.innerHTML = resData.error ? resData.error : 'Error al procesar guias';
-                console.log(resData.err ? resData.err : '');
-            }
-        });
-    });
+            if(hasClass(report,'is-hidden')){removeClass(report,'is-hidden');}
+            errors.innerHTML = 'Ingrese los números de pedidos o un intervalo de fechas';
+            removeClass(e.target,'is-loading');
+        }
+    }); 
 </script>
