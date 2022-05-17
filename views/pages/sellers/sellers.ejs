@@ -483,30 +483,35 @@
                   <td>
                     <%= integration.name %>
                   </td>
-                  <td>
-                    <div class="select is-small <%if(integration.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
-                      <select name="priceAdjustment" id="<%= integration.id %>" <%if(integration.channel.name==='iridio'){%><%="disabled"%><%}%>>
-                      <option value="0" <%if(integration && integration.priceAdjustment==0){%>selected<%}%>>+ 0%</option>
-                        <option value="0.05" <%if(integration && integration.priceAdjustment==0.05){%>selected<%}%>>+ 5%</option>
-                        <option value="0.1" <%if(integration && integration.priceAdjustment==0.1){%>selected<%}%>>+ 10%</option>
-                        <option value="0.15" <%if(integration && integration.priceAdjustment==0.15){%>selected<%}%>>+ 15%</option>
-                        <option value="0.2" <%if(integration && integration.priceAdjustment==0.2){%>selected<%}%>>+ 20%</option>
-                        <option value="0.25" <%if(integration && integration.priceAdjustment==0.25){%>selected<%}%>>+ 25%</option>
-                        <option value="0.3" <%if(integration && integration.priceAdjustment==0.3){%>selected<%}%>>+ 30%</option>
-                      </select>
-                    </div>
-                  </td>
-                  <td>
-                    <div class="select is-small <%if(integration.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
-                      <select name="priceDiscount" id="<%= integration.id %>" <%if(integration.channel.name==='iridio'){%><%="disabled"%><%}%>>
-                      <option value="0" <%if(integration && integration.priceDiscount==0){%>selected<%}%>>0%</option>
-                        <option value="0.05" <%if(integration && integration.priceDiscount==0.05){%>selected<%}%>>- 5%</option>
-                        <option value="0.1" <%if(integration && integration.priceDiscount==0.1){%>selected<%}%>>- 10%</option>
-                        <option value="0.15" <%if(integration && integration.priceDiscount==0.15){%>selected<%}%>>- 15%</option>
-                        <option value="0.2" <%if(integration && integration.priceDiscount==0.2){%>selected<%}%>>- 20%</option>
-                      </select>
-                    </div>
-                  </td>
+                  <% if(integration.channel.type === 'marketplace'){%>
+                    <td>
+                      <div class="select is-small <%if(integration.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
+                        <select name="priceAdjustment" id="<%= integration.id %>" <%if(integration.channel.name==='iridio'){%><%="disabled"%><%}%>>
+                        <option value="0" <%if(integration && integration.priceAdjustment==0){%>selected<%}%>>+ 0%</option>
+                          <option value="0.05" <%if(integration && integration.priceAdjustment==0.05){%>selected<%}%>>+ 5%</option>
+                          <option value="0.1" <%if(integration && integration.priceAdjustment==0.1){%>selected<%}%>>+ 10%</option>
+                          <option value="0.15" <%if(integration && integration.priceAdjustment==0.15){%>selected<%}%>>+ 15%</option>
+                          <option value="0.2" <%if(integration && integration.priceAdjustment==0.2){%>selected<%}%>>+ 20%</option>
+                          <option value="0.25" <%if(integration && integration.priceAdjustment==0.25){%>selected<%}%>>+ 25%</option>
+                          <option value="0.3" <%if(integration && integration.priceAdjustment==0.3){%>selected<%}%>>+ 30%</option>
+                        </select>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="select is-small <%if(integration.channel.name==='iridio'){%><%='is-hidden'%><%}%>">
+                        <select name="priceDiscount" id="<%= integration.id %>" <%if(integration.channel.name==='iridio'){%><%="disabled"%><%}%>>
+                        <option value="0" <%if(integration && integration.priceDiscount==0){%>selected<%}%>>0%</option>
+                          <option value="0.05" <%if(integration && integration.priceDiscount==0.05){%>selected<%}%>>- 5%</option>
+                          <option value="0.1" <%if(integration && integration.priceDiscount==0.1){%>selected<%}%>>- 10%</option>
+                          <option value="0.15" <%if(integration && integration.priceDiscount==0.15){%>selected<%}%>>- 15%</option>
+                          <option value="0.2" <%if(integration && integration.priceDiscount==0.2){%>selected<%}%>>- 20%</option>
+                        </select>
+                      </div>
+                    </td>
+                  <% } else { %>
+                    <td></td>
+                    <td></td>
+                  <% } %>
                   <td>
                     <a href="#" class="has-text-info" id="edit-integration"><i class="is-size-4 bx bxs-edit" integrationId="<%= integration.id %>"></i></a>
                     <%if(integration.channel.name==='mercadolibre' || integration.channel.name==='mercadolibremx'){%>
@@ -637,7 +642,7 @@
               addClass(version.parentNode,'is-hidden');
               addClass(version.parentNode.parentElement,'is-hidden');
               version.value="N/A";
-            }else if(channel ==='vtex'){
+            }else if(channel === 'vtex'){
               let version=document.querySelector('input[name="version"]');
               addClass(version,'is-hidden');
               addClass(version.parentNode,'is-hidden');
@@ -670,6 +675,44 @@
                       <label class="label">Access Token</label>
                       <div class="control has-icons-left">
                         <input class="input" type="text" name="key" placeholder="Access Token" value="${edit ? integration.key : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-key' ></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">URL Petición</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="url" placeholder="Url de Petición" required value="${edit ? integration.url : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-world'></i>
+                        </span>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="control is-left">
+                      <button type="submit" class="button is-primary is-small">${edit ? 'Actualizar Canal' : 'Guardar Canal'}</button>
+                    </div>
+                  </div>
+                </form>`
+              } else if(nameChannel === 'siesa'){
+                form = 
+                `<form method="POST" action="/integration/set/<%=seller.id%>/${channel}/${nameChannel}">
+                  <div class="container">
+                    <input class="is-hidden" name="integration" value="${edit ? integration.id : ''}"/>
+                    <div class="field">
+                      <label class="label">Nombre</label>
+                      <div class="control has-icons-left">
+                        <input class="input is-capitalized" type="text" name="name" placeholder="Nombre" required value="${edit ? integration.name : ''}"/>
+                        <span class="icon is-small is-left">
+                          <i class='bx bx-collapse' ></i>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="field">
+                      <label class="label">Método</label>
+                      <div class="control has-icons-left">
+                        <input class="input" type="text" name="key" placeholder="Método" value="${edit ? integration.key : ''}"/>
                         <span class="icon is-small is-left">
                           <i class='bx bx-key' ></i>
                         </span>

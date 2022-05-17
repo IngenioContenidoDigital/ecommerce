@@ -105,7 +105,7 @@ module.exports = {
                 const product = productVariation.product.id;
                 const ref = productVariation.product.reference;
                 const refvariation = productVariation.reference;
-                const text = msg.inclides('not found') ? `No se publico la variación ${refvariation}` : msg;
+                const text = msg.inclides('not found') ? `No se publico la variación ${refvariation}, publica de nuevo el producto.` : msg;
 
                 if(!resultErrors.some(e => e.product === product)){
                   resultErrors.push({product: product, reference: ref, message: text});
