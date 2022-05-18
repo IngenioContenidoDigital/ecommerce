@@ -2065,7 +2065,8 @@ module.exports = {
                             await ProductChannel.updateOne({id: record.id}).set({
                               price:priceAdjust,
                               socketid:sid,
-                              feed: feedId
+                              feed: feedId,
+                              reason: ''
                             });
                           }
                         });
@@ -2198,7 +2199,8 @@ module.exports = {
                           await ProductChannel.updateOne({id: record.id}).set({
                             price:priceAdjust,
                             socketid:sid,
-                            feed: feedId
+                            feed: feedId,
+                            reason: ''
                           });
                         }
                       });
@@ -2326,7 +2328,8 @@ module.exports = {
                         if(!created){
                           await ProductChannel.updateOne({id: record.id}).set({
                             price:priceAdjust,
-                            socketid:sid
+                            socketid:sid,
+                            reason: ''
                           });
                         }
                       });
@@ -2432,7 +2435,8 @@ module.exports = {
                     if(!created){
                       await ProductChannel.updateOne({id: record.id}).set({
                         channelid:result.id,
-                        price:mlprice
+                        price:mlprice,
+                        reason: ''
                       });
                     }
                   });
@@ -3747,7 +3751,8 @@ module.exports = {
                             await ProductChannel.updateOne({id: record.id}).set({
                               price:priceAdjust,
                               socketid:sid,
-                              feed: feedId
+                              feed: feedId,
+                              reason: ''
                             });
                           }
                         });
@@ -3856,7 +3861,8 @@ module.exports = {
                           await ProductChannel.updateOne({id: record.id}).set({
                             price:priceAdjust,
                             socketid:sid,
-                            feed: feedId
+                            feed: feedId,
+                            reason: ''
                           });
                         }
                       });
@@ -3969,7 +3975,8 @@ module.exports = {
                     if(!created){
                       await ProductChannel.updateOne({id: record.id}).set({
                         channelid:result.id,
-                        price:mlprice
+                        price:mlprice,
+                        reason: ''
                       });
                     }
                   });

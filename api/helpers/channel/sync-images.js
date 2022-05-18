@@ -2,7 +2,7 @@ let queue = require('queue');
 const jsonxml = require('jsontoxml');
 
 let objectQueue = queue({
-  timeout: 5000,
+  timeout: 60000,
   concurrency: 1,
   autostart: true
 });

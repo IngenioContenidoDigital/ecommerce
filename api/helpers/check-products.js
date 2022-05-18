@@ -11,6 +11,11 @@ module.exports = {
     },
   },
   fn: async (inputs, exits) => {
+    let removeWords = require( '@stdlib/string-remove-words' );
+
+    let words = ['virus', 'remedio', 'celulas', 'célula', 'cono', 'licencia', 'enfermedad', 'engystol', 'ice', 'cura',
+      'polvora', 'envio', 'gratis', 'quimicos', 'artrin', 'productos', 'zeel', 'similar', 'envío'];
+
     let pro = {};
     let gen = null;
     pro.name = inputs.product.name.toLowerCase().trim();
@@ -27,10 +32,10 @@ module.exports = {
 
     pro.description = pro.description.replace(/\¿\w+\s\w+\?\s.*\s\w+\s\(\+(\d|\s)*\)\sext\.\s\d+/g,'');
     pro.description = pro.description.replace(/(\w+\s\w+){1}\s*\?(\s\w+\s\w+\s\w+\s){1}\(\+(\d|\s)*\)/g,'');
-    pro.description = pro.description.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace('virus',' ');
-    pro.description = pro.description.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace('remedio','');
 
-    pro.descriptionShort = pro.descriptionShort.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\¿\w+\s\w+\?\s.*\s\w+\s\(\+(\d|\s)*\)\sext\.\s\d+/g,'').replace(/(\w+\s\w+){1}\s*\?(\s\w+\s\w+\s\w+\s){1}\(\+(\d|\s)*\)/g,'').replace('envio',' ').replace('envios',' ').replace('licencia',' ').replace('virus',' ').replace('remedio','');
+    pro.name = removeWords(pro.name, words, true).replace(/  +/g, ' ');
+    pro.description = removeWords(pro.description, words, true).replace(/  +/g, ' ');
+    pro.descriptionShort = removeWords(pro.descriptionShort, words, true).replace(/  +/g, ' ');
 
     if(inputs.product.manufacturer){
       let brand = (await Manufacturer.findOne({ name: inputs.product.manufacturer.toLowerCase() }));
@@ -93,7 +98,7 @@ module.exports = {
     pro.width = (inputs.product.width === undefined || inputs.product.width === null || inputs.product.width < 1) ? 15 : inputs.product.width;
     pro.height = (inputs.product.height === undefined || inputs.product.height === null || inputs.product.height < 1) ? 15 : inputs.product.height;
     pro.length = (inputs.product.length === undefined || inputs.product.length === null || inputs.product.length < 1) ? 32 : inputs.product.length;
-    pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : (inputs.seller === '60c144f4c90e3d77c4bc0e13' || inputs.seller === '5fdb7430710aa6e66628adf5' || inputs.seller === '612e67c526e3fa4772e1bde7') ? ((inputs.product.weight/1000) < 1 ? 1 : (inputs.product.weight/1000)) : inputs.product.weight;
+    pro.weight = (inputs.product.weight === undefined || inputs.product.weight === null || inputs.product.weight === 0) ? 1 : (inputs.seller === '60c144f4c90e3d77c4bc0e13' || inputs.seller === '5fdb7430710aa6e66628adf5' || inputs.seller === '612e67c526e3fa4772e1bde7') ? ((inputs.product.weight/1000) < 1 ? 1 : Math.round(inputs.product.weight/1000)) : inputs.product.weight;
 
     return exits.success(pro);
   }

@@ -149,13 +149,7 @@ module.exports.cron = {
                   let pro = await sails.helpers.checkProducts(product, seller.id);
                   let variations = product.productVariations;
                   if(typeof(pro) === 'object'){
-                    delete pro.mainCategory;
-                    delete pro.categories;
-                    const updatedProduct = await Product.updateOne({id: prod.id}).set(pro);
-                    if (updatedProduct) {
-                      await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
-                      await sails.helpers.marketplaceswebhooks.images(images, prod.id, seller).tolerate(() =>{return;});
-                    }
+                    await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
                   }
                 } else {
                   await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
