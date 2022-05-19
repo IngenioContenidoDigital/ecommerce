@@ -21,7 +21,7 @@ module.exports = {
     if(!req.session.menu || (req.session.menu && !req.session.menu.updated) || (req.session.menu && req.session.menu.updated && (now-req.session.menu.updated)>=259200000)){
       req.session.menu = await sails.helpers.callMenu(req.hostname);
     }
-    
+
     if(req.hostname==='1ecommerce.app'){
       return res.redirect('/login');
     }else if(req.hostname==='iridio.co' || req.hostname==='demo.1ecommerce.app' || req.hostname==='localhost'){
@@ -221,7 +221,9 @@ module.exports = {
       const retFte = seller.retFte && seller.retFte > 0 ? seller.retFte/100 : 0.04;
       for (const order of orders) {
         let items = await OrderItem.find({order: order.id, createdAt: { '>': dateStart, '<': dateEnd }}).populate('currentstatus');
-        let commissionChannel = await CommissionChannel.findOne({seller: sellerId, channel: order.integration.channel });
+        let chann = order.integration ? order.integration.channel : '6025743dac8f54d6922680fb';
+        let commissionChannel = await CommissionChannel.findOne({seller: sellerId, channel: chann });
+
         for (const item of items) {
           const salesCommission = item.commission || 0;
           const commissionFee = item.price * (salesCommission/100);
@@ -232,7 +234,7 @@ module.exports = {
           const commissioniva = commissionFee * 0.19;
           const retefte = (commissionFee) * retFte;
           let product = await Product.findOne({id: item.product}).populate('mainColor').populate('seller');
-          let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');        
+          let productVariation = await ProductVariation.findOne({id: item.productvariation}).populate('variation');
           item.id = order.id;
           item.seller = product.seller.name;
           item.dni = product.seller.dni;
@@ -789,7 +791,7 @@ module.exports = {
       .populate('variations',{sort: 'createdAt ASC'})
       .populate('images')
       .populate('seller');
-      
+
     if(req.session.viewed===undefined){
       req.session.viewed=[];
     }else{

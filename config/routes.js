@@ -260,6 +260,7 @@ module.exports.routes = {
   'POST /removemultiple/products' : {controller:'ProductController',action:'removeproducts'},
   'POST /updatemultiple/products' : {controller:'ProductController',action:'updatemultipleproduct'},
   'POST /publish/products' : {controller:'ProductController',action:'publishproducts'},
+  'POST /updatecolor/products' : {controller:'ProductController',action:'colorproducts'},
   'POST /walmart/add' : {controller:'ProductController',action:'walmartadd'},
   'GET /token' : {action:'security/grant-csrf-token'},
   'PUT /menu' : {controller:'UserController',action:'menuvisible'},

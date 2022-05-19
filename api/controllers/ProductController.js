@@ -54,6 +54,7 @@ module.exports = {
     let integrations = filter.seller ? await Integrations.find({seller: filter.seller}).populate('channel') : [];
     let columnActive = (req.hostname === 'localhost' || req.hostname === '1ecommerce.app') ? false : true;
     const root = await Category.findOne({ name: 'inicio' });
+    const colors = await Color.find();
     let totalproducts = await Product.count(filter);
     let integrationCms = integrations.filter(inte => inte.channel.type === 'marketplace');
     if (integrationCms.length > 0) {
@@ -73,6 +74,7 @@ module.exports = {
       integrations: integrationCms,
       columnActive,
       root,
+      colors,
       totalproducts: totalproductsNotPublic.length
     });
   },
@@ -3991,6 +3993,20 @@ module.exports = {
         }
       }
 
+      return res.send({error: null, seller});
+    } catch (err) {
+      return res.send({error: err.message, seller});
+    }
+  },
+  colorproducts: async (req, res) => {
+    const productsSelected = req.body.productsSelected;
+    try {
+      let seller = req.body.seller;
+      for (const id of productsSelected) {
+        await Product.updateOne({id: id}).set({
+          mainColor: req.body.color
+        });
+      }
       return res.send({error: null, seller});
     } catch (err) {
       return res.send({error: err.message, seller});

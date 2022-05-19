@@ -53,7 +53,7 @@
                 </button>
               </td>
               <td>
-                <button id="generatePdf" class="button is-rounded is-small is-danger" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                <button id="generatePdf" class="button is-rounded is-small is-danger" monthavailable="<%= element.available %>" monthdate="<%= element.month %>"  <%if(element.availableOptions){%>disabled<%}%>>
                   <span class="icon is-small">
                     <i class='bx bxs-file-pdf bx-sm'></i>
                   </span>
@@ -61,7 +61,7 @@
                 </button>
               </td>
               <td>
-                <button id="generateReport" class="button is-rounded is-small is-success" monthavailable="<%= element.available %>" <%if(element.availableOptions){%>disabled<%}%>>
+                <button id="generateReport" class="button is-rounded is-small is-success" monthavailable="<%= element.available %>" monthdate="<%= element.month %>" <%if(element.availableOptions){%>disabled<%}%>>
                   <span class="icon is-small">
                     <i class='bx bxs-file-doc bx-sm'></i>
                   </span>
@@ -91,11 +91,12 @@
     if (!this.disabled) {
       let name = '<%- seller.name %>';
       let month = this.getAttribute('monthavailable');
+      let monthdate = this.getAttribute('monthdate');
       let loadingBlock = document.querySelector('#loading-block');
       if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
       io.socket.post('/generatereport', {seller, month}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
-          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Reporte ${name}.xlsx`);
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Reporte ${name} ${monthdate}.xlsx`);
           addClass(loadingBlock,'is-hidden');
         }
       });
@@ -106,11 +107,12 @@
     if (!this.disabled) {
       let name = '<%- seller.name %>';
       let month = this.getAttribute('monthavailable');
+      let monthdate = this.getAttribute('monthdate');
       let loadingBlock = document.querySelector('#loading-block');
       if(hasClass(loadingBlock,'is-hidden')){removeClass(loadingBlock,'is-hidden');}
       io.socket.post('/reportseller', {seller, month}, (resData, jwRes) =>{
         if(jwRes.statusCode == 200) {
-          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Factura ${name}.pdf`);
+          saveAs(new Blob([resData],{type:"application/octet-stream"}), `Factura ${name} ${monthdate}.pdf`);
           addClass(loadingBlock,'is-hidden');
         }
       });

@@ -13,7 +13,7 @@ module.exports = {
   fn: async (inputs, exits) => {
     let removeWords = require( '@stdlib/string-remove-words' );
 
-    let words = ['virus', 'remedio', 'celulas', 'célula', 'cono', 'licencia', 'enfermedad', 'engystol', 'ice', 'cura',
+    let words = ['gama', 'usado', 'usados', 'células', 'pólvora', 'narcótico', '-virus-', 'virus', 'remedio', 'celulas', 'célula', 'cono', 'licencia', 'enfermedad', 'engystol', 'ice', 'cura',
       'polvora', 'envio', 'gratis', 'quimicos', 'artrin', 'productos', 'zeel', 'similar', 'envío'];
 
     let pro = {};

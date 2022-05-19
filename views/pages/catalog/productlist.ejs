@@ -93,7 +93,7 @@
           </tr>
           </thead>
           <tbody>
-            
+
           </tbody>
       </table>
   </div>
@@ -219,6 +219,31 @@
     <button class="modal-close is-large" aria-label="close"></button>
   </div>
 
+  <div id="modal-color" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+      <section class="modal-card-body">
+        <div class="box">
+          <div class="control">
+            <label class="label is-inline is-size-7" for="mainColor">Color Principal</label>
+            <div class="select is-fullwidth is-size-7">
+              <select class="is-capitalized" name="mainColor">
+                <option value=""> -- Color Principal --</option>
+                <% colors.forEach(function(color){ %>
+                  <option value="<%= color.id %>"><%= color.name %></option>
+                <%})%>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="control buttons is-right">
+          <button id="updateColor" class="button is-primary is-small"><i class="bx bx-cloud-upload"></i>&nbsp;Editar Color</button>
+        </div>
+      </section>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
+
   <script>
     let cont = 0;
     let productsSelected = [];
@@ -236,13 +261,13 @@
         info: "Mostrando {start} a {end} de {rows} registros",
       }
     });
-    
+
     live('.dropdown', 'click', function(event){
       let dropdown = document.querySelector('#dropdownFilter');
       dropdown.classList.toggle('is-active');
     });
 
-    live('.state', 'click', function(){ 
+    live('.state', 'click', function(){
         var elm = this;
         var id = this.getAttribute('product');
         var seller = this.getAttribute('seller');
@@ -298,7 +323,7 @@
         }
       });
     });
-    
+
     live('.product-image','click',(e)=>{
       let id = e.target.getAttribute('data-product');
       io.socket.get('/getcover/'+id,resData=>{
@@ -311,7 +336,7 @@
         }
       });
     });
-    
+
     live('.is-checkradio','click',e=>{
       let element = e.target;
       const selectall = e.target.id;
@@ -367,6 +392,11 @@
             </button>
           </p>
           <p class="control">
+            <button id="editColor" class="button is-small">
+              <span>Editar Color</span>
+            </button>
+          </p>
+          <p class="control">
             <button id="deleteProducts" class="button is-small">
               Eliminar Productos
             </button>
@@ -388,6 +418,12 @@
     live('#editCategory','click',e=> {
       childTree(document.querySelectorAll('a.panel-block'));
       let modal = document.querySelector('#modal-address');
+      addClass(modal,'is-active');
+    });
+
+    live('#editColor','click',e=> {
+      childTree(document.querySelectorAll('a.panel-block'));
+      let modal = document.querySelector('#modal-color');
       addClass(modal,'is-active');
     });
 
@@ -501,7 +537,32 @@
         };
       });
     });
-  
+
+    live('#updateColor','click', e =>{
+      e.preventDefault();
+      let color = document.querySelector('select[name="mainColor"]').value
+      let modal = document.querySelector('#modal-color');
+      let seller = '<%- seller %>';
+      addClass(e.target,'is-loading');
+
+      io.socket.post('/updatecolor/products',{color, seller, productsSelected}, resData => {
+        removeClass(e.target,'is-loading');
+        removeClass(modal,'is-active');
+        if(resData.error){
+          const el = document.getElementById('notificationmessage');
+          el.textContent = resData.error;
+          addClass(el,'is-danger');
+          removeClass(el,'is-hidden');
+          setTimeout(function() {
+            addClass(el,'is-hidden');
+            removeClass(el,'is-danger');
+          }, 10000);
+        } else {
+          window.location.href='/products/'+resData.seller;
+        };
+      });
+    });
+
     live('.filters','click', e =>{
       e.preventDefault();
       let filter = e.target.getAttribute('filter');
@@ -612,7 +673,7 @@
 
     let pages = parseInt(<%= pages; %>);
     <% if(seller!==undefined && seller!==null){%>let seller = '<%= seller%>';<%}else{%>let seller = null;<%} %>;
-    
+
     let catalogQuery = (page, filter) => {
       if(page>pages){
         return;
@@ -671,7 +732,7 @@
         });
       }
     });
-    
+
     if (window.location.search.includes('result=errors')) {
       let liContent = document.querySelector('#selectContent');
       const filters = document.querySelectorAll('.filters');

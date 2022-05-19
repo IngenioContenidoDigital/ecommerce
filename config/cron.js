@@ -123,39 +123,38 @@ module.exports.cron = {
   //   timezone: 'America/Bogota'
   // },
   stockProducts:{
-    schedule: '01 05 */7 * * *',
+    schedule: '01 05 */12 * * *',
     onTick: async () =>{
       console.log('Iniciando Sincronizacion de Stock');
       try {
         const sellers = await Seller.find({active: true});
         for (const seller of sellers) {
-          const products = await Product.find({seller: seller.id});
+          const products = await Product.find({seller: seller.id, delete: false});
           let channels = await Channel.find({type: 'cms', name: ['woocommerce','shopify','vtex','magento']});
           channels = channels.map(chann => chann.id);
           const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
           if (integration) {
             for(const prod of products){
-              if (prod.delete === false) {
-                let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                  integration.channel.name,
-                  integration.key,
-                  integration.secret,
-                  integration.url,
-                  integration.version,
-                  'PRODUCTID',
-                  prod.externalId
-                ).catch((e) => console.log(e));
-                if (product) {
-                  let pro = await sails.helpers.checkProducts(product, seller.id);
-                  let variations = product.productVariations;
-                  if(typeof(pro) === 'object'){
-                    await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
-                  }
-                } else {
-                  await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
+              let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+                integration.channel.name,
+                integration.key,
+                integration.secret,
+                integration.url,
+                integration.version,
+                'PRODUCTID',
+                prod.externalId
+              ).catch((e) => console.log(e));
+
+              if (product) {
+                let pro = await sails.helpers.checkProducts(product, seller.id);
+                let variations = product.productVariations;
+                if(typeof(pro) === 'object'){
+                  await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
                 }
-                await sails.helpers.channel.channelSync(prod);
+              } else {
+                await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
               }
+              await sails.helpers.channel.channelSync(prod);
             }
           }
         }
@@ -173,15 +172,13 @@ module.exports.cron = {
       try {
         const sellers = await Seller.find({active: true});
         for (const seller of sellers) {
-          const products = await Product.find({seller: seller.id});
+          const products = await Product.find({seller: seller.id, delete: false});
           let channels = await Channel.find({type: 'cms', name: 'prestashop'});
           channels = channels.map(chann => chann.id);
           const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
           if (integration) {
             for(const prod of products){
-              if (prod.delete === false) {
-                await sails.helpers.functionProductSync(prod.externalId.split('-')[0], integration.key);
-              }
+              await sails.helpers.functionProductSync(prod.externalId.split('-')[0], integration.key);
             }
           }
         }
@@ -375,7 +372,7 @@ module.exports.cron = {
     timezone: 'America/Bogota'
   },
   validateQcProducts: {
-    schedule: '01 05 */12 * * *',
+    schedule: '01 05 */24 * * *',
     onTick: async () => {
       console.log('Iniciando validacion qc para los productos');
       try {
@@ -387,7 +384,7 @@ module.exports.cron = {
             for (const integration of integrations) {
               const skus = [];
               let pageSize = 100;
-              let products = await Product.find({seller: integration.seller.id})
+              let products = await Product.find({seller: integration.seller.id, delete: false})
               .populate('channels',{
                 where:{
                   channel: integration.channel.id,
@@ -415,8 +412,7 @@ module.exports.cron = {
           }
         }
       } catch (error) {
-        console.log(error.message);
-      }
+        console.log(`Se produjo un error. ${error.message}`);      }
     },
     timezone: 'America/Bogota'
   }
