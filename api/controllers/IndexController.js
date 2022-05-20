@@ -491,12 +491,12 @@ module.exports = {
     }
   },
   showreport: async function(req, res){
-    req.setTimeout(240000);
     let rights = await sails.helpers.checkPermissions(req.session.user.profile);
     if(rights.name!=='superadmin' && !_.contains(rights.permissions,'report')){
       throw 'forbidden';
     }
     moment.locale('es');
+    req.setTimeout(1200000);
     const seller = req.param('seller');
     const month = req.param('month');
     let date = moment(month, 'MMMM YYYY').subtract(1, 'months').locale('es').format('MMMM YYYY');
