@@ -24,6 +24,8 @@ const constants = {
   MAGENTO_CHANNEL : sails.config.custom.MAGENTO_CHANNEL,
   MERCADOLIBRE_PAGESIZE : sails.config.custom.MERCADOLIBRE_PAGESIZE,
   MERCADOLIBRE_CHANNEL : sails.config.custom.MERCADOLIBRE_CHANNEL,
+  SIESA_PAGESIZE: sails.config.custom.SIESA_PAGESIZE,
+  SIESA_CHANNEL: sails.config.custom.SIESA_CHANNEL,
   TIMEOUT_PRODUCT_TASK: 4000000,
   TIMEOUT_IMAGE_TASK: 8000000,
 };
@@ -1389,7 +1391,8 @@ module.exports = {
         req.body.channel === constants.VTEX_CHANNEL ? constants.VTEX_PAGESIZE :
         req.body.channel === constants.PRESTASHOP_CHANNEL ? constants.PRESTASHOP_PAGESIZE :
         req.body.channel === constants.MAGENTO_CHANNEL ? constants.MAGENTO_PAGESIZE :
-        req.body.channel === constants.MERCADOLIBRE_CHANNEL ? constants.MERCADOLIBRE_PAGESIZE : 0;
+        req.body.channel === constants.MERCADOLIBRE_CHANNEL ? constants.MERCADOLIBRE_PAGESIZE :
+        req.body.channel === constants.SIESA_CHANNEL ? constants.SIESA_PAGESIZE : 0;
       let next;
 
       switch (importType) {

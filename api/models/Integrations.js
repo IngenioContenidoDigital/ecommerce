@@ -23,7 +23,7 @@ module.exports = {
     },
     key:{
       type:'string',
-      required:true
+      required:false
     },
     secret:{
       type:'string',
