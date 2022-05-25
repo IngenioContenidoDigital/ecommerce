@@ -6,6 +6,7 @@ let vtex = require('../graphql/vtex');
 let prestashop = require('../graphql/prestashop');
 let magento = require('../graphql/magento');
 let mercadolibre = require('../graphql/mercadolibre');
+let siesa = require('../graphql/siesa');
 
 let signRequest = (data, query) => {
   let rootQuery;
@@ -67,6 +68,15 @@ let signRequest = (data, query) => {
         token: jwt.sign({
           apiKey: data.pk,
           password: data.sk
+        }, 'secret'),
+        query: rootQuery
+      };
+    case 'siesa':
+      rootQuery = siesa[query];
+      return {
+        token: jwt.sign({
+          url: data.apiUrl,
+          apiKey: data.pk
         }, 'secret'),
         query: rootQuery
       };

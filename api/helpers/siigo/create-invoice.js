@@ -22,7 +22,7 @@ module.exports = {
   fn: async function (inputs, exits) {
     let axios = require('axios');
     let moment = require('moment');
-    let dni = inputs.dniSeller;
+    let seller = await Seller.findOne({dni: inputs.dniSeller});
     let invoice = inputs.invoice;
     try {
       let accessToken = await sails.helpers.siigo.init();
@@ -33,10 +33,13 @@ module.exports = {
         },
         'date': moment().format('YYYY-MM-DD'),
         'customer': {
-          'identification': dni,
+          'person_type': 'Company',
+          'id_type': '31',
+          'identification': seller.dni,
           'branch_office': 0
         },
         'seller': 1150,
+        'stamp': { 'send': true },
         'observations': invoice.observations,
         'items': [
           {
