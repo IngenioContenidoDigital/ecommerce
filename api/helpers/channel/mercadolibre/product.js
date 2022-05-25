@@ -120,21 +120,19 @@ module.exports = {
             'available_quantity': pvstock < 0 ? 0 : pvstock,
             'price':parseInt(price), //Crear función para validar precio específico de la variación
             'attributes': [
-              { 'id':'SELLER_SKU', 'value_name':variation.id },
-              { 'id': 'GTIN', 'value_name': variation.ean13 }
+              { 'id':'SELLER_SKU', 'value_name':variation.id }
             ],
             'picture_ids':vimages
           };
           if (promotions && promotions.length > 0) {
             delete v.price;
           }
-          if (!variation.ean13 || variation.ean13 === '0') {
-            delete v.attributes[1];
+          if (variation.ean13 && variation.ean13 !== '0') {
+            v.attributes.push({'id': 'GTIN', 'value_name': variation.ean13 });
           }
           stock+=parseInt(pvstock);
           variations.push(v);
         }
-
         let brand = null;
         switch(product.manufacturer.name){
           case 'Rosé Pistol':
