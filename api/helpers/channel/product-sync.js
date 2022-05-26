@@ -41,7 +41,6 @@ module.exports = {
           qc:false,
           reason: ''
         });
-        await sails.helpers.channel.syncImages(integration, product);
       } catch (error) {
         return exits.error(error.message);
       }

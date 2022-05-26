@@ -1371,7 +1371,6 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    req.setTimeout(1200000);
     let seller = req.body.seller ? req.body.seller : req.session.user.seller;
     let integrations = await Integrations.find({ seller: seller });
     let cantProducts = await Product.count({ seller: seller, delete: false });
@@ -1961,7 +1960,7 @@ module.exports = {
     let products = [];
     let action = '';
     let body={Request:[]};
-    const pageSize = req.body.action === 'ProductQcStatus' ? 100 :  req.body.action === 'ProductCreate' ? 4000 : 1500;
+    const pageSize = req.body.action === 'ProductQcStatus' ? 100 :  req.body.action === 'ProductCreate' ? 2000 : 1000;
     try {
       if (channel === 'dafiti') {
         const intgrationId = integration.id;
@@ -3080,7 +3079,6 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    req.setTimeout(1200000);
     let seller = null;
     let page = req.body.page;
     let lastPage;
@@ -3260,7 +3258,6 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-    req.setTimeout(1200000);
     let seller = null;
     let page = req.body.page;
     let pageSize = req.body.pageSize;
