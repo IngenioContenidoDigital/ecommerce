@@ -84,6 +84,7 @@ module.exports = {
             promotions = await sails.helpers.channel.mercadolibre.request(`seller-promotions/items/${pchannel.channelid}`,integration.channel.endpoint,integration.secret);
           }
         }
+
         for(let variation of productvariations){
           pvstock = (variation.quantity-product.seller.safestock);
           //Se usa para llevar el precio con descuento debido a que el recurso promo no está disponible para colombia Líneas 163 a 182
@@ -124,9 +125,9 @@ module.exports = {
             ],
             'picture_ids':vimages
           };
-          if (promotions && promotions.length > 0) {
-            delete v.price;
-          }
+          // if (promotions && promotions.length > 0) {
+          //   delete v.price;
+          // }
           if (variation.ean13 && variation.ean13 !== '0') {
             v.attributes.push({'id': 'GTIN', 'value_name': variation.ean13 });
           }
@@ -181,7 +182,7 @@ module.exports = {
             },
             {
               'id':'GENDER',
-              'value_name':product.gender.name
+              'value_name':product.gender.name === 'femenino' ? 'mujer' : product.gender.name === 'masculino' ? 'hombre' : product.gender.name
             },
             {
               'id':'COLOR',
