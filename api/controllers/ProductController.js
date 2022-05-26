@@ -1371,6 +1371,7 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
+    req.setTimeout(1200000);
     let seller = req.body.seller ? req.body.seller : req.session.user.seller;
     let integrations = await Integrations.find({ seller: seller });
     let cantProducts = await Product.count({ seller: seller, delete: false });
@@ -3079,6 +3080,7 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
+    req.setTimeout(1200000);
     let seller = null;
     let page = req.body.page;
     let lastPage;
@@ -3258,7 +3260,7 @@ module.exports = {
     if (rights.name !== 'superadmin' && !_.contains(rights.permissions, 'createproduct')) {
       throw 'forbidden';
     }
-
+    req.setTimeout(1200000);
     let seller = null;
     let page = req.body.page;
     let pageSize = req.body.pageSize;
