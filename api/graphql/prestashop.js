@@ -62,6 +62,7 @@ module.exports = {
           talla
           price
           skuId
+          ean13
         }
         discount{
           name
@@ -124,7 +125,7 @@ module.exports = {
   ORDERID :
   `query PrestashopOrderIdQuery($id: String) {
     PrestashopOrderId(orderId: $id) {
-      channelref, 
+      channelref,
       channel,
       totalShipping,
       paymentMethod,
