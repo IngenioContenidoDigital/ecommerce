@@ -3378,7 +3378,7 @@ module.exports = {
                           price: parseFloat(vr.price),
                           variation: variation.id,
                           quantity: vr.quantity ? vr.quantity : 0,
-                          ean13: vr.ean13 ? vr.ean13.toString() : ''
+                          ean13: vr.ean13 && vr.ean13 != '0' ? vr.ean13.toString() : pv.ean13
                         });
                       }
 
