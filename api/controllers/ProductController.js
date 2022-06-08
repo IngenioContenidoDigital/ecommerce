@@ -3360,6 +3360,7 @@ module.exports = {
                       let pvs = await ProductVariation.find({ product: pro.id,supplierreference: pro.reference}).populate('variation');
                       let pv = pvs.find(pv=> pv.variation.name == variation.name);
                       if (!pv) {
+                        let resultPrice = vr.price ? parseFloat(vr.price) : 0;
                         productVariation = await ProductVariation.create({
                           product: pro.id,
                           variation: variation.id,
@@ -3368,14 +3369,15 @@ module.exports = {
                           ean13: vr.ean13 ? vr.ean13.toString() : '',
                           upc: vr.upc ? vr.upc : 0,
                           skuId: vr.skuId ? vr.skuId : '',
-                          price: vr.price ? parseFloat(vr.price) : 0,
+                          price: seller === '5f5186bc159f97f5df6b0bc7' ? resultPrice + (resultPrice*0.19) : resultPrice,
                           quantity: vr.quantity ? vr.quantity : 0,
                           seller: pro.seller
                         }).fetch();
                       } else {
+                        let resultPrice = seller === '5f5186bc159f97f5df6b0bc7' ? parseFloat(vr.price) + (parseFloat(vr.price)*0.19) : parseFloat(vr.price);
                         productVariation = await ProductVariation.updateOne({ id: pv.id }).set({
                           skuId: vr.skuId ? vr.skuId : '',
-                          price: parseFloat(vr.price),
+                          price: resultPrice,
                           variation: variation.id,
                           quantity: vr.quantity ? vr.quantity : 0,
                           ean13: vr.ean13 && vr.ean13 != '0' ? vr.ean13.toString() : pv.ean13
