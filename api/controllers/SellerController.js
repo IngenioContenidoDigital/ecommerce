@@ -436,7 +436,7 @@ module.exports = {
           if(getProductUpdates && !int.product_creation_webhookId){
             let product_created = {};
             product_created.name = "1Ecommerce Product Creation Sync v2";
-            product_created.delivery_url = `https://import.1ecommerce.app/api/created_product/woocommerce/${record.key}/true`
+            product_created.delivery_url = sails.config.custom.IMPORT_MICROSERVICE+`/api/created_product/woocommerce/${record.key}/true`
             product_created.status = "active",
             product_created.topic = "product.created";
             product_created.version  = req.body.version
@@ -477,7 +477,7 @@ module.exports = {
             let order_updated = {};
           
             order_updated.name = "1Ecommerce Order updated Sync v2";
-            order_updated.delivery_url = `https://import.1ecommerce.app/api/updated_order/woocommerce/${record.key}`;
+            order_updated.delivery_url = sails.config.custom.IMPORT_MICROSERVICE+`/api/updated_order/woocommerce/${record.key}`;
             order_updated.status = "active",
             order_updated.topic = "order.updated";
             order_updated.version  = req.body.version 
@@ -506,7 +506,7 @@ module.exports = {
           if (getProductUpdates && !record.product_creation_webhookId) {
             let webhookProductCreate = {
               topic: 'products/create',
-              address: `https://import.1ecommerce.app/api/shopify/createproduct/${record.key}/true`,
+              address: sails.config.custom.IMPORT_MICROSERVICE+`/api/shopify/createproduct/${record.key}/true`,
               format: 'json'
             };
             let webhookProductUpdate = {
@@ -537,7 +537,7 @@ module.exports = {
           if(getOrderUpdates && !record.order_updated_webhookId){
             let orderUpdated = {
               topic: 'orders/create',
-              address: `https://import.1ecommerce.app/api/shopify/createorder/${record.key}`,
+              address: sails.config.custom.IMPORT_MICROSERVICE+`/api/shopify/createorder/${record.key}`,
               format: 'json'
             };
             let orderUpdatedResponse = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', orderUpdated);
@@ -558,7 +558,7 @@ module.exports = {
         case 'vtex' :
           if(getOrderUpdates && !record.order_updated_webhookId){
             let orderUpdatedVtex = {
-              url: `https://import.1ecommerce.app/api/vtex/orders/${record.key}`
+              url: sails.config.custom.IMPORT_MICROSERVICE+`/api/vtex/orders/${record.key}`
             };
             let orderUpdatedResponseVtex = await sails.helpers.webhooks.addWebhook(nameChannel, record.key, record.secret, record.url, record.version, 'ADD_WEBHOOK', orderUpdatedVtex);
             if(orderUpdatedResponseVtex){
