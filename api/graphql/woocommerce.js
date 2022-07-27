@@ -1,14 +1,14 @@
 module.exports = {
-  PAGINATION :
-    `query WooCommercePaginationQuery($pagination: PaginationInput) {
+    PAGINATION:
+        `query WooCommercePaginationQuery($pagination: PaginationInput) {
         WooCommercePagination(listing: { pagination: $pagination}) {
         totalRecords
         pagesCount
       }
     }`,
 
-  CATALOG :
-  `query WooCommerceProductListQuery($pagination: PaginationInput) {
+    CATALOG:
+        `query WooCommerceProductListQuery($pagination: PaginationInput) {
         WooCommerceProduct(listing: { pagination: $pagination}) {
             totalRecords
             pagesCount
@@ -33,8 +33,8 @@ module.exports = {
         }
     }`,
 
-  IMAGES :
-  `query WoocommerceProductImageListQuery($pagination: PaginationInput) {
+    IMAGES:
+        `query WoocommerceProductImageListQuery($pagination: PaginationInput) {
         WoocommerceProductImage(listing: { pagination: $pagination}) {
             totalRecords
             pagesCount
@@ -48,8 +48,8 @@ module.exports = {
         }
     }`,
 
-  VARIATIONS :
-    `query WoocommerceProductVariationListQuery($pagination: PaginationInput) {
+    VARIATIONS:
+        `query WoocommerceProductVariationListQuery($pagination: PaginationInput) {
         WoocommerceProductVariation(listing: { pagination: $pagination}) {
             totalRecords
             pagesCount
@@ -75,10 +75,11 @@ module.exports = {
         }
     }`,
 
-  PRODUCTID :
-`query WooCommerceProductIdQuery($id: String) {
-    WooCommerceProductId(productId: $id) {
-            product{
+    PRODUCTID:
+        `query WoocommerceProductIdQuery($id: String) {
+            WoocommerceProductId(productId: $id) {
+            data{
+              product{
                 name
                 simple
                 externalId
@@ -86,9 +87,7 @@ module.exports = {
                 reference
                 descriptionShort
                 active
-                manufacturer
-                color
-                quantity
+                manufacturer     
                 tax{
                     name
                     rate
@@ -96,33 +95,37 @@ module.exports = {
                 width
                 weight
                 height
-                length
-                images{
-                    file
-                    src
+                length        
+            }
+             productImages{
+                images {
+                  file
+                  src
                 }
-                variations{
-                    quantity
-                    reference
-                    talla
-                    price
-                    color
-                    size
-                    weight
-                    discount{
+              }
+              productVariations{
+                variations {
+                  price
+                  talla
+                  quantity
+                  reference
+                  ean13
+                  skuId
+                }
+                discount{
                         name
                         from
                         to
                         type
                         value
                     }
-                }
-            }
+              }
+            } 
         }
     }`,
 
-  ORDERID :
-    `query WoocommerceOrderIdQuery($id: String) {
+    ORDERID:
+        `query WoocommerceOrderIdQuery($id: String) {
         WooCommerceOrderId(orderId: $id) {
             channelref,
             channel,
@@ -157,7 +160,7 @@ module.exports = {
             }
         }
     }`,
-  ADD_WEBHOOK :
+    ADD_WEBHOOK:
         `mutation addWebHook ($webhook :WebHookInputType){
                 createWoocommerceWebHook(input:$webhook){
                     id
@@ -169,7 +172,7 @@ module.exports = {
             }
         `,
 
-  UPDATE_WEBHOOK :
+    UPDATE_WEBHOOK:
         `mutation updateWebHook ($webhook :WebHookInputType, $id:ID){
                 updateWoocommerceWebHook(input:$webhook, webhookId:$id){
                     name
@@ -180,8 +183,8 @@ module.exports = {
         }
     `,
 
-  UPDATE_VARIATION :
-    `mutation updateVariation($data: UpdateVariationInputType, $productId: ID, $variationId: ID){
+    UPDATE_VARIATION:
+        `mutation updateVariation($data: UpdateVariationInputType, $productId: ID, $variationId: ID){
         updateVariationWoocommerce(productId: $productId, variationId: $variationId, input: $data){
             name
             externalId
