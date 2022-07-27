@@ -24,31 +24,31 @@ module.exports.cron = {
       console.log('Iniciando Rastreo de Pedidos');
       let moment = require('moment');
       let statesIds = [];
-      let packed= await OrderState.find({
-        where:{name:['empacado','enviado','pendiente']},
-        select:['id']
+      let packed = await OrderState.find({
+        where: { name: ['empacado', 'enviado', 'pendiente'] },
+        select: ['id']
       });
-      for(let s of packed){if(!statesIds.includes(s.id)){statesIds.push(s.id);}}
+      for (let s of packed) { if (!statesIds.includes(s.id)) { statesIds.push(s.id); } }
       let orders = await Order.find({
-        where:{currentstatus:statesIds,channel:['direct','mercadolibre'],tracking:{'!=':''}},
-        select:['id','tracking','seller','channel', 'transport', 'shippingMeli', 'receiverId', 'modeMeli']
+        where: { currentstatus: statesIds, channel: ['direct', 'mercadolibre'], tracking: { '!=': '' } },
+        select: ['id', 'tracking', 'seller', 'channel', 'transport', 'shippingMeli', 'receiverId', 'modeMeli']
       }).populate('currentstatus');
-      for(let order of orders){
+      for (let order of orders) {
         if (order.channel === 'direct' || (order.channel === 'mercadolibre' && order.transport === 'coordinadora')) {
           let result = await sails.helpers.carrier.coordinadora.tracking(order.tracking);
-          if(result){
-            let stateupdated = parseInt(moment(result.estado.fecha+' '+result.estado.hora).valueOf());
+          if (result) {
+            let stateupdated = parseInt(moment(result.estado.fecha + ' ' + result.estado.hora).valueOf());
             let newstatus = await sails.helpers.orderState(result.estado.codigo);
             await sails.helpers.notification(order, newstatus);
-            if(newstatus!==order.currentstatus.id){
-              await Order.updateOne({id:order.id}).set({currentstatus:newstatus,updatedAt:stateupdated});
-              let oitems = await OrderItem.find({order:order.id});
-              for(let it of oitems){
-                await OrderItem.updateOne({id: it.id}).set({currentstatus: newstatus});
+            if (newstatus !== order.currentstatus.id) {
+              await Order.updateOne({ id: order.id }).set({ currentstatus: newstatus, updatedAt: stateupdated });
+              let oitems = await OrderItem.find({ order: order.id });
+              for (let it of oitems) {
+                await OrderItem.updateOne({ id: it.id }).set({ currentstatus: newstatus });
               }
               await OrderHistory.create({
-                order:order.id,
-                state:newstatus
+                order: order.id,
+                state: newstatus
               });
               if (order.modeMeli === 'custom') {
                 const payment = {
@@ -122,20 +122,28 @@ module.exports.cron = {
   //   },
   //   timezone: 'America/Bogota'
   // },
-  stockProducts:{
+
+  stockProducts: {
     schedule: '01 05 */12 * * *',
-    onTick: async () =>{
+    //schedule: '*/20 * * * * *',
+    onTick: async () => {
       console.log('Iniciando Sincronizacion de Stock');
       try {
-        const sellers = await Seller.find({active: true});
+        const sellers = await Seller.find({ active: true });
         for (const seller of sellers) {
-          const products = await Product.find({seller: seller.id, delete: false});
-          let channels = await Channel.find({type: 'cms', name: ['woocommerce','shopify','vtex','magento']});
+
+          const products = await Product.find({ seller: seller.id, delete: false });
+          let channels = await Channel.find({ type: 'cms', name: ['woocommerce', 'shopify', 'vtex', 'magento'] });
           channels = channels.map(chann => chann.id);
-          const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
+
+          const integration = await Integrations.findOne({ channel: channels, seller: seller.id }).populate('channel');
+
           if (integration) {
-            for(const prod of products){
-              let product = await sails.helpers.marketplaceswebhooks.findProductGraphql(
+
+            for (const prod of products) {
+              //? Revisar si un producto existe
+
+              let data = await sails.helpers.marketplaceswebhooks.findProductGraphql(
                 integration.channel.name,
                 integration.key,
                 integration.secret,
@@ -145,14 +153,21 @@ module.exports.cron = {
                 prod.externalId
               ).catch((e) => console.log(e));
 
+              let product = data.data[0].product;
+              product.images = data.data[0].productImages.images;
+              let variation = data.data[0].productVariations.variations;
+              variation.discount = data.data[0].productVariations.discount;
+              product.variations = variation;
+
               if (product) {
+
                 let pro = await sails.helpers.checkProducts(product, seller.id);
-                let variations = product.productVariations;
-                if(typeof(pro) === 'object'){
+                let variations = product.variations;
+                if (typeof (pro) === 'object') {
                   await sails.helpers.marketplaceswebhooks.variations(variations, prod.id, seller.id, true);
                 }
               } else {
-                await ProductVariation.update({product: prod.id, seller: seller.id}).set({quantity:0});
+                await ProductVariation.update({ product: prod.id, seller: seller.id }).set({ quantity: 0 });
               }
               await sails.helpers.channel.channelSync(prod);
             }
@@ -165,19 +180,20 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   },
-  stockProductsPrestashop:{
+  stockProductsPrestashop: {
     schedule: '01 05 */3 * * *',
-    onTick: async () =>{
+    //schedule: '*/20 * * * * *',
+    onTick: async () => {
       console.log('Iniciando Sincronizacion de Stock Prestashop');
       try {
-        const sellers = await Seller.find({active: true});
+        const sellers = await Seller.find({ active: true });
         for (const seller of sellers) {
-          const products = await Product.find({seller: seller.id, delete: false});
-          let channels = await Channel.find({type: 'cms', name: 'prestashop'});
+          const products = await Product.find({ seller: seller.id, delete: false });
+          let channels = await Channel.find({ type: 'cms', name: 'prestashop' });
           channels = channels.map(chann => chann.id);
-          const integration = await Integrations.findOne({channel: channels, seller: seller.id}).populate('channel');
+          const integration = await Integrations.findOne({ channel: channels, seller: seller.id }).populate('channel');
           if (integration) {
-            for(const prod of products){
+            for (const prod of products) {
               await sails.helpers.functionProductSync(prod.externalId.split('-')[0], integration.key);
             }
           }
@@ -185,7 +201,7 @@ module.exports.cron = {
       } catch (err) {
         console.log(`Se produjo un error. ${err.message}`);
       }
-      console.log('Sincronizacion de Stock Finalizada');
+      console.log('Sincronizacion de Stock Prestashop Finalizada');
     },
     timezone: 'America/Bogota'
   },
@@ -205,9 +221,9 @@ module.exports.cron = {
     schedule: '50 00 00 * * *',
     onTick: async () => {
       await sails.helpers.channel.walmart.qualityCheck();
-      let channel = await Channel.findOne({name: 'walmart'});
-      let integrations = await Integrations.find({channel: channel.id});
-      for(let i=0; i<integrations.length; i++){
+      let channel = await Channel.findOne({ name: 'walmart' });
+      let integrations = await Integrations.find({ channel: channel.id });
+      for (let i = 0; i < integrations.length; i++) {
         await sails.helpers.channel.walmart.orders(integrations[i].id);
       }
     },
@@ -238,57 +254,57 @@ module.exports.cron = {
     },
     timezone: 'America/Bogota'
   }*/
-  wooCommerceOrders:{
+  wooCommerceOrders: {
     schedule: '05 45 * * * *',
-    onTick: async () =>{
+    onTick: async () => {
       console.log('Iniciando Captura de Ordenes Woocommerce');
       let moment = require('moment');
       let axios = require('axios');
 
-      let channel = await Channel.findOne({name: 'woocommerce'});
-      let integrations = await Integrations.find({channel: channel.id}).populate('channel').populate('seller');
+      let channel = await Channel.findOne({ name: 'woocommerce' });
+      let integrations = await Integrations.find({ channel: channel.id }).populate('channel').populate('seller');
 
-      integrations.forEach(async integration =>{
-        if(integration.order_webhook_status && integration.seller.active){
-          try{
+      integrations.forEach(async integration => {
+        if (integration.order_webhook_status && integration.seller.active) {
+          try {
 
-            let statuses = ['pending','proccesing','completed','on-hold','canceled','refunded','failed'];
+            let statuses = ['pending', 'proccesing', 'completed', 'on-hold', 'canceled', 'refunded', 'failed'];
 
-            statuses.forEach(async state =>{
+            statuses.forEach(async state => {
               let parameters = '';
 
-              if(state == 'pending'){
-                parameters= `before=${moment().toISOString(true)}&after=${moment().subtract(2, 'hours').toISOString(true)}&status=${state}`;
-              }else{
-                parameters= `[updated_at_min]==${moment().toISOString(true)}&[updated_at_max]=${moment().subtract(2, 'hours').toISOString(true)}&status=${state}`;
+              if (state == 'pending') {
+                parameters = `before=${moment().toISOString(true)}&after=${moment().subtract(2, 'hours').toISOString(true)}&status=${state}`;
+              } else {
+                parameters = `[updated_at_min]==${moment().toISOString(true)}&[updated_at_max]=${moment().subtract(2, 'hours').toISOString(true)}&status=${state}`;
               }
 
-              let orders  = await axios.get(`${integration.url}wp-json/${integration.version}/orders?consumer_key=${integration.key}&consumer_secret=${integration.secret}&${parameters}`).catch((e)=>{
+              let orders = await axios.get(`${integration.url}wp-json/${integration.version}/orders?consumer_key=${integration.key}&consumer_secret=${integration.secret}&${parameters}`).catch((e) => {
                 console.log(`No se pudieron recuperar las ordenes del seller ${integration.url}`);
               });
 
-              if(orders && (orders.status == 200)  && orders.data.length > 0){
+              if (orders && (orders.status == 200) && orders.data.length > 0) {
                 for (let index = 0; index < orders.data.length; index++) {
                   const order = orders.data[index];
 
                   let o = await sails.helpers.marketplaceswebhooks.findProductGraphql(
-                        integration.channel.name,
-                        integration.key,
-                        integration.secret,
-                        integration.url,
-                        integration.version,
-                        'ORDERID',
-                        order.id
+                    integration.channel.name,
+                    integration.key,
+                    integration.secret,
+                    integration.url,
+                    integration.version,
+                    'ORDERID',
+                    order.id
                   ).catch((e) => console.log(e));
 
                   if (o) {
-                    await sails.helpers.marketplaceswebhooks.order(o, integration).catch((e)=>console.log(e));
+                    await sails.helpers.marketplaceswebhooks.order(o, integration).catch((e) => console.log(e));
                   }
                 }
               }
             });
 
-          }catch(err){
+          } catch (err) {
             console.log(`No se pudieron recuperar las ordenes del seller ${integration.url}`, err);
           }
         }
@@ -316,21 +332,21 @@ module.exports.cron = {
     onTick: async () => {
       console.log('Iniciando refrescar token meli');
       try {
-        let sellers = await Seller.find({active: true});
+        let sellers = await Seller.find({ active: true });
         for (const seller of sellers) {
-          let integrations = await Integrations.find({seller: seller.id, useridml: {'!=': ''}}).populate('channel');
+          let integrations = await Integrations.find({ seller: seller.id, useridml: { '!=': '' } }).populate('channel');
           for (const integration of integrations) {
             let params = {
-              'grant_type':'refresh_token',
-              'client_id':integration.user,
-              'client_secret':integration.key,
-              'refresh_token':integration.url,
+              'grant_type': 'refresh_token',
+              'client_id': integration.user,
+              'client_secret': integration.key,
+              'refresh_token': integration.url,
             };
-            let response = await sails.helpers.channel.mercadolibre.request('oauth/token',integration.channel.endpoint,'auth',params,'POST').catch((err) =>{
+            let response = await sails.helpers.channel.mercadolibre.request('oauth/token', integration.channel.endpoint, 'auth', params, 'POST').catch((err) => {
               console.log(`Error al refrescar token ${integration.name}: ${err.message}`);
             });
-            if(response){
-              await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token']});
+            if (response) {
+              await Integrations.updateOne({ id: integration.id }).set({ url: response['refresh_token'], secret: response['access_token'] });
             }
           }
         }
@@ -345,22 +361,22 @@ module.exports.cron = {
     onTick: async () => {
       console.log('Iniciando refrescar token shopee');
       try {
-        let sellers = await Seller.find({active: true});
-        let channel = await Channel.findOne({name: 'shopee'});
+        let sellers = await Seller.find({ active: true });
+        let channel = await Channel.findOne({ name: 'shopee' });
         if (channel) {
           for (const seller of sellers) {
-            let integrations = await Integrations.find({seller: seller.id, channel: channel.id, shopid: {'!=': ''}}).populate('channel');
+            let integrations = await Integrations.find({ seller: seller.id, channel: channel.id, shopid: { '!=': '' } }).populate('channel');
             for (const integration of integrations) {
               let params = {
                 'refresh_token': integration.url,
                 'partner_id': sails.config.custom.PARTNER_ID_SHOPEE,
                 'shop_id': parseInt(integration.shopid)
               };
-              let response = await sails.helpers.channel.shopee.request('/api/v2/auth/access_token/get',integration.channel.endpoint,[],params,'POST').catch((err) =>{
+              let response = await sails.helpers.channel.shopee.request('/api/v2/auth/access_token/get', integration.channel.endpoint, [], params, 'POST').catch((err) => {
                 console.log(`Error al refrescar token ${integration.name}: ${err.message}`);
               });
-              if(response && !response.error){
-                await Integrations.updateOne({id:integration.id}).set({url:response['refresh_token'],secret:response['access_token']});
+              if (response && !response.error) {
+                await Integrations.updateOne({ id: integration.id }).set({ url: response['refresh_token'], secret: response['access_token'] });
               }
             }
           }
@@ -376,34 +392,34 @@ module.exports.cron = {
     onTick: async () => {
       console.log('Iniciando validacion qc para los productos');
       try {
-        let sellers = await Seller.find({active: true});
-        let channels = await Channel.find({name: ['dafiti', 'linio']});
+        let sellers = await Seller.find({ active: true });
+        let channels = await Channel.find({ name: ['dafiti', 'linio'] });
         for (const seller of sellers) {
           for (const channel of channels) {
-            let integrations = await Integrations.find({seller: seller.id, channel: channel.id}).populate('channel').populate('seller');
+            let integrations = await Integrations.find({ seller: seller.id, channel: channel.id }).populate('channel').populate('seller');
             for (const integration of integrations) {
               const skus = [];
               let pageSize = 100;
-              let products = await Product.find({seller: integration.seller.id, delete: false})
-              .populate('channels',{
-                where:{
-                  channel: integration.channel.id,
-                  integration: integration.id
-                },
-                limit: 1
-              });
+              let products = await Product.find({ seller: integration.seller.id, delete: false })
+                .populate('channels', {
+                  where: {
+                    channel: integration.channel.id,
+                    integration: integration.id
+                  },
+                  limit: 1
+                });
               products = products.filter(pro => pro.channels.length > 0 && pro.channels[0].iscreated && (!pro.channels[0].qc || pro.channels[0].reason !== ''));
               for (const product of products) {
-                const productVariations = await ProductVariation.find({product: product.id});
+                const productVariations = await ProductVariation.find({ product: product.id });
                 for (const variation of productVariations) {
-                  if(!skus.includes(variation.id)){
+                  if (!skus.includes(variation.id)) {
                     skus.push(variation.id);
                   }
                 }
               }
               let number = Math.ceil(skus.length / pageSize);
               for (let i = 1; i <= number; i++) {
-                const resultSkus = skus.slice((number - i) * pageSize, (number - (i-1)) * pageSize);
+                const resultSkus = skus.slice((number - i) * pageSize, (number - (i - 1)) * pageSize);
                 if (resultSkus.length > 0) {
                   await sails.helpers.channel.productQc(integration, resultSkus);
                 }
@@ -412,7 +428,8 @@ module.exports.cron = {
           }
         }
       } catch (error) {
-        console.log(`Se produjo un error. ${error.message}`);      }
+        console.log(`Se produjo un error. ${error.message}`);
+      }
     },
     timezone: 'America/Bogota'
   }
