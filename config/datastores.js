@@ -14,21 +14,21 @@
  */
 
 module.exports.datastores = {
-/***************************************************************************
-    *                                                                          *
-    * Your app's default datastore.                                            *
-    *                                                                          *
-    * Sails apps read and write to local disk by default, using a built-in     *
-    * database adapter called `sails-disk`.  This feature is purely for        *
-    * convenience during development; since `sails-disk` is not designed for   *
-    * use in a production environment.                                         *
-    *                                                                          *
-    * To use a different db _in development_, follow the directions below.     *
-    * Otherwise, just leave the default datastore as-is, with no `adapter`.    *
-    *                                                                          *
-    * (For production configuration, see `config/env/production.js`.)          *
-    *                                                                          *
-    ***************************************************************************/
+  /***************************************************************************
+      *                                                                          *
+      * Your app's default datastore.                                            *
+      *                                                                          *
+      * Sails apps read and write to local disk by default, using a built-in     *
+      * database adapter called `sails-disk`.  This feature is purely for        *
+      * convenience during development; since `sails-disk` is not designed for   *
+      * use in a production environment.                                         *
+      *                                                                          *
+      * To use a different db _in development_, follow the directions below.     *
+      * Otherwise, just leave the default datastore as-is, with no `adapter`.    *
+      *                                                                          *
+      * (For production configuration, see `config/env/production.js`.)          *
+      *                                                                          *
+      ***************************************************************************/
 
   default: {
     /***************************************************************************
@@ -46,7 +46,7 @@ module.exports.datastores = {
       *                                                                          *
       ***************************************************************************/
     adapter: 'sails-mongo',
-    url: 'mongodb://localhost:27017/iridio',
-    //url: 'mongodb://iridioDb:mhfPOxZB8V69zW8z@1ecommerce-shard-00-00.olidk.mongodb.net:27017,1ecommerce-shard-00-01.olidk.mongodb.net:27017,1ecommerce-shard-00-02.olidk.mongodb.net:27017/iridio?replicaSet=atlas-23sosy-shard-0&ssl=true&authSource=admin',
+    //url: 'mongodb://localhost:27017/Iridio',
+    url: 'mongodb://iridioDb:mhfPOxZB8V69zW8z@1ecommerce-shard-00-00.olidk.mongodb.net:27017,1ecommerce-shard-00-01.olidk.mongodb.net:27017,1ecommerce-shard-00-02.olidk.mongodb.net:27017/iridio?replicaSet=atlas-23sosy-shard-0&ssl=true&authSource=admin',
   },
 };

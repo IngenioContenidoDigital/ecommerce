@@ -14,7 +14,7 @@ objectQueue.on('start', async (result) => {
 
   let config = {
     method: 'post',
-    url: 'https://sync.1ecommerce.app/marketplace/channel/channelsync/processproduct',
+    url: 'https://1jdvdd72rf.execute-api.us-east-1.amazonaws.com/api/marketplace/channel/channelsync/processproduct',
     headers: {
       'Content-Type': 'application/json'
     },
@@ -33,7 +33,7 @@ module.exports = {
   description: 'funcion lambda para sincronizar productos en los marketplaces',
   inputs: {
     productid: {
-      type:'string',
+      type: 'string',
       required: true,
     }
   },
@@ -43,7 +43,7 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    objectQueue.push(await sails.helpers.makeJob({product: inputs.productid}));
+    objectQueue.push(await sails.helpers.makeJob({ product: inputs.productid }));
     return exits.success();
   }
 };
