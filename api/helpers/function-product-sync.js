@@ -11,10 +11,9 @@ objectQueue.on('start', async (result) => {
   let data = JSON.stringify({
     'id_product': result.data.product
   });
-
   let config = {
     method: 'post',
-    url: `https://sync.1ecommerce.app/prestashop/product/updateproduct/processproduct/${result.data.integrationKey}`,
+    url: `https://1jdvdd72rf.execute-api.us-east-1.amazonaws.com/api/prestashop/product/updateproduct/processproduct/${result.data.integrationKey}`,
     headers: {
       'Content-Type': 'application/json'
     },
@@ -22,9 +21,9 @@ objectQueue.on('start', async (result) => {
   };
 
   try {
-    let response = await axios(config);
-    console.log(response.data);
+    await axios(config);
   } catch (error) {
+    console.log(error);
   }
 });
 
@@ -33,11 +32,11 @@ module.exports = {
   description: 'funcion lambda para sincronizar actualizar stock productos',
   inputs: {
     productid: {
-      type:'string',
+      type: 'string',
       required: true,
     },
     integrationKey: {
-      type:'string',
+      type: 'string',
       required: true,
     },
   },
@@ -47,7 +46,7 @@ module.exports = {
     },
   },
   fn: async function (inputs, exits) {
-    objectQueue.push(await sails.helpers.makeJob({product: inputs.productid, integrationKey: inputs.integrationKey}));
+    objectQueue.push(await sails.helpers.makeJob({ product: inputs.productid, integrationKey: inputs.integrationKey }));
     return exits.success();
   }
 };
