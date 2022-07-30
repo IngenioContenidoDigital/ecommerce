@@ -488,8 +488,8 @@ module.exports = {
       documents.push(doc);
     });
     let AWS = require('aws-sdk');
-    AWS.config.loadFromPath('./config.json');
-    let endpoint = 'doc-predictor-1ecommerce-if3tuwyqkbztsy2a2j3voan7bu.us-east-1.cloudsearch.amazonaws.com';
+    AWS.config.loadFromPath('./config1.json');
+    let endpoint = 'doc-preditor1e-ffenvkc2nojr42drhfjrpvevry.us-east-1.cloudsearch.amazonaws.com';
     var csd = new AWS.CloudSearchDomain({ endpoint: endpoint });
     var params = {
       contentType: 'application/json', // required

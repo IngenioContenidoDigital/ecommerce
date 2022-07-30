@@ -14,9 +14,11 @@ module.exports = {
   },
   fn: async function (inputs, exits) {
     let AWS = require('aws-sdk');
+
     AWS.config.loadFromPath('./config.json');
     //let csd = new AWS.CloudSearchDomain({endpoint: 'search-predictor-1ecommerce-if3tuwyqkbztsy2a2j3voan7bu.us-east-1.cloudsearch.amazonaws.com'});
     let csd = new AWS.CloudSearchDomain({ endpoint: 'search-preditor1e-ffenvkc2nojr42drhfjrpvevry.us-east-1.cloudsearch.amazonaws.com' });
+
     let params = {
       query: inputs.category,
       return: 'id',
