@@ -1,26 +1,68 @@
-# wms
+<h3 align="center">ECommerce Marketplace</h3>
+---
 
-a [Sails v1](https://sailsjs.com) application
+<p align="center"> Ecommerce solution to synchronizing multiple marketplaces at real time
+    <br> 
+</p>
+
+## 📝 Table of Contents
+
+- [About](#about)
+- [Built Using](#built_using)
+- [Examples](#working_projects)
+- [Authors](#authors)
+- [Acknowledgments](#acknowledgement)
+
+## 🧐 About <a name = "about"></a>
+
+A complete e-commerce solution with the following features:
+
+-A Marketplace including all products for all sellers created
+-Independent page configuration for each seller
+-Category Predictor using AWS Cloud Search
+-API for payments valid for Colombia (ePayco)
+-API for carriers valid for Colombia (Coordinadora)
+-API for connecting products with Dafiti via webHook
+-API for connecting products with Linio via webHook
+-API for conecting products with Mercadolibre
+-Fully funtional BackEnd
+  -Dashboard
+  -Sales Report
+  -Order Managment
+  -Setup of Status of orders
+  -Dashboard of Products
+  -Color Configuration
+  -Setup of Producto variations
+  -Setup of Categories
+  -Configuration of additional features for each product
+  -Offers configuration
+  -Fidelity Plan
+  -Creation a landing Pages
+  -User Configuration
+  -Permission for users 
+
+## ⛏️ Built Using <a name = "built_using"></a>
+
+- [MongoDB](https://www.mongodb.com/) - Database
+- [SailsJS](https://sailsjs.com/) - Server Framework
+- [EJS](https://ejs.co/) - Web Framework
+- [Bulma](https://bulma.io/) - CSS Framework
+- [NodeJs](https://nodejs.org/en/) - Server Environment
+- [Redis](https://redis.io/) - Session Managent
+- [AWS](https://aws.amazon.com) - AWS Lambda, AWS CloudSearch, AWS EC2, AWS S3, AWS VPC
+- [GraphQL](https://graphql.org/) - GraphQL
+
+## ⛏️ Examples <a name = "working_projects"></a>
+
+- [UltraVape](https://ultravape.co/)
+- [UltraGlobal](https://fidelizacion.ultraglobaldistribucion.com/)
+- [Landing UltraGlobal](https://fidelizacion.ultraglobaldistribucion.com/c/afiliacion)
+
+## ✍️ Authors <a name = "authors"></a>
+
+- [@lfelipeqn](https://github.com/lfelipeqn/) - Idea & Developer
 
 
-### Links
+## 🎉 Acknowledgements <a name = "acknowledgement"></a>
 
-+ [Sails framework documentation](https://sailsjs.com/get-started)
-+ [Version notes / upgrading](https://sailsjs.com/documentation/upgrading)
-+ [Deployment tips](https://sailsjs.com/documentation/concepts/deployment)
-+ [Community support options](https://sailsjs.com/support)
-+ [Professional / enterprise options](https://sailsjs.com/enterprise)
-
-
-### Version info
-
-This app was originally generated on Tue Feb 04 2020 10:29:31 GMT-0500 (GMT-05:00) using Sails v1.2.3.
-
-<!-- Internally, Sails used [`sails-generate@1.16.13`](https://github.com/balderdashy/sails-generate/tree/v1.16.13/lib/core-generators/new). -->
-
-
-
-<!--
-Note:  Generators are usually run using the globally-installed `sails` CLI (command-line interface).  This CLI version is _environment-specific_ rather than app-specific, thus over time, as a project's dependencies are upgraded or the project is worked on by different developers on different computers using different versions of Node.js, the Sails dependency in its package.json file may differ from the globally-installed Sails CLI release it was originally generated with.  (Be sure to always check out the relevant [upgrading guides](https://sailsjs.com/upgrading) before upgrading the version of Sails used by your app.  If you're stuck, [get help here](https://sailsjs.com/support).)
--->
-
+- This product was inspired to help e-commerce seller to manage all prices, products, inventory, discounts. Syncronized in real time between several marketplaces. When you get to sell a product in one marketplace. The app will sync availability in the other connected marketplace 
